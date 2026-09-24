@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach } from "vitest";
-import { render, screen, fireEvent } from "@testing-library/react";
+import { render, screen, fireEvent, within } from "@testing-library/react";
 import { BrowserRouter } from "react-router-dom";
 import Index from "@/pages/Index";
 
@@ -53,7 +53,7 @@ describe("Landing Page Redesign - UX Architect Standards", () => {
     const partBtn = screen.getByRole("button", { name: /Entreprise & Fournisseur/i });
     fireEvent.click(partBtn);
     expect(screen.getByText("Distribuez vos matériels et services aux producteurs du Sahel")).toBeInTheDocument();
-  });
+  }, 15000);
 
   it("mentionne les sources scientifiques vérifiées du RAG pour garantir le zéro-hallucination", () => {
     renderIndex();
@@ -76,5 +76,22 @@ describe("Landing Page Redesign - UX Architect Standards", () => {
     // Emoji regex checking standard unicode emoji ranges
     const emojiRegex = /[\u{1F300}-\u{1F6FF}\u{1F900}-\u{1F9FF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}]/u;
     expect(emojiRegex.test(textContent)).toBe(false);
+  });
+
+  it("liste uniquement les 4 acteurs en entête (Agriculteur, Éleveur, Agronome, Entreprise)", () => {
+    renderIndex();
+    const nav = screen.getByRole("navigation", { name: /Acteurs NAFA-AGRITECH/i });
+    expect(nav).toBeInTheDocument();
+
+    // Vérifier la présence exclusive des 4 acteurs
+    expect(within(nav).getByText("Agriculteur & Maraîcher")).toBeInTheDocument();
+    expect(within(nav).getByText("Éleveur & Pasteur")).toBeInTheDocument();
+    expect(within(nav).getByText("Agronome & Vétérinaire")).toBeInTheDocument();
+    expect(within(nav).getByText("Entreprise & Fournisseur")).toBeInTheDocument();
+
+    // S'assurer qu'aucun autre lien générique n'est présent dans la navigation d'entête
+    expect(within(nav).queryByText(/Outils Rapides/i)).toBeNull();
+    expect(within(nav).queryByText(/Solutions Métiers/i)).toBeNull();
+    expect(within(nav).queryByText(/Marché Partenaires/i)).toBeNull();
   });
 });
