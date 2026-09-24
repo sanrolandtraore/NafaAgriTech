@@ -18,6 +18,8 @@ import {
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "@/hooks/use-toast";
+import { canAccessDiagnosticTools } from "@/lib/roleAccessControl";
+import { DiagnosticAccessGate } from "@/components/security/DiagnosticAccessGate";
 import { BURKINA_CROPS, CROP_GROUPS, cropLabel } from "@/lib/burkinaCrops";
 import {
   addPendingDiagnosis,
@@ -105,7 +107,16 @@ function detectCurrentSeason(): AgronomicSeason {
 }
 
 export function CropDiagnosisTool() {
-  const { user, profile } = useAuth();
+  const { user, profile, primaryRole, partnerType } = useAuth();
+
+  // Les agriculteurs et éleveurs ne doivent en aucun cas accéder au banc de diagnostic
+  if (!canAccessDiagnosticTools(primaryRole, partnerType)) {
+    return (
+      <DiagnosticAccessGate>
+        <div />
+      </DiagnosticAccessGate>
+    );
+  }
 
   // ── Mode de sélection de l'espèce ──
   const [plantMode, setPlantMode] = useState<"culture" | "adventice">("culture");
