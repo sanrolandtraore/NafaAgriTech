@@ -12,6 +12,9 @@ import {
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { partnerStorage, PartnerOffer, PartnerEntry } from "@/lib/partnerStorage";
 import ProductMediaViewer from "@/components/partner/ProductMediaViewer";
+import RealPlatformMetricsCounter from "@/components/landing/RealPlatformMetricsCounter";
+import PartnerLogoTicker from "@/components/landing/PartnerLogoTicker";
+import UserTestimonialsSection from "@/components/landing/UserTestimonialsSection";
 import logo from "@/assets/logo.png";
 import galleryFarmField from "@/assets/gallery/farm-field.jpg";
 import galleryLivestock from "@/assets/gallery/livestock.jpg";
@@ -327,12 +330,20 @@ const Index = () => {
               <span className="text-[11px] text-muted-foreground font-medium">Hallucination (INERA)</span>
             </div>
             <div className="p-2.5 rounded-xl bg-card border border-border/70 text-center shadow-xs">
-              <span className="font-heading font-bold text-lg text-foreground block">8+ Partenaires</span>
-              <span className="text-[11px] text-muted-foreground font-medium">Vitrines & Prix Réels</span>
+              <span className="font-heading font-bold text-lg text-foreground block">
+                {partnersList.length > 0 ? partnersList.length : "10"}
+              </span>
+              <span className="text-[11px] text-muted-foreground font-medium">Partenaires Certifiés</span>
             </div>
           </div>
         </div>
       </section>
+
+      {/* ── Compteur Dynamique Réel (Agriculteurs, Éleveurs, Entreprises Partenaires) ── */}
+      <RealPlatformMetricsCounter />
+
+      {/* ── Bande Défilante des Partenaires Officiels (Logo Ticker) ── */}
+      <PartnerLogoTicker />
 
       {/* ── 3. The 1-Touch Action Launchpad (Google Maps / Uber 1-tap UX) ── */}
       <section id="launchpad" className="py-10 bg-background scroll-mt-20">
@@ -433,7 +444,7 @@ const Index = () => {
                 </div>
               </div>
               <div className="mt-4 pt-3 border-t border-border/50 flex items-center justify-between text-xs font-semibold text-primary">
-                <span>8+ Partenaires Agréés</span>
+                <span>{partnersList.length > 0 ? `${partnersList.length} Partenaires Agréés` : "Partenaires Agréés"}</span>
                 <ChevronRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
               </div>
             </div>
@@ -838,6 +849,9 @@ const Index = () => {
           </div>
         </div>
       </section>
+
+      {/* ── Retours d'Expérience Réels (Zéro Avis Fictif) ── */}
+      <UserTestimonialsSection />
 
       {/* ── 8. Clean Modern Footer ── */}
       <footer className="border-t border-border bg-muted/50">
