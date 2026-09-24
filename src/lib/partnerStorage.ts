@@ -787,6 +787,10 @@ export const partnerStorage = {
     return list;
   },
 
+  async getPartners(category?: PartnerCategory): Promise<PartnerEntry[]> {
+    return this.getEntries(category);
+  },
+
   async saveEntry(entry: Omit<PartnerEntry, "id" | "created_at"> & { id?: string }): Promise<PartnerEntry> {
     const list = await this.getEntries();
     let result: PartnerEntry;
