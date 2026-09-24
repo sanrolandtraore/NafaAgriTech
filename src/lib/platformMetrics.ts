@@ -186,35 +186,52 @@ export function usePlatformMetrics() {
   });
   const [loading, setLoading] = useState<boolean>(true);
 
-  const refresh = useCallback(async () => {
-    setLoading(true);
-    try {
-      const data = await calculatePlatformMetrics();
-      setMetrics(data);
-    } catch (e) {
-      console.warn("[usePlatformMetrics] Erreur calcul métriques:", e);
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
   useEffect(() => {
+    let mounted = true;
+
+    const refresh = async () => {
+      if (!mounted) return;
+      try {
+        const data = await calculatePlatformMetrics();
+        if (mounted) {
+          setMetrics(data);
+        }
+      } catch (e) {
+        console.warn("[usePlatformMetrics] Erreur calcul métriques:", e);
+      } finally {
+        if (mounted) {
+          setLoading(false);
+        }
+      }
+    };
+
     void refresh();
 
     const handleEvent = () => {
       void refresh();
     };
 
-    window.addEventListener("nafa:metrics_updated", handleEvent);
-    window.addEventListener("storage", handleEvent);
-    window.addEventListener("online", handleEvent);
+    if (typeof window !== "undefined") {
+      window.addEventListener("nafa:metrics_updated", handleEvent);
+      window.addEventListener("storage", handleEvent);
+      window.addEventListener("online", handleEvent);
+    }
 
     return () => {
-      window.removeEventListener("nafa:metrics_updated", handleEvent);
-      window.removeEventListener("storage", handleEvent);
-      window.removeEventListener("online", handleEvent);
+      mounted = false;
+      if (typeof window !== "undefined") {
+        window.removeEventListener("nafa:metrics_updated", handleEvent);
+        window.removeEventListener("storage", handleEvent);
+        window.removeEventListener("online", handleEvent);
+      }
     };
-  }, [refresh]);
+  }, []);
+
+  const refresh = useCallback(async () => {
+    const data = await calculatePlatformMetrics();
+    setMetrics(data);
+    setLoading(false);
+  }, []);
 
   return { metrics, loading, refresh };
 }
