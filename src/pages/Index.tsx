@@ -5,7 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import {
   MapPin, ArrowRight, Mail, Phone, MapPinned,
-  Microscope, FileText, Calculator, Eye, Sparkles, Tractor, Store, ShieldCheck,
+  FileText, Calculator, Eye, Sparkles, Tractor, Store, ShieldCheck,
   Send, CheckCircle2, Globe, Smartphone, FlaskConical, Sprout, Beef, Wrench,
   Cpu, Stethoscope, ChevronRight, Zap, Award, Compass, Check, Layers
 } from "lucide-react";
@@ -56,14 +56,14 @@ const PERSONAS: PersonaConfig[] = [
     label: "Agriculteur & Maraîcher",
     badge: "Production Végétale",
     headline: "Protégez vos récoltes et maximisez vos rendements",
-    description: "Diagnostic photo instantané des maladies, calcul précis des doses d'engrais et accès direct aux semences certifiées du Burkina Faso.",
+    description: "Planification des cultures, calcul précis des doses d'engrais et accès direct aux semences certifiées du Burkina Faso.",
     tools: [
       {
-        title: "Diagnostic Plante IA",
-        description: "Prenez une photo de feuille ou tige. Identification en 30s des ravageurs, maladies et carences selon le référentiel INERA.",
-        cta: "Lancer le scan",
-        path: "/dashboard/expert-diagnosis",
-        icon: Microscope,
+        title: "Planification des Cultures",
+        description: "Gestion des calendriers de semis, suivi des cycles culturaux et rendements parcellaires adaptés au Sahel.",
+        cta: "Planifier mes cultures",
+        path: "/dashboard/crop-planning",
+        icon: Sprout,
         highlight: true,
       },
       {
@@ -279,19 +279,10 @@ const Index = () => {
             <ThemeToggle />
             <Button
               size="sm"
-              variant="outline"
               onClick={() => navigate("/auth")}
-              className="text-xs font-semibold hidden sm:inline-flex"
-            >
-              Se connecter
-            </Button>
-            <Button
-              size="sm"
-              onClick={() => navigate("/dashboard/expert-diagnosis")}
               className="gradient-primary text-primary-foreground text-xs font-semibold shadow-xs hover:opacity-95"
             >
-              <Microscope className="h-3.5 w-3.5 mr-1.5" />
-              Diagnostic IA
+              Se connecter
             </Button>
           </div>
         </div>
@@ -334,7 +325,7 @@ const Index = () => {
           {/* Trust Badge */}
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-background border border-primary/20 shadow-xs text-[11px] sm:text-xs font-semibold text-foreground">
             <Sparkles className="h-3.5 w-3.5 text-amber-500 shrink-0" />
-            <span>Copilote d'Ingénierie & Diagnostic IA • 100% Hors-Ligne • Certifié Sahel</span>
+            <span>Plateforme Agro-Pastorale & Ingénierie • 100% Hors-Ligne • Certifié Sahel</span>
           </div>
 
           {/* Punchy Headline (Ultra-clear, under 30s) */}
@@ -347,14 +338,14 @@ const Index = () => {
 
           {/* 1-Line Subtitle */}
           <p className="text-base sm:text-lg text-muted-foreground max-w-2xl mx-auto leading-relaxed font-normal">
-            Diagnostic immédiat de vos plantes, suivi sanitaire du cheptel et devis instantanés auprès de partenaires certifiés du Sahel.
+            Planification intelligente de vos cultures, suivi sanitaire du cheptel et devis instantanés auprès de partenaires certifiés du Sahel.
           </p>
 
           {/* 4 Trust Numbers Strip */}
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 max-w-3xl mx-auto pt-2">
             <div className="p-2.5 rounded-xl bg-card border border-border/70 text-center shadow-xs">
               <span className="font-heading font-bold text-lg text-primary block">&lt; 30 sec</span>
-              <span className="text-[11px] text-muted-foreground font-medium">Diagnostic IA</span>
+              <span className="text-[11px] text-muted-foreground font-medium">Prise en main</span>
             </div>
             <div className="p-2.5 rounded-xl bg-card border border-border/70 text-center shadow-xs">
               <span className="font-heading font-bold text-lg text-emerald-600 dark:text-emerald-400 block">100%</span>
@@ -380,141 +371,7 @@ const Index = () => {
       {/* ── Bande Défilante des Partenaires Officiels (Logo Ticker) ── */}
       <PartnerLogoTicker />
 
-      {/* ── 3. The 1-Touch Action Launchpad (Google Maps / Uber 1-tap UX) ── */}
-      <section id="launchpad" className="py-10 bg-background scroll-mt-20">
-        <div className="container max-w-5xl mx-auto px-4 space-y-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <span className="text-xs font-bold text-primary uppercase tracking-wider block">
-                Accès direct 1-Touch
-              </span>
-              <h2 className="text-xl sm:text-2xl font-heading font-bold text-foreground">
-                Que souhaitez-vous faire maintenant ?
-              </h2>
-            </div>
-            <Badge variant="outline" className="hidden sm:inline-flex text-xs font-semibold gap-1 border-primary/30 text-primary">
-              <Zap className="h-3 w-3" /> Action Immédiate
-            </Badge>
-          </div>
-
-          {/* 4 Large Touch Targets (Optimized for modest Android thumb tap) */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            {/* Tile 1: Diagnostic Plante */}
-            <div
-              onClick={() => navigate("/dashboard/expert-diagnosis")}
-              role="button"
-              tabIndex={0}
-              onKeyDown={(e) => e.key === "Enter" && navigate("/dashboard/expert-diagnosis")}
-              className="p-5 rounded-2xl bg-card border border-border/80 hover:border-emerald-500/60 shadow-xs hover:shadow-md transition-all duration-200 cursor-pointer flex flex-col justify-between group active:scale-[0.98]"
-            >
-              <div className="space-y-3">
-                <div className="w-12 h-12 rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center font-bold transition-transform group-hover:scale-110">
-                  <Microscope className="h-6 w-6" />
-                </div>
-                <div>
-                  <div className="flex items-center justify-between gap-1">
-                    <h3 className="font-heading font-bold text-base text-foreground group-hover:text-emerald-600 transition-colors">
-                      Diagnostiquer une plante
-                    </h3>
-                  </div>
-                  <p className="text-xs text-muted-foreground mt-1 leading-snug">
-                    Photo feuille/tige, détection maladies & ravageurs en 30s.
-                  </p>
-                </div>
-              </div>
-              <div className="mt-4 pt-3 border-t border-border/50 flex items-center justify-between text-xs font-semibold text-emerald-600 dark:text-emerald-400">
-                <span className="inline-flex items-center gap-1">
-                  <ShieldCheck className="h-3.5 w-3.5" /> INERA • CILSS
-                </span>
-                <ChevronRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
-              </div>
-            </div>
-
-            {/* Tile 2: Santé & Suivi Troupeau */}
-            <div
-              onClick={() => navigate("/dashboard/livestock")}
-              role="button"
-              tabIndex={0}
-              onKeyDown={(e) => e.key === "Enter" && navigate("/dashboard/livestock")}
-              className="p-5 rounded-2xl bg-card border border-border/80 hover:border-amber-500/60 shadow-xs hover:shadow-md transition-all duration-200 cursor-pointer flex flex-col justify-between group active:scale-[0.98]"
-            >
-              <div className="space-y-3">
-                <div className="w-12 h-12 rounded-xl bg-amber-500/10 text-amber-600 dark:text-amber-400 flex items-center justify-center font-bold transition-transform group-hover:scale-110">
-                  <Beef className="h-6 w-6" />
-                </div>
-                <div>
-                  <h3 className="font-heading font-bold text-base text-foreground group-hover:text-amber-600 transition-colors">
-                    Santé du Troupeau
-                  </h3>
-                  <p className="text-xs text-muted-foreground mt-1 leading-snug">
-                    Carnet sanitaire, rappels de prophylaxie et provendes.
-                  </p>
-                </div>
-              </div>
-              <div className="mt-4 pt-3 border-t border-border/50 flex items-center justify-between text-xs font-semibold text-amber-600 dark:text-amber-400">
-                <span>Bovins, Ovins, Caprins</span>
-                <ChevronRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
-              </div>
-            </div>
-
-            {/* Tile 3: Marché & Équipements */}
-            <div
-              onClick={() => navigate("/marketplace")}
-              role="button"
-              tabIndex={0}
-              onKeyDown={(e) => e.key === "Enter" && navigate("/marketplace")}
-              className="p-5 rounded-2xl bg-card border border-border/80 hover:border-primary/60 shadow-xs hover:shadow-md transition-all duration-200 cursor-pointer flex flex-col justify-between group active:scale-[0.98]"
-            >
-              <div className="space-y-3">
-                <div className="w-12 h-12 rounded-xl bg-primary/10 text-primary flex items-center justify-center font-bold transition-transform group-hover:scale-110">
-                  <Tractor className="h-6 w-6" />
-                </div>
-                <div>
-                  <h3 className="font-heading font-bold text-base text-foreground group-hover:text-primary transition-colors">
-                    Boutiques & Intrants
-                  </h3>
-                  <p className="text-xs text-muted-foreground mt-1 leading-snug">
-                    Semences certifiées, pompes solaires et engrais au prix réel.
-                  </p>
-                </div>
-              </div>
-              <div className="mt-4 pt-3 border-t border-border/50 flex items-center justify-between text-xs font-semibold text-primary">
-                <span>{partnersList.length > 0 ? `${partnersList.length} Partenaires Agréés` : "Partenaires Agréés"}</span>
-                <ChevronRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
-              </div>
-            </div>
-
-            {/* Tile 4: Copilote NAFA Genius */}
-            <div
-              onClick={() => navigate("/dashboard/genius")}
-              role="button"
-              tabIndex={0}
-              onKeyDown={(e) => e.key === "Enter" && navigate("/dashboard/genius")}
-              className="p-5 rounded-2xl bg-card border border-border/80 hover:border-indigo-500/60 shadow-xs hover:shadow-md transition-all duration-200 cursor-pointer flex flex-col justify-between group active:scale-[0.98]"
-            >
-              <div className="space-y-3">
-                <div className="w-12 h-12 rounded-xl bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 flex items-center justify-center font-bold transition-transform group-hover:scale-110">
-                  <Cpu className="h-6 w-6" />
-                </div>
-                <div>
-                  <h3 className="font-heading font-bold text-base text-foreground group-hover:text-indigo-600 transition-colors">
-                    Concevoir ma Ferme
-                  </h3>
-                  <p className="text-xs text-muted-foreground mt-1 leading-snug">
-                    Plans 2D/3D d'irrigation & devis d'aménagement certifié.
-                  </p>
-                </div>
-              </div>
-              <div className="mt-4 pt-3 border-t border-border/50 flex items-center justify-between text-xs font-semibold text-indigo-600 dark:text-indigo-400">
-                <span>Normes CIRAD & FAO</span>
-                <ChevronRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* ── 4. Interactive Persona Cockpit (Airbnb / Figma style) ── */}
+      {/* ── 3. Interactive Persona Cockpit (Airbnb / Figma style) ── */}
       <section id="personas" className="py-12 bg-muted/30 border-y border-border scroll-mt-20">
         <div className="container max-w-5xl mx-auto px-4 space-y-8">
           <div className="text-center max-w-2xl mx-auto space-y-2">
@@ -807,7 +664,7 @@ const Index = () => {
             <Check className="h-3.5 w-3.5" /> Référentiels Techniques & RAG Scientifique
           </div>
           <h3 className="text-lg sm:text-xl font-heading font-bold text-foreground">
-            Des diagnostics et calculs vérifiés, zéro réponse imaginaire
+            Des calculs et recommandations vérifiés, zéro réponse imaginaire
           </h3>
           <p className="text-xs sm:text-sm text-muted-foreground max-w-2xl mx-auto leading-relaxed">
             NAFA Genius IA indexe et applique rigoureusement les données publiques et normes agronomiques officielles du Sahel.
@@ -858,7 +715,7 @@ const Index = () => {
               </div>
               <h4 className="font-heading font-bold text-sm text-foreground">100% Hors-Ligne</h4>
               <p className="text-xs text-muted-foreground leading-relaxed">
-                Consultez vos fiches, diagnostics et parcelles même en zone rurale sans 3G/4G.
+                Consultez vos fiches techniques et parcelles même en zone rurale sans 3G/4G.
               </p>
             </div>
 
@@ -903,8 +760,8 @@ const Index = () => {
             <div className="space-y-2">
               <h4 className="text-xs font-bold uppercase tracking-wider text-foreground">Accès Rapides</h4>
               <nav className="flex flex-col gap-1.5 text-xs text-muted-foreground">
-                <Link to="/dashboard/expert-diagnosis" className="hover:text-foreground transition-colors">
-                  Diagnostic Plante IA
+                <Link to="/dashboard/crop-planning" className="hover:text-foreground transition-colors">
+                  Planification des Cultures
                 </Link>
                 <Link to="/dashboard/livestock" className="hover:text-foreground transition-colors">
                   Santé du Bétail
@@ -963,13 +820,16 @@ const Index = () => {
       <aside aria-label="Actions rapides mobiles" className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-background/95 backdrop-blur-lg border-t border-border px-2 py-2 flex items-center justify-around shadow-lg">
         <button
           type="button"
-          onClick={() => navigate("/dashboard/expert-diagnosis")}
+          onClick={() => {
+            const el = document.getElementById("personas");
+            if (el) el.scrollIntoView({ behavior: "smooth" });
+          }}
           className="flex flex-col items-center gap-0.5 text-primary active:scale-95 transition-transform"
         >
           <div className="w-9 h-9 rounded-full bg-primary/10 flex items-center justify-center">
-            <Microscope className="h-4 w-4" />
+            <Sprout className="h-4 w-4" />
           </div>
-          <span className="text-[10px] font-bold">Diagnostic</span>
+          <span className="text-[10px] font-bold">Métiers</span>
         </button>
 
         <button

@@ -23,12 +23,34 @@ describe("Landing Page Redesign - UX Architect Standards", () => {
     expect(screen.getByText(/100% Hors-Ligne • Certifié Sahel/i)).toBeInTheDocument();
   });
 
-  it("affiche les 4 piliers du 1-Touch Launchpad pour action immédiate", () => {
+  it("détache tout diagnostic et la section 1-Touch de la page d'accueil", () => {
     renderIndex();
-    expect(screen.getByText("Diagnostiquer une plante")).toBeInTheDocument();
-    expect(screen.getByText("Santé du Troupeau")).toBeInTheDocument();
-    expect(screen.getByText("Boutiques & Intrants")).toBeInTheDocument();
-    expect(screen.getByText("Concevoir ma Ferme")).toBeInTheDocument();
+    // Le diagnostic doit être absent de la page d'accueil (réservé aux agronomes et vétérinaires)
+    expect(screen.queryByText("Diagnostiquer une plante")).toBeNull();
+    expect(screen.queryByText("Diagnostic IA")).toBeNull();
+    expect(screen.queryByText("Diagnostic Plante IA")).toBeNull();
+    expect(screen.queryByText(/Accès direct 1-Touch/i)).toBeNull();
+    expect(screen.queryByText(/Que souhaitez-vous faire maintenant/i)).toBeNull();
+
+    // Pour l'agriculteur, l'outil principal est Planification des Cultures
+    expect(screen.getAllByText("Planification des Cultures").length).toBeGreaterThanOrEqual(1);
+  });
+
+  it("conserve impérativement les piliers officiels (Entreprises, Écosystème, Marché, Terrain)", async () => {
+    renderIndex();
+    // Réseau des Entreprises & Partenaires Officiels Agréés (chargé asynchronement)
+    expect(await screen.findByText(/Réseau des Entreprises & Partenaires Officiels Agréés/i)).toBeInTheDocument();
+
+    // Écosystème Actif NAFA-AGRITECH
+    expect(screen.getByText(/Écosystème Actif NAFA-AGRITECH/i)).toBeInTheDocument();
+
+    // Marché Certifié du Sahel - Matériels & Intrants de nos Partenaires
+    expect(screen.getByText(/Marché Certifié du Sahel/i)).toBeInTheDocument();
+    expect(screen.getByText(/Matériels & Intrants de nos Partenaires/i)).toBeInTheDocument();
+
+    // Conçu pour le terrain - Rapide. Léger. Fonctionnel sans connexion.
+    expect(screen.getByText(/Conçu pour le terrain/i)).toBeInTheDocument();
+    expect(screen.getByText(/Rapide\. Léger\. Fonctionnel sans connexion\./i)).toBeInTheDocument();
   });
 
   it("permet de basculer dynamiquement entre les 4 personas sans rechargement", () => {
