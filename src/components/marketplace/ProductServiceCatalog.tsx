@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { partnerStorage, PartnerOffer, QuoteRequest } from "@/lib/partnerStorage";
+import { getEffectiveUserId } from "@/lib/deviceIdentity";
 import ProductMediaViewer from "@/components/partner/ProductMediaViewer";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -116,8 +117,9 @@ export default function ProductServiceCatalog({
         partnerStorage.getQuotes(),
       ]);
       setOffers(allOffers.filter((o) => o.is_active));
+      const currentUserId = getEffectiveUserId(user?.id);
       const userQuotes = allQuotes.filter(
-        (q) => !user || q.requester_id === user.id || q.requester_id === "demo-user"
+        (q) => q.requester_id === currentUserId || (user && q.requester_id === user.id)
       );
       setMyQuotes(userQuotes);
     } catch (err) {
@@ -201,9 +203,9 @@ export default function ProductServiceCatalog({
 
       await partnerStorage.saveQuote({
         offer_id: selectedOffer.id,
-        requester_id: user?.id || "demo-user",
+        requester_id: getEffectiveUserId(user?.id),
         requester_name: requesterName,
-        owner_id: selectedOffer.owner_id || "demo-partner-id",
+        owner_id: selectedOffer.owner_id || "partner-agritech",
         quantity: `${orderForm.quantity} ${selectedOffer.unit || "unité(s)"}`,
         needed_by: orderForm.needed_by || null,
         contact_phone: orderForm.contact_phone.trim(),

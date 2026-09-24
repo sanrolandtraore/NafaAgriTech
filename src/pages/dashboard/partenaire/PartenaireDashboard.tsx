@@ -65,6 +65,7 @@ import {
   PartnerMission,
   MediaItem,
 } from "@/lib/partnerStorage";
+import { getEffectiveUserId } from "@/lib/deviceIdentity";
 import {
   PARTNER_PROFILES,
   PARTNER_PROFILE_LIST,
@@ -287,7 +288,7 @@ export default function PartenaireDashboard() {
 
       await partnerStorage.saveOffer({
         ...(editingOffer ? { id: editingOffer.id } : {}),
-        owner_id: user?.id || "demo-partner-id",
+        owner_id: getEffectiveUserId(user?.id),
         partner_name: profile?.full_name || sub.companyName || "Partenaire NAFA - AGRITECH",
         category: offerCategory,
         title: offerTitle.trim(),

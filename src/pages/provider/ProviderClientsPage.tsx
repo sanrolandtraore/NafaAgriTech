@@ -10,6 +10,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 import { Users, Plus, Phone, Search, Trash2, MapPin } from "lucide-react";
 import { toast } from "sonner";
 import { partnerStorage, ProviderClient } from "@/lib/partnerStorage";
+import { getEffectiveUserId } from "@/lib/deviceIdentity";
 
 export default function ProviderClientsPage() {
   const { user } = useAuth();
@@ -50,7 +51,7 @@ export default function ProviderClientsPage() {
     setSaving(true);
     try {
       await partnerStorage.saveClient({
-        expert_id: user?.id || "demo-partner-id",
+        expert_id: getEffectiveUserId(user?.id),
         client_full_name: name.trim(),
         client_phone: phone.trim() || null,
         location: location.trim() || "",

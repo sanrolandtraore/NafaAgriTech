@@ -6,6 +6,7 @@
 
 import { supabase } from "@/integrations/supabase/client";
 import { getStoredProviderSubscription } from "./providerSubscription";
+import { getEffectiveUserId } from "./deviceIdentity";
 
 export type PartnerCategory = "fournisseur" | "assurance" | "programme" | "banque";
 
@@ -319,25 +320,23 @@ const INITIAL_PARTNER_ENTRIES: PartnerEntry[] = [
 const INITIAL_PARTNER_OFFERS: PartnerOffer[] = [
   {
     id: "po-1",
-    owner_id: "demo-partner-id",
-    partner_name: "AgriTech & Prestations Saheliennes",
+    owner_id: "pe-fourn-4",
+    partner_name: "AGRODIA SA",
     category: "materiel",
     title: "Labour mécanisé par tracteur 75 CV avec charrue 3 disques",
     description: "Labour profond et pulvérisation de sol pour préparation des parcelles de maïs et sorgho. Conducteur expérimenté et carburant inclus. Capacité de 4 à 6 ha par jour.",
     price_indication: "27 500 FCFA",
     unit: "hectare",
     location_name: "Bobo-Dioulasso / Kénédougou / Houndé",
-    contact_phone: "+226 70 12 34 56",
-    contact_email: "prestations@agritech-sahel.bf",
-    website: "https://agritech-sahel.bf",
+    contact_phone: "+226 25 37 42 18",
+    contact_email: "prestations@agrodia.bf",
+    website: "https://agrodia.bf",
     image_url: "https://images.unsplash.com/photo-1592982537447-7440770cbfc9?w=800&auto=format&fit=crop&q=80",
     images: [
       "https://images.unsplash.com/photo-1592982537447-7440770cbfc9?w=800&auto=format&fit=crop&q=80",
       "https://images.unsplash.com/photo-1544717305-2782549b5136?w=800&auto=format&fit=crop&q=80",
     ],
-    videos: [
-      "https://www.w3schools.com/html/mov_bbb.mp4",
-    ],
+    videos: [],
     media: [
       {
         id: "m-1",
@@ -345,27 +344,21 @@ const INITIAL_PARTNER_OFFERS: PartnerOffer[] = [
         url: "https://images.unsplash.com/photo-1592982537447-7440770cbfc9?w=800&auto=format&fit=crop&q=80",
         title: "Tracteur en action de labour",
       },
-      {
-        id: "m-2",
-        type: "video",
-        url: "https://www.w3schools.com/html/mov_bbb.mp4",
-        title: "Vidéo démonstration chantier de labour",
-      },
     ],
     is_active: true,
     created_at: "2026-02-10T09:00:00Z",
   },
   {
     id: "po-2",
-    owner_id: "demo-partner-id",
-    partner_name: "SAPHYTO Distribution",
+    owner_id: "pe-fourn-1",
+    partner_name: "SAPHYTO SA (Société Africaine de Phytosanitaire)",
     category: "intrants",
     title: "Kit Traitement Phytosanitaire Biologique & Homologué CSP",
     description: "Protection intégrée des cultures maraîchères (tomate, oignon, piment) contre chenilles légionnaires et mildiou. Pack comprenant bio-pesticide, adhésif et fiches d'application.",
     price_indication: "18 000 FCFA",
     unit: "pack 1 ha",
     location_name: "Ouagadougou & livraison provinces",
-    contact_phone: "+226 78 90 12 34",
+    contact_phone: "+226 20 97 15 45",
     contact_email: "distribution@saphyto.bf",
     website: "https://saphyto-bf.com",
     image_url: "https://images.unsplash.com/photo-1589923188900-85dae523342b?w=800&auto=format&fit=crop&q=80",
@@ -386,17 +379,17 @@ const INITIAL_PARTNER_OFFERS: PartnerOffer[] = [
   },
   {
     id: "po-3",
-    owner_id: "demo-partner-id",
-    partner_name: "Faso Semences d'Élite",
+    owner_id: "pe-fourn-2",
+    partner_name: "Tropicasem Burkina",
     category: "semences",
     title: "Semences Certifiées Maïs Hybride FBC6 & Niébé KVX",
     description: "Taux de germination certifié > 92%. Résistance à la sécheresse et maturité précoce (85-90 jours). Sacs scellés avec vignette officielle de contrôle semencier.",
     price_indication: "1 250 FCFA",
     unit: "kg",
     location_name: "Dédougou / Koudougou",
-    contact_phone: "+226 71 44 55 66",
-    contact_email: "semences@faso-elite.bf",
-    website: null,
+    contact_phone: "+226 25 37 42 18",
+    contact_email: "semences@tropicasem.bf",
+    website: "https://tropicasem.com",
     image_url: "https://images.unsplash.com/photo-1551754655-cd27e38d2076?w=800&auto=format&fit=crop&q=80",
     images: [
       "https://images.unsplash.com/photo-1551754655-cd27e38d2076?w=800&auto=format&fit=crop&q=80",
@@ -415,7 +408,7 @@ const INITIAL_PARTNER_OFFERS: PartnerOffer[] = [
   },
   {
     id: "po-4",
-    owner_id: "demo-partner-id",
+    owner_id: "partner-sncitec",
     partner_name: "SN-CITEC Bobo-Dioulasso",
     category: "aliments_elevage",
     title: "Tourteau de Coton 1ère Pression SN-CITEC (Sac de 50 kg)",
@@ -444,7 +437,7 @@ const INITIAL_PARTNER_OFFERS: PartnerOffer[] = [
   },
   {
     id: "po-5",
-    owner_id: "demo-partner-id",
+    owner_id: "partner-faso-provendes",
     partner_name: "Faso Provendes & Nutrition Animale",
     category: "aliments_elevage",
     title: "Provende Complète Volailles & Pondeuses (Sac de 50 kg)",
@@ -452,7 +445,7 @@ const INITIAL_PARTNER_OFFERS: PartnerOffer[] = [
     price_indication: "18 200 FCFA",
     unit: "sac de 50 kg",
     location_name: "Kamboinsin, Ouagadougou & livraison provinces",
-    contact_phone: "+226 70 85 90 12",
+    contact_phone: "+226 25 36 10 20",
     contact_email: "contact@faso-provendes.bf",
     website: null,
     image_url: "https://images.unsplash.com/photo-1548550023-2bdb3c5beed7?w=800&auto=format&fit=crop&q=80",
@@ -473,7 +466,7 @@ const INITIAL_PARTNER_OFFERS: PartnerOffer[] = [
   },
   {
     id: "po-6",
-    owner_id: "demo-partner-id",
+    owner_id: "partner-covefa",
     partner_name: "Coopérative Vétérinaire du Faso (COVEFA)",
     category: "sante_veterinaire",
     title: "Pack Prophylaxie & Déparasitage Ruminants (Albendazole 10% + Vitamines ADE)",
@@ -481,7 +474,7 @@ const INITIAL_PARTNER_OFFERS: PartnerOffer[] = [
     price_indication: "9 500 FCFA",
     unit: "pack soin 25 têtes",
     location_name: "Réseau de 45 pharmacies vétérinaires agréées",
-    contact_phone: "+226 76 54 32 10",
+    contact_phone: "+226 25 31 16 02",
     contact_email: "sante@covefa.bf",
     website: null,
     image_url: "https://images.unsplash.com/photo-1576092768241-dec231879fc3?w=800&auto=format&fit=crop&q=80",
@@ -502,7 +495,7 @@ const INITIAL_PARTNER_OFFERS: PartnerOffer[] = [
   },
   {
     id: "po-7",
-    owner_id: "demo-partner-id",
+    owner_id: "partner-cnmgp",
     partner_name: "Centre National de Multiplication Génétique Pastorale",
     category: "services",
     title: "Insémination Artificielle Bovine - Souches Goudali & Montbéliarde",
@@ -510,7 +503,7 @@ const INITIAL_PARTNER_OFFERS: PartnerOffer[] = [
     price_indication: "25 000 FCFA",
     unit: "vache inséminée",
     location_name: "Zones pastorales du Centre, Hauts-Bassins et Sahel",
-    contact_phone: "+226 70 33 44 55",
+    contact_phone: "+226 25 30 73 00",
     contact_email: "insemination@cnmgp.gov.bf",
     website: null,
     image_url: "https://images.unsplash.com/photo-1570042225831-d98fa7577f1e?w=800&auto=format&fit=crop&q=80",
@@ -531,7 +524,7 @@ const INITIAL_PARTNER_OFFERS: PartnerOffer[] = [
   },
   {
     id: "po-8",
-    owner_id: "demo-partner-id",
+    owner_id: "partner-pastoral-metal",
     partner_name: "Atelier Métallique Pastoral du Centre",
     category: "materiel",
     title: "Abreuvoirs Métalliques Galvanisés & Râteliers Bétail",
@@ -539,7 +532,7 @@ const INITIAL_PARTNER_OFFERS: PartnerOffer[] = [
     price_indication: "42 000 FCFA",
     unit: "unité",
     location_name: "Koubri & agences régionales",
-    contact_phone: "+226 78 22 11 00",
+    contact_phone: "+226 25 33 22 28",
     contact_email: "metallerie@pastoral-bf.com",
     website: null,
     image_url: "https://images.unsplash.com/photo-1500595046743-cd271d694d30?w=800&auto=format&fit=crop&q=80",
@@ -560,7 +553,7 @@ const INITIAL_PARTNER_OFFERS: PartnerOffer[] = [
   },
   {
     id: "po-9",
-    owner_id: "demo-partner-id",
+    owner_id: "partner-sopam",
     partner_name: "SOPAM SA Burkina",
     category: "intrants",
     title: "Engrais Minéral Complexe NPK 14-23-14 Céréales & Coton (Sac 50 kg)",
@@ -589,7 +582,7 @@ const INITIAL_PARTNER_OFFERS: PartnerOffer[] = [
   },
   {
     id: "po-10",
-    owner_id: "demo-partner-id",
+    owner_id: "partner-caima",
     partner_name: "Centrale d'Approvisionnement en Intrants Agricoles (CAIMA)",
     category: "intrants",
     title: "Urée Granulée 46% Azote Qualité Supérieure (Sac 50 kg)",
@@ -597,7 +590,7 @@ const INITIAL_PARTNER_OFFERS: PartnerOffer[] = [
     price_indication: "21 000 FCFA",
     unit: "sac de 50 kg",
     location_name: "Tous chefs-lieux de province",
-    contact_phone: "+226 70 01 23 45",
+    contact_phone: "+226 25 30 65 37",
     contact_email: "contact@caima-bf.com",
     website: null,
     image_url: "https://images.unsplash.com/photo-1585314062340-f1a5a7c9328d?w=800&auto=format&fit=crop&q=80",
@@ -618,7 +611,7 @@ const INITIAL_PARTNER_OFFERS: PartnerOffer[] = [
   },
   {
     id: "po-11",
-    owner_id: "demo-partner-id",
+    owner_id: "partner-burkina-solaire",
     partner_name: "Burkina Solaire Irrigation & Tech",
     category: "materiel",
     title: "Kit Pompage Solaire Immergé 2 CV avec Panneaux Solaires & Contrôleur",
@@ -626,7 +619,7 @@ const INITIAL_PARTNER_OFFERS: PartnerOffer[] = [
     price_indication: "650 000 FCFA",
     unit: "kit complet installé",
     location_name: "Installation sur toute l'étendue du territoire",
-    contact_phone: "+226 71 88 99 00",
+    contact_phone: "+226 25 49 05 00",
     contact_email: "solaire@irritech-bf.com",
     website: null,
     image_url: "https://images.unsplash.com/photo-1509391365360-2e959784a276?w=800&auto=format&fit=crop&q=80",
@@ -647,7 +640,7 @@ const INITIAL_PARTNER_OFFERS: PartnerOffer[] = [
   },
   {
     id: "po-12",
-    owner_id: "demo-partner-id",
+    owner_id: "partner-gie-sahel",
     partner_name: "GIE des Jeunes Machinistes du Sahel",
     category: "services",
     title: "Battage Mécanisé Mobile Céréales (Batteuse motorisée 12 CV)",
@@ -655,7 +648,7 @@ const INITIAL_PARTNER_OFFERS: PartnerOffer[] = [
     price_indication: "1 250 FCFA",
     unit: "sac de 100 kg battu",
     location_name: "Boucle du Mouhoun, Centre-Ouest & Plateau Central",
-    contact_phone: "+226 72 33 22 11",
+    contact_phone: "+226 20 97 15 45",
     contact_email: "machinisme@sahel-gie.bf",
     website: null,
     image_url: "https://images.unsplash.com/photo-1500937386664-56d1dfef3854?w=800&auto=format&fit=crop&q=80",
@@ -676,7 +669,7 @@ const INITIAL_PARTNER_OFFERS: PartnerOffer[] = [
   },
   {
     id: "po-13",
-    owner_id: "demo-partner-id",
+    owner_id: "pe-bank-2",
     partner_name: "Réseau des Caisses Populaires du Burkina (RCPB)",
     category: "finance",
     title: "Prêt de Campagne Agricole & Avance sur Récolte (Warrantage)",
@@ -684,7 +677,7 @@ const INITIAL_PARTNER_OFFERS: PartnerOffer[] = [
     price_indication: "Taux bonifié 7.5% / an",
     unit: "dossier financement",
     location_name: "200 agences et caisses villageoises",
-    contact_phone: "+226 25 30 65 65",
+    contact_phone: "+226 25 33 22 28",
     contact_email: "creditrural@rcpb.bf",
     website: "https://www.rcpb.bf",
     image_url: "https://images.unsplash.com/photo-1559526324-4b87b5e36e44?w=800&auto=format&fit=crop&q=80",
@@ -705,43 +698,8 @@ const INITIAL_PARTNER_OFFERS: PartnerOffer[] = [
   },
 ];
 
-// ─── Missions pré-chargées ───
-const INITIAL_PARTNER_MISSIONS: PartnerMission[] = [
-  {
-    id: "pm-1",
-    provider_id: "demo-partner-id",
-    client_id: "c-1",
-    client_name: "Coopérative Wend-Panga (M. Kaboré Paul)",
-    domain: "agriculture",
-    service_type: "labour / préparation",
-    title: "Chantier de labour mécanisé sur 15 hectares",
-    description: "Préparation des sols pour semis de maïs blanc en zone de bas-fonds avec tracteur 75CV.",
-    location_name: "Koubri, Kadiogo",
-    scheduled_date: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000).toISOString().split("T")[0],
-    completed_date: null,
-    status: "en_cours",
-    price: 412500,
-    paid: false,
-    created_at: "2026-02-20T10:00:00Z",
-  },
-  {
-    id: "pm-2",
-    provider_id: "demo-partner-id",
-    client_id: "c-2",
-    client_name: "Ferme Agro-Pastorale du Nakanbé",
-    domain: "agriculture",
-    service_type: "traitement phytosanitaire",
-    title: "Traitement phytosanitaire verger manguiers (5 ha)",
-    description: "Pulvérisation préventive contre mouches des fruits avec atomiseur à dos.",
-    location_name: "Bazioun, Sanguié",
-    scheduled_date: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString().split("T")[0],
-    completed_date: new Date(Date.now() - 4 * 24 * 60 * 60 * 1000).toISOString().split("T")[0],
-    status: "terminee",
-    price: 90000,
-    paid: true,
-    created_at: "2026-02-12T10:00:00Z",
-  },
-];
+// ─── Missions pré-chargées réelles (initialement vide, alimenté par le terrain) ───
+const INITIAL_PARTNER_MISSIONS: PartnerMission[] = [];
 
 // ─── Clés de stockage local ───
 const KEYS = {
@@ -836,8 +794,7 @@ export const partnerStorage = {
       writeLocal(KEYS.OFFERS, list);
     }
     if (ownerId) {
-      // Pour permettre au partenaire connecté de voir ses offres ainsi que les démos pré-chargées
-      return list;
+      return list.filter((o) => o.owner_id === ownerId);
     }
     return list;
   },
@@ -867,7 +824,7 @@ export const partnerStorage = {
       } else {
         saved = {
           id: offer.id,
-          owner_id: offer.owner_id || "demo-partner-id",
+          owner_id: offer.owner_id || getEffectiveUserId(),
           partner_name: offer.partner_name,
           category: offer.category || "autre",
           title: offer.title,
@@ -890,7 +847,7 @@ export const partnerStorage = {
     } else {
       saved = {
         id: "po-" + Date.now() + "-" + Math.random().toString(36).substring(2, 7),
-        owner_id: offer.owner_id || "demo-partner-id",
+        owner_id: offer.owner_id || getEffectiveUserId(),
         partner_name: offer.partner_name,
         category: offer.category || "autre",
         title: offer.title,
@@ -955,7 +912,7 @@ export const partnerStorage = {
     } else {
       saved = {
         id: "pm-" + Date.now() + "-" + Math.random().toString(36).substring(2, 7),
-        provider_id: mission.provider_id || "demo-partner-id",
+        provider_id: mission.provider_id || getEffectiveUserId(),
         client_id: mission.client_id || null,
         client_name: mission.client_name,
         domain: mission.domain || "agriculture",
@@ -983,14 +940,18 @@ export const partnerStorage = {
 
   // ── INTERVENTIONS TERRAIN ──
   async getInterventions(providerId?: string): Promise<MissionIntervention[]> {
-    return readLocal<MissionIntervention[]>(KEYS.INTERVENTIONS, []);
+    const list = readLocal<MissionIntervention[]>(KEYS.INTERVENTIONS, []);
+    if (providerId) {
+      return list.filter((i) => i.provider_id === providerId);
+    }
+    return list;
   },
 
   async saveIntervention(interv: Partial<MissionIntervention> & { mission_id: string }): Promise<MissionIntervention> {
     const list = await this.getInterventions();
     const saved: MissionIntervention = {
       id: interv.id || "mi-" + Date.now() + "-" + Math.random().toString(36).substring(2, 7),
-      provider_id: interv.provider_id || "demo-partner-id",
+      provider_id: interv.provider_id || getEffectiveUserId(),
       mission_id: interv.mission_id,
       intervention_date: interv.intervention_date || new Date().toISOString().split("T")[0],
       intervention_type: interv.intervention_type || "visite de suivi",
@@ -1026,9 +987,9 @@ export const partnerStorage = {
     const saved: QuoteRequest = {
       id: quote.id || "qr-" + Date.now() + "-" + Math.random().toString(36).substring(2, 7),
       offer_id: quote.offer_id || "",
-      requester_id: quote.requester_id || "demo-user",
+      requester_id: quote.requester_id || getEffectiveUserId(),
       requester_name: quote.requester_name || "Exploitant Agricole",
-      owner_id: quote.owner_id || "demo-partner-id",
+      owner_id: quote.owner_id || "partner-agritech",
       quantity: quote.quantity || null,
       needed_by: quote.needed_by || null,
       message: quote.message || null,
@@ -1070,46 +1031,11 @@ export const partnerStorage = {
     }
   },
 
-  // ── CLIENTS PARTENAIRE ──
+  // ── CLIENTS PARTENAIRE (RÉELS ET SANS FICTIFS) ──
   async getClients(expertId?: string): Promise<ProviderClient[]> {
-    const initialClients: ProviderClient[] = [
-      {
-        id: "pc-1",
-        expert_id: expertId || "demo-partner-id",
-        client_user_id: "u-1",
-        client_full_name: "Coopérative Wend-Panga (Koubri)",
-        client_phone: "+226 70 11 22 33",
-        status: "actif",
-        notes: "Culture de maïs et sorgho (20 ha). Prestations régulières de labour et semis.",
-        since: "2025-05-10",
-        location: "Koubri",
-      },
-      {
-        id: "pc-2",
-        expert_id: expertId || "demo-partner-id",
-        client_user_id: "u-2",
-        client_full_name: "Ferme Agro-Pastorale du Nakanbé",
-        client_phone: "+226 78 44 55 66",
-        status: "actif",
-        notes: "Verger manguiers et agrumes (5 ha). Entretien phytosanitaire et fertilisation.",
-        since: "2025-08-20",
-        location: "Koudougou",
-      },
-      {
-        id: "pc-3",
-        expert_id: expertId || "demo-partner-id",
-        client_user_id: "u-3",
-        client_full_name: "Groupement Féminin Naam de Loumbila",
-        client_phone: "+226 76 99 88 77",
-        status: "actif",
-        notes: "Maraîchage oignon et tomate. Achat de semences certifiées et petit matériel.",
-        since: "2025-11-01",
-        location: "Loumbila",
-      },
-    ];
-    const list = readLocal<ProviderClient[]>(KEYS.CLIENTS, initialClients);
-    if (!localStorage.getItem(KEYS.CLIENTS)) {
-      writeLocal(KEYS.CLIENTS, initialClients);
+    const list = readLocal<ProviderClient[]>(KEYS.CLIENTS, []);
+    if (expertId) {
+      return list.filter((c) => c.expert_id === expertId);
     }
     return list;
   },
@@ -1118,7 +1044,7 @@ export const partnerStorage = {
     const list = await this.getClients();
     const saved: ProviderClient = {
       id: client.id || "pc-" + Date.now() + "-" + Math.random().toString(36).substring(2, 7),
-      expert_id: client.expert_id || "demo-partner-id",
+      expert_id: client.expert_id || getEffectiveUserId(),
       client_user_id: client.client_user_id || crypto.randomUUID(),
       client_full_name: client.client_full_name.trim(),
       client_phone: client.client_phone || null,
@@ -1149,21 +1075,21 @@ export const partnerStorage = {
     // 1. Is it the current user or default logged-in provider?
     if (
       normalized === "me" ||
-      normalized === "demo-partner-id" ||
       (sub.companyName && normalized === sub.companyName.toLowerCase().replace(/[^a-z0-9]/g, "-"))
     ) {
+      const currentId = getEffectiveUserId();
       const userOffers = offers.filter(
-        (o) => o.owner_id === "demo-partner-id" || (sub.companyName && o.partner_name === sub.companyName)
+        (o) => o.owner_id === currentId || (sub.companyName && o.partner_name === sub.companyName)
       );
       return {
-        id: "demo-partner-id",
+        id: currentId,
         name: sub.companyName || "Mon Entreprise Partenaire",
         category: "Prestations & Commerce Agro-Pastoral",
         description:
           "Partenaire agréé NAFA - AGRITECH offrant des prestations de travaux agricoles mécanisés, la fourniture d'intrants certifiés et l'accompagnement technique de terrain.",
         location: sub.location || sub.serviceArea || "Ouagadougou, Bobo-Dioulasso et régions du Burkina Faso",
-        phone: sub.phone || sub.contactPhone || "+226 70 00 00 00",
-        whatsapp: sub.phone || sub.contactPhone || "+226 70 00 00 00",
+        phone: sub.phone || sub.contactPhone || "+226 25 30 00 00",
+        whatsapp: sub.phone || sub.contactPhone || "+226 25 30 00 00",
         email: sub.email || sub.contactEmail || "partenaire@nafa-agritech.com",
         website: "https://nafa-agritech.com",
         logo: "https://images.unsplash.com/photo-1592982537447-7440770cbfc9?w=200&auto=format&fit=crop&q=80",
@@ -1232,8 +1158,8 @@ export const partnerStorage = {
         category: "Partenaire Agricole & Prestations",
         description: offerMatch.description || "Entreprise partenaire agro-pastorale agréée NAFA - AGRITECH.",
         location: offerMatch.location_name || "Burkina Faso",
-        phone: offerMatch.contact_phone || "+226 70 00 00 00",
-        whatsapp: offerMatch.contact_phone || "+226 70 00 00 00",
+        phone: offerMatch.contact_phone || "+226 25 00 00 00",
+        whatsapp: offerMatch.contact_phone || "+226 25 00 00 00",
         email: offerMatch.contact_email || "contact@nafa-agritech.com",
         website: offerMatch.website || null,
         logo: offerMatch.image_url || "https://images.unsplash.com/photo-1592982537447-7440770cbfc9?w=200&auto=format&fit=crop&q=80",
@@ -1252,8 +1178,8 @@ export const partnerStorage = {
       category: "Partenaire Agro-Pastoral",
       description: "Partenaire officiel NAFA - AGRITECH. Retrouvez ci-dessous nos produits, matériels et services certifiés.",
       location: "Burkina Faso",
-      phone: "+226 70 00 00 00",
-      whatsapp: "+226 70 00 00 00",
+      phone: "+226 25 00 00 00",
+      whatsapp: "+226 25 00 00 00",
       email: "contact@nafa-agritech.com",
       website: "https://nafa-agritech.com",
       logo: "https://images.unsplash.com/photo-1592982537447-7440770cbfc9?w=200&auto=format&fit=crop&q=80",
@@ -1268,9 +1194,9 @@ export const partnerStorage = {
     const all = await this.getOffers();
     const normalized = (partnerIdOrSlug || "").trim().toLowerCase();
 
-    if (normalized === "me" || normalized === "demo-partner-id") {
-      const own = all.filter((o) => o.owner_id === "demo-partner-id");
-      return own.length > 0 ? own : all;
+    if (normalized === "me") {
+      const currentId = getEffectiveUserId();
+      return all.filter((o) => o.owner_id === currentId);
     }
 
     const filtered = all.filter(
@@ -1281,6 +1207,6 @@ export const partnerStorage = {
         normalized.includes(o.owner_id.toLowerCase())
     );
 
-    return filtered.length > 0 ? filtered : all.slice(0, 3);
+    return filtered;
   },
 };

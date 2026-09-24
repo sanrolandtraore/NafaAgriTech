@@ -11,6 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Briefcase, Plus, Trash2, ClipboardList, Pencil, CheckCircle2, Clock, MapPin } from "lucide-react";
 import { toast } from "sonner";
 import { partnerStorage, PartnerMission, ProviderClient } from "@/lib/partnerStorage";
+import { getEffectiveUserId } from "@/lib/deviceIdentity";
 
 const SERVICES_AGRI = [
   "conseil", "diagnostic", "traitement phytosanitaire", "labour / préparation",
@@ -124,7 +125,7 @@ export default function MissionsPage() {
     try {
       await partnerStorage.saveMission({
         id: editing?.id,
-        provider_id: user?.id || "demo-partner-id",
+        provider_id: getEffectiveUserId(user?.id),
         client_id: clientId || null,
         client_name: resolvedName.trim(),
         domain,

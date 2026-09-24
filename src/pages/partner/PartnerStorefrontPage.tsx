@@ -23,6 +23,7 @@ import logo from "@/assets/logo.png";
 import { PartnerVerifiedBadge } from "@/components/partner/PartnerVerifiedBadge";
 import { getStoredPartnerKyc, PartnerKycDossier } from "@/lib/partnerKyc";
 import { useAuth } from "@/contexts/AuthContext";
+import { getEffectiveUserId } from "@/lib/deviceIdentity";
 
 export default function PartnerStorefrontPage() {
   const { partnerId } = useParams<{ partnerId: string }>();
@@ -59,7 +60,7 @@ export default function PartnerStorefrontPage() {
   const loadStorefront = async () => {
     setLoading(true);
     try {
-      const targetId = partnerId || "demo-partner-id";
+      const targetId = partnerId || getEffectiveUserId(user?.id);
       const [p, o] = await Promise.all([
         partnerStorage.getPartnerProfile(targetId),
         partnerStorage.getOffersByPartner(targetId),

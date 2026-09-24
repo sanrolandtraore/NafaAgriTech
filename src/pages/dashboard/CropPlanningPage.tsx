@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
+import { getEffectiveUserId } from "@/lib/deviceIdentity";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -228,7 +229,7 @@ const CropPlanningPage = () => {
   const [selectedClimateZoneId, setSelectedClimateZoneId] = useState("soudano_sahelien");
 
   // Saved plans state
-  const storageKey = `nafa_saved_crop_plans_${user?.id || "demo"}`;
+  const storageKey = `nafa_saved_crop_plans_${getEffectiveUserId(user?.id)}`;
   const [savedPlans, setSavedPlans] = useState<SavedCropPlan[]>([]);
 
   // Mode Verger / Arboriculture

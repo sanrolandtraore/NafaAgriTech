@@ -11,6 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { ClipboardList, Plus, Trash2, MapPin, Calendar, Clock, DollarSign } from "lucide-react";
 import { toast } from "sonner";
 import { partnerStorage, MissionIntervention, PartnerMission } from "@/lib/partnerStorage";
+import { getEffectiveUserId } from "@/lib/deviceIdentity";
 
 const TYPES = ["visite de suivi", "diagnostic", "traitement", "conseil technique", "formation", "autre"];
 
@@ -78,7 +79,7 @@ export default function InterventionsPage() {
     setSaving(true);
     try {
       await partnerStorage.saveIntervention({
-        provider_id: user?.id || "demo-partner-id",
+        provider_id: getEffectiveUserId(user?.id),
         mission_id: missionId,
         intervention_date: date,
         intervention_type: type,

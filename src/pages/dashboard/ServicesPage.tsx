@@ -13,6 +13,7 @@ import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "sonner";
 import { partnerStorage, PartnerOffer, QuoteRequest } from "@/lib/partnerStorage";
+import { getEffectiveUserId } from "@/lib/deviceIdentity";
 import { ProductMediaViewer } from "@/components/partner/ProductMediaViewer";
 import { CropDiagnosisTool } from "@/components/expert/CropDiagnosisTool";
 import {
@@ -325,7 +326,7 @@ export default function ServicesPage() {
         offer_title: quoteOffer.title,
         owner_id: quoteOffer.owner_id,
         partner_name: quoteOffer.partner_name,
-        requester_id: user?.id || "demo-farmer",
+        requester_id: getEffectiveUserId(user?.id),
         requester_name: quoteForm.requester_name.trim() || profile?.full_name || "Exploitant Agricole",
         contact_phone: quoteForm.contact_phone.trim(),
         quantity: quoteForm.quantity.trim() || null,

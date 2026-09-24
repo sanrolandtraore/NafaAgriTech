@@ -46,7 +46,7 @@ export default defineConfig(({ mode }) => ({
       },
       workbox: {
         globPatterns: ["**/*.{js,css,html,ico,png,svg,webp,woff,woff2}"],
-        maximumFileSizeToCacheInBytes: 6 * 1024 * 1024,
+        maximumFileSizeToCacheInBytes: 10 * 1024 * 1024,
         runtimeCaching: [
           {
             urlPattern: /^https:\/\/fonts\.googleapis\.com\/.*/i,
@@ -89,6 +89,20 @@ export default defineConfig(({ mode }) => ({
                 statuses: [0, 200]
               }
             }
+          },
+          {
+            urlPattern: /^https:\/\/images\.unsplash\.com\/.*/i,
+            handler: "StaleWhileRevalidate",
+            options: {
+              cacheName: "unsplash-images-cache",
+              expiration: {
+                maxEntries: 100,
+                maxAgeSeconds: 60 * 60 * 24 * 30
+              },
+              cacheableResponse: {
+                statuses: [0, 200]
+              }
+            }
           }
         ]
       }
@@ -99,4 +113,45 @@ export default defineConfig(({ mode }) => ({
       "@": path.resolve(__dirname, "./src"),
     },
   },
+  build: {
+    chunkSizeWarningLimit: 800,
+    rollupOptions: {
+      output: {
+        manualChunks(id) {
+          if (id.includes("node_modules")) {
+            if (id.includes("jspdf") || id.includes("jspdf-autotable")) {
+              return "vendor-pdf";
+            }
+            if (id.includes("recharts") || id.includes("d3-")) {
+              return "vendor-charts";
+            }
+            if (id.includes("leaflet") || id.includes("react-leaflet")) {
+              return "vendor-maps";
+            }
+            if (id.includes("@supabase")) {
+              return "vendor-supabase";
+            }
+            if (id.includes("dexie") || id.includes("idb")) {
+              return "vendor-db";
+            }
+            if (id.includes("lucide-react")) {
+              return "vendor-icons";
+            }
+            if (id.includes("@radix-ui")) {
+              return "vendor-ui";
+            }
+            if (id.includes("@tanstack/react-query")) {
+              return "vendor-query";
+            }
+            if (id.includes("react-router-dom") || id.includes("react-router")) {
+              return "vendor-router";
+            }
+            if (id.includes("react") || id.includes("react-dom")) {
+              return "vendor-react";
+            }
+          }
+        }
+      }
+    }
+  }
 }));

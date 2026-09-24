@@ -14,6 +14,7 @@ import { Package, Plus, Trash2, Pencil, Search, Store, Video, Image as ImageIcon
 import { toast } from "sonner";
 import { OFFER_CATEGORIES } from "./partnerCategories";
 import { partnerStorage, PartnerOffer, MediaItem } from "@/lib/partnerStorage";
+import { getEffectiveUserId } from "@/lib/deviceIdentity";
 import ProductMediaUploader from "@/components/partner/ProductMediaUploader";
 import ProductMediaViewer from "@/components/partner/ProductMediaViewer";
 
@@ -107,7 +108,7 @@ export default function MyOffersPage() {
     try {
       await partnerStorage.saveOffer({
         id: editing?.id,
-        owner_id: user?.id || "demo-partner-id",
+        owner_id: getEffectiveUserId(user?.id),
         partner_name: form.partner_name.trim(),
         category: form.category,
         title: form.title.trim(),
@@ -197,7 +198,7 @@ export default function MyOffersPage() {
             size="sm"
             className="gap-2 text-xs font-semibold"
             onClick={() => {
-              const url = `${window.location.origin}/partenaire/${user?.id || 'demo-partner-id'}`;
+              const url = `${window.location.origin}/partenaire/${getEffectiveUserId(user?.id)}`;
               navigator.clipboard.writeText(url);
               toast.success("Lien unique de votre vitrine copié !");
             }}
@@ -209,7 +210,7 @@ export default function MyOffersPage() {
             size="sm"
             className="gradient-primary text-primary-foreground text-xs font-semibold gap-2 shadow-xs"
           >
-            <Link to={`/partenaire/${user?.id || 'demo-partner-id'}`} target="_blank">
+            <Link to={`/partenaire/${getEffectiveUserId(user?.id)}`} target="_blank">
               <ExternalLink className="h-3.5 w-3.5" /> Voir ma vitrine publique
             </Link>
           </Button>

@@ -10,12 +10,14 @@ import OfflineIndicator from "@/components/OfflineIndicator";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import Index from "./pages/Index";
-import Auth from "./pages/Auth";
-import MentionsLegales from "./pages/MentionsLegales";
-import ConditionsUtilisation from "./pages/ConditionsUtilisation";
-import PolitiqueConfidentialite from "./pages/PolitiqueConfidentialite";
 import DashboardLayout from "./components/DashboardLayout";
-import NotFound from "./pages/NotFound";
+
+// Lazy-loaded auxiliary and legal pages for initial bundle minimization
+const Auth = lazy(() => import("./pages/Auth"));
+const MentionsLegales = lazy(() => import("./pages/MentionsLegales"));
+const ConditionsUtilisation = lazy(() => import("./pages/ConditionsUtilisation"));
+const PolitiqueConfidentialite = lazy(() => import("./pages/PolitiqueConfidentialite"));
+const NotFound = lazy(() => import("./pages/NotFound"));
 
 // Lazy-loaded dashboard pages for code splitting
 const RoleDashboardHome = lazy(() => import("./pages/dashboard/RoleDashboardHome"));
@@ -104,14 +106,14 @@ const App = () => (
               {/* Public routes intentionally stay outside AuthProvider so the landing page
                   can render even when Supabase is unavailable or not configured yet. */}
               <Route path="/" element={<Index />} />
-              <Route path="/mentions-legales" element={<MentionsLegales />} />
-              <Route path="/conditions-utilisation" element={<ConditionsUtilisation />} />
-              <Route path="/politique-confidentialite" element={<PolitiqueConfidentialite />} />
+              <Route path="/mentions-legales" element={<Suspense fallback={<PageLoader />}><MentionsLegales /></Suspense>} />
+              <Route path="/conditions-utilisation" element={<Suspense fallback={<PageLoader />}><ConditionsUtilisation /></Suspense>} />
+              <Route path="/politique-confidentialite" element={<Suspense fallback={<PageLoader />}><PolitiqueConfidentialite /></Suspense>} />
               <Route path="/partenaire/:partnerId" element={<Suspense fallback={<PageLoader />}><PartnerStorefrontPage /></Suspense>} />
               <Route path="/partners/:partnerId" element={<Suspense fallback={<PageLoader />}><PartnerStorefrontPage /></Suspense>} />
               <Route path="/marketplace" element={<Suspense fallback={<PageLoader />}><ServiceMarketplacePage /></Suspense>} />
               <Route element={<AuthProvider><><OfflineIndicator /><Outlet /></></AuthProvider>}>
-                <Route path="/auth" element={<Auth />} />
+                <Route path="/auth" element={<Suspense fallback={<PageLoader />}><Auth /></Suspense>} />
                 <Route path="/dashboard" element={<ProtectedRoute><DashboardLayout /></ProtectedRoute>}>
                 <Route index element={<Suspense fallback={<PageLoader />}><RoleDashboardHome /></Suspense>} />
                 <Route path="farms" element={<Suspense fallback={<PageLoader />}><FarmsPage /></Suspense>} />
@@ -175,7 +177,7 @@ const App = () => (
                 <Route path="partner-space" element={<Suspense fallback={<PageLoader />}><PartnerDedicatedSpace /></Suspense>} />
                 </Route>
               </Route>
-              <Route path="*" element={<NotFound />} />
+              <Route path="*" element={<Suspense fallback={<PageLoader />}><NotFound /></Suspense>} />
             </Routes>
           </BrowserRouter>
       </ErrorBoundary>

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useSearchParams } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
+import { getEffectiveUserId } from "@/lib/deviceIdentity";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -71,7 +72,7 @@ export const PartnerDedicatedSpace: React.FC = () => {
   const activeTab = VALID_TABS.includes(currentTab) ? currentTab : "dashboard";
 
   // Identifiant unique du partenaire pour isolation totale des données
-  const partnerId = user?.id || "demo-partner-id";
+  const partnerId = getEffectiveUserId(user?.id);
 
   const [bundle, setBundle] = useState<DedicatedPartnerBundle>(() =>
     getDedicatedPartnerBundle(partnerId)
