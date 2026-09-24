@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from "react";
+import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -69,6 +70,7 @@ const conditionColor = (c: string | null) => {
 };
 
 export default function ScoutingPage() {
+  const navigate = useNavigate();
   const { user } = useAuth();
   const [sessions, setSessions] = useState<ScoutingSession[]>([]);
   const [loading, setLoading] = useState(true);
@@ -374,17 +376,49 @@ export default function ScoutingPage() {
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold text-foreground flex items-center gap-2">
-            <Eye className="h-6 w-6 text-primary" /> Scouting Agricole
+            <Eye className="h-6 w-6 text-primary" /> Scouting & Suivi des Parcelles
             {!isOnline && (
               <Badge variant="outline" className="text-xs bg-amber-500/10 text-amber-600 border-amber-500/30 gap-1 ml-2">
                 <WifiOff className="h-3 w-3" /> Hors-ligne
               </Badge>
             )}
           </h1>
-          <p className="text-muted-foreground text-sm mt-1">Inspections terrain et suivi des parcelles géolocalisées</p>
+          <p className="text-muted-foreground text-sm mt-1">Relevés de patrouille agronomique et alertes géolocalisées</p>
         </div>
-        <Button onClick={() => { resetForm(); setShowForm(true); }} className="gap-2">
-          <Plus className="h-4 w-4" /> Nouvelle inspection
+        <div className="flex items-center gap-2 flex-wrap">
+          <Button
+            onClick={() => navigate("/dashboard/inspections")}
+            className="gradient-primary text-primary-foreground gap-2 font-semibold shadow-xs"
+          >
+            <Sparkles className="h-4 w-4" />
+            Inspection Intelligente IA
+          </Button>
+          <Button variant="outline" onClick={() => { resetForm(); setShowForm(true); }} className="gap-2">
+            <Plus className="h-4 w-4" /> Relevé rapide
+          </Button>
+        </div>
+      </div>
+
+      {/* Bannière d'accès direct au nouveau module d'Inspection Intelligente */}
+      <div className="p-4 rounded-2xl bg-gradient-to-r from-primary/10 via-primary/5 to-muted/40 border border-primary/20 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div className="space-y-1">
+          <div className="flex items-center gap-1.5 text-xs font-bold text-primary uppercase tracking-wider">
+            <Sparkles className="h-3.5 w-3.5" /> NAFA Genius IA • Module d'Inspection Avancé
+          </div>
+          <h3 className="font-heading font-bold text-base text-foreground">
+            Besoin d'un audit complet avec formulaires par mission, plans 2D/3D et devis ?
+          </h3>
+          <p className="text-xs text-muted-foreground max-w-2xl">
+            L'Inspection Intelligente génère automatiquement vos formulaires adaptés (irrigation, pisciculture, bâtiments, forage), collecte les photos obligatoires et génère les devis fournisseurs certifiés.
+          </p>
+        </div>
+        <Button
+          size="sm"
+          onClick={() => navigate("/dashboard/inspections")}
+          className="gradient-primary text-primary-foreground text-xs font-semibold shrink-0 gap-1.5 shadow-xs"
+        >
+          <span>Lancer l'Inspection IA</span>
+          <ArrowRight className="h-3.5 w-3.5" />
         </Button>
       </div>
 
