@@ -21,6 +21,8 @@ import {
   PARTNER_PROFILES,
 } from "@/lib/partnerProfiles";
 import { partnerTypeIcons } from "@/components/RoleSidebar";
+import { HoneyTokenField } from "@/components/security/HoneyTokenField";
+import { CyberShieldIDS, CyberShieldSystem, VelocitySentinel } from "@/lib/cyberShieldEngine";
 
 type AuthFlow = "whatsapp" | "classic";
 type WhatsAppStep = "phone" | "otp" | "profile";
@@ -226,11 +228,35 @@ export default function Auth() {
       return;
     }
 
+    // 1. Analyse Autonome IDS / IPS anti-injections (XSS, SQLi, NoSQL)
+    const scan = CyberShieldIDS.inspectPayload({ authId, classicPassword, classicFullName });
+    if (scan.isThreat && scan.score >= 50) {
+      CyberShieldSystem.registerIncident({
+        threatCategory: scan.categories[0] || "ANOMALOUS_PAYLOAD",
+        severity: scan.severity,
+        score: scan.score,
+        details: `Vecteur hostile intercepté sur le formulaire auth : ${scan.details.join(" | ")}`,
+        autonomousAction: scan.autonomousAction,
+      });
+      toast.error("Vecteur suspect intercepté et bloqué par le bouclier de sécurité autonome.");
+      setLoading(false);
+      return;
+    }
+
+    // 2. Sentinelle anti-brute force et régulation de vélocité
+    const vel = VelocitySentinel.checkAndRecordAttempt("auth_classic_" + authId);
+    if (vel.isBlocked) {
+      toast.error(`Sécurité : Compte temporairement verrouillé pour protection anti-brute force (${vel.remainingLockoutSeconds}s restantes).`);
+      setLoading(false);
+      return;
+    }
+
     if (classicMode === "login") {
       if (!isOnline) {
         const { error } = await signInOffline(authId, classicPassword);
         if (error) toast.error(error.message);
         else {
+          VelocitySentinel.reset("auth_classic_" + authId);
           toast.success("Connexion hors-ligne réussie !");
           navigate("/dashboard");
         }
@@ -242,6 +268,7 @@ export default function Auth() {
       if (error) {
         toast.error(error.message === "Invalid login credentials" ? "Identifiants ou mot de passe incorrects." : error.message);
       } else {
+        VelocitySentinel.reset("auth_classic_" + authId);
         toast.success("Connexion réussie !");
         navigate("/dashboard");
       }
@@ -694,6 +721,7 @@ export default function Auth() {
               </div>
 
               <form onSubmit={handleClassicSubmit} className="space-y-3.5">
+                <HoneyTokenField trapId="auth_hp_token" name="_auth_security_trap" />
                 {classicMode === "register" && (
                   <div className="space-y-1.5">
                     <Label htmlFor="classicName" className="text-xs font-bold">

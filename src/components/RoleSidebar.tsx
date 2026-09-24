@@ -8,7 +8,7 @@ import {
   Users, Wrench, Package, CalendarDays, BarChart3, Download, Settings, Tractor,
   Beef, Heart, Baby, Utensils, Wallet, Building2, Compass, Handshake, ClipboardList,
   FolderOpen, Layers, Award, Store, Eye, Microscope, FileText, BookOpen, Sparkles,
-  Briefcase, ShieldCheck, Landmark, FolderKanban, FlaskConical, BadgeCheck,
+  Briefcase, ShieldCheck, ShieldAlert, Landmark, FolderKanban, FlaskConical, BadgeCheck,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useTranslation } from "react-i18next";
@@ -32,6 +32,7 @@ export const agriculteurNav: NavItem[] = [
   { to: "/dashboard/marketplace", labelKey: "Marketplace Vitrine (Acheter, Louer, Services)", icon: Store },
   { to: "/dashboard/genius", labelKey: "NAFA Genius IA (Végétal)", icon: Sparkles },
   { to: "/dashboard/crop-library", labelKey: "Fiches Techniques INERA", icon: BookOpen },
+  { to: "/dashboard/cyber-defense", labelKey: "Bouclier Cybersécurité (IPS)", icon: ShieldAlert },
   { to: "/dashboard/settings", labelKey: "Paramètres", icon: Settings },
 ];
 
@@ -45,6 +46,7 @@ export const eleveurNav: NavItem[] = [
   { to: "/dashboard/inspections", labelKey: "Inspection d'Élevage IA", icon: ClipboardList },
   { to: "/dashboard/marketplace", labelKey: "Marketplace Vitrine (Acheter, Louer, Services)", icon: Store },
   { to: "/dashboard/livestock-services", labelKey: "Services Vétérinaires", icon: ClipboardList },
+  { to: "/dashboard/cyber-defense", labelKey: "Bouclier Cybersécurité (IPS)", icon: ShieldAlert },
   { to: "/dashboard/settings", labelKey: "Paramètres", icon: Settings },
   { to: "/dashboard/export", labelKey: "Export PDF/CSV", icon: Download },
 ];

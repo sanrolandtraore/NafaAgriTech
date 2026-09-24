@@ -9,6 +9,7 @@ import { AuthProvider } from "@/contexts/AuthContext";
 import OfflineIndicator from "@/components/OfflineIndicator";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
+import { CyberShieldProvider } from "@/components/security/CyberShieldProvider";
 import Index from "./pages/Index";
 import DashboardLayout from "./components/DashboardLayout";
 
@@ -18,6 +19,7 @@ const MentionsLegales = lazy(() => import("./pages/MentionsLegales"));
 const ConditionsUtilisation = lazy(() => import("./pages/ConditionsUtilisation"));
 const PolitiqueConfidentialite = lazy(() => import("./pages/PolitiqueConfidentialite"));
 const NotFound = lazy(() => import("./pages/NotFound"));
+const CyberDefenseDashboard = lazy(() => import("./pages/dashboard/security/CyberDefenseDashboard"));
 
 // Lazy-loaded dashboard pages for code splitting
 const RoleDashboardHome = lazy(() => import("./pages/dashboard/RoleDashboardHome"));
@@ -101,8 +103,9 @@ const App = () => (
         <Toaster />
         <Sonner />
         <ErrorBoundary>
-          <BrowserRouter>
-            <Routes>
+          <CyberShieldProvider>
+            <BrowserRouter>
+              <Routes>
               {/* Public routes intentionally stay outside AuthProvider so the landing page
                   can render even when Supabase is unavailable or not configured yet. */}
               <Route path="/" element={<Index />} />
@@ -175,11 +178,13 @@ const App = () => (
                 <Route path="partenaire-kyc" element={<Suspense fallback={<PageLoader />}><PartnerKycPage /></Suspense>} />
                 <Route path="partenaire-verification" element={<Suspense fallback={<PageLoader />}><PartnerKycPage /></Suspense>} />
                 <Route path="partner-space" element={<Suspense fallback={<PageLoader />}><PartnerDedicatedSpace /></Suspense>} />
+                <Route path="cyber-defense" element={<Suspense fallback={<PageLoader />}><CyberDefenseDashboard /></Suspense>} />
                 </Route>
               </Route>
               <Route path="*" element={<Suspense fallback={<PageLoader />}><NotFound /></Suspense>} />
             </Routes>
           </BrowserRouter>
+        </CyberShieldProvider>
       </ErrorBoundary>
       </TooltipProvider>
     </QueryClientProvider>
