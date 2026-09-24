@@ -51,6 +51,7 @@ import {
 import { generateTechnicalDossierPdf } from "@/lib/nafaGeniusPdf";
 import { FarmZoningCanvas } from "./FarmZoningCanvas";
 import { FarmIsometric3DView } from "./FarmIsometric3DView";
+import { CropDiagnosisTool } from "@/components/expert/CropDiagnosisTool";
 
 // Parcelles prédéfinies de démonstration de terrain au Burkina Faso
 const PRESET_PARCELS: Record<string, { name: string; location: string; points: GeoPoint[] }> = {
@@ -310,6 +311,7 @@ export const NafaGeniusStudio: React.FC = () => {
     if (parsed.intent === "CALCULATE_IRRIGATION") setActiveTab("irrigation");
     if (parsed.intent === "DESIGN_POULTRY") setActiveTab("aviculture");
     if (parsed.intent === "GENERATE_QUOTE") setActiveTab("devis");
+    if (parsed.intent === "DIAGNOSE_CROP") setActiveTab("diagnostic");
 
     // Si action directe (ex: création de visite)
     if (parsed.actionRequired) {
@@ -635,6 +637,19 @@ export const NafaGeniusStudio: React.FC = () => {
             >
               « Devis officiel FCFA »
             </Button>
+            <Button
+              size="sm"
+              variant="outline"
+              className="h-7 text-xs rounded-full shrink-0 border-emerald-500/30 text-emerald-800 dark:text-emerald-300"
+              onClick={() => {
+                const cmd = "Diagnostic scientifique RAG (maladie, adventice, carence Yara)";
+                setInputText(cmd);
+                handleProcessCommand(cmd);
+              }}
+            >
+              <Sprout className="h-3 w-3 mr-1 text-emerald-600" />
+              « Diagnostic RAG Scientifique »
+            </Button>
           </div>
 
           {/* Affichage de la compréhension de l'IA */}
@@ -701,7 +716,7 @@ export const NafaGeniusStudio: React.FC = () => {
 
       {/* Onglets Principaux du Studio d'Ingénierie */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
-        <TabsList className="grid grid-cols-3 sm:grid-cols-6 h-auto p-1 bg-muted/60 rounded-xl gap-1">
+        <TabsList className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 h-auto p-1 bg-muted/60 rounded-xl gap-1">
           <TabsTrigger value="geodesie" className="text-xs py-2 gap-1.5 data-[state=active]:bg-background shadow-xs">
             <MapPin className="h-3.5 w-3.5 text-emerald-600" />
             <span>1. Géodésie</span>
@@ -725,6 +740,10 @@ export const NafaGeniusStudio: React.FC = () => {
           <TabsTrigger value="devis" className="text-xs py-2 gap-1.5 data-[state=active]:bg-background shadow-xs">
             <FileText className="h-3.5 w-3.5 text-rose-600" />
             <span>6. Devis Pro</span>
+          </TabsTrigger>
+          <TabsTrigger value="diagnostic" className="text-xs py-2 gap-1.5 data-[state=active]:bg-background shadow-xs">
+            <Sprout className="h-3.5 w-3.5 text-emerald-600" />
+            <span>7. Diagnostic RAG</span>
           </TabsTrigger>
         </TabsList>
 
@@ -1496,6 +1515,13 @@ export const NafaGeniusStudio: React.FC = () => {
               </div>
             </Card>
           )}
+        </TabsContent>
+
+        {/* ═════════════════════════════════════════════════════════ */}
+        {/* ONGLET 7 : DIAGNOSTIC AGRONOMIQUE RAG SCIENTIFIQUE        */}
+        {/* ═════════════════════════════════════════════════════════ */}
+        <TabsContent value="diagnostic" className="space-y-4">
+          <CropDiagnosisTool />
         </TabsContent>
       </Tabs>
 

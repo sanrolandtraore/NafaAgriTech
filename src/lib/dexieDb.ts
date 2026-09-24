@@ -39,12 +39,28 @@ export interface CachedEntity {
 export class NafaDexieDB extends Dexie {
   offlineRecords!: Table<OfflineRecord, string>;
   cachedEntities!: Table<CachedEntity, string>;
+  knowledge_base!: Table<any, string>;
+  validated_cases!: Table<any, string>;
+  plant_species!: Table<any, string>;
+  weed_species!: Table<any, string>;
+  disease_catalog!: Table<any, string>;
+  diagnosis_feedback!: Table<any, string>;
 
   constructor() {
     super('NafaDexieDB');
     this.version(1).stores({
       offlineRecords: 'id, table, status, userId, updated_at, [table+status], [userId+status]',
       cachedEntities: 'id, table, userId, updated_at, [table+userId]',
+    });
+    this.version(2).stores({
+      offlineRecords: 'id, table, status, userId, updated_at, [table+status], [userId+status]',
+      cachedEntities: 'id, table, userId, updated_at, [table+userId]',
+      knowledge_base: 'id, sourceInstitution, crop, disease, pest, deficiency, weed, region, season',
+      validated_cases: 'id, plantSpeciesId, isWeed, weedSpeciesId, diseaseCatalogId, certifiedBy, certifiedAt',
+      plant_species: 'id, commonName, scientificName, category',
+      weed_species: 'id, commonName, scientificName, riskLevel',
+      disease_catalog: 'id, name, pathogenType',
+      diagnosis_feedback: 'id, diagnosis_id, user_id',
     });
   }
 }

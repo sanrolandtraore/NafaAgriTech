@@ -399,15 +399,24 @@ export function parseGeniusCommand(text: string, activeDomain: GeniusDomain = "g
     confidence = 0.9;
   } else if (
     lower.includes("maladie") ||
+    lower.includes("diagnostic") ||
     lower.includes("jaune") ||
     lower.includes("tache") ||
     lower.includes("chenille") ||
+    lower.includes("adventice") ||
+    lower.includes("mauvaise herbe") ||
+    lower.includes("striga") ||
+    lower.includes("mildiou") ||
+    lower.includes("carence") ||
+    lower.includes("flétrissement") ||
+    lower.includes("fletrissement") ||
+    lower.includes("ravageur") ||
     lower.includes("bana") ||
     lower.includes("bãaga") ||
     lower.includes("nyaw")
   ) {
     intent = "DIAGNOSE_CROP";
-    confidence = 0.88;
+    confidence = 0.94;
   } else if (
     lower.includes("résume") ||
     lower.includes("compte-rendu") ||
@@ -454,7 +463,7 @@ export function parseGeniusCommand(text: string, activeDomain: GeniusDomain = "g
     unverifiedReason,
     entities,
     explanation,
-    actionRequired: isRecognized && (intent === "CREATE_VISIT" || intent === "CALCULATE_IRRIGATION" || intent === "DESIGN_POULTRY" || intent === "GENERATE_QUOTE"),
+    actionRequired: isRecognized && (intent === "CREATE_VISIT" || intent === "CALCULATE_IRRIGATION" || intent === "DESIGN_POULTRY" || intent === "GENERATE_QUOTE" || intent === "DIAGNOSE_CROP"),
   };
 }
 
