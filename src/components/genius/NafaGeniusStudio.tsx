@@ -11,7 +11,8 @@ import {
   Sparkles, Mic, MicOff, Send, MapPin, Droplets, Home, FileText,
   Layers, CheckCircle2, AlertTriangle, Download, RefreshCw, Cpu,
   Compass, ShieldCheck, HelpCircle, ArrowRight, Play, BookOpen,
-  UserCheck, Edit3, Sprout, Beef, Building2, Globe, Languages, ShieldAlert
+  UserCheck, Edit3, Sprout, Beef, Building2, Globe, Languages, ShieldAlert,
+  Camera, Wrench, Store, Printer, Share2, Eye
 } from "lucide-react";
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
@@ -35,6 +36,14 @@ import {
 } from "@/lib/nafaGeniusEngine";
 
 import {
+  generateUnifiedEngineeringProject,
+  recalculateProjectWithExpertEdits,
+  UnifiedEngineeringProject,
+  VERIFIED_NAFA_PARTNERS,
+  ExpertMaterialUpdate,
+} from "@/lib/nafaEngineeringStudio";
+
+import {
   GeniusLanguage,
   GeniusDomain,
   ParsedGeniusAction,
@@ -51,6 +60,9 @@ import {
 import { generateTechnicalDossierPdf } from "@/lib/nafaGeniusPdf";
 import { FarmZoningCanvas } from "./FarmZoningCanvas";
 import { FarmIsometric3DView } from "./FarmIsometric3DView";
+import { PhotorealisticRenderView } from "./PhotorealisticRenderView";
+import { TechnicalNetworkPlanView } from "./TechnicalNetworkPlanView";
+import { SmartQuoteComparator } from "./SmartQuoteComparator";
 import { CropDiagnosisTool } from "@/components/expert/CropDiagnosisTool";
 
 // Parcelles prédéfinies de démonstration de terrain au Burkina Faso
@@ -125,6 +137,25 @@ export const NafaGeniusStudio: React.FC = () => {
   const [farmZoningPlan, setFarmZoningPlan] = useState<FarmZoningPlan | null>(null);
   const [engineeringQuote, setEngineeringQuote] = useState<EngineeringQuote | null>(null);
   const [canvasSnapshotDataUrl, setCanvasSnapshotDataUrl] = useState<string | undefined>(undefined);
+  const [photorealisticSnapshotDataUrl, setPhotorealisticSnapshotDataUrl] = useState<string | undefined>(undefined);
+
+  // Copilote Unifié d'Ingénierie Agro-Pastorale (CIRAD / FAO-56 / Partenaires Agréés)
+  const [unifiedProject, setUnifiedProject] = useState<UnifiedEngineeringProject>(() =>
+    generateUnifiedEngineeringProject({
+      survey: analyzeGeodesicSurvey(PRESET_PARCELS.bama.points),
+      clientName: "Issa Ouédraogo",
+      clientPhone: "+226 75 77 48 52",
+      location: PRESET_PARCELS.bama.location,
+      expertName: "Dr. Oumarou Sawadogo (Ingénieur Rural)",
+      cropKey: "tomate",
+      season: "saison_seche_chaude",
+      includePoultry: true,
+      poultryBirdType: "poulet_chair",
+      poultryFlockSize: 2000,
+      boreholeDepthM: 60,
+      waterTableDepthM: 35,
+    })
+  );
 
   // Apprentissage supervisé & Calibration
   const [selectedRegion, setSelectedRegion] = useState<string>("hauts_bassins");
@@ -151,11 +182,11 @@ export const NafaGeniusStudio: React.FC = () => {
     setSurveyResult(analyzed);
   }, [gpsPoints]);
 
-  // Recalcul du projet complet (Irrigation + Aviculture + Zonage + Devis)
+  // Recalcul du projet complet (Irrigation + Aviculture + Zonage + Unifié + Devis)
   const computeFullEngineeringProject = useCallback(() => {
     const areaHa = surveyResult.areaHa || 1.5;
 
-    // 1. Irrigation
+    // 1. Irrigation FAO-56
     const irResult = calculateFaoIrrigation({
       areaHa,
       cropKey: selectedCrop,
@@ -165,7 +196,7 @@ export const NafaGeniusStudio: React.FC = () => {
     });
     setIrrigationResult(irResult);
 
-    // 2. Aviculture
+    // 2. Aviculture CIRAD
     let pResult: PoultryHousingResult | null = null;
     if (includePoultry) {
       pResult = calculatePoultryHousing({
@@ -185,19 +216,39 @@ export const NafaGeniusStudio: React.FC = () => {
     });
     setFarmZoningPlan(zoning);
 
-    // 4. Devis officiel complet
-    const allItems = [...irResult.billOfMaterials];
-    if (pResult) {
-      allItems.push(...pResult.billOfMaterials);
-    }
+    // 4. Copilote Unifié d'Ingénierie (CIRAD / FAO / Partenaires)
+    const newUnified = generateUnifiedEngineeringProject({
+      survey: surveyResult,
+      clientName,
+      clientPhone,
+      location: farmLocation,
+      expertName: profile?.full_name || "Dr. Oumarou Sawadogo (Ingénieur Rural)",
+      cropKey: selectedCrop,
+      season: selectedSeason,
+      includePoultry,
+      poultryBirdType,
+      poultryFlockSize,
+      boreholeDepthM,
+      waterTableDepthM,
+    });
+    setUnifiedProject(newUnified);
 
+    // 5. Devis officiel complet synchronisé avec les offres des partenaires agréés
     const quote = generateEngineeringQuote(
       clientName,
       clientPhone,
       farmLocation,
       profile?.full_name || "Ingénieur Agronome Référent",
       `Projet Aménagement Agro-Hydraulique & Élevage (${areaHa} ha)`,
-      allItems
+      newUnified.billOfMaterials.map((m) => ({
+        code: m.code,
+        designation: `${m.designation} (${m.selectedSupplierId ? VERIFIED_NAFA_PARTNERS[m.selectedSupplierId]?.name || m.selectedSupplierId : "Fournisseur Agréé"})`,
+        specifications: m.materialSpecification,
+        unit: m.unit,
+        quantity: m.expertQuantity,
+        unitPriceFcfa: m.selectedPriceFcfa,
+        totalPriceFcfa: m.totalPriceFcfa,
+      }))
     );
     setEngineeringQuote(quote);
   }, [
@@ -214,6 +265,52 @@ export const NafaGeniusStudio: React.FC = () => {
     farmLocation,
     profile?.full_name,
   ]);
+
+  // Mise à jour réactive du projet lorsque l'expert modifie un équipement, prix ou fournisseur
+  const handleUnifiedProjectUpdate = (updated: UnifiedEngineeringProject) => {
+    setUnifiedProject(updated);
+    if (engineeringQuote) {
+      setEngineeringQuote({
+        ...engineeringQuote,
+        items: updated.billOfMaterials.map((m) => ({
+          code: m.code,
+          designation: `${m.designation} (${m.selectedSupplierId ? VERIFIED_NAFA_PARTNERS[m.selectedSupplierId]?.name || m.selectedSupplierId : "Fournisseur Agréé"})`,
+          specifications: m.materialSpecification,
+          unit: m.unit,
+          quantity: m.expertQuantity,
+          unitPriceFcfa: m.selectedPriceFcfa,
+          totalPriceFcfa: m.totalPriceFcfa,
+        })),
+        subtotalEquipmentFcfa: updated.financialSummary.totalMaterialsEquipmentFcfa,
+        laborCostFcfa: updated.financialSummary.totalLaborFcfa,
+        logisticsCostFcfa: updated.financialSummary.totalLogisticsTransportFcfa,
+        contingenciesFcfa: updated.financialSummary.contingenciesFcfa,
+        totalCostFcfa: updated.financialSummary.grandTotalFcfa,
+        expertCertified: updated.isExpertValidated,
+        certifiedBy: updated.expertName,
+      });
+    }
+  };
+
+  // Export CSV du bordereau de commande partenaires
+  const handleExportPartnerCsv = () => {
+    const headers = "Code,Désignation,Spécifications,Unité,Quantité,Fournisseur,Prix Unitaire (FCFA),Total (FCFA)\n";
+    const rows = unifiedProject.billOfMaterials
+      .map((m) => {
+        const supplier = VERIFIED_NAFA_PARTNERS[m.selectedSupplierId]?.name || m.selectedSupplierId;
+        return `"${m.code}","${m.designation.replace(/"/g, '""')}","${m.materialSpecification.replace(/"/g, '""')}","${m.unit}",${m.expertQuantity},"${supplier}",${m.selectedPriceFcfa},${m.totalPriceFcfa}`;
+      })
+      .join("\n");
+
+    const blob = new Blob([headers + rows], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `bordereau_fournisseurs_${clientName.replace(/\s+/g, "_")}_${surveyResult.areaHa}ha.csv`;
+    link.click();
+    URL.revokeObjectURL(url);
+    toast.success("Bordereau de commande partenaires exporté en CSV !");
+  };
 
   // Exécution du calcul initial
   useEffect(() => {
@@ -308,10 +405,17 @@ export const NafaGeniusStudio: React.FC = () => {
 
     // Basculer vers l'onglet pertinent
     if (parsed.intent === "CAPTURE_GPS") setActiveTab("geodesie");
-    if (parsed.intent === "CALCULATE_IRRIGATION") setActiveTab("irrigation");
-    if (parsed.intent === "DESIGN_POULTRY") setActiveTab("aviculture");
-    if (parsed.intent === "GENERATE_QUOTE") setActiveTab("devis");
+    if (parsed.intent === "CALCULATE_IRRIGATION" || parsed.intent === "DESIGN_POULTRY") setActiveTab("conception");
+    if (parsed.intent === "GENERATE_QUOTE") setActiveTab("chiffrage");
     if (parsed.intent === "DIAGNOSE_CROP") setActiveTab("diagnostic");
+
+    const lower = text.toLowerCase();
+    if (lower.includes("3d") || lower.includes("jumeau")) setActiveTab("vue3d");
+    if (lower.includes("rendu") || lower.includes("photo") || lower.includes("image")) setActiveTab("rendu_photo");
+    if (lower.includes("plan") || lower.includes("2d") || lower.includes("cotation")) setActiveTab("plan2d");
+    if (lower.includes("reseau") || lower.includes("canalisation") || lower.includes("vanne") || lower.includes("pid")) setActiveTab("reseaux_cad");
+    if (lower.includes("fournisseur") || lower.includes("partenaire") || lower.includes("comparateur")) setActiveTab("chiffrage");
+    if (lower.includes("export") || lower.includes("pdf") || lower.includes("dossier")) setActiveTab("export_pro");
 
     // Si action directe (ex: création de visite)
     if (parsed.actionRequired) {
@@ -588,67 +692,87 @@ export const NafaGeniusStudio: React.FC = () => {
 
           {/* Suggestions d'actions rapides en un clic */}
           <div className="flex items-center gap-1.5 overflow-x-auto pb-1 text-xs no-scrollbar">
-            <span className="text-muted-foreground font-semibold shrink-0">Suggestions :</span>
+            <span className="text-muted-foreground font-semibold shrink-0">Workflow 9 Étapes :</span>
             <Button
               size="sm"
               variant="outline"
               className="h-7 text-xs rounded-full shrink-0 border-emerald-500/30 text-emerald-800 dark:text-emerald-300"
-              onClick={() => {
-                const cmd = "Crée une nouvelle visite pour le producteur Issa";
-                setInputText(cmd);
-                handleProcessCommand(cmd);
-              }}
+              onClick={() => setActiveTab("geodesie")}
             >
-              « Visite producteur Issa »
+              « 1. Données Terrain »
             </Button>
             <Button
               size="sm"
               variant="outline"
               className="h-7 text-xs rounded-full shrink-0 border-sky-500/30 text-sky-800 dark:text-sky-300"
-              onClick={() => {
-                const cmd = "Calcule l'irrigation goutte-à-goutte pour 2 hectares de tomate";
-                setInputText(cmd);
-                handleProcessCommand(cmd);
-              }}
+              onClick={() => setActiveTab("conception")}
             >
-              « Irrigation 2ha Tomate »
+              « 2. Conception CIRAD/FAO »
+            </Button>
+            <Button
+              size="sm"
+              variant="outline"
+              className="h-7 text-xs rounded-full shrink-0 border-purple-500/30 text-purple-800 dark:text-purple-300"
+              onClick={() => setActiveTab("plan2d")}
+            >
+              « 3. Plan 2D Coté »
+            </Button>
+            <Button
+              size="sm"
+              variant="outline"
+              className="h-7 text-xs rounded-full shrink-0 border-blue-500/30 text-blue-800 dark:text-blue-300"
+              onClick={() => setActiveTab("vue3d")}
+            >
+              « 4. Jumeau 3D »
             </Button>
             <Button
               size="sm"
               variant="outline"
               className="h-7 text-xs rounded-full shrink-0 border-amber-500/30 text-amber-800 dark:text-amber-300"
-              onClick={() => {
-                const cmd = "Planifie un bâtiment bioclimatique pour 2000 poulets de chair";
-                setInputText(cmd);
-                handleProcessCommand(cmd);
-              }}
+              onClick={() => setActiveTab("rendu_photo")}
             >
-              « Poulailler 2000 sujets »
+              « 5. Rendu Photoréaliste »
             </Button>
             <Button
               size="sm"
               variant="outline"
               className="h-7 text-xs rounded-full shrink-0 border-indigo-500/30 text-indigo-800 dark:text-indigo-300"
-              onClick={() => {
-                const cmd = "Génère le devis certifié complet";
-                setInputText(cmd);
-                handleProcessCommand(cmd);
-              }}
+              onClick={() => setActiveTab("reseaux_cad")}
             >
-              « Devis officiel FCFA »
+              « 6. P&ID Canalisations »
+            </Button>
+            <Button
+              size="sm"
+              variant="outline"
+              className="h-7 text-xs rounded-full shrink-0 border-emerald-600/30 text-emerald-800 dark:text-emerald-300"
+              onClick={() => setActiveTab("chiffrage")}
+            >
+              « 7. Chiffrage Partenaires »
+            </Button>
+            <Button
+              size="sm"
+              variant="outline"
+              className="h-7 text-xs rounded-full shrink-0 border-rose-500/30 text-rose-800 dark:text-rose-300"
+              onClick={() => setActiveTab("validation_devis")}
+            >
+              « 8. Devis FCFA »
+            </Button>
+            <Button
+              size="sm"
+              variant="outline"
+              className="h-7 text-xs rounded-full shrink-0 border-teal-500/30 text-teal-800 dark:text-teal-300"
+              onClick={() => setActiveTab("export_pro")}
+            >
+              « 9. Export Dossier PDF »
             </Button>
             <Button
               size="sm"
               variant="outline"
               className="h-7 text-xs rounded-full shrink-0 border-emerald-500/30 text-emerald-800 dark:text-emerald-300"
-              onClick={() => {
-                const cmd = "Diagnostic scientifique RAG (maladie, adventice, carence Yara)";
-                setInputText(cmd);
-                handleProcessCommand(cmd);
-              }}
+              onClick={() => setActiveTab("diagnostic")}
             >
               <Sprout className="h-3 w-3 mr-1 text-emerald-600" />
-              « Diagnostic RAG Scientifique »
+              « Diagnostic RAG »
             </Button>
           </div>
 
@@ -714,36 +838,48 @@ export const NafaGeniusStudio: React.FC = () => {
         </CardContent>
       </Card>
 
-      {/* Onglets Principaux du Studio d'Ingénierie */}
+      {/* Onglets Principaux du Studio d'Ingénierie - Processus Unifié en 9 Étapes */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
-        <TabsList className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 h-auto p-1 bg-muted/60 rounded-xl gap-1">
-          <TabsTrigger value="geodesie" className="text-xs py-2 gap-1.5 data-[state=active]:bg-background shadow-xs">
-            <MapPin className="h-3.5 w-3.5 text-emerald-600" />
-            <span>1. Géodésie</span>
+        <TabsList className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 lg:grid-cols-10 h-auto p-1.5 bg-muted/60 rounded-xl gap-1">
+          <TabsTrigger value="geodesie" className="text-xs py-2 px-1 gap-1 data-[state=active]:bg-background shadow-xs">
+            <MapPin className="h-3.5 w-3.5 text-emerald-600 shrink-0" />
+            <span className="truncate">1. Terrain</span>
           </TabsTrigger>
-          <TabsTrigger value="irrigation" className="text-xs py-2 gap-1.5 data-[state=active]:bg-background shadow-xs">
-            <Droplets className="h-3.5 w-3.5 text-sky-600" />
-            <span>2. Irrigation</span>
+          <TabsTrigger value="conception" className="text-xs py-2 px-1 gap-1 data-[state=active]:bg-background shadow-xs">
+            <Droplets className="h-3.5 w-3.5 text-sky-600 shrink-0" />
+            <span className="truncate">2. CIRAD/FAO</span>
           </TabsTrigger>
-          <TabsTrigger value="aviculture" className="text-xs py-2 gap-1.5 data-[state=active]:bg-background shadow-xs">
-            <Home className="h-3.5 w-3.5 text-amber-600" />
-            <span>3. Aviculture</span>
+          <TabsTrigger value="plan2d" className="text-xs py-2 px-1 gap-1 data-[state=active]:bg-background shadow-xs">
+            <Layers className="h-3.5 w-3.5 text-purple-600 shrink-0" />
+            <span className="truncate">3. Plan 2D</span>
           </TabsTrigger>
-          <TabsTrigger value="plan2d" className="text-xs py-2 gap-1.5 data-[state=active]:bg-background shadow-xs">
-            <Layers className="h-3.5 w-3.5 text-purple-600" />
-            <span>4. Plan 2D</span>
+          <TabsTrigger value="vue3d" className="text-xs py-2 px-1 gap-1 data-[state=active]:bg-background shadow-xs">
+            <Cpu className="h-3.5 w-3.5 text-blue-600 shrink-0" />
+            <span className="truncate">4. Jumeau 3D</span>
           </TabsTrigger>
-          <TabsTrigger value="vue3d" className="text-xs py-2 gap-1.5 data-[state=active]:bg-background shadow-xs">
-            <Cpu className="h-3.5 w-3.5 text-blue-600" />
-            <span>5. Jumeau 3D</span>
+          <TabsTrigger value="rendu_photo" className="text-xs py-2 px-1 gap-1 data-[state=active]:bg-background shadow-xs">
+            <Camera className="h-3.5 w-3.5 text-amber-600 shrink-0" />
+            <span className="truncate">5. Rendu HD</span>
           </TabsTrigger>
-          <TabsTrigger value="devis" className="text-xs py-2 gap-1.5 data-[state=active]:bg-background shadow-xs">
-            <FileText className="h-3.5 w-3.5 text-rose-600" />
-            <span>6. Devis Pro</span>
+          <TabsTrigger value="reseaux_cad" className="text-xs py-2 px-1 gap-1 data-[state=active]:bg-background shadow-xs">
+            <Wrench className="h-3.5 w-3.5 text-indigo-600 shrink-0" />
+            <span className="truncate">6. P&ID Réseaux</span>
           </TabsTrigger>
-          <TabsTrigger value="diagnostic" className="text-xs py-2 gap-1.5 data-[state=active]:bg-background shadow-xs">
-            <Sprout className="h-3.5 w-3.5 text-emerald-600" />
-            <span>7. Diagnostic RAG</span>
+          <TabsTrigger value="chiffrage" className="text-xs py-2 px-1 gap-1 data-[state=active]:bg-background shadow-xs">
+            <Store className="h-3.5 w-3.5 text-emerald-700 shrink-0" />
+            <span className="truncate">7. Partenaires</span>
+          </TabsTrigger>
+          <TabsTrigger value="validation_devis" className="text-xs py-2 px-1 gap-1 data-[state=active]:bg-background shadow-xs">
+            <FileText className="h-3.5 w-3.5 text-rose-600 shrink-0" />
+            <span className="truncate">8. Devis FCFA</span>
+          </TabsTrigger>
+          <TabsTrigger value="export_pro" className="text-xs py-2 px-1 gap-1 data-[state=active]:bg-background shadow-xs">
+            <Download className="h-3.5 w-3.5 text-teal-600 shrink-0" />
+            <span className="truncate">9. Export Pro</span>
+          </TabsTrigger>
+          <TabsTrigger value="diagnostic" className="text-xs py-2 px-1 gap-1 data-[state=active]:bg-background shadow-xs">
+            <Sprout className="h-3.5 w-3.5 text-emerald-500 shrink-0" />
+            <span className="truncate">Diagnostic</span>
           </TabsTrigger>
         </TabsList>
 
@@ -899,10 +1035,10 @@ export const NafaGeniusStudio: React.FC = () => {
               <div className="flex justify-end pt-1">
                 <Button
                   size="sm"
-                  onClick={() => setActiveTab("irrigation")}
+                  onClick={() => setActiveTab("conception")}
                   className="bg-emerald-600 hover:bg-emerald-500 text-white text-xs gap-1"
                 >
-                  Valider géodésie et passer à l'irrigation <ArrowRight className="h-3 w-3" />
+                  Valider géodésie et passer à l'Étape 2 (Conception CIRAD/FAO) <ArrowRight className="h-3 w-3" />
                 </Button>
               </div>
             </Card>
@@ -910,431 +1046,424 @@ export const NafaGeniusStudio: React.FC = () => {
         </TabsContent>
 
         {/* ═════════════════════════════════════════════════════════ */}
-        {/* ONGLET 2 : DIMENSIONNEMENT IRRIGATION FAO-56             */}
+        {/* ÉTAPE 2 : CONCEPTION TECHNIQUE CIRAD & FAO-56             */}
         {/* ═════════════════════════════════════════════════════════ */}
-        <TabsContent value="irrigation" className="space-y-4">
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-            <Card className="lg:col-span-1 p-4 space-y-4">
-              <div className="space-y-1">
-                <h3 className="text-sm font-bold text-foreground flex items-center gap-1.5">
-                  <Droplets className="h-4 w-4 text-sky-600" /> Paramètres d'Irrigation
-                </h3>
-                <p className="text-xs text-muted-foreground">Besoins agrométéorologiques FAO-56 pour le Sahel.</p>
-              </div>
-
-              <div className="space-y-3 text-xs">
+        <TabsContent value="conception" className="space-y-6">
+          {/* Sous-section A : Hydraulique & Pompage Solaire FAO-56 / CIRAD */}
+          <div className="space-y-3">
+            <div className="flex items-center justify-between border-b pb-2">
+              <div className="flex items-center gap-2">
+                <div className="h-7 w-7 rounded-lg bg-sky-500/10 flex items-center justify-center text-sky-600">
+                  <Droplets className="h-4 w-4" />
+                </div>
                 <div>
-                  <Label className="text-xs font-semibold">Culture principale</Label>
-                  <Select value={selectedCrop} onValueChange={setSelectedCrop}>
-                    <SelectTrigger className="h-8 text-xs mt-1">
-                      <SelectValue placeholder="Choisir une culture" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {Object.entries(FAO_SAHEL_CROPS).map(([key, data]) => (
-                        <SelectItem key={key} value={key} className="text-xs">
-                          {data.cropName} (Kc = {data.kcMid})
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div>
-                  <Label className="text-xs font-semibold">Saison d'arrosage</Label>
-                  <Select value={selectedSeason} onValueChange={(v: any) => setSelectedSeason(v)}>
-                    <SelectTrigger className="h-8 text-xs mt-1">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="saison_seche_chaude" className="text-xs">Saison sèche chaude (Mars-Mai : ETo = 7.2 mm/j)</SelectItem>
-                      <SelectItem value="saison_seche_froide" className="text-xs">Saison sèche fraîche (Nov-Fév : ETo = 5.5 mm/j)</SelectItem>
-                      <SelectItem value="hivernage" className="text-xs">Hivernage / Pluie (Juin-Oct : ETo = 4.2 mm/j)</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div className="grid grid-cols-2 gap-2">
-                  <div>
-                    <Label className="text-xs font-semibold">Prof. Forage (m)</Label>
-                    <Input
-                      type="number"
-                      value={boreholeDepthM}
-                      onChange={(e) => setBoreholeDepthM(Number(e.target.value))}
-                      className="h-8 text-xs mt-1"
-                    />
-                  </div>
-                  <div>
-                    <Label className="text-xs font-semibold">Niveau Dynamique (m)</Label>
-                    <Input
-                      type="number"
-                      value={waterTableDepthM}
-                      onChange={(e) => setWaterTableDepthM(Number(e.target.value))}
-                      className="h-8 text-xs mt-1"
-                    />
-                  </div>
-                </div>
-
-                <div className="p-2.5 rounded-lg bg-sky-50 dark:bg-sky-950/30 text-sky-900 dark:text-sky-200 border border-sky-500/20 text-[11px] space-y-1">
-                  <p className="font-semibold">Superficie nette calculée : {surveyResult.areaHa} ha</p>
-                  <p className="text-muted-foreground">La surface est directement synchronisée depuis l'arpentage GPS.</p>
+                  <h3 className="text-sm font-bold text-foreground">
+                    Volet A — Hydraulique Agricole & Pompage Solaire (FAO-56 / CIRAD)
+                  </h3>
+                  <p className="text-xs text-muted-foreground">
+                    Besoins en eau Penman-Monteith, pertes de charge Hazen-Williams et générateur photovoltaïque.
+                  </p>
                 </div>
               </div>
-            </Card>
+              <Badge variant="outline" className="text-xs text-sky-700 bg-sky-500/10 font-mono">
+                CIRAD Hydraulique Tropicale
+              </Badge>
+            </div>
 
-            {/* Résultats hydrauliques */}
-            {irrigationResult && (
-              <Card className="lg:col-span-2 p-4 space-y-4">
-                <div className="flex items-center justify-between">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+              <Card className="lg:col-span-1 p-4 space-y-4">
+                <div className="space-y-1">
+                  <h4 className="text-xs font-bold text-foreground flex items-center gap-1.5">
+                    <Droplets className="h-3.5 w-3.5 text-sky-600" /> Paramètres Agro-Hydrauliques
+                  </h4>
+                  <p className="text-[11px] text-muted-foreground">Besoins agrométéorologiques pour le Sahel.</p>
+                </div>
+
+                <div className="space-y-3 text-xs">
                   <div>
-                    <h3 className="text-sm font-bold text-foreground">Note de Calcul Hydraulique & Solaire</h3>
-                    <p className="text-xs text-muted-foreground">Pertes de charge Hazen-Williams, HMT et puissance PV.</p>
-                  </div>
-                  <Badge variant="outline" className="text-xs bg-sky-500/10 text-sky-700">
-                    Débit total : {irrigationResult.peakHourlyFlowM3h} m³/h
-                  </Badge>
-                </div>
-
-                {/* Source de Vérité Réelle & Statut de Certification */}
-                <div className="flex items-center justify-between flex-wrap gap-2 p-2.5 rounded-lg bg-sky-50/60 dark:bg-sky-950/20 border border-sky-500/20 text-xs">
-                  <span className="flex items-center gap-1.5 text-sky-900 dark:text-sky-200 font-medium">
-                    <ShieldCheck className="h-4 w-4 text-sky-600 shrink-0" />
-                    <span><strong>Source certifiée :</strong> {irrigationResult.groundTruthSource}</span>
-                  </span>
-                  {irrigationResult.expertCertified ? (
-                    <Badge className="bg-emerald-600 text-white gap-1 text-[11px]">
-                      <CheckCircle2 className="h-3 w-3" /> Certifié par l'Expert : {irrigationResult.certifiedBy}
-                    </Badge>
-                  ) : (
-                    <Badge variant="outline" className="border-amber-500/40 text-amber-700 dark:text-amber-300 text-[11px] gap-1 bg-amber-500/10">
-                      <AlertTriangle className="h-3 w-3" /> Non certifié terrain (Calcul standard FAO-56)
-                    </Badge>
-                  )}
-                </div>
-
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
-                  <div className="p-3 rounded-xl bg-muted/50 border border-border">
-                    <span className="text-[11px] text-muted-foreground">Besoin brut journalier</span>
-                    <p className="text-base font-extrabold text-foreground">{irrigationResult.dailyVolumeM3} m³/j</p>
-                    <span className="text-[10px] text-muted-foreground">{irrigationResult.dailyGrossMm} mm/j brut</span>
-                  </div>
-                  <div className="p-3 rounded-xl bg-muted/50 border border-border">
-                    <span className="text-[11px] text-muted-foreground">Conduite principale</span>
-                    <p className="text-base font-extrabold text-foreground">PEHD Ø {irrigationResult.mainPipeDiameterMm} mm</p>
-                    <span className="text-[10px] text-emerald-600 font-medium">V = {irrigationResult.mainPipeVelocityMs} m/s (conforme)</span>
-                  </div>
-                  <div className="p-3 rounded-xl bg-muted/50 border border-border">
-                    <span className="text-[11px] text-muted-foreground">HMT globale</span>
-                    <p className="text-base font-extrabold text-sky-700 dark:text-sky-300">{irrigationResult.totalHeadHmtM} mCE</p>
-                    <span className="text-[10px] text-muted-foreground">Perte charge : {irrigationResult.mainPipeHeadLossM} m</span>
-                  </div>
-                  <div className="p-3 rounded-xl bg-muted/50 border border-border">
-                    <span className="text-[11px] text-muted-foreground">Générateur Solaire</span>
-                    <p className="text-base font-extrabold text-amber-700 dark:text-amber-300">
-                      {irrigationResult.recommendedPanelsCount} × {irrigationResult.panelUnitWattage} Wc
-                    </p>
-                    <span className="text-[10px] text-muted-foreground">Total : {(irrigationResult.solarPvWattPeak / 1000).toFixed(2)} kWc</span>
-                  </div>
-                </div>
-
-                {/* Nomenclature chiffrée équipement */}
-                <div className="space-y-2">
-                  <h4 className="text-xs font-bold text-foreground">Bordereau Matériel Hydraulique & Pompage :</h4>
-                  <div className="rounded-lg border border-border overflow-hidden">
-                    <table className="w-full text-xs text-left">
-                      <thead className="bg-muted font-semibold text-muted-foreground">
-                        <tr>
-                          <th className="p-2">Désignation</th>
-                          <th className="p-2">Qté</th>
-                          <th className="p-2 text-right">Prix Unit. (FCFA)</th>
-                          <th className="p-2 text-right">Total (FCFA)</th>
-                        </tr>
-                      </thead>
-                      <tbody className="divide-y divide-border">
-                        {irrigationResult.billOfMaterials.map((item, idx) => (
-                          <tr key={idx} className="hover:bg-muted/20">
-                            <td className="p-2">
-                              <p className="font-semibold text-foreground">{item.designation}</p>
-                              <span className="text-[10px] text-muted-foreground">{item.specifications}</span>
-                            </td>
-                            <td className="p-2 font-mono">
-                              {item.quantity} {item.unit}
-                            </td>
-                            <td className="p-2 text-right font-mono">{item.unitPriceFcfa.toLocaleString()} F</td>
-                            <td className="p-2 text-right font-mono font-bold text-emerald-600">
-                              {item.totalPriceFcfa.toLocaleString()} F
-                            </td>
-                          </tr>
+                    <Label className="text-xs font-semibold">Culture principale</Label>
+                    <Select value={selectedCrop} onValueChange={setSelectedCrop}>
+                      <SelectTrigger className="h-8 text-xs mt-1">
+                        <SelectValue placeholder="Choisir une culture" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {Object.entries(FAO_SAHEL_CROPS).map(([key, data]) => (
+                          <SelectItem key={key} value={key} className="text-xs">
+                            {data.cropName} (Kc = {data.kcMid})
+                          </SelectItem>
                         ))}
-                      </tbody>
-                    </table>
-                  </div>
-                </div>
-
-                {/* Section d'Apport d'Informations Complémentaires & Certification Terrain */}
-                <div className="p-3.5 rounded-xl border border-sky-500/30 bg-muted/20 space-y-3">
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs font-bold flex items-center gap-1.5 text-foreground">
-                      <UserCheck className="h-4 w-4 text-emerald-600" />
-                      Apport d'Informations Complémentaires & Certification Terrain par l'Expert
-                    </span>
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      className="h-7 text-xs gap-1 border-sky-500/40 text-sky-700 dark:text-sky-300"
-                      onClick={() => setIsExpertEditingIrrigation(!isExpertEditingIrrigation)}
-                    >
-                      <Edit3 className="h-3 w-3" />
-                      {isExpertEditingIrrigation ? "Fermer" : "Ajuster / Certifier"}
-                    </Button>
+                      </SelectContent>
+                    </Select>
                   </div>
 
-                  {isExpertEditingIrrigation && (
-                    <div className="space-y-3 pt-2 border-t border-border text-xs">
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                        <div>
-                          <Label className="text-xs font-semibold">Débit réel mesuré au forage (m³/h)</Label>
-                          <Input
-                            type="number"
-                            placeholder={String(irrigationResult.peakHourlyFlowM3h)}
-                            value={expertMeasuredFlow}
-                            onChange={(e) => setExpertMeasuredFlow(e.target.value ? Number(e.target.value) : "")}
-                            className="h-8 text-xs mt-1"
-                          />
-                        </div>
-                        <div>
-                          <Label className="text-xs font-semibold">Niveau piézométrique dynamique mesuré (m)</Label>
-                          <Input
-                            type="number"
-                            placeholder={String(waterTableDepthM)}
-                            value={expertMeasuredDynamicLevel}
-                            onChange={(e) => setExpertMeasuredDynamicLevel(e.target.value ? Number(e.target.value) : "")}
-                            className="h-8 text-xs mt-1"
-                          />
-                        </div>
-                      </div>
-                      <div>
-                        <Label className="text-xs font-semibold">Notes & Justifications techniques de l'Ingénieur</Label>
-                        <Textarea
-                          placeholder="Ex: Essai de pompage de 4h validé à 12 m³/h avec rabattement stabilisé à 38m..."
-                          value={expertIrrigationNotes}
-                          onChange={(e) => setExpertIrrigationNotes(e.target.value)}
-                          className="text-xs min-h-[60px] mt-1"
-                        />
-                      </div>
-                      <div className="flex justify-end">
-                        <Button
-                          size="sm"
-                          onClick={handleCertifyIrrigation}
-                          className="h-8 text-xs bg-emerald-600 hover:bg-emerald-500 text-white font-semibold gap-1.5 shadow-sm"
-                        >
-                          <UserCheck className="h-3.5 w-3.5" /> Certifier les Données Réelles de Terrain
-                        </Button>
-                      </div>
+                  <div>
+                    <Label className="text-xs font-semibold">Saison d'arrosage</Label>
+                    <Select value={selectedSeason} onValueChange={(v: any) => setSelectedSeason(v)}>
+                      <SelectTrigger className="h-8 text-xs mt-1">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="saison_seche_chaude" className="text-xs">Saison sèche chaude (Mars-Mai : ETo = 7.2 mm/j)</SelectItem>
+                        <SelectItem value="saison_seche_froide" className="text-xs">Saison sèche fraîche (Nov-Fév : ETo = 5.5 mm/j)</SelectItem>
+                        <SelectItem value="hivernage" className="text-xs">Hivernage / Pluie (Juin-Oct : ETo = 4.2 mm/j)</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-2">
+                    <div>
+                      <Label className="text-xs font-semibold">Prof. Forage (m)</Label>
+                      <Input
+                        type="number"
+                        value={boreholeDepthM}
+                        onChange={(e) => setBoreholeDepthM(Number(e.target.value))}
+                        className="h-8 text-xs mt-1"
+                      />
                     </div>
-                  )}
+                    <div>
+                      <Label className="text-xs font-semibold">Niveau Dynamique (m)</Label>
+                      <Input
+                        type="number"
+                        value={waterTableDepthM}
+                        onChange={(e) => setWaterTableDepthM(Number(e.target.value))}
+                        className="h-8 text-xs mt-1"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="p-2.5 rounded-lg bg-sky-50 dark:bg-sky-950/30 text-sky-900 dark:text-sky-200 border border-sky-500/20 text-[11px] space-y-1">
+                    <p className="font-semibold">Superficie nette calculée : {surveyResult.areaHa} ha</p>
+                    <p className="text-muted-foreground">La surface est directement synchronisée depuis l'arpentage GPS.</p>
+                  </div>
                 </div>
               </Card>
-            )}
+
+              {/* Résultats hydrauliques */}
+              {irrigationResult && (
+                <Card className="lg:col-span-2 p-4 space-y-4">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h4 className="text-xs font-bold text-foreground">Note de Calcul Hydraulique & Solaire</h4>
+                      <p className="text-[11px] text-muted-foreground">Pertes de charge Hazen-Williams, HMT et puissance PV.</p>
+                    </div>
+                    <Badge variant="outline" className="text-xs bg-sky-500/10 text-sky-700">
+                      Débit pointe : {irrigationResult.peakHourlyFlowM3h} m³/h
+                    </Badge>
+                  </div>
+
+                  {/* Source de Vérité Réelle & Statut de Certification */}
+                  <div className="flex items-center justify-between flex-wrap gap-2 p-2.5 rounded-lg bg-sky-50/60 dark:bg-sky-950/20 border border-sky-500/20 text-xs">
+                    <span className="flex items-center gap-1.5 text-sky-900 dark:text-sky-200 font-medium">
+                      <ShieldCheck className="h-4 w-4 text-sky-600 shrink-0" />
+                      <span><strong>Source certifiée :</strong> {irrigationResult.groundTruthSource}</span>
+                    </span>
+                    {irrigationResult.expertCertified ? (
+                      <Badge className="bg-emerald-600 text-white gap-1 text-[11px]">
+                        <CheckCircle2 className="h-3 w-3" /> Certifié par l'Expert : {irrigationResult.certifiedBy}
+                      </Badge>
+                    ) : (
+                      <Badge variant="outline" className="border-amber-500/40 text-amber-700 dark:text-amber-300 text-[11px] gap-1 bg-amber-500/10">
+                        <AlertTriangle className="h-3 w-3" /> Non certifié terrain (Calcul standard FAO-56)
+                      </Badge>
+                    )}
+                  </div>
+
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
+                    <div className="p-3 rounded-xl bg-muted/50 border border-border">
+                      <span className="text-[11px] text-muted-foreground">Besoin brut journalier</span>
+                      <p className="text-base font-extrabold text-foreground">{irrigationResult.dailyVolumeM3} m³/j</p>
+                      <span className="text-[10px] text-muted-foreground">{irrigationResult.dailyGrossMm} mm/j brut</span>
+                    </div>
+                    <div className="p-3 rounded-xl bg-muted/50 border border-border">
+                      <span className="text-[11px] text-muted-foreground">Conduite principale</span>
+                      <p className="text-base font-extrabold text-foreground">PEHD Ø {irrigationResult.mainPipeDiameterMm} mm</p>
+                      <span className="text-[10px] text-emerald-600 font-medium">V = {irrigationResult.mainPipeVelocityMs} m/s (conforme)</span>
+                    </div>
+                    <div className="p-3 rounded-xl bg-muted/50 border border-border">
+                      <span className="text-[11px] text-muted-foreground">HMT globale</span>
+                      <p className="text-base font-extrabold text-sky-700 dark:text-sky-300">{irrigationResult.totalHeadHmtM} mCE</p>
+                      <span className="text-[10px] text-muted-foreground">Perte charge : {irrigationResult.mainPipeHeadLossM} m</span>
+                    </div>
+                    <div className="p-3 rounded-xl bg-muted/50 border border-border">
+                      <span className="text-[11px] text-muted-foreground">Générateur Solaire</span>
+                      <p className="text-base font-extrabold text-amber-700 dark:text-amber-300">
+                        {irrigationResult.recommendedPanelsCount} × {irrigationResult.panelUnitWattage} Wc
+                      </p>
+                      <span className="text-[10px] text-muted-foreground">Total : {(irrigationResult.solarPvWattPeak / 1000).toFixed(2)} kWc</span>
+                    </div>
+                  </div>
+
+                  {/* Section d'Apport d'Informations Complémentaires & Certification Terrain */}
+                  <div className="p-3.5 rounded-xl border border-sky-500/30 bg-muted/20 space-y-3">
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-bold flex items-center gap-1.5 text-foreground">
+                        <UserCheck className="h-4 w-4 text-emerald-600" />
+                        Apport de Mesures In-Situ & Certification Hydraulique
+                      </span>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="h-7 text-xs gap-1 border-sky-500/40 text-sky-700 dark:text-sky-300"
+                        onClick={() => setIsExpertEditingIrrigation(!isExpertEditingIrrigation)}
+                      >
+                        <Edit3 className="h-3 w-3" />
+                        {isExpertEditingIrrigation ? "Fermer" : "Ajuster / Certifier"}
+                      </Button>
+                    </div>
+
+                    {isExpertEditingIrrigation && (
+                      <div className="space-y-3 pt-2 border-t border-border text-xs">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                          <div>
+                            <Label className="text-xs font-semibold">Débit réel mesuré au forage (m³/h)</Label>
+                            <Input
+                              type="number"
+                              placeholder={String(irrigationResult.peakHourlyFlowM3h)}
+                              value={expertMeasuredFlow}
+                              onChange={(e) => setExpertMeasuredFlow(e.target.value ? Number(e.target.value) : "")}
+                              className="h-8 text-xs mt-1"
+                            />
+                          </div>
+                          <div>
+                            <Label className="text-xs font-semibold">Niveau piézométrique dynamique mesuré (m)</Label>
+                            <Input
+                              type="number"
+                              placeholder={String(waterTableDepthM)}
+                              value={expertMeasuredDynamicLevel}
+                              onChange={(e) => setExpertMeasuredDynamicLevel(e.target.value ? Number(e.target.value) : "")}
+                              className="h-8 text-xs mt-1"
+                            />
+                          </div>
+                        </div>
+                        <div>
+                          <Label className="text-xs font-semibold">Notes & Justifications techniques de l'Ingénieur</Label>
+                          <Textarea
+                            placeholder="Ex: Essai de pompage de 4h validé à 12 m³/h avec rabattement stabilisé à 38m..."
+                            value={expertIrrigationNotes}
+                            onChange={(e) => setExpertIrrigationNotes(e.target.value)}
+                            className="text-xs min-h-[60px] mt-1"
+                          />
+                        </div>
+                        <div className="flex justify-end">
+                          <Button
+                            size="sm"
+                            onClick={handleCertifyIrrigation}
+                            className="h-8 text-xs bg-emerald-600 hover:bg-emerald-500 text-white font-semibold gap-1.5 shadow-sm"
+                          >
+                            <UserCheck className="h-3.5 w-3.5" /> Certifier les Données Réelles de Terrain
+                          </Button>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </Card>
+              )}
+            </div>
           </div>
-        </TabsContent>
 
-        {/* ═════════════════════════════════════════════════════════ */}
-        {/* ONGLET 3 : ARCHITECTURE AVICOLE BIOCLIMATIQUE            */}
-        {/* ═════════════════════════════════════════════════════════ */}
-        <TabsContent value="aviculture" className="space-y-4">
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-            <Card className="lg:col-span-1 p-4 space-y-4">
-              <div className="space-y-1">
-                <h3 className="text-sm font-bold text-foreground flex items-center gap-1.5">
-                  <Home className="h-4 w-4 text-amber-600" /> Bâtiment Avicole Tropical
-                </h3>
-                <p className="text-xs text-muted-foreground">Conception adaptée aux chaleurs sahéliennes (supérieures à 38°C).</p>
-              </div>
-
-              <div className="space-y-3 text-xs">
-                <div>
-                  <Label className="text-xs font-semibold">Type de volaille</Label>
-                  <Select value={poultryBirdType} onValueChange={(v: any) => setPoultryBirdType(v)}>
-                    <SelectTrigger className="h-8 text-xs mt-1">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="poulet_chair" className="text-xs">Poulet de chair (8-10 sujets/m²)</SelectItem>
-                      <SelectItem value="poule_pondeuse" className="text-xs">Poule pondeuse au sol (6-7 sujets/m²)</SelectItem>
-                      <SelectItem value="poulet_local_ameliore" className="text-xs">Poulet local amélioré / Gollé (8 sujets/m²)</SelectItem>
-                    </SelectContent>
-                  </Select>
+          {/* Sous-section B : Architecture Avicole Bioclimatique CIRAD */}
+          <div className="space-y-3 pt-4 border-t">
+            <div className="flex items-center justify-between border-b pb-2">
+              <div className="flex items-center gap-2">
+                <div className="h-7 w-7 rounded-lg bg-amber-500/10 flex items-center justify-center text-amber-600">
+                  <Home className="h-4 w-4" />
                 </div>
-
                 <div>
-                  <Label className="text-xs font-semibold">Taille de la bande (sujets)</Label>
-                  <Input
-                    type="number"
-                    step={100}
-                    value={poultryFlockSize}
-                    onChange={(e) => setPoultryFlockSize(Number(e.target.value))}
-                    className="h-8 text-xs mt-1"
-                  />
-                </div>
-
-                <div className="p-3 rounded-lg bg-amber-50 dark:bg-amber-950/30 text-amber-900 dark:text-amber-200 border border-amber-500/20 text-xs space-y-1">
-                  <p className="font-semibold flex items-center gap-1">
-                    <Compass className="h-3.5 w-3.5 text-amber-600" /> Règle d'or bioclimatique :
-                  </p>
-                  <p className="text-[11px] text-muted-foreground">
-                    Orientation Est-Ouest obligatoire. Largeur maximale de 8 à 10m pour garantir un balayage transversal par ventilation naturelle.
+                  <h3 className="text-sm font-bold text-foreground">
+                    Volet B — Architecture Avicole Bioclimatique Sahélienne (CIRAD)
+                  </h3>
+                  <p className="text-xs text-muted-foreground">
+                    Ventilation naturelle thermosiphon, orientation Est-Ouest stricte et ratios d'abreuvement.
                   </p>
                 </div>
               </div>
-            </Card>
+              <Badge variant="outline" className="text-xs text-amber-700 bg-amber-500/10 font-mono">
+                CIRAD Zootechnie Sahélienne
+              </Badge>
+            </div>
 
-            {/* Résultats bâtiment */}
-            {poultryResult && (
-              <Card className="lg:col-span-2 p-4 space-y-4">
-                <div className="flex items-center justify-between">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+              <Card className="lg:col-span-1 p-4 space-y-4">
+                <div className="space-y-1">
+                  <h4 className="text-xs font-bold text-foreground flex items-center gap-1.5">
+                    <Home className="h-3.5 w-3.5 text-amber-600" /> Paramètres d'Élevage
+                  </h4>
+                  <p className="text-[11px] text-muted-foreground">Conception adaptée aux chaleurs sahéliennes (&gt;38°C).</p>
+                </div>
+
+                <div className="space-y-3 text-xs">
                   <div>
-                    <h3 className="text-sm font-bold text-foreground">Dimensions & Ratios d'Équipement</h3>
-                    <p className="text-xs text-muted-foreground">Effet thermosiphon, lanterneau et sas de biosécurité.</p>
+                    <Label className="text-xs font-semibold">Type de volaille</Label>
+                    <Select value={poultryBirdType} onValueChange={(v: any) => setPoultryBirdType(v)}>
+                      <SelectTrigger className="h-8 text-xs mt-1">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="poulet_chair" className="text-xs">Poulet de chair (8-10 sujets/m²)</SelectItem>
+                        <SelectItem value="poule_pondeuse" className="text-xs">Poule pondeuse au sol (6-7 sujets/m²)</SelectItem>
+                        <SelectItem value="poulet_local_ameliore" className="text-xs">Poulet local amélioré / Gollé (8 sujets/m²)</SelectItem>
+                      </SelectContent>
+                    </Select>
                   </div>
-                  <Badge variant="outline" className="text-xs bg-amber-500/10 text-amber-700">
-                    Surface : {poultryResult.floorAreaM2} m² utiles
-                  </Badge>
-                </div>
 
-                {/* Source de Vérité Réelle & Statut de Certification */}
-                <div className="flex items-center justify-between flex-wrap gap-2 p-2.5 rounded-lg bg-amber-50/60 dark:bg-amber-950/20 border border-amber-500/20 text-xs">
-                  <span className="flex items-center gap-1.5 text-amber-900 dark:text-amber-200 font-medium">
-                    <ShieldCheck className="h-4 w-4 text-amber-600 shrink-0" />
-                    <span><strong>Source certifiée :</strong> {poultryResult.groundTruthSource}</span>
-                  </span>
-                  {poultryResult.expertCertified ? (
-                    <Badge className="bg-emerald-600 text-white gap-1 text-[11px]">
-                      <CheckCircle2 className="h-3 w-3" /> Certifié par l'Expert : {poultryResult.certifiedBy}
-                    </Badge>
-                  ) : (
-                    <Badge variant="outline" className="border-amber-500/40 text-amber-700 dark:text-amber-300 text-[11px] gap-1 bg-amber-500/10">
-                      <AlertTriangle className="h-3 w-3" /> Non certifié terrain (Normes Sahel indicatives)
-                    </Badge>
-                  )}
-                </div>
+                  <div>
+                    <Label className="text-xs font-semibold">Taille de la bande (sujets)</Label>
+                    <Input
+                      type="number"
+                      step={100}
+                      value={poultryFlockSize}
+                      onChange={(e) => setPoultryFlockSize(Number(e.target.value))}
+                      className="h-8 text-xs mt-1"
+                    />
+                  </div>
 
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
-                  <div className="p-3 rounded-xl bg-muted/50 border border-border">
-                    <span className="text-[11px] text-muted-foreground">Dimensions (L × l)</span>
-                    <p className="text-base font-extrabold text-foreground">
-                      {poultryResult.lengthM} m × {poultryResult.widthM} m
+                  <div className="p-3 rounded-lg bg-amber-50 dark:bg-amber-950/30 text-amber-900 dark:text-amber-200 border border-amber-500/20 text-xs space-y-1">
+                    <p className="font-semibold flex items-center gap-1">
+                      <Compass className="h-3.5 w-3.5 text-amber-600" /> Règle d'or bioclimatique CIRAD :
                     </p>
-                    <span className="text-[10px] text-muted-foreground">Axe Est-Ouest strict</span>
+                    <p className="text-[11px] text-muted-foreground">
+                      Orientation Est-Ouest stricte (90°). Largeur maximale 8 à 10m pour garantir un balayage transversal par ventilation naturelle. Lanterneau faîtier de 1m.
+                    </p>
                   </div>
-                  <div className="p-3 rounded-xl bg-muted/50 border border-border">
-                    <span className="text-[11px] text-muted-foreground">Hauteur faîtage</span>
-                    <p className="text-base font-extrabold text-foreground">{poultryResult.ridgeHeightM} m</p>
-                    <span className="text-[10px] text-amber-600 font-medium">Lanterneau : {poultryResult.lanternWidthM} m</span>
-                  </div>
-                  <div className="p-3 rounded-xl bg-muted/50 border border-border">
-                    <span className="text-[11px] text-muted-foreground">Équipements mangeoires</span>
-                    <p className="text-base font-extrabold text-foreground">{poultryResult.feedersCount} trémies</p>
-                    <span className="text-[10px] text-muted-foreground">1 pour 28 sujets</span>
-                  </div>
-                  <div className="p-3 rounded-xl bg-muted/50 border border-border">
-                    <span className="text-[11px] text-muted-foreground">Abreuvoirs cloche</span>
-                    <p className="text-base font-extrabold text-foreground">{poultryResult.drinkersCount} unités</p>
-                    <span className="text-[10px] text-muted-foreground">Distribution continue</span>
-                  </div>
-                </div>
-
-                {/* Métré gros œuvre */}
-                <div className="space-y-2">
-                  <h4 className="text-xs font-bold text-foreground">Métré & Matériaux de Construction :</h4>
-                  <div className="rounded-lg border border-border overflow-hidden">
-                    <table className="w-full text-xs text-left">
-                      <thead className="bg-muted font-semibold text-muted-foreground">
-                        <tr>
-                          <th className="p-2">Poste de Construction</th>
-                          <th className="p-2">Quantité</th>
-                          <th className="p-2 text-right">Prix Unit. (FCFA)</th>
-                          <th className="p-2 text-right">Total (FCFA)</th>
-                        </tr>
-                      </thead>
-                      <tbody className="divide-y divide-border">
-                        {poultryResult.billOfMaterials.map((item, idx) => (
-                          <tr key={idx} className="hover:bg-muted/20">
-                            <td className="p-2">
-                              <p className="font-semibold text-foreground">{item.designation}</p>
-                              <span className="text-[10px] text-muted-foreground">{item.specifications}</span>
-                            </td>
-                            <td className="p-2 font-mono">
-                              {item.quantity} {item.unit}
-                            </td>
-                            <td className="p-2 text-right font-mono">{item.unitPriceFcfa.toLocaleString()} F</td>
-                            <td className="p-2 text-right font-mono font-bold text-amber-600">
-                              {item.totalPriceFcfa.toLocaleString()} F
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                </div>
-
-                {/* Section d'Apport d'Informations Complémentaires & Certification Bâtiment */}
-                <div className="p-3.5 rounded-xl border border-amber-500/30 bg-muted/20 space-y-3">
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs font-bold flex items-center gap-1.5 text-foreground">
-                      <UserCheck className="h-4 w-4 text-emerald-600" />
-                      Apport d'Informations Complémentaires & Certification Zootechnique
-                    </span>
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      className="h-7 text-xs gap-1 border-amber-500/40 text-amber-700 dark:text-amber-300"
-                      onClick={() => setIsExpertEditingPoultry(!isExpertEditingPoultry)}
-                    >
-                      <Edit3 className="h-3 w-3" />
-                      {isExpertEditingPoultry ? "Fermer" : "Ajuster / Certifier"}
-                    </Button>
-                  </div>
-
-                  {isExpertEditingPoultry && (
-                    <div className="space-y-3 pt-2 border-t border-border text-xs">
-                      <div>
-                        <Label className="text-xs font-semibold">Effectif réel ajusté de la bande</Label>
-                        <Input
-                          type="number"
-                          placeholder={String(poultryResult.flockSize)}
-                          value={expertAdjustedFlock}
-                          onChange={(e) => setExpertAdjustedFlock(e.target.value ? Number(e.target.value) : "")}
-                          className="h-8 text-xs mt-1"
-                        />
-                      </div>
-                      <div>
-                        <Label className="text-xs font-semibold">Notes & Observations zootechniques de terrain</Label>
-                        <Textarea
-                          placeholder="Ex: Vérification de l'axe au théodolite 90° Est-Ouest, muret de 0.55m lissé au mortier étanche..."
-                          value={expertPoultryNotes}
-                          onChange={(e) => setExpertPoultryNotes(e.target.value)}
-                          className="text-xs min-h-[60px] mt-1"
-                        />
-                      </div>
-                      <div className="flex justify-end">
-                        <Button
-                          size="sm"
-                          onClick={handleCertifyPoultry}
-                          className="h-8 text-xs bg-emerald-600 hover:bg-emerald-500 text-white font-semibold gap-1.5 shadow-sm"
-                        >
-                          <UserCheck className="h-3.5 w-3.5" /> Certifier les Données Réelles du Bâtiment
-                        </Button>
-                      </div>
-                    </div>
-                  )}
                 </div>
               </Card>
-            )}
+
+              {/* Résultats bâtiment */}
+              {poultryResult && (
+                <Card className="lg:col-span-2 p-4 space-y-4">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h4 className="text-xs font-bold text-foreground">Dimensions & Ratios d'Équipement</h4>
+                      <p className="text-[11px] text-muted-foreground">Effet thermosiphon, lanterneau et sas de biosécurité.</p>
+                    </div>
+                    <Badge variant="outline" className="text-xs bg-amber-500/10 text-amber-700">
+                      Surface utile : {poultryResult.floorAreaM2} m²
+                    </Badge>
+                  </div>
+
+                  {/* Source de Vérité Réelle & Statut de Certification */}
+                  <div className="flex items-center justify-between flex-wrap gap-2 p-2.5 rounded-lg bg-amber-50/60 dark:bg-amber-950/20 border border-amber-500/20 text-xs">
+                    <span className="flex items-center gap-1.5 text-amber-900 dark:text-amber-200 font-medium">
+                      <ShieldCheck className="h-4 w-4 text-amber-600 shrink-0" />
+                      <span><strong>Source certifiée :</strong> {poultryResult.groundTruthSource}</span>
+                    </span>
+                    {poultryResult.expertCertified ? (
+                      <Badge className="bg-emerald-600 text-white gap-1 text-[11px]">
+                        <CheckCircle2 className="h-3 w-3" /> Certifié par l'Expert : {poultryResult.certifiedBy}
+                      </Badge>
+                    ) : (
+                      <Badge variant="outline" className="border-amber-500/40 text-amber-700 dark:text-amber-300 text-[11px] gap-1 bg-amber-500/10">
+                        <AlertTriangle className="h-3 w-3" /> Non certifié terrain (Normes Sahel indicatives)
+                      </Badge>
+                    )}
+                  </div>
+
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
+                    <div className="p-3 rounded-xl bg-muted/50 border border-border">
+                      <span className="text-[11px] text-muted-foreground">Dimensions (L × l)</span>
+                      <p className="text-base font-extrabold text-foreground">
+                        {poultryResult.lengthM} m × {poultryResult.widthM} m
+                      </p>
+                      <span className="text-[10px] text-muted-foreground">Axe Est-Ouest strict</span>
+                    </div>
+                    <div className="p-3 rounded-xl bg-muted/50 border border-border">
+                      <span className="text-[11px] text-muted-foreground">Hauteur faîtage</span>
+                      <p className="text-base font-extrabold text-foreground">{poultryResult.ridgeHeightM} m</p>
+                      <span className="text-[10px] text-amber-600 font-medium">Lanterneau : {poultryResult.lanternWidthM} m</span>
+                    </div>
+                    <div className="p-3 rounded-xl bg-muted/50 border border-border">
+                      <span className="text-[11px] text-muted-foreground">Mangeoires trémie</span>
+                      <p className="text-base font-extrabold text-foreground">{poultryResult.feedersCount} trémies</p>
+                      <span className="text-[10px] text-muted-foreground">1 pour 28 sujets</span>
+                    </div>
+                    <div className="p-3 rounded-xl bg-muted/50 border border-border">
+                      <span className="text-[11px] text-muted-foreground">Abreuvoirs cloche</span>
+                      <p className="text-base font-extrabold text-foreground">{poultryResult.drinkersCount} unités</p>
+                      <span className="text-[10px] text-muted-foreground">Distribution continue</span>
+                    </div>
+                  </div>
+
+                  {/* Section d'Apport d'Informations Complémentaires & Certification Bâtiment */}
+                  <div className="p-3.5 rounded-xl border border-amber-500/30 bg-muted/20 space-y-3">
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-bold flex items-center gap-1.5 text-foreground">
+                        <UserCheck className="h-4 w-4 text-emerald-600" />
+                        Apport d'Informations Complémentaires & Certification Zootechnique
+                      </span>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="h-7 text-xs gap-1 border-amber-500/40 text-amber-700 dark:text-amber-300"
+                        onClick={() => setIsExpertEditingPoultry(!isExpertEditingPoultry)}
+                      >
+                        <Edit3 className="h-3 w-3" />
+                        {isExpertEditingPoultry ? "Fermer" : "Ajuster / Certifier"}
+                      </Button>
+                    </div>
+
+                    {isExpertEditingPoultry && (
+                      <div className="space-y-3 pt-2 border-t border-border text-xs">
+                        <div>
+                          <Label className="text-xs font-semibold">Effectif réel ajusté de la bande</Label>
+                          <Input
+                            type="number"
+                            placeholder={String(poultryResult.flockSize)}
+                            value={expertAdjustedFlock}
+                            onChange={(e) => setExpertAdjustedFlock(e.target.value ? Number(e.target.value) : "")}
+                            className="h-8 text-xs mt-1"
+                          />
+                        </div>
+                        <div>
+                          <Label className="text-xs font-semibold">Notes & Observations zootechniques de terrain</Label>
+                          <Textarea
+                            placeholder="Ex: Vérification de l'axe au théodolite 90° Est-Ouest, muret de 0.55m lissé au mortier étanche..."
+                            value={expertPoultryNotes}
+                            onChange={(e) => setExpertPoultryNotes(e.target.value)}
+                            className="text-xs min-h-[60px] mt-1"
+                          />
+                        </div>
+                        <div className="flex justify-end">
+                          <Button
+                            size="sm"
+                            onClick={handleCertifyPoultry}
+                            className="h-8 text-xs bg-emerald-600 hover:bg-emerald-500 text-white font-semibold gap-1.5 shadow-sm"
+                          >
+                            <UserCheck className="h-3.5 w-3.5" /> Certifier les Données Réelles du Bâtiment
+                          </Button>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </Card>
+              )}
+            </div>
+          </div>
+
+          {/* Navigation bas d'onglet */}
+          <div className="flex justify-between items-center pt-2">
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => setActiveTab("geodesie")}
+              className="text-xs"
+            >
+              ← Retour Étape 1 : Données Terrain
+            </Button>
+            <Button
+              size="sm"
+              onClick={() => setActiveTab("plan2d")}
+              className="bg-emerald-600 hover:bg-emerald-500 text-white text-xs gap-1 font-semibold"
+            >
+              Valider la conception et passer à l'Étape 3 (Plan 2D Coté) <ArrowRight className="h-3 w-3" />
+            </Button>
           </div>
         </TabsContent>
 
         {/* ═════════════════════════════════════════════════════════ */}
         {/* ONGLET 4 : PLAN VECTORIEL 2D INTERACTIF                 */}
+        {/* ═════════════════════════════════════════════════════════ */}
+        {/* ═════════════════════════════════════════════════════════ */}
+        {/* ÉTAPE 3 : PLAN 2D COTÉ PROFESSIONNEL                      */}
         {/* ═════════════════════════════════════════════════════════ */}
         <TabsContent value="plan2d" className="space-y-4">
           {farmZoningPlan && (
@@ -1348,19 +1477,136 @@ export const NafaGeniusStudio: React.FC = () => {
               }}
             />
           )}
+          <div className="flex justify-between items-center pt-2">
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => setActiveTab("conception")}
+              className="text-xs"
+            >
+              ← Retour Étape 2 : Conception CIRAD/FAO
+            </Button>
+            <Button
+              size="sm"
+              onClick={() => setActiveTab("vue3d")}
+              className="bg-emerald-600 hover:bg-emerald-500 text-white text-xs gap-1 font-semibold"
+            >
+              Valider le Plan 2D et passer à l'Étape 4 (Jumeau 3D) <ArrowRight className="h-3 w-3" />
+            </Button>
+          </div>
         </TabsContent>
 
         {/* ═════════════════════════════════════════════════════════ */}
-        {/* ONGLET 5 : JUMEAU NUMÉRIQUE 3D ISOMÉTRIQUE               */}
+        {/* ÉTAPE 4 : JUMEAU NUMÉRIQUE 3D ISOMÉTRIQUE                 */}
         {/* ═════════════════════════════════════════════════════════ */}
         <TabsContent value="vue3d" className="space-y-4">
           {farmZoningPlan && <FarmIsometric3DView plan={farmZoningPlan} />}
+          <div className="flex justify-between items-center pt-2">
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => setActiveTab("plan2d")}
+              className="text-xs"
+            >
+              ← Retour Étape 3 : Plan 2D Coté
+            </Button>
+            <Button
+              size="sm"
+              onClick={() => setActiveTab("rendu_photo")}
+              className="bg-emerald-600 hover:bg-emerald-500 text-white text-xs gap-1 font-semibold"
+            >
+              Passer à l'Étape 5 (Rendu Photoréaliste HD) <ArrowRight className="h-3 w-3" />
+            </Button>
+          </div>
         </TabsContent>
 
         {/* ═════════════════════════════════════════════════════════ */}
-        {/* ONGLET 6 : DEVIS CERTIFIÉ & CHIFFRAGE FCFA               */}
+        {/* ÉTAPE 5 : RENDU PHOTORÉALISTE CLIENT HD                   */}
         {/* ═════════════════════════════════════════════════════════ */}
-        <TabsContent value="devis" className="space-y-4">
+        <TabsContent value="rendu_photo" className="space-y-4">
+          <PhotorealisticRenderView
+            project={unifiedProject}
+            onSnapshotExport={(dataUrl) => {
+              setPhotorealisticSnapshotDataUrl(dataUrl);
+            }}
+          />
+          <div className="flex justify-between items-center pt-2">
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => setActiveTab("vue3d")}
+              className="text-xs"
+            >
+              ← Retour Étape 4 : Jumeau 3D
+            </Button>
+            <Button
+              size="sm"
+              onClick={() => setActiveTab("reseaux_cad")}
+              className="bg-emerald-600 hover:bg-emerald-500 text-white text-xs gap-1 font-semibold"
+            >
+              Passer à l'Étape 6 (Plans Techniques Réseaux) <ArrowRight className="h-3 w-3" />
+            </Button>
+          </div>
+        </TabsContent>
+
+        {/* ═════════════════════════════════════════════════════════ */}
+        {/* ÉTAPE 6 : PLANS TECHNIQUES & P&ID RÉSEAUX HYDRAULIQUES     */}
+        {/* ═════════════════════════════════════════════════════════ */}
+        <TabsContent value="reseaux_cad" className="space-y-4">
+          <TechnicalNetworkPlanView
+            project={unifiedProject}
+            onProjectUpdate={handleUnifiedProjectUpdate}
+          />
+          <div className="flex justify-between items-center pt-2">
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => setActiveTab("rendu_photo")}
+              className="text-xs"
+            >
+              ← Retour Étape 5 : Rendu Photoréaliste
+            </Button>
+            <Button
+              size="sm"
+              onClick={() => setActiveTab("chiffrage")}
+              className="bg-emerald-600 hover:bg-emerald-500 text-white text-xs gap-1 font-semibold"
+            >
+              Passer à l'Étape 7 (Chiffrage Partenaires) <ArrowRight className="h-3 w-3" />
+            </Button>
+          </div>
+        </TabsContent>
+
+        {/* ═════════════════════════════════════════════════════════ */}
+        {/* ÉTAPE 7 : CHIFFRAGE PARTENAIRES & COMPARATEUR MULTI-OFFRES */}
+        {/* ═════════════════════════════════════════════════════════ */}
+        <TabsContent value="chiffrage" className="space-y-4">
+          <SmartQuoteComparator
+            project={unifiedProject}
+            onProjectUpdate={handleUnifiedProjectUpdate}
+          />
+          <div className="flex justify-between items-center pt-2">
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => setActiveTab("reseaux_cad")}
+              className="text-xs"
+            >
+              ← Retour Étape 6 : Plans Techniques Réseaux
+            </Button>
+            <Button
+              size="sm"
+              onClick={() => setActiveTab("validation_devis")}
+              className="bg-emerald-600 hover:bg-emerald-500 text-white text-xs gap-1 font-semibold"
+            >
+              Passer à l'Étape 8 (Validation & Devis FCFA) <ArrowRight className="h-3 w-3" />
+            </Button>
+          </div>
+        </TabsContent>
+
+        {/* ═════════════════════════════════════════════════════════ */}
+        {/* ÉTAPE 8 : VALIDATION & DEVIS ESTIMATIF GLOBAL (FCFA)       */}
+        {/* ═════════════════════════════════════════════════════════ */}
+        <TabsContent value="validation_devis" className="space-y-4">
           {engineeringQuote && (
             <Card className="p-4 sm:p-6 space-y-6">
               <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 border-b border-border pb-4">
@@ -1370,11 +1616,11 @@ export const NafaGeniusStudio: React.FC = () => {
                       DEVIS ESTIMATIF ET QUANTITATIF N° {engineeringQuote.quoteNumber}
                     </h3>
                     <Badge className="bg-emerald-500/10 text-emerald-700 border-emerald-500/20 text-xs">
-                      Certifié NAFA
+                      Certifié Partenaires NAFA
                     </Badge>
                   </div>
                   <p className="text-xs text-muted-foreground mt-0.5">
-                    Émis le {engineeringQuote.date} • Valable jusqu'au {engineeringQuote.validUntil}
+                    Émis le {engineeringQuote.date} • Valable 30 jours jusqu'au {engineeringQuote.validUntil}
                   </p>
                 </div>
 
@@ -1486,7 +1732,7 @@ export const NafaGeniusStudio: React.FC = () => {
                     <li>• Acompte de 50% à la validation de la commande</li>
                     <li>• 35% à la livraison et vérification du matériel sur site</li>
                     <li>• 15% à la réception technique définitive et mise en eau</li>
-                    <li>• Garantie constructeur 24 mois sur pompe solaire et panneaux</li>
+                    <li>• Garantie constructeur 24 à 36 mois sur pompe solaire et panneaux</li>
                   </ul>
                 </div>
 
@@ -1513,12 +1759,221 @@ export const NafaGeniusStudio: React.FC = () => {
                   </div>
                 </div>
               </div>
+
+              <div className="flex justify-between items-center pt-2 border-t">
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => setActiveTab("chiffrage")}
+                  className="text-xs"
+                >
+                  ← Retour Étape 7 : Chiffrage Partenaires
+                </Button>
+                <Button
+                  size="sm"
+                  onClick={() => setActiveTab("export_pro")}
+                  className="bg-emerald-600 hover:bg-emerald-500 text-white text-xs gap-1 font-semibold"
+                >
+                  Passer à l'Étape 9 (Export Dossier Pro) <ArrowRight className="h-3 w-3" />
+                </Button>
+              </div>
             </Card>
           )}
         </TabsContent>
 
         {/* ═════════════════════════════════════════════════════════ */}
-        {/* ONGLET 7 : DIAGNOSTIC AGRONOMIQUE RAG SCIENTIFIQUE        */}
+        {/* ÉTAPE 9 : EXPORT PROFESSIONNEL DOSSIER PDF & FICHIERS     */}
+        {/* ═════════════════════════════════════════════════════════ */}
+        <TabsContent value="export_pro" className="space-y-4">
+          <Card className="p-4 sm:p-6 space-y-6">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 border-b border-border pb-4">
+              <div>
+                <div className="flex items-center gap-2">
+                  <h3 className="text-base font-extrabold text-foreground flex items-center gap-2">
+                    <Download className="h-5 w-5 text-emerald-600" />
+                    Hub d'Export Professionnel — Dossier d'Ingénierie Clé en Main
+                  </h3>
+                  <Badge className="bg-emerald-500/15 text-emerald-800 dark:text-emerald-300 border-emerald-500/30 text-xs">
+                    Format Bailleurs & Banques
+                  </Badge>
+                </div>
+                <p className="text-xs text-muted-foreground mt-0.5">
+                  Génération des livrables contractuels, graphiques et financiers conformes aux standards CIRAD, FAO et banques agricoles.
+                </p>
+              </div>
+
+              <Button
+                onClick={handleExportPdf}
+                className="bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs gap-2 shadow-md h-10 px-4"
+              >
+                <Download className="h-4 w-4" /> Télécharger le Dossier PDF Officiel
+              </Button>
+            </div>
+
+            {/* Grille des livrables exportables */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {/* Livrable 1 : Dossier PDF Complet */}
+              <div className="p-4 rounded-xl border border-emerald-500/20 bg-emerald-50/40 dark:bg-emerald-950/20 space-y-3">
+                <div className="flex items-center gap-2">
+                  <FileText className="h-5 w-5 text-emerald-600" />
+                  <h4 className="text-xs font-bold text-foreground">Dossier Technique Complet</h4>
+                </div>
+                <p className="text-[11px] text-muted-foreground">
+                  Rapport multi-pages officiel avec cartouche réglementaire, coordonnées WGS84, note de calcul hydraulique, BPU et sceau de sécurité.
+                </p>
+                <Button
+                  size="sm"
+                  onClick={handleExportPdf}
+                  className="w-full text-xs bg-emerald-600 hover:bg-emerald-500 text-white font-semibold gap-1.5"
+                >
+                  <Download className="h-3.5 w-3.5" /> Exporter en PDF Officiel
+                </Button>
+              </div>
+
+              {/* Livrable 2 : Bordereau Partenaires CSV */}
+              <div className="p-4 rounded-xl border border-border bg-card space-y-3">
+                <div className="flex items-center gap-2">
+                  <Store className="h-5 w-5 text-emerald-700" />
+                  <h4 className="text-xs font-bold text-foreground">Bon de Commande Fournisseurs</h4>
+                </div>
+                <p className="text-[11px] text-muted-foreground">
+                  Fichier CSV structuré contenant les métrés exacts, références matériel, prix négociés et désignation des partenaires agréés.
+                </p>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={handleExportPartnerCsv}
+                  className="w-full text-xs gap-1.5 border-emerald-500/30 text-emerald-800 dark:text-emerald-300"
+                >
+                  <Download className="h-3.5 w-3.5" /> Exporter en CSV (Excel)
+                </Button>
+              </div>
+
+              {/* Livrable 3 : Rendu Photoréaliste HD */}
+              <div className="p-4 rounded-xl border border-border bg-card space-y-3">
+                <div className="flex items-center gap-2">
+                  <Camera className="h-5 w-5 text-amber-600" />
+                  <h4 className="text-xs font-bold text-foreground">Rendu Photoréaliste Client</h4>
+                </div>
+                <p className="text-[11px] text-muted-foreground">
+                  Image haute résolution (jusqu'à 4K) montrant l'aménagement final, idéale pour présentation au promoteur ou au comité de crédit.
+                </p>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => setActiveTab("rendu_photo")}
+                  className="w-full text-xs gap-1.5 border-amber-500/30 text-amber-800 dark:text-amber-300"
+                >
+                  <Eye className="h-3.5 w-3.5" /> Ouvrir Studio Photoréaliste
+                </Button>
+              </div>
+
+              {/* Livrable 4 : Plan 2D Coté */}
+              <div className="p-4 rounded-xl border border-border bg-card space-y-3">
+                <div className="flex items-center gap-2">
+                  <Layers className="h-5 w-5 text-purple-600" />
+                  <h4 className="text-xs font-bold text-foreground">Plan Vectoriel 2D Coté</h4>
+                </div>
+                <p className="text-[11px] text-muted-foreground">
+                  Plan d'implantation avec lignes de cotes métriques, échelle graphique et orientation géographique pour les équipes de chantier.
+                </p>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => setActiveTab("plan2d")}
+                  className="w-full text-xs gap-1.5 border-purple-500/30 text-purple-800 dark:text-purple-300"
+                >
+                  <Eye className="h-3.5 w-3.5" /> Ouvrir Plan 2D
+                </Button>
+              </div>
+
+              {/* Livrable 5 : Schéma P&ID Réseaux */}
+              <div className="p-4 rounded-xl border border-border bg-card space-y-3">
+                <div className="flex items-center gap-2">
+                  <Wrench className="h-5 w-5 text-indigo-600" />
+                  <h4 className="text-xs font-bold text-foreground">Schéma Unifilaire P&ID</h4>
+                </div>
+                <p className="text-[11px] text-muted-foreground">
+                  Schéma de tuyauterie et instrumentation (P&ID) avec diamètres nominaux, pressions et tableau des vitesses d'écoulement.
+                </p>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => setActiveTab("reseaux_cad")}
+                  className="w-full text-xs gap-1.5 border-indigo-500/30 text-indigo-800 dark:text-indigo-300"
+                >
+                  <Eye className="h-3.5 w-3.5" /> Ouvrir Schéma P&ID
+                </Button>
+              </div>
+
+              {/* Livrable 6 : Comparateur Multi-Offres */}
+              <div className="p-4 rounded-xl border border-border bg-card space-y-3">
+                <div className="flex items-center gap-2">
+                  <Store className="h-5 w-5 text-teal-600" />
+                  <h4 className="text-xs font-bold text-foreground">Matrice des Offres Partenaires</h4>
+                </div>
+                <p className="text-[11px] text-muted-foreground">
+                  Comparatif détaillé des propositions commerciales des partenaires agréés (FASO SOLAIRE, AGRODIA, SODIMEX SAHEL, etc.).
+                </p>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => setActiveTab("chiffrage")}
+                  className="w-full text-xs gap-1.5 border-teal-500/30 text-teal-800 dark:text-teal-300"
+                >
+                  <Eye className="h-3.5 w-3.5" /> Voir Comparateur Offres
+                </Button>
+              </div>
+            </div>
+
+            {/* Checklist de conformité pour financement */}
+            <div className="p-4 rounded-xl bg-slate-50 dark:bg-slate-900 border border-border space-y-3 text-xs">
+              <h4 className="font-bold text-foreground flex items-center gap-2">
+                <ShieldCheck className="h-4 w-4 text-emerald-600" />
+                Conformité Réglementaire & Exigences des Bailleurs
+              </h4>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-muted-foreground">
+                <div className="flex items-center gap-2">
+                  <CheckCircle2 className="h-3.5 w-3.5 text-emerald-600 shrink-0" />
+                  <span>Calcul d'évapotranspiration conforme au Bulletin FAO-56</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <CheckCircle2 className="h-3.5 w-3.5 text-emerald-600 shrink-0" />
+                  <span>Vitesse d'écoulement PEHD limitée à 1.2 m/s (CIRAD)</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <CheckCircle2 className="h-3.5 w-3.5 text-emerald-600 shrink-0" />
+                  <span>Architecture avicole bioclimatique avec lanterneau faîtier</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <CheckCircle2 className="h-3.5 w-3.5 text-emerald-600 shrink-0" />
+                  <span>Prix certifiés mercuriale partenaires NAFA-AGRITECH 2026</span>
+                </div>
+              </div>
+            </div>
+
+            <div className="flex justify-between items-center pt-2 border-t">
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => setActiveTab("validation_devis")}
+                className="text-xs"
+              >
+                ← Retour Étape 8 : Devis FCFA
+              </Button>
+              <Button
+                size="sm"
+                onClick={() => setActiveTab("diagnostic")}
+                className="bg-emerald-600 hover:bg-emerald-500 text-white text-xs gap-1 font-semibold"
+              >
+                Consulter le Diagnostic RAG Scientifique <ArrowRight className="h-3 w-3" />
+              </Button>
+            </div>
+          </Card>
+        </TabsContent>
+
+        {/* ═════════════════════════════════════════════════════════ */}
+        {/* DIAGNOSTIC AGRONOMIQUE RAG SCIENTIFIQUE (INERA, CSP, YARA)*/}
         {/* ═════════════════════════════════════════════════════════ */}
         <TabsContent value="diagnostic" className="space-y-4">
           <CropDiagnosisTool />
