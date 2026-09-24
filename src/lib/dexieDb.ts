@@ -6,7 +6,7 @@
  * - Statuts de synchronisation : 'pending' | 'synced' | 'error'
  * - Détection automatique de reconnexion réseau & synchronisation en arrière-plan
  * - Résolution de conflits basée sur `updated_at` (Last-Write-Wins)
- * - Indicateur visuel temps réel : 🟢 Synchronisé, 🟠 En attente, 🔴 Erreur
+ * - Indicateur visuel temps réel : Synchronisé, En attente, Erreur
  */
 
 import Dexie, { Table } from 'dexie';

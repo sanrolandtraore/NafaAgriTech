@@ -197,7 +197,11 @@ export default function MissionsPage() {
               <div className="flex items-center gap-2 text-muted-foreground">
                 <Clock className="h-3.5 w-3.5 text-primary shrink-0" />
                 <span>Prévue le {new Date(m.scheduled_date).toLocaleDateString("fr-FR")}</span>
-                {m.location_name && <span>(📍 {m.location_name})</span>}
+                {m.location_name && (
+                  <span className="flex items-center gap-1">
+                    <MapPin className="h-3 w-3" /> {m.location_name}
+                  </span>
+                )}
               </div>
 
               {m.description && (
@@ -211,8 +215,16 @@ export default function MissionsPage() {
                   <span className="font-heading font-bold text-sm text-foreground">
                     {Number(m.price).toLocaleString("fr-FR")} FCFA
                   </span>
-                  <Badge variant={m.paid ? "secondary" : "outline"} className="text-[10px]">
-                    {m.paid ? "✅ Payé" : "⏳ En attente de paiement"}
+                  <Badge variant={m.paid ? "secondary" : "outline"} className="text-[10px] flex items-center gap-1">
+                    {m.paid ? (
+                      <>
+                        <CheckCircle2 className="h-3 w-3 text-emerald-600" /> Payé
+                      </>
+                    ) : (
+                      <>
+                        <Clock className="h-3 w-3 text-amber-600" /> En attente de paiement
+                      </>
+                    )}
                   </Badge>
                 </div>
               )}

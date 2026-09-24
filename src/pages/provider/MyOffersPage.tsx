@@ -280,15 +280,28 @@ export default function MyOffersPage() {
                     <Badge variant="outline" className="text-[11px] capitalize">
                       {OFFER_CATEGORIES.find((c) => c.value === o.category)?.label || o.category}
                     </Badge>
-                    <Badge variant={o.is_active ? "secondary" : "outline"} className="text-[11px]">
-                      {o.is_active ? "🟢 En ligne" : "⚪ Masquée"}
+                    <Badge variant={o.is_active ? "secondary" : "outline"} className="text-[11px] flex items-center gap-1.5">
+                      {o.is_active ? (
+                        <>
+                          <span className="h-2 w-2 rounded-full bg-emerald-500 shrink-0" /> En ligne
+                        </>
+                      ) : (
+                        <>
+                          <span className="h-2 w-2 rounded-full bg-muted-foreground/50 shrink-0" /> Masquée
+                        </>
+                      )}
                     </Badge>
                   </div>
                   <CardTitle className="text-base font-bold line-clamp-1 mt-1">
                     {o.title}
                   </CardTitle>
-                  <CardDescription className="text-xs truncate">
-                    {o.partner_name} {o.location_name ? `· 📍 ${o.location_name}` : ""}
+                  <CardDescription className="text-xs truncate flex items-center gap-1">
+                    <span>{o.partner_name}</span>
+                    {o.location_name && (
+                      <span className="flex items-center gap-0.5 text-muted-foreground">
+                        · <MapPin className="h-3 w-3 shrink-0" /> {o.location_name}
+                      </span>
+                    )}
                   </CardDescription>
                 </CardHeader>
 

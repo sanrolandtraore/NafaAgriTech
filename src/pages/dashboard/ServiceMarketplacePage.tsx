@@ -17,7 +17,8 @@ import {
   Search, X, MapPin, Phone, Plus, ShoppingBag, Lock, Unlock, CheckCircle,
   Clock, Loader2, XCircle, Eye, Trash2, Package, Send, Shield,
   Tractor, Star, Calendar, Mail, Globe, Store, Filter, RefreshCw,
-  ExternalLink, MessageCircle
+  ExternalLink, MessageCircle, ShieldAlert, CheckCircle2, RotateCcw,
+  LayoutDashboard, Wrench, Sparkles, AlertCircle
 } from "lucide-react";
 import BackNavigationButton from "@/components/BackNavigationButton";
 import { partnerStorage, PartnerOffer } from "@/lib/partnerStorage";
@@ -81,9 +82,9 @@ const STATUS_CONFIG: Record<string, { label: string; icon: React.ElementType; co
 };
 
 const ESCROW_CONFIG: Record<string, { label: string; icon: React.ElementType; variant: "default" | "secondary" | "destructive" | "outline" }> = {
-  bloque: { label: "💰 Fonds bloqués", icon: Lock, variant: "secondary" },
-  debloque: { label: "✅ Fonds débloqués", icon: Unlock, variant: "default" },
-  rembourse: { label: "↩️ Remboursé", icon: XCircle, variant: "destructive" },
+  bloque: { label: "Fonds bloqués", icon: Lock, variant: "secondary" },
+  debloque: { label: "Fonds débloqués", icon: CheckCircle2, variant: "default" },
+  rembourse: { label: "Remboursé", icon: RotateCcw, variant: "destructive" },
 };
 
 export type PublicMarketItem = {
@@ -121,14 +122,17 @@ type MarketOrder = {
 };
 
 export const ServiceMarketplacePage = () => {
-  const { user, primaryRole } = useAuth();
-  const isClient = !primaryRole || primaryRole === "agriculteur" || primaryRole === "farmer" || primaryRole === "eleveur";
-  const isProvider = primaryRole === "partenaire" || primaryRole === "agent_technique" || primaryRole === "expert";
+  const { user, primaryRole, partnerType } = useAuth();
+  const isPartner = primaryRole === "partenaire" || primaryRole === "agent_technique" || primaryRole === "expert" || primaryRole === "formation" || (partnerType != null && partnerType !== "");
+  const isClient = !isPartner;
 
   const [items, setItems] = useState<PublicMarketItem[]>([]);
   const [myOrders, setMyOrders] = useState<MarketOrder[]>([]);
   const [loading, setLoading] = useState(true);
   const [userPosition, setUserPosition] = useState<[number, number] | null>(null);
+
+  // Filtre d'action : Acheter, Louer, Demander un service (réservé aux agriculteurs et éleveurs)
+  const [intentFilter, setIntentFilter] = useState<"all" | "acheter" | "louer" | "service">("all");
 
   // ─── Les 6 Filtres Obligatoires ───
   const [search, setSearch] = useState("");
@@ -254,6 +258,15 @@ export const ServiceMarketplacePage = () => {
   // ─── Application rigoureuse des 6 Filtres ───
   const filteredItems = useMemo(() => {
     return items.filter((item) => {
+      // 0. Filtre d'intention spécifique : Acheter, Louer, Demander un service
+      if (intentFilter === "acheter") {
+        if (!["produits_agricoles", "produits_elevage", "intrants_semences"].includes(item.category)) return false;
+      } else if (intentFilter === "louer") {
+        if (!["machinisme", "irrigation_solaire"].includes(item.category)) return false;
+      } else if (intentFilter === "service") {
+        if (!["services_agricoles", "services_veterinaires", "finance_assurance"].includes(item.category)) return false;
+      }
+
       // 1. Recherche plein texte
       const q = search.trim().toLowerCase();
       if (q) {
@@ -293,7 +306,7 @@ export const ServiceMarketplacePage = () => {
 
       return true;
     });
-  }, [items, search, catFilter, regionFilter, cityFilter, distanceMax, priceMin, priceMax, availabilityFilter]);
+  }, [items, search, catFilter, regionFilter, cityFilter, distanceMax, priceMin, priceMax, availabilityFilter, intentFilter]);
 
   // Commande sécurisée
   const handlePlaceOrder = async () => {
@@ -344,6 +357,7 @@ export const ServiceMarketplacePage = () => {
 
   const resetFilters = () => {
     setSearch("");
+    setIntentFilter("all");
     setCatFilter("all");
     setRegionFilter("all");
     setCityFilter("all");
@@ -355,6 +369,34 @@ export const ServiceMarketplacePage = () => {
 
   const getCategoryLabel = (cat: string) =>
     MARKETPLACE_CATEGORIES.find((c) => c.value === cat)?.label || cat;
+
+  const getItemActionType = (category: string) => {
+    if (category === "machinisme" || category === "irrigation_solaire") {
+      return {
+        label: "Louer ce matériel",
+        action: "louer" as const,
+        icon: Tractor,
+        dialogTitle: "Réservation de Location sous séquestre NAFA",
+        dialogButton: "Confirmer la location & Bloquer les fonds",
+      };
+    }
+    if (category === "services_agricoles" || category === "services_veterinaires" || category === "finance_assurance") {
+      return {
+        label: "Demander ce service",
+        action: "service" as const,
+        icon: Send,
+        dialogTitle: "Demande de Prestation sous séquestre NAFA",
+        dialogButton: "Valider la demande & Bloquer les fonds",
+      };
+    }
+    return {
+      label: "Acheter ce produit",
+      action: "acheter" as const,
+      icon: ShoppingBag,
+      dialogTitle: "Commande d'Achat sous séquestre NAFA",
+      dialogButton: "Valider l'achat & Bloquer les fonds",
+    };
+  };
 
   if (loading) {
     return (
@@ -370,25 +412,103 @@ export const ServiceMarketplacePage = () => {
     );
   }
 
+  // ─── BARRIÈRE STRICTE PARTENAIRE VS AGRICULTEURS / ÉLEVEURS ───
+  // Les partenaires ont UNIQUEMENT accès à leurs pages personnelles et tableau de bord
+  // Seuls les agriculteurs et éleveurs ont accès au marketplace vitrine pour acheter, louer, demander un service
+  if (isPartner) {
+    return (
+      <div className="max-w-2xl mx-auto py-12 px-4 sm:px-6 text-center space-y-6">
+        <div className="h-16 w-16 mx-auto rounded-2xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-amber-600">
+          <ShieldAlert className="h-8 w-8" />
+        </div>
+        <div className="space-y-3">
+          <h2 className="text-xl sm:text-2xl font-heading font-extrabold text-foreground">
+            Accès Réservé aux Agriculteurs & Éleveurs
+          </h2>
+          <p className="text-sm text-muted-foreground leading-relaxed max-w-lg mx-auto">
+            La Marketplace Vitrine (Acheter, Louer, Demander un service) est exclusivement réservée aux exploitants agricoles et éleveurs.
+          </p>
+          <div className="p-4 rounded-xl bg-card border border-border/70 text-left text-xs text-muted-foreground space-y-2 mt-4">
+            <p className="font-semibold text-foreground flex items-center gap-1.5 text-sm">
+              <Store className="h-4 w-4 text-emerald-600" />
+              Espace Personnel Partenaire Dédié :
+            </p>
+            <p className="leading-relaxed">
+              En tant que partenaire certifié, vous disposez exclusivement de votre <strong>Espace Personnel</strong> et de votre <strong>Tableau de Bord</strong> pour publier, modifier et gérer vos services et produits, consulter les devis reçus et suivre vos commandes.
+            </p>
+          </div>
+        </div>
+        <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-2">
+          <Button asChild className="w-full sm:w-auto bg-emerald-600 hover:bg-emerald-700 text-white text-sm h-11 px-5 rounded-xl font-semibold shadow-xs">
+            <Link to="/dashboard/partner-space?tab=services">
+              <Package className="h-4 w-4 mr-2" /> Gérer mes Services & Produits
+            </Link>
+          </Button>
+          <Button asChild variant="outline" className="w-full sm:w-auto text-sm h-11 px-5 rounded-xl">
+            <Link to="/dashboard/partner-space?tab=dashboard">
+              <LayoutDashboard className="h-4 w-4 mr-2" /> Mon Tableau de Bord Partenaire
+            </Link>
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className="space-y-6 max-w-7xl mx-auto pb-12 animate-fade-in">
+    <div className="space-y-6 max-w-7xl mx-auto pb-12 px-3 sm:px-6 animate-fade-in">
       {/* En-tête Marketplace Unifiée */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div className="flex items-center gap-3">
           <BackNavigationButton fallbackTo="/dashboard" />
           <div>
             <h1 className="text-xl sm:text-2xl font-heading font-extrabold flex items-center gap-2 text-foreground">
-              <Store className="h-6 w-6 text-emerald-600" /> Marketplace NAFA
+              <Store className="h-6 w-6 text-emerald-600" /> Marketplace Vitrine NAFA
             </h1>
             <p className="text-xs sm:text-sm text-muted-foreground">
-              Seul espace commun : offres publiques des partenaires certifiés, sans fuite de données internes.
+              Espace réservé aux agriculteurs et éleveurs : achetez vos intrants, louez du matériel agricole et demandez des services certifiés.
             </p>
           </div>
         </div>
 
-        <Badge variant="outline" className="border-emerald-500/40 text-emerald-700 bg-emerald-500/10 text-xs py-1 px-3">
-          <Shield className="h-3.5 w-3.5 mr-1 text-emerald-600" /> Séquestre Garanti
+        <Badge variant="outline" className="border-emerald-500/40 text-emerald-700 bg-emerald-500/10 text-xs py-1.5 px-3">
+          <Shield className="h-3.5 w-3.5 mr-1.5 text-emerald-600" /> Séquestre Garanti
         </Badge>
+      </div>
+
+      {/* Barre d'action rapide : Acheter / Louer / Demander un service */}
+      <div className="flex items-center gap-2 overflow-x-auto pb-1 no-scrollbar">
+        <Button
+          variant={intentFilter === "all" ? "default" : "outline"}
+          size="sm"
+          onClick={() => setIntentFilter("all")}
+          className={`h-9 text-xs rounded-xl shrink-0 font-medium ${intentFilter === "all" ? "bg-emerald-600 text-white" : ""}`}
+        >
+          <Store className="h-3.5 w-3.5 mr-1.5" /> Toutes les offres ({items.length})
+        </Button>
+        <Button
+          variant={intentFilter === "acheter" ? "default" : "outline"}
+          size="sm"
+          onClick={() => setIntentFilter("acheter")}
+          className={`h-9 text-xs rounded-xl shrink-0 font-medium ${intentFilter === "acheter" ? "bg-emerald-600 text-white" : ""}`}
+        >
+          <ShoppingBag className="h-3.5 w-3.5 mr-1.5 text-emerald-600" /> Acheter (Produits & Intrants)
+        </Button>
+        <Button
+          variant={intentFilter === "louer" ? "default" : "outline"}
+          size="sm"
+          onClick={() => setIntentFilter("louer")}
+          className={`h-9 text-xs rounded-xl shrink-0 font-medium ${intentFilter === "louer" ? "bg-emerald-600 text-white" : ""}`}
+        >
+          <Tractor className="h-3.5 w-3.5 mr-1.5 text-amber-600" /> Louer (Matériels & Équipements)
+        </Button>
+        <Button
+          variant={intentFilter === "service" ? "default" : "outline"}
+          size="sm"
+          onClick={() => setIntentFilter("service")}
+          className={`h-9 text-xs rounded-xl shrink-0 font-medium ${intentFilter === "service" ? "bg-emerald-600 text-white" : ""}`}
+        >
+          <Wrench className="h-3.5 w-3.5 mr-1.5 text-blue-600" /> Demander un service (Prestations & Vétérinaire)
+        </Button>
       </div>
 
       {/* Barre d'explication du Séquestre Garanti */}
@@ -671,30 +791,36 @@ export const ServiceMarketplacePage = () => {
                       </Button>
                     </div>
 
-                    <div className="flex items-center gap-2">
-                      <Button
-                        size="sm"
-                        className="flex-1 bg-emerald-600 hover:bg-emerald-500 text-white text-xs h-8 gap-1"
-                        onClick={() => {
-                          setSelectedItem(item);
-                          setShowOrderDialog(true);
-                        }}
-                      >
-                        <Lock className="h-3 w-3" /> Commander (Sécurisé)
-                      </Button>
+                    {(() => {
+                      const actionInfo = getItemActionType(item.category);
+                      const ActionIcon = actionInfo.icon;
+                      return (
+                        <div className="flex items-center gap-2">
+                          <Button
+                            size="sm"
+                            className="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white text-xs h-9 gap-1.5 rounded-xl font-semibold shadow-xs"
+                            onClick={() => {
+                              setSelectedItem(item);
+                              setShowOrderDialog(true);
+                            }}
+                          >
+                            <ActionIcon className="h-3.5 w-3.5" /> {actionInfo.label}
+                          </Button>
 
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        className="h-8 px-2 text-xs text-muted-foreground hover:text-foreground"
-                        asChild
-                        title="Voir la vitrine complète du partenaire"
-                      >
-                        <Link to={`/partenaire/${item.provider_id}`}>
-                          <ExternalLink className="h-3.5 w-3.5" />
-                        </Link>
-                      </Button>
-                    </div>
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            className="h-9 px-2 text-xs text-muted-foreground hover:text-foreground rounded-xl"
+                            asChild
+                            title="Voir les détails de l'offre"
+                          >
+                            <Link to={`/partenaire/${item.provider_id}`}>
+                              <ExternalLink className="h-3.5 w-3.5" />
+                            </Link>
+                          </Button>
+                        </div>
+                      );
+                    })()}
                   </div>
                 </Card>
               ))}
@@ -808,7 +934,8 @@ export const ServiceMarketplacePage = () => {
         <DialogContent className="max-w-md">
           <DialogHeader>
             <DialogTitle className="text-base flex items-center gap-2">
-              <Lock className="h-4 w-4 text-emerald-600" /> Commande sous séquestre NAFA
+              <Lock className="h-4 w-4 text-emerald-600" />
+              {selectedItem ? getItemActionType(selectedItem.category).dialogTitle : "Commande sous séquestre NAFA"}
             </DialogTitle>
           </DialogHeader>
 
@@ -828,19 +955,21 @@ export const ServiceMarketplacePage = () => {
                   placeholder="Ex: Emplacement de la parcelle, date souhaitée, superficie..."
                   value={orderNotes}
                   onChange={(e) => setOrderNotes(e.target.value)}
+                  className="h-10 text-xs"
                 />
               </div>
 
-              <div className="p-2.5 rounded bg-emerald-50 dark:bg-emerald-950/40 text-[11px] text-emerald-800 dark:text-emerald-300">
-                🔒 Votre paiement restera consigné chez NAFA - AGRITECH jusqu'à confirmation de la réalisation du service ou réception du produit.
+              <div className="p-3 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-500/20 text-[11px] text-emerald-800 dark:text-emerald-300 flex items-start gap-2">
+                <Shield className="h-4 w-4 text-emerald-600 shrink-0 mt-0.5" />
+                <span>Votre paiement reste consigné sur le compte séquestre NAFA - AGRITECH jusqu'à confirmation de la livraison ou de la réalisation de la prestation sur le terrain.</span>
               </div>
 
               <div className="flex justify-end gap-2 pt-2">
-                <Button variant="outline" size="sm" onClick={() => setShowOrderDialog(false)}>
+                <Button variant="outline" size="sm" className="h-10 px-4 text-xs rounded-xl" onClick={() => setShowOrderDialog(false)}>
                   Annuler
                 </Button>
-                <Button size="sm" className="bg-emerald-600 text-white" onClick={handlePlaceOrder}>
-                  Valider et Bloquer les Fonds
+                <Button size="sm" className="bg-emerald-600 hover:bg-emerald-700 text-white h-10 px-4 text-xs rounded-xl font-medium" onClick={handlePlaceOrder}>
+                  {getItemActionType(selectedItem.category).dialogButton}
                 </Button>
               </div>
             </div>

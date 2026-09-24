@@ -23,7 +23,7 @@ interface Sheet {
   recommended_varieties: string[];
   yield_potential_t_ha: number | null;
   notes: string | null;
-  iconEmoji?: string;
+  iconName?: string;
 }
 
 export default function CropLibraryPage() {

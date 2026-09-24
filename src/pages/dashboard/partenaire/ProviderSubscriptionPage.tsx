@@ -446,8 +446,9 @@ export default function ProviderSubscriptionPage() {
             </div>
 
             {selectedPlan?.id === "free" ? (
-              <div className="p-3 bg-emerald-500/10 border border-emerald-500/20 rounded-xl text-xs text-emerald-800 dark:text-emerald-200">
-                ✨ L'accès <strong>Découverte</strong> est 100% gratuit et s'active immédiatement sans aucun paiement.
+              <div className="p-3 bg-emerald-500/10 border border-emerald-500/20 rounded-xl text-xs text-emerald-800 dark:text-emerald-200 flex items-center gap-1.5">
+                <Sparkles className="h-4 w-4 text-emerald-600 shrink-0" />
+                <span>L'accès <strong>Découverte</strong> est 100% gratuit et s'active immédiatement sans aucun paiement.</span>
               </div>
             ) : (
               <>

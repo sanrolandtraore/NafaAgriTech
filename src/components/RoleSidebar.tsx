@@ -28,6 +28,7 @@ export const agriculteurNav: NavItem[] = [
   { to: "/dashboard/crop-planning", labelKey: "Planification des cultures", icon: Calculator },
   { to: "/dashboard/crops", labelKey: "Cultures & Parcelles", icon: Sprout },
   { to: "/dashboard/scouting", labelKey: "Suivi des Parcelles", icon: Eye },
+  { to: "/dashboard/marketplace", labelKey: "Marketplace Vitrine (Acheter, Louer, Services)", icon: Store },
   { to: "/dashboard/genius", labelKey: "NAFA Genius IA (Végétal)", icon: Sparkles },
   { to: "/dashboard/crop-library", labelKey: "Fiches Techniques INERA", icon: BookOpen },
   { to: "/dashboard/settings", labelKey: "Paramètres", icon: Settings },
@@ -40,6 +41,7 @@ export const eleveurNav: NavItem[] = [
   { to: "/dashboard/animal-health", labelKey: "Santé & Vaccinations", icon: Heart },
   { to: "/dashboard/animal-reproduction", labelKey: "Reproduction & Vêlage", icon: Baby },
   { to: "/dashboard/animal-feeding", labelKey: "Alimentation & Rations", icon: Utensils },
+  { to: "/dashboard/marketplace", labelKey: "Marketplace Vitrine (Acheter, Louer, Services)", icon: Store },
   { to: "/dashboard/livestock-services", labelKey: "Services Vétérinaires", icon: ClipboardList },
   { to: "/dashboard/settings", labelKey: "Paramètres", icon: Settings },
   { to: "/dashboard/export", labelKey: "Export PDF/CSV", icon: Download },
@@ -48,12 +50,12 @@ export const eleveurNav: NavItem[] = [
 /** 1. Profil Partenaire : Fournisseur d'Intrants & Semences */
 export const fournisseurNav: NavItem[] = [
   { to: "/dashboard", labelKey: "Tableau de bord", icon: LayoutDashboard },
+  { to: "/dashboard/partner-space", labelKey: "Mon Espace Partenaire (Offres & Devis)", icon: Building2, section: "Visibilité & Gestion" },
   { to: "/dashboard/partenaire-mes-offres", labelKey: "Mes offres & Ventes", icon: Store, section: "Vente & Intrants" },
   { to: "/dashboard/quote-requests", labelKey: "Demandes de devis", icon: FileText, section: "Vente & Intrants" },
   { to: "/dashboard/provider-clients", labelKey: "Portefeuille Clients", icon: Users, section: "Vente & Intrants" },
   { to: "/dashboard/revenus", labelKey: "Chiffre d'affaires & Recettes", icon: Wallet, section: "Vente & Intrants" },
   { to: "/dashboard/partenaire-fournisseurs", labelKey: "Fournisseurs", icon: Package, section: "Approvisionnement" },
-  { to: "/dashboard/partenaire-vitrine", labelKey: "Vitrine publique", icon: ShieldCheck, section: "Visibilité & Gestion" },
   { to: "/dashboard/partenaire-kyc", labelKey: "Vérification KYC & Certification", icon: BadgeCheck, section: "Visibilité & Gestion" },
   { to: "/dashboard/partenaire-abonnement", labelKey: "Abonnement partenaire", icon: Sparkles, section: "Visibilité & Gestion" },
   { to: "/dashboard/settings", labelKey: "Paramètres", icon: Settings, section: "Visibilité & Gestion" },
@@ -62,13 +64,13 @@ export const fournisseurNav: NavItem[] = [
 /** 2. Profil Partenaire : Machinisme & Travaux Agricoles (Location & Chantiers) */
 export const machinismeNav: NavItem[] = [
   { to: "/dashboard", labelKey: "Tableau de bord", icon: LayoutDashboard },
+  { to: "/dashboard/partner-space", labelKey: "Mon Espace Partenaire (Offres & Devis)", icon: Building2, section: "Visibilité & Gestion" },
   { to: "/dashboard/equipment", labelKey: "Parc matériel & Location", icon: Tractor, section: "Flotte & Chantiers" },
   { to: "/dashboard/missions", labelKey: "Missions & Travaux", icon: Briefcase, section: "Flotte & Chantiers" },
   { to: "/dashboard/interventions", labelKey: "Interventions terrain", icon: ClipboardList, section: "Flotte & Chantiers" },
   { to: "/dashboard/quote-requests", labelKey: "Demandes de devis", icon: FileText, section: "Flotte & Chantiers" },
   { to: "/dashboard/provider-clients", labelKey: "Portefeuille Clients", icon: Users, section: "Flotte & Chantiers" },
   { to: "/dashboard/revenus", labelKey: "Chiffre d'affaires & Recettes", icon: Wallet, section: "Flotte & Chantiers" },
-  { to: "/dashboard/partenaire-vitrine", labelKey: "Vitrine publique", icon: ShieldCheck, section: "Visibilité & Gestion" },
   { to: "/dashboard/partenaire-kyc", labelKey: "Vérification KYC & Certification", icon: BadgeCheck, section: "Visibilité & Gestion" },
   { to: "/dashboard/partenaire-abonnement", labelKey: "Abonnement partenaire", icon: Sparkles, section: "Visibilité & Gestion" },
   { to: "/dashboard/settings", labelKey: "Paramètres", icon: Settings, section: "Visibilité & Gestion" },
@@ -77,6 +79,7 @@ export const machinismeNav: NavItem[] = [
 /** 3. Profil Partenaire : Cabinet d'Agronomie & Conseil Technique */
 export const agronomeNav: NavItem[] = [
   { to: "/dashboard", labelKey: "Tableau de bord", icon: LayoutDashboard },
+  { to: "/dashboard/partner-space", labelKey: "Mon Espace Partenaire (Offres & Devis)", icon: Building2, section: "Visibilité & Gestion" },
   { to: "/dashboard/genius", labelKey: "NAFA Genius IA", icon: Sparkles, section: "Expertise Agronomique" },
   { to: "/dashboard/expert-diagnosis", labelKey: "Diagnostic IA", icon: Microscope, section: "Expertise Agronomique" },
   { to: "/dashboard/expert-prescriptions", labelKey: "Prescriptions", icon: FileText, section: "Expertise Agronomique" },
@@ -85,7 +88,6 @@ export const agronomeNav: NavItem[] = [
   { to: "/dashboard/expert-cartography", labelKey: "Cartographie GPS", icon: MapPin, section: "Expertise Agronomique" },
   { to: "/dashboard/crop-library", labelKey: "Fiches techniques", icon: BookOpen, section: "Expertise Agronomique" },
   { to: "/dashboard/quote-requests", labelKey: "Demandes de devis", icon: FileText, section: "Clients & Conseils" },
-  { to: "/dashboard/partenaire-vitrine", labelKey: "Vitrine publique", icon: ShieldCheck, section: "Visibilité & Gestion" },
   { to: "/dashboard/partenaire-kyc", labelKey: "Vérification KYC & Certification", icon: BadgeCheck, section: "Visibilité & Gestion" },
   { to: "/dashboard/partenaire-abonnement", labelKey: "Abonnement partenaire", icon: Sparkles, section: "Visibilité & Gestion" },
   { to: "/dashboard/settings", labelKey: "Paramètres", icon: Settings, section: "Visibilité & Gestion" },
@@ -94,13 +96,13 @@ export const agronomeNav: NavItem[] = [
 /** 4. Profil Partenaire : Santé Animale, Élevage & Zootechnie */
 export const veterinaireNav: NavItem[] = [
   { to: "/dashboard", labelKey: "Tableau de bord", icon: LayoutDashboard },
+  { to: "/dashboard/partner-space", labelKey: "Mon Espace Partenaire (Offres & Devis)", icon: Building2, section: "Visibilité & Gestion" },
   { to: "/dashboard/animals", labelKey: "Animaux", icon: Beef, section: "Pôle Vétérinaire & Cheptel" },
   { to: "/dashboard/animal-health", labelKey: "Santé", icon: Heart, section: "Pôle Vétérinaire & Cheptel" },
   { to: "/dashboard/animal-feeding", labelKey: "Alimentation", icon: Utensils, section: "Pôle Vétérinaire & Cheptel" },
   { to: "/dashboard/animal-reproduction", labelKey: "Reproduction", icon: Baby, section: "Pôle Vétérinaire & Cheptel" },
   { to: "/dashboard/livestock-services", labelKey: "Services Vétérinaires", icon: ClipboardList, section: "Pôle Vétérinaire & Cheptel" },
   { to: "/dashboard/quote-requests", labelKey: "Demandes de devis", icon: FileText, section: "Clients & Soins" },
-  { to: "/dashboard/partenaire-vitrine", labelKey: "Vitrine publique", icon: ShieldCheck, section: "Visibilité & Gestion" },
   { to: "/dashboard/partenaire-kyc", labelKey: "Vérification KYC & Certification", icon: BadgeCheck, section: "Visibilité & Gestion" },
   { to: "/dashboard/partenaire-abonnement", labelKey: "Abonnement partenaire", icon: Sparkles, section: "Visibilité & Gestion" },
   { to: "/dashboard/settings", labelKey: "Paramètres", icon: Settings, section: "Visibilité & Gestion" },
@@ -109,12 +111,12 @@ export const veterinaireNav: NavItem[] = [
 /** 5. Profil Partenaire : Banque, Microfinance & Assurance Agricole */
 export const institutionNav: NavItem[] = [
   { to: "/dashboard", labelKey: "Tableau de bord", icon: LayoutDashboard },
+  { to: "/dashboard/partner-space", labelKey: "Mon Espace Partenaire (Offres & Devis)", icon: Building2, section: "Visibilité & Gestion" },
   { to: "/dashboard/partenaire-banques", labelKey: "Services bancaires agricoles", icon: Landmark, section: "Finance & Assurance" },
   { to: "/dashboard/partenaire-assurance", labelKey: "Assurance agricole", icon: ShieldCheck, section: "Finance & Assurance" },
   { to: "/dashboard/partenaire-programmes", labelKey: "Programmes & Projets", icon: FolderKanban, section: "Finance & Assurance" },
   { to: "/dashboard/partners-directory", labelKey: "Annuaire Partenaires", icon: Handshake, section: "Finance & Assurance" },
   { to: "/dashboard/quote-requests", labelKey: "Demandes de devis", icon: FileText, section: "Dossiers & Crédits" },
-  { to: "/dashboard/partenaire-vitrine", labelKey: "Vitrine publique", icon: ShieldCheck, section: "Visibilité & Gestion" },
   { to: "/dashboard/partenaire-kyc", labelKey: "Vérification KYC & Certification", icon: BadgeCheck, section: "Visibilité & Gestion" },
   { to: "/dashboard/partenaire-abonnement", labelKey: "Abonnement partenaire", icon: Sparkles, section: "Visibilité & Gestion" },
   { to: "/dashboard/settings", labelKey: "Paramètres", icon: Settings, section: "Visibilité & Gestion" },

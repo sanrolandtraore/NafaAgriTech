@@ -14,12 +14,12 @@ import { useOfflineData } from "@/hooks/useOfflineData";
 import BackNavigationButton from "@/components/BackNavigationButton";
 
 export const reproTypes = [
-  { value: "saillie", label: "🐂 Saillie naturelle" },
-  { value: "insemination", label: "💉 Insémination artificielle" },
-  { value: "gestation", label: "🤰 Gestation confirmée" },
-  { value: "mise_bas", label: "👶 Mise bas / Naissance" },
-  { value: "avortement", label: "⚠️ Avortement" },
-  { value: "sevrage", label: "🍼 Sevrage des jeunes" },
+  { value: "saillie", label: "Saillie naturelle" },
+  { value: "insemination", label: "Insémination artificielle" },
+  { value: "gestation", label: "Gestation confirmée" },
+  { value: "mise_bas", label: "Mise bas / Naissance" },
+  { value: "avortement", label: "Avortement" },
+  { value: "sevrage", label: "Sevrage des jeunes" },
 ];
 
 export const offspringOptions = ["0", "1", "2", "3", "4", "5", "6", "7", "8", "10", "12", "15", "20"];
@@ -152,7 +152,7 @@ const AnimalReproductionPage = () => {
 
     const ok = await updateRow(resolvingGestation.id, updates);
     if (ok) {
-      toast.success("Mise bas enregistrée avec succès 🎉 ✓");
+      toast.success("Mise bas enregistrée avec succès");
       setResolvingGestation(null);
     }
   };

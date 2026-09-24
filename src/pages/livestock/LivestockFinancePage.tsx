@@ -16,14 +16,14 @@ import { Plus, Trash2, TrendingDown, TrendingUp, DollarSign, WifiOff, Wallet } f
 import BackNavigationButton from "@/components/BackNavigationButton";
 
 export const expenseCategories = [
-  { value: "alimentation", label: "🌾 Alimentation & Provende" },
-  { value: "sante", label: "💊 Santé, Vaccins & Vétérinaire" },
-  { value: "equipement", label: "🔧 Matériel, Abreuvoirs & Enclos" },
-  { value: "transport", label: "🚛 Transport & Convoyage" },
-  { value: "main_oeuvre", label: "👷 Main d'œuvre / Berger" },
-  { value: "habitat", label: "🏠 Bâtiments, Poulaillers & Bassins" },
-  { value: "eau_energie", label: "💧 Eau de boisson & Énergie" },
-  { value: "autre", label: "📝 Autre dépense" },
+  { value: "alimentation", label: "Alimentation & Provende" },
+  { value: "sante", label: "Santé, Vaccins & Vétérinaire" },
+  { value: "equipement", label: "Matériel, Abreuvoirs & Enclos" },
+  { value: "transport", label: "Transport & Convoyage" },
+  { value: "main_oeuvre", label: "Main d'œuvre / Berger" },
+  { value: "habitat", label: "Bâtiments, Poulaillers & Bassins" },
+  { value: "eau_energie", label: "Eau de boisson & Énergie" },
+  { value: "autre", label: "Autre dépense" },
 ];
 
 export const expenseDescriptions: Record<string, string[]> = {
@@ -38,14 +38,14 @@ export const expenseDescriptions: Record<string, string[]> = {
 };
 
 export const saleTypes = [
-  { value: "animal", label: "🐄 Vente d'animaux sur pied" },
-  { value: "lait", label: "🥛 Vente de lait frais / caillé" },
-  { value: "oeufs", label: "🥚 Vente d'œufs (Plateaux)" },
-  { value: "poisson", label: "🐟 Vente de poissons (Tilapia/Silure)" },
-  { value: "fumier", label: "💩 Fumier & Compost fertilisant" },
-  { value: "peau_cuir", label: "🧥 Peaux & Cuirs" },
-  { value: "miel", label: "🍯 Miel & Cire" },
-  { value: "autre", label: "📝 Autre produit pastoral" },
+  { value: "animal", label: "Vente d'animaux sur pied" },
+  { value: "lait", label: "Vente de lait frais / caillé" },
+  { value: "oeufs", label: "Vente d'œufs (Plateaux)" },
+  { value: "poisson", label: "Vente de poissons (Tilapia/Silure)" },
+  { value: "fumier", label: "Fumier & Compost fertilisant" },
+  { value: "peau_cuir", label: "Peaux & Cuirs" },
+  { value: "miel", label: "Miel & Cire" },
+  { value: "autre", label: "Autre produit pastoral" },
 ];
 
 export const saleDescriptions: Record<string, string[]> = {

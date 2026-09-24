@@ -11,30 +11,30 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
-import { Plus, Trash2, Wheat, Package, WifiOff, Calculator, Sparkles, ArrowDownRight } from "lucide-react";
+import { Plus, Trash2, Wheat, Package, WifiOff, Calculator, Sparkles, ArrowDownRight, AlertTriangle } from "lucide-react";
 import { useOfflineData } from "@/hooks/useOfflineData";
 import { useDefaultLivestockFarm } from "@/hooks/useDefaultLivestockFarm";
 import { LivestockZootechnicCard } from "@/components/livestock/LivestockZootechnicCard";
 import BackNavigationButton from "@/components/BackNavigationButton";
 
 export const feedTypes = [
-  { value: "Fourrage vert", label: "🌿 Fourrage vert (Herbe fraîche, Sorgho fourrager)" },
-  { value: "Foin", label: "🌾 Foin & Tiges de céréales" },
-  { value: "Paille", label: "🥬 Paille traitée à l'urée" },
-  { value: "Son de blé", label: "🌾 Son de blé" },
-  { value: "Son de maïs", label: "🌽 Son de maïs" },
-  { value: "Tourteau de coton", label: "🧶 Tourteau de coton (SN-CITEC)" },
-  { value: "Tourteau d'arachide", label: "🥜 Tourteau d'arachide" },
-  { value: "Tourteau de soja", label: "🫘 Tourteau de soja" },
-  { value: "Provende pondeuse", label: "🐔 Provende poules pondeuses" },
-  { value: "Provende chair", label: "🐓 Provende poulets de chair" },
-  { value: "Provende porcin", label: "🐷 Provende porcs (Croissance / Finition)" },
-  { value: "Aliment poisson", label: "🐟 Granulés flottants pour poissons" },
-  { value: "Pierre à lécher", label: "🧂 Pierre à lécher & Sels minéraux" },
-  { value: "CMV (Complément)", label: "💊 Complexe Minéral & Vitaminé (CMV)" },
-  { value: "Céréales (maïs, mil)", label: "🌽 Céréales concassées (Maïs, Mil, Sorgho)" },
-  { value: "Drêche de brasserie", label: "🍺 Drêche de brasserie locale" },
-  { value: "Autre", label: "📝 Autre aliment" },
+  { value: "Fourrage vert", label: "Fourrage vert (Herbe fraîche, Sorgho fourrager)" },
+  { value: "Foin", label: "Foin & Tiges de céréales" },
+  { value: "Paille", label: "Paille traitée à l'urée" },
+  { value: "Son de blé", label: "Son de blé" },
+  { value: "Son de maïs", label: "Son de maïs" },
+  { value: "Tourteau de coton", label: "Tourteau de coton (SN-CITEC)" },
+  { value: "Tourteau d'arachide", label: "Tourteau d'arachide" },
+  { value: "Tourteau de soja", label: "Tourteau de soja" },
+  { value: "Provende pondeuse", label: "Provende poules pondeuses" },
+  { value: "Provende chair", label: "Provende poulets de chair" },
+  { value: "Provende porcin", label: "Provende porcs (Croissance / Finition)" },
+  { value: "Aliment poisson", label: "Granulés flottants pour poissons" },
+  { value: "Pierre à lécher", label: "Pierre à lécher & Sels minéraux" },
+  { value: "CMV (Complément)", label: "Complexe Minéral & Vitaminé (CMV)" },
+  { value: "Céréales (maïs, mil)", label: "Céréales concassées (Maïs, Mil, Sorgho)" },
+  { value: "Drêche de brasserie", label: "Drêche de brasserie locale" },
+  { value: "Autre", label: "Autre aliment" },
 ];
 
 export const suppliers = [
@@ -567,8 +567,9 @@ const AnimalFeedingPage = () => {
                       </div>
 
                       {isLow && (
-                        <p className="text-[11px] font-semibold text-amber-700 bg-amber-100/60 dark:bg-amber-950/40 px-2 py-0.5 rounded-md w-fit">
-                          ⚠️ Niveau bas : réapprovisionnement recommandé
+                        <p className="text-[11px] font-semibold text-amber-700 bg-amber-100/60 dark:bg-amber-950/40 px-2 py-0.5 rounded-md w-fit flex items-center gap-1">
+                          <AlertTriangle className="h-3 w-3 text-amber-600 shrink-0" />
+                          <span>Niveau bas : réapprovisionnement recommandé</span>
                         </p>
                       )}
                     </CardContent>

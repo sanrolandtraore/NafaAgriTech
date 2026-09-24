@@ -7,7 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
   Heart, Baby, Wallet, AlertTriangle, WifiOff, ArrowUpRight,
-  Stethoscope, Wheat, Sprout, ShoppingCart, TrendingUp, TrendingDown, Bird, Fish,
+  Stethoscope, Wheat, Sprout, ShoppingCart, TrendingUp, TrendingDown, Bird, Fish, Beef,
 } from "lucide-react";
 import { LivestockZootechnicCard } from "@/components/livestock/LivestockZootechnicCard";
 import ProductServiceCatalog from "@/components/marketplace/ProductServiceCatalog";
@@ -22,13 +22,13 @@ const speciesLabels: Record<string, string> = {
   pisciculture: "Pisciculture",
 };
 
-const speciesEmoji: Record<string, string> = {
-  bovin: "🐄",
-  ovin: "🐑",
-  caprin: "🐐",
-  porcin: "🐷",
-  volaille: "🐔",
-  pisciculture: "🐟",
+const speciesIconMap: Record<string, React.ElementType> = {
+  bovin: Beef,
+  ovin: Beef,
+  caprin: Beef,
+  porcin: Beef,
+  volaille: Bird,
+  pisciculture: Fish,
 };
 
 const LivestockDashboardPage = () => {
@@ -216,11 +216,11 @@ const LivestockDashboardPage = () => {
         <div className="space-y-6 animate-fade-in">
           {/* Hero header */}
           <section className="livestock-hero rounded-[2rem] p-6 md:p-8 text-primary-foreground relative overflow-hidden">
-            <div className="absolute -right-10 -top-10 text-[10rem] opacity-10 select-none">
-              {topSpecies ? speciesEmoji[topSpecies[0]] : "🐄"}
+            <div className="absolute -right-6 -top-6 opacity-10 select-none">
+              <Beef className="w-48 h-48" />
             </div>
             <div className="relative">
-              <p className="text-sm opacity-80">{greeting} 👋</p>
+              <p className="text-sm opacity-80">{greeting}</p>
               <h1 className="text-2xl md:text-3xl font-bold mt-1">Votre élevage en un coup d'œil</h1>
               <div className="mt-5 flex flex-wrap gap-3 items-end">
                 <div>
@@ -318,7 +318,10 @@ const LivestockDashboardPage = () => {
                       <div key={sp}>
                         <div className="flex items-center justify-between mb-1.5">
                           <span className="text-sm font-medium flex items-center gap-2">
-                            <span className="text-base">{speciesEmoji[sp] || "🐾"}</span>
+                            {(() => {
+                              const SpIcon = speciesIconMap[sp] || Beef;
+                              return <SpIcon className="h-4 w-4 text-primary shrink-0" />;
+                            })()}
                             {speciesLabels[sp] || sp}
                           </span>
                           <span className="text-sm font-bold tabular-nums">{Number(count)} têtes</span>

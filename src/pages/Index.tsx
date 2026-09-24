@@ -6,7 +6,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import {
   MapPin, ArrowRight, Mail, Phone, MapPinned, ChevronLeft, ChevronRight,
   Microscope, FileText, Calculator, Eye, Sparkles, Tractor, Store, ShieldCheck,
-  ExternalLink, Send, CheckCircle2
+  ExternalLink, Send, CheckCircle2, Globe, Smartphone, Handshake, FlaskConical, Sprout, Beef, Wrench
 } from "lucide-react";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { supabase } from "@/integrations/supabase/client";
@@ -37,12 +37,12 @@ const galleryItems: { src: string; title: string; desc: string; type: "image" | 
 ];
 
 const HOME_CATEGORY_FILTERS = [
-  { value: "all", label: "Toutes les offres" },
-  { value: "materiel", label: "🚜 Matériel & Machinisme" },
-  { value: "intrants", label: "🧪 Intrants & Fertilisants" },
-  { value: "semences", label: "🌱 Semences Certifiées" },
-  { value: "elevage", label: "🐄 Élevage & Nutrition" },
-  { value: "service", label: "🛠️ Services & Travaux" },
+  { value: "all", label: "Toutes les offres", icon: Store },
+  { value: "materiel", label: "Matériel & Machinisme", icon: Tractor },
+  { value: "intrants", label: "Intrants & Fertilisants", icon: FlaskConical },
+  { value: "semences", label: "Semences Certifiées", icon: Sprout },
+  { value: "elevage", label: "Élevage & Nutrition", icon: Beef },
+  { value: "service", label: "Services & Travaux", icon: Wrench },
 ];
 
 // ── Auto-scroll carousel hook ──
@@ -105,7 +105,8 @@ const Index = () => {
           <div className="flex flex-col items-center text-center space-y-8 animate-fade-in">
             <img src={logo} alt="NAFA - AGRITECH" className="h-28 sm:h-32 w-auto drop-shadow-lg" />
             <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/10 border border-white/20 text-xs font-semibold text-primary-foreground uppercase tracking-wider backdrop-blur-sm">
-              ✨ Plateforme Intelligente NAFA - AGRITECH
+              <Sparkles className="h-3.5 w-3.5 text-primary-foreground shrink-0" />
+              <span>Plateforme Intelligente NAFA - AGRITECH</span>
             </div>
             <div className="space-y-3">
               <h1 className="text-4xl sm:text-6xl md:text-7xl font-heading font-extrabold text-primary-foreground tracking-tight">
@@ -153,13 +154,14 @@ const Index = () => {
                 key={cat.value}
                 type="button"
                 onClick={() => setSelectedCat(cat.value)}
-                className={`px-3.5 py-1.5 rounded-full text-xs font-semibold transition-all ${
+                className={`px-3.5 py-1.5 rounded-full text-xs font-semibold transition-all flex items-center gap-1.5 ${
                   selectedCat === cat.value
                     ? "bg-primary text-primary-foreground shadow-sm"
                     : "bg-card hover:bg-muted text-foreground border border-border"
                 }`}
               >
-                {cat.label}
+                {cat.icon && <cat.icon className="h-3.5 w-3.5 shrink-0" />}
+                <span>{cat.label}</span>
               </button>
             ))}
           </div>
@@ -451,13 +453,15 @@ const Index = () => {
             </div>
             <div className="grid grid-cols-2 gap-4">
               {[
-                { value: "🌍", label: "Conçu en Afrique, pour l'Afrique" },
-                { value: "📱", label: "Accessible hors connexion" },
-                { value: "🤝", label: "Formations agriculture & élevage" },
-                { value: "🔒", label: "Données sécurisées" },
-              ].map(({ value, label }) => (
-                <div key={label} className="bg-card rounded-xl p-4 border border-border text-center shadow-sm">
-                  <div className="text-3xl mb-2">{value}</div>
+                { icon: Globe, label: "Conçu en Afrique, pour l'Afrique" },
+                { icon: Smartphone, label: "Accessible hors connexion" },
+                { icon: Handshake, label: "Formations agriculture & élevage" },
+                { icon: ShieldCheck, label: "Données sécurisées" },
+              ].map(({ icon: Icon, label }) => (
+                <div key={label} className="bg-card rounded-xl p-4 border border-border text-center shadow-sm flex flex-col items-center justify-center">
+                  <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center text-primary mb-2">
+                    <Icon className="h-6 w-6" />
+                  </div>
                   <p className="text-sm font-medium text-foreground">{label}</p>
                 </div>
               ))}

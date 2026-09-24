@@ -14,6 +14,7 @@ import { toast } from "sonner";
 import {
   Plus, Stethoscope, Syringe, Beef, Baby, Utensils, ShieldCheck, GraduationCap,
   ClipboardList, MapPin, Trash2, Clock, CheckCircle, XCircle, Loader2, ShoppingCart,
+  Calendar, Phone,
 } from "lucide-react";
 import ProductServiceCatalog from "@/components/marketplace/ProductServiceCatalog";
 import { isValidUuid, isMissingTableError, isInvalidUuidError } from "@/hooks/useOfflineData";
@@ -359,9 +360,21 @@ const LivestockServicesPage = () => {
                       </div>
                       {req.description && <p className="text-xs text-muted-foreground mt-1 line-clamp-2">{req.description}</p>}
                       <div className="flex flex-wrap gap-3 mt-2 text-xs text-muted-foreground">
-                        {req.location && <span>📍 {req.location}</span>}
-                        {req.preferred_date && <span>📅 {new Date(req.preferred_date).toLocaleDateString("fr-FR")}</span>}
-                        {req.phone && <span>📞 {req.phone}</span>}
+                        {req.location && (
+                          <span className="flex items-center gap-1">
+                            <MapPin className="h-3 w-3" /> {req.location}
+                          </span>
+                        )}
+                        {req.preferred_date && (
+                          <span className="flex items-center gap-1">
+                            <Calendar className="h-3 w-3" /> {new Date(req.preferred_date).toLocaleDateString("fr-FR")}
+                          </span>
+                        )}
+                        {req.phone && (
+                          <span className="flex items-center gap-1">
+                            <Phone className="h-3 w-3" /> {req.phone}
+                          </span>
+                        )}
                         <span>Créée le {new Date(req.created_at).toLocaleDateString("fr-FR")}</span>
                       </div>
                       {req.expert_notes && (

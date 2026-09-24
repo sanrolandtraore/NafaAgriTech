@@ -32,6 +32,7 @@ import {
   RefreshCw,
   FolderOpen,
   ShoppingCart,
+  MapPin,
 } from "lucide-react";
 import ProductServiceCatalog from "@/components/marketplace/ProductServiceCatalog";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -794,7 +795,7 @@ const CropPlanningPage = () => {
                       </SelectItem>
                       {parcels.map(p => (
                         <SelectItem key={p.id} value={p.id}>
-                          {p.name} — {p.calculated_area_ha || p.area_ha} ha {p.calculated_area_ha ? "📍GPS" : ""}
+                          {p.name} — {p.calculated_area_ha || p.area_ha} ha {p.calculated_area_ha ? "(GPS)" : ""}
                         </SelectItem>
                       ))}
                     </SelectContent>
@@ -1005,7 +1006,11 @@ const CropPlanningPage = () => {
                   </CardHeader>
                   <CardContent>
                     <p className="text-3xl font-heading font-extrabold tracking-tight">{area} <span className="text-base font-semibold text-muted-foreground">ha</span></p>
-                    {parcel?.calculated_area_ha && <p className="text-xs text-primary font-bold mt-1">📍 Polygone GPS vérifié</p>}
+                    {parcel?.calculated_area_ha && (
+                      <p className="text-xs text-primary font-bold mt-1 flex items-center gap-1">
+                        <MapPin className="h-3 w-3 shrink-0" /> Polygone GPS vérifié
+                      </p>
+                    )}
                   </CardContent>
                 </Card>
 

@@ -19,6 +19,7 @@ import {
   ArrowRight,
   CheckCircle2,
   Sparkles,
+  Info,
 } from "lucide-react";
 import { listMechanizationServices } from "./repository";
 import { MechanizationService } from "./types";
@@ -142,8 +143,9 @@ export const MechEstimatorCard = ({ onBookNow, userParcels = [] }: MechEstimator
                   );
                 })}
               </div>
-              <p className="text-xs text-muted-foreground bg-muted/40 p-2.5 rounded-xl border border-border/40">
-                ℹ️ <strong className="text-foreground">{service?.name ?? "Aucun service"} :</strong> {service?.description ?? "Sélectionnez un service disponible."}
+              <p className="text-xs text-muted-foreground bg-muted/40 p-2.5 rounded-xl border border-border/40 flex items-start gap-1.5">
+                <Info className="h-4 w-4 text-primary shrink-0 mt-0.5" />
+                <span><strong className="text-foreground">{service?.name ?? "Aucun service"} :</strong> {service?.description ?? "Sélectionnez un service disponible."}</span>
               </p>
             </div>
 

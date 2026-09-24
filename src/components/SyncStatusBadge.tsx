@@ -72,7 +72,7 @@ export const SyncStatusBadge: React.FC = () => {
   };
 
   // Détermination du statut visuel WhatsApp-style
-  // 🔴 Erreur
+  // Erreur
   if (counts.error > 0) {
     return (
       <Popover>
@@ -87,7 +87,7 @@ export const SyncStatusBadge: React.FC = () => {
               <span className="relative inline-flex rounded-full h-2 w-2 bg-red-500"></span>
             </span>
             <AlertTriangle className="h-3.5 w-3.5 text-red-600" />
-            <span>🔴 {counts.error} échec{counts.error > 1 ? "s" : ""}</span>
+            <span>{counts.error} échec{counts.error > 1 ? "s" : ""}</span>
           </button>
         </PopoverTrigger>
         <PopoverContent className="w-72 p-3 text-xs space-y-2 shadow-lg" align="end">
@@ -120,11 +120,11 @@ export const SyncStatusBadge: React.FC = () => {
     );
   }
 
-  // 🟠 En attente (offline ou modifications en file)
+  // En attente (offline ou modifications en file)
   if (counts.pending > 0 || !isOnline) {
     const label = !isOnline 
-      ? (counts.pending > 0 ? `🟠 Hors-ligne (${counts.pending})` : "🟠 Hors-ligne")
-      : `🟠 ${counts.pending} en attente`;
+      ? (counts.pending > 0 ? `Hors-ligne (${counts.pending})` : "Hors-ligne")
+      : `${counts.pending} en attente`;
 
     return (
       <Popover>
@@ -170,7 +170,7 @@ export const SyncStatusBadge: React.FC = () => {
     );
   }
 
-  // 🟢 Synchronisé
+  // Synchronisé
   return (
     <Popover>
       <PopoverTrigger asChild>
@@ -183,7 +183,7 @@ export const SyncStatusBadge: React.FC = () => {
             <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
           </span>
           <CheckCircle2 className="h-3.5 w-3.5 text-emerald-600" />
-          <span>🟢 Synchronisé</span>
+          <span>Synchronisé</span>
         </button>
       </PopoverTrigger>
       <PopoverContent className="w-64 p-3 text-xs space-y-2 shadow-lg" align="end">

@@ -11,7 +11,7 @@ import {
   Sparkles, Mic, MicOff, Send, MapPin, Droplets, Home, FileText,
   Layers, CheckCircle2, AlertTriangle, Download, RefreshCw, Cpu,
   Compass, ShieldCheck, HelpCircle, ArrowRight, Play, BookOpen,
-  UserCheck, Edit3
+  UserCheck, Edit3, Sprout, Beef, Building2, Globe, Languages, ShieldAlert
 } from "lucide-react";
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
@@ -481,10 +481,26 @@ export const NafaGeniusStudio: React.FC = () => {
               <SelectValue placeholder="Pôle métier" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="agronomie">🌿 Pôle Végétal</SelectItem>
-              <SelectItem value="elevage">🐄 Pôle Élevage</SelectItem>
-              <SelectItem value="partenaire">🤝 Partenaire</SelectItem>
-              <SelectItem value="general">🌐 Général</SelectItem>
+              <SelectItem value="agronomie">
+                <span className="flex items-center gap-1.5">
+                  <Sprout className="h-3.5 w-3.5 text-emerald-600" /> Pôle Végétal
+                </span>
+              </SelectItem>
+              <SelectItem value="elevage">
+                <span className="flex items-center gap-1.5">
+                  <Beef className="h-3.5 w-3.5 text-amber-600" /> Pôle Élevage
+                </span>
+              </SelectItem>
+              <SelectItem value="partenaire">
+                <span className="flex items-center gap-1.5">
+                  <Building2 className="h-3.5 w-3.5 text-blue-600" /> Partenaire
+                </span>
+              </SelectItem>
+              <SelectItem value="general">
+                <span className="flex items-center gap-1.5">
+                  <Globe className="h-3.5 w-3.5 text-slate-600" /> Général
+                </span>
+              </SelectItem>
             </SelectContent>
           </Select>
 
@@ -493,10 +509,26 @@ export const NafaGeniusStudio: React.FC = () => {
               <SelectValue placeholder="Langue" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="fr">🇫🇷 Français</SelectItem>
-              <SelectItem value="dyu">🇧🇫 Dioula (Jula)</SelectItem>
-              <SelectItem value="mos">🇧🇫 Mooré</SelectItem>
-              <SelectItem value="ful">🇧🇫 Fulfuldé</SelectItem>
+              <SelectItem value="fr">
+                <span className="flex items-center gap-1.5 font-medium">
+                  <Languages className="h-3.5 w-3.5 text-muted-foreground" /> Français (FR)
+                </span>
+              </SelectItem>
+              <SelectItem value="dyu">
+                <span className="flex items-center gap-1.5 font-medium">
+                  <Languages className="h-3.5 w-3.5 text-muted-foreground" /> Dioula (DYU)
+                </span>
+              </SelectItem>
+              <SelectItem value="mos">
+                <span className="flex items-center gap-1.5 font-medium">
+                  <Languages className="h-3.5 w-3.5 text-muted-foreground" /> Mooré (MOS)
+                </span>
+              </SelectItem>
+              <SelectItem value="ful">
+                <span className="flex items-center gap-1.5 font-medium">
+                  <Languages className="h-3.5 w-3.5 text-muted-foreground" /> Fulfuldé (FUL)
+                </span>
+              </SelectItem>
             </SelectContent>
           </Select>
 
@@ -657,8 +689,9 @@ export const NafaGeniusStudio: React.FC = () => {
                 {nluResult.explanation}
               </p>
               {!nluResult.isRecognized && (
-                <div className="pt-1 text-[11px] text-amber-800/90 dark:text-amber-300/90 border-t border-amber-500/20">
-                  💡 <strong>Règle de Vérité Réelle :</strong> Aucune valeur hallucinée n'est produite. Vous pouvez sélectionner directement les onglets ci-dessous pour renseigner les mesures réelles ou solliciter la certification d'un ingénieur de terrain.
+                <div className="pt-1 text-[11px] text-amber-800/90 dark:text-amber-300/90 border-t border-amber-500/20 flex items-start gap-1.5">
+                  <Sparkles className="h-3.5 w-3.5 text-amber-600 shrink-0 mt-0.5" />
+                  <span><strong>Règle de Vérité Réelle :</strong> Aucune valeur hallucinée n'est produite. Vous pouvez sélectionner directement les onglets ci-dessous pour renseigner les mesures réelles ou solliciter la certification d'un ingénieur de terrain.</span>
                 </div>
               )}
             </div>

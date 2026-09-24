@@ -32,7 +32,8 @@ import {
   Star,
   ShieldCheck,
   TrendingUp,
-  ShoppingCart
+  ShoppingCart,
+  Target
 } from "lucide-react";
 import { toast } from "sonner";
 import {
@@ -720,8 +721,9 @@ export const PartnerDedicatedSpace: React.FC = () => {
                   </div>
                   <h3 className="font-bold text-sm text-foreground">{project.title}</h3>
                   <p className="text-muted-foreground">{project.description}</p>
-                  <div className="p-2 rounded bg-emerald-50 dark:bg-emerald-950/40 text-emerald-800 dark:text-emerald-300 font-medium">
-                    🎯 Impact : {project.results}
+                  <div className="p-2 rounded bg-emerald-50 dark:bg-emerald-950/40 text-emerald-800 dark:text-emerald-300 font-medium flex items-center gap-1.5">
+                    <Target className="h-3.5 w-3.5 text-emerald-600 shrink-0" />
+                    <span>Impact : {project.results}</span>
                   </div>
                 </CardContent>
               </Card>

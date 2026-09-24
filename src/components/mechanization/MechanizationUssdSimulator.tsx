@@ -174,7 +174,9 @@ export const MechUssdSimulator = () => {
 
               {ussdStep === 5 && (
                 <div className="space-y-1.5 text-xs">
-                  <p className="font-bold text-white">✅ PARCOURS PRÉPARÉ</p>
+                  <p className="font-bold text-white flex items-center gap-1.5">
+                    <CheckCircle2 className="h-4 w-4 text-emerald-400 shrink-0" /> PARCOURS PRÉPARÉ
+                  </p>
                   <p className="text-[11px]">
                     Opération : <span className="text-amber-300">{selectedService.split(" ")[0]}</span>
                   </p>

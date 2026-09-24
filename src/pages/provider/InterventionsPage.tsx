@@ -197,7 +197,11 @@ export default function InterventionsPage() {
 
                 <div className="flex items-center justify-between pt-2 border-t text-muted-foreground">
                   <div className="flex items-center gap-3">
-                    {it.duration_hours != null && <span>⏱️ {it.duration_hours}h</span>}
+                    {it.duration_hours != null && (
+                      <span className="flex items-center gap-1">
+                        <Clock className="h-3 w-3" /> {it.duration_hours}h
+                      </span>
+                    )}
                     {it.cost != null && <span className="font-medium text-foreground">{it.cost.toLocaleString("fr-FR")} FCFA</span>}
                   </div>
                   <Button

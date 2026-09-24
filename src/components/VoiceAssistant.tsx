@@ -219,7 +219,7 @@ const VoiceAssistant = ({ onServiceRequest, onEquipmentSearch }: VoiceAssistantP
               <div>
                 <p className="text-sm font-semibold text-primary-foreground">Assistant Vocal</p>
                 <p className="text-xs text-primary-foreground/70">
-                  {isListening ? "🎤 Écoute..." : isProcessing ? "⏳ Traitement..." : isSpeaking ? "🔊 Parle..." : "Prêt"}
+                  {isListening ? "Écoute en cours..." : isProcessing ? "Traitement..." : isSpeaking ? "Synthèse vocale..." : "Prêt"}
                 </p>
               </div>
             </div>

@@ -16,14 +16,19 @@ import {
 import { ProductMediaViewer } from "@/components/partner/ProductMediaViewer";
 import {
   Phone, Mail, MessageCircle, Share2, MapPin, CheckCircle2, ShieldCheck,
-  Search, ArrowLeft, Store, Package, Tractor, Beef, FileText, Send, Sparkles, Globe, Award
+  Search, ArrowLeft, Store, Package, Tractor, Beef, FileText, Send, Sparkles, Globe, Award,
+  Sprout, Wheat, ClipboardList, ShieldAlert, LayoutDashboard
 } from "lucide-react";
 import logo from "@/assets/logo.png";
 import { PartnerVerifiedBadge } from "@/components/partner/PartnerVerifiedBadge";
 import { getStoredPartnerKyc, PartnerKycDossier } from "@/lib/partnerKyc";
+import { useAuth } from "@/contexts/AuthContext";
 
 export default function PartnerStorefrontPage() {
   const { partnerId } = useParams<{ partnerId: string }>();
+  const { user, primaryRole, partnerType } = useAuth();
+  const isPartner = !!user && (primaryRole === "partenaire" || primaryRole === "agent_technique" || primaryRole === "expert" || primaryRole === "formation" || (partnerType != null && partnerType !== ""));
+
   const [partner, setPartner] = useState<PartnerProfile | null>(null);
   const [offers, setOffers] = useState<PartnerOffer[]>([]);
   const [loading, setLoading] = useState(true);
@@ -135,13 +140,13 @@ export default function PartnerStorefrontPage() {
     }
   };
 
-  const categories = [
-    { id: "all", label: "Toutes les offres" },
-    { id: "materiel", label: "🚜 Matériel & Travaux" },
-    { id: "intrants", label: "🌱 Intrants & Bio-intrants" },
-    { id: "semences", label: "🌾 Semences Certifiées" },
-    { id: "elevage", label: "🐂 Élevage & Nutrition" },
-    { id: "service", label: "📋 Expertise & Conseil" },
+  const categories: { id: string; label: string; icon?: React.ElementType }[] = [
+    { id: "all", label: "Toutes les offres", icon: Store },
+    { id: "materiel", label: "Matériel & Travaux", icon: Tractor },
+    { id: "intrants", label: "Intrants & Bio-intrants", icon: Sprout },
+    { id: "semences", label: "Semences Certifiées", icon: Wheat },
+    { id: "elevage", label: "Élevage & Nutrition", icon: Beef },
+    { id: "service", label: "Expertise & Conseil", icon: ClipboardList },
   ];
 
   const filteredOffers = offers.filter((o) => {
@@ -155,6 +160,47 @@ export default function PartnerStorefrontPage() {
   });
 
   const cleanPhone = (p: string) => p.replace(/[^0-9+]/g, "");
+
+  if (isPartner) {
+    return (
+      <div className="min-h-screen bg-muted/20 flex items-center justify-center p-4 sm:p-6">
+        <div className="max-w-xl w-full bg-card rounded-3xl border border-border/80 p-6 sm:p-8 text-center space-y-6 shadow-sm">
+          <div className="h-16 w-16 mx-auto rounded-2xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-amber-600">
+            <ShieldAlert className="h-8 w-8" />
+          </div>
+          <div className="space-y-3">
+            <h2 className="text-xl sm:text-2xl font-heading font-extrabold text-foreground">
+              Accès Vitrine Non Autorisé aux Partenaires
+            </h2>
+            <p className="text-sm text-muted-foreground leading-relaxed">
+              La vitrine marketplace est exclusivement réservée aux <strong>agriculteurs et éleveurs</strong> pour acheter des intrants, louer des équipements ou demander des prestations.
+            </p>
+            <div className="p-4 rounded-2xl bg-muted/50 border border-border/60 text-left text-xs text-muted-foreground space-y-2 mt-4">
+              <p className="font-semibold text-foreground flex items-center gap-1.5 text-sm">
+                <Store className="h-4 w-4 text-emerald-600" />
+                Votre Espace Personnel & Tableau de Bord Dédié :
+              </p>
+              <p className="leading-relaxed">
+                En tant que partenaire, vous disposez exclusivement de votre <strong>Espace Personnel</strong> et de votre <strong>Tableau de Bord</strong> pour publier et modifier vos services et produits, traiter les devis reçus et piloter votre activité.
+              </p>
+            </div>
+          </div>
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-2">
+            <Button asChild className="w-full sm:w-auto bg-emerald-600 hover:bg-emerald-700 text-white text-sm h-11 px-5 rounded-xl font-semibold shadow-xs">
+              <Link to="/dashboard/partner-space?tab=services">
+                <Package className="h-4 w-4 mr-2" /> Gérer mes Services & Produits
+              </Link>
+            </Button>
+            <Button asChild variant="outline" className="w-full sm:w-auto text-sm h-11 px-5 rounded-xl">
+              <Link to="/dashboard/partner-space?tab=dashboard">
+                <LayoutDashboard className="h-4 w-4 mr-2" /> Mon Tableau de Bord
+              </Link>
+            </Button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   if (loading) {
     return (
@@ -365,17 +411,21 @@ export default function PartnerStorefrontPage() {
 
         {/* Category Pills */}
         <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-none">
-          {categories.map((c) => (
-            <Button
-              key={c.id}
-              variant={selectedCategory === c.id ? "default" : "outline"}
-              size="sm"
-              onClick={() => setSelectedCategory(c.id)}
-              className="text-xs rounded-xl h-8 shrink-0 whitespace-nowrap"
-            >
-              {c.label}
-            </Button>
-          ))}
+          {categories.map((c) => {
+            const Icon = c.icon;
+            return (
+              <Button
+                key={c.id}
+                variant={selectedCategory === c.id ? "default" : "outline"}
+                size="sm"
+                onClick={() => setSelectedCategory(c.id)}
+                className="text-xs rounded-xl h-8 shrink-0 whitespace-nowrap gap-1.5"
+              >
+                {Icon && <Icon className="h-3.5 w-3.5" />}
+                <span>{c.label}</span>
+              </Button>
+            );
+          })}
         </div>
 
         {/* Offers Grid */}

@@ -134,7 +134,10 @@ const FarmsPage = () => {
                   </Button>
                 </div>
                 {detectedCoords && (
-                  <p className="text-sm font-mono text-muted-foreground">📍 {detectedCoords.lat}, {detectedCoords.lng}</p>
+                  <p className="text-sm font-mono text-muted-foreground flex items-center gap-1.5">
+                    <MapPin className="h-3.5 w-3.5 text-primary shrink-0" />
+                    <span>{detectedCoords.lat}, {detectedCoords.lng}</span>
+                  </p>
                 )}
               </div>
               <div className="space-y-2">
@@ -177,7 +180,12 @@ const FarmsPage = () => {
                     {farm.name}
                     {farm._offline && <Badge variant="outline" className="ml-2 text-xs">En attente</Badge>}
                   </CardTitle>
-                  {farm.location_name && <p className="text-sm text-muted-foreground mt-1">📍 {farm.location_name}</p>}
+                  {farm.location_name && (
+                    <p className="text-sm text-muted-foreground mt-1 flex items-center gap-1">
+                      <MapPin className="h-3.5 w-3.5 text-primary shrink-0" />
+                      <span>{farm.location_name}</span>
+                    </p>
+                  )}
                 </div>
                 <div className="flex gap-1">
                   <Button variant="ghost" size="icon" onClick={() => handleEdit(farm)}><Edit className="h-4 w-4" /></Button>

@@ -126,7 +126,7 @@ export const FarmZoningCanvas: React.FC<FarmZoningCanvasProps> = ({
 
       ctx.font = "italic 11px sans-serif";
       ctx.fillStyle = "#b45309";
-      ctx.fillText("☀️ Axe Solaire Est ➔ Ouest (Axe idéal des bâtiments avicoles)", padX + 15, padY + plotH * 0.25 - 6);
+      ctx.fillText("Axe Solaire Est -> Ouest (Axe idéal des bâtiments avicoles)", padX + 15, padY + plotH * 0.25 - 6);
       ctx.restore();
     }
 

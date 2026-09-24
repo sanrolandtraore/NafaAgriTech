@@ -20,12 +20,13 @@ import {
   ClipboardList, MapPin, GraduationCap, Trash2, Clock, CheckCircle, XCircle, Loader2,
   Wheat, Leaf, TreePine, Shield, Beef, Utensils, Heart, Baby, Waves, Mountain, Sun, Home,
   FileSearch, FileText, Award, Warehouse, Factory, ShoppingBag, QrCode, Users, Salad, Sparkles, Eye, Calculator,
-  Store, Send, Search, ExternalLink, ShieldCheck, ShoppingCart, RefreshCw, Phone, Filter
+  Store, Send, Search, ExternalLink, ShieldCheck, ShoppingCart, RefreshCw, Phone, Filter,
+  FlaskConical, Sprout, Wrench, Calendar, ShieldAlert, LayoutDashboard, Package
 } from "lucide-react";
 
 const SERVICE_CATEGORIES = [
   {
-    category: "✨ Diagnostic IA & Conseil Scientifique",
+    category: "Diagnostic IA & Conseil Scientifique",
     services: [
       { value: "diagnostic_ia", label: "Diagnostic IA (Maladie & Ravageur)", icon: Microscope, desc: "Photo de feuille ou tige analysée par vision IA avec détection de carences et recommandations." },
       { value: "ordonnance_agronomique", label: "Ordonnance phytosanitaire signée", icon: FileText, desc: "Prescription agronomique officielle délivrée par un conseiller certifié." },
@@ -34,7 +35,7 @@ const SERVICE_CATEGORIES = [
     ],
   },
   {
-    category: "🌱 Productions Végétales & Sols",
+    category: "Productions Végétales & Sols",
     services: [
       { value: "diagnostic_sol", label: "Diagnostic sol et aménagement", icon: Microscope, desc: "Analyse de la qualité du sol, recommandations d'amendement et plan d'aménagement." },
       { value: "diagnostic_maladie", label: "Diagnostic maladie et traitement", icon: Bug, desc: "Identification des maladies et ravageurs, prescription de traitements adaptés." },
@@ -48,7 +49,7 @@ const SERVICE_CATEGORIES = [
     ],
   },
   {
-    category: "🐄 Productions Animales & Santé",
+    category: "Productions Animales & Santé",
     services: [
       { value: "ferme_volaille", label: "Aviculture et fermes volailles", icon: Egg, desc: "Bâtiment d'élevage, souches adaptées, plan prophylactique et alimentation." },
       { value: "elevage_bovin", label: "Élevage bovin & embouche", icon: Beef, desc: "Conduite d'élevage bovin : alimentation, santé et amélioration génétique." },
@@ -61,7 +62,7 @@ const SERVICE_CATEGORIES = [
     ],
   },
   {
-    category: "🚜 Machinisme & Travaux Mécanisés",
+    category: "Machinisme & Travaux Mécanisés",
     services: [
       { value: "ferme_agricole", label: "Mise en valeur d'exploitation", icon: Tractor, desc: "Choix du site, préparation mécanique du sol, plan cultural et calendrier." },
       { value: "irrigation", label: "Systèmes d'irrigation", icon: Droplets, desc: "Goutte-à-goutte, aspersion, pompage solaire et réseau d'adduction." },
@@ -105,18 +106,19 @@ type ServiceRequest = {
 };
 
 const FILTER_PILLS = [
-  { value: "all", label: "Toutes les offres" },
-  { value: "intrants", label: "🧪 Intrants & Engrais" },
-  { value: "semences", label: "🌱 Semences Certifiées" },
-  { value: "materiel", label: "🚜 Matériel & Tracteurs" },
-  { value: "elevage", label: "🐄 Élevage & Nutrition" },
-  { value: "service", label: "🛠️ Prestations & Travaux" },
-  { value: "conseil_technique", label: "🔬 Ingénierie & Conseil" },
-  { value: "mes_demandes", label: "📋 Mes Demandes en Cours" },
+  { value: "all", label: "Toutes les offres", icon: Store },
+  { value: "intrants", label: "Intrants & Engrais", icon: FlaskConical },
+  { value: "semences", label: "Semences Certifiées", icon: Sprout },
+  { value: "materiel", label: "Matériel & Tracteurs", icon: Tractor },
+  { value: "elevage", label: "Élevage & Nutrition", icon: Beef },
+  { value: "service", label: "Prestations & Travaux", icon: Wrench },
+  { value: "conseil_technique", label: "Ingénierie & Conseil", icon: Microscope },
+  { value: "mes_demandes", label: "Mes Demandes en Cours", icon: ClipboardList },
 ];
 
 export default function ServicesPage() {
-  const { user, profile } = useAuth();
+  const { user, profile, primaryRole, partnerType } = useAuth();
+  const isPartner = !!user && (primaryRole === "partenaire" || primaryRole === "agent_technique" || primaryRole === "expert" || primaryRole === "formation" || (partnerType != null && partnerType !== ""));
   const [requests, setRequests] = useState<ServiceRequest[]>([]);
   const [partnerQuotes, setPartnerQuotes] = useState<QuoteRequest[]>([]);
   const [farms, setFarms] = useState<{ id: string; name: string }[]>([]);
@@ -385,6 +387,45 @@ export default function ServicesPage() {
 
   const totalMyRequests = partnerQuotes.length + requests.length;
 
+  if (isPartner) {
+    return (
+      <div className="max-w-2xl mx-auto py-12 px-4 sm:px-6 text-center space-y-6">
+        <div className="h-16 w-16 mx-auto rounded-2xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-amber-600">
+          <ShieldAlert className="h-8 w-8" />
+        </div>
+        <div className="space-y-3">
+          <h2 className="text-xl sm:text-2xl font-heading font-extrabold text-foreground">
+            Accès Réservé aux Agriculteurs & Éleveurs
+          </h2>
+          <p className="text-sm text-muted-foreground leading-relaxed max-w-lg mx-auto">
+            La vitrine d'approvisionnement et de services est exclusivement réservée aux exploitants agricoles et éleveurs pour commander des intrants et solliciter des prestations.
+          </p>
+          <div className="p-4 rounded-xl bg-card border border-border/70 text-left text-xs text-muted-foreground space-y-2 mt-4">
+            <p className="font-semibold text-foreground flex items-center gap-1.5 text-sm">
+              <Store className="h-4 w-4 text-emerald-600" />
+              Espace Personnel Partenaire Dédié :
+            </p>
+            <p className="leading-relaxed">
+              En tant que partenaire, vous disposez exclusivement de votre <strong>Espace Personnel</strong> et de votre <strong>Tableau de Bord</strong> pour publier, modifier et gérer vos services et produits, consulter les devis reçus et suivre vos commandes.
+            </p>
+          </div>
+        </div>
+        <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-2">
+          <Button asChild className="w-full sm:w-auto bg-emerald-600 hover:bg-emerald-700 text-white text-sm h-11 px-5 rounded-xl font-semibold shadow-xs">
+            <Link to="/dashboard/partner-space?tab=services">
+              <Package className="h-4 w-4 mr-2" /> Gérer mes Services & Produits
+            </Link>
+          </Button>
+          <Button asChild variant="outline" className="w-full sm:w-auto text-sm h-11 px-5 rounded-xl">
+            <Link to="/dashboard/partner-space?tab=dashboard">
+              <LayoutDashboard className="h-4 w-4 mr-2" /> Mon Tableau de Bord Partenaire
+            </Link>
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-8 animate-fade-in max-w-6xl mx-auto pb-12">
       {/* Top Banner Premium & Lisible */}
@@ -580,13 +621,14 @@ export default function ServicesPage() {
                 key={pill.value}
                 type="button"
                 onClick={() => setActiveFilter(pill.value)}
-                className={`px-4 py-2.5 rounded-full text-sm font-bold transition-all duration-200 flex items-center gap-1.5 ${
+                className={`px-4 py-2.5 rounded-full text-sm font-bold transition-all duration-200 flex items-center gap-2 ${
                   isSelected
                     ? "bg-primary text-primary-foreground shadow-sm scale-102"
                     : "bg-muted/70 text-foreground/80 hover:bg-muted hover:text-foreground"
                 }`}
               >
-                {pill.label}
+                {pill.icon && <pill.icon className="h-4 w-4 shrink-0" />}
+                <span>{pill.label}</span>
                 {pill.value === "mes_demandes" && totalMyRequests > 0 && (
                   <span className={`px-1.5 py-0.2 rounded-full text-xs font-extrabold ${isSelected ? "bg-white text-primary" : "bg-primary text-white"}`}>
                     {totalMyRequests}
@@ -714,9 +756,24 @@ export default function ServicesPage() {
                         </div>
                         {req.description && <p className="text-xs text-muted-foreground line-clamp-2">{req.description}</p>}
                         <div className="flex flex-wrap gap-4 text-xs text-muted-foreground">
-                          {req.location && <span>📍 {req.location}</span>}
-                          {req.preferred_date && <span>📅 {new Date(req.preferred_date).toLocaleDateString("fr-FR")}</span>}
-                          {req.phone && <span>📞 {req.phone}</span>}
+                          {req.location && (
+                            <span className="flex items-center gap-1">
+                              <MapPin className="h-3.5 w-3.5 text-primary shrink-0" />
+                              <span>{req.location}</span>
+                            </span>
+                          )}
+                          {req.preferred_date && (
+                            <span className="flex items-center gap-1">
+                              <Calendar className="h-3.5 w-3.5 text-primary shrink-0" />
+                              <span>{new Date(req.preferred_date).toLocaleDateString("fr-FR")}</span>
+                            </span>
+                          )}
+                          {req.phone && (
+                            <span className="flex items-center gap-1">
+                              <Phone className="h-3.5 w-3.5 text-primary shrink-0" />
+                              <span>{req.phone}</span>
+                            </span>
+                          )}
                         </div>
                       </div>
 

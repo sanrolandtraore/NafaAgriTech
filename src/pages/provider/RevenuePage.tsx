@@ -123,9 +123,17 @@ export default function RevenuePage() {
                       size="sm"
                       variant={m.paid ? "secondary" : "outline"}
                       onClick={() => togglePaid(m)}
-                      className={`text-xs h-8 ${m.paid ? "bg-emerald-500/15 text-emerald-700 hover:bg-emerald-500/25 border-emerald-500/30" : "text-amber-700 border-amber-500/30 hover:bg-amber-50"}`}
+                      className={`text-xs h-8 flex items-center gap-1.5 ${m.paid ? "bg-emerald-500/15 text-emerald-700 hover:bg-emerald-500/25 border-emerald-500/30" : "text-amber-700 border-amber-500/30 hover:bg-amber-50"}`}
                     >
-                      {m.paid ? "✅ Encaissé" : "⏳ Marquer payé"}
+                      {m.paid ? (
+                        <>
+                          <CheckCircle2 className="h-3.5 w-3.5 text-emerald-600" /> Encaissé
+                        </>
+                      ) : (
+                        <>
+                          <Clock className="h-3.5 w-3.5 text-amber-600" /> Marquer payé
+                        </>
+                      )}
                     </Button>
                   </div>
                 </div>

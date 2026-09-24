@@ -16,6 +16,7 @@ import {
   Egg,
   ShieldCheck,
   Sparkles,
+  Beef,
 } from "lucide-react";
 import {
   calculateFatteningPlan,
@@ -104,9 +105,15 @@ export const LivestockZootechnicCard = () => {
       <CardContent className="space-y-4">
         <Tabs defaultValue="embouche">
           <TabsList className="grid w-full grid-cols-3">
-            <TabsTrigger value="embouche">🐂 Embouche (Gains & Poids)</TabsTrigger>
-            <TabsTrigger value="pondeuses">🥚 Poules Pondeuses</TabsTrigger>
-            <TabsTrigger value="poulets">🍗 Poulets de Chair</TabsTrigger>
+            <TabsTrigger value="embouche" className="flex items-center gap-1.5 text-xs">
+              <Beef className="h-3.5 w-3.5" /> Embouche (Gains & Poids)
+            </TabsTrigger>
+            <TabsTrigger value="pondeuses" className="flex items-center gap-1.5 text-xs">
+              <Egg className="h-3.5 w-3.5" /> Poules Pondeuses
+            </TabsTrigger>
+            <TabsTrigger value="poulets" className="flex items-center gap-1.5 text-xs">
+              <Bird className="h-3.5 w-3.5" /> Poulets de Chair
+            </TabsTrigger>
           </TabsList>
 
           {/* ONGLET EMBOUCHE */}

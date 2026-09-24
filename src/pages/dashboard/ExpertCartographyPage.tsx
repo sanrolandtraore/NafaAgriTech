@@ -385,7 +385,7 @@ const ExpertCartographyPage = () => {
       const typeInfo = OBSERVATION_TYPES.find(t => t.value === obs.observation_type) || OBSERVATION_TYPES[4];
       const icon = L.divIcon({
         className: "",
-        html: `<div style="background:${typeInfo.color};width:28px;height:28px;border-radius:50%;border:3px solid white;box-shadow:0 2px 6px rgba(0,0,0,0.3);display:flex;align-items:center;justify-content:center;color:white;font-size:14px;">⚠</div>`,
+        html: `<div style="background:${typeInfo.color};width:28px;height:28px;border-radius:50%;border:3px solid white;box-shadow:0 2px 6px rgba(0,0,0,0.3);display:flex;align-items:center;justify-content:center;color:white;"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></div>`,
         iconSize: [28, 28],
         iconAnchor: [14, 14],
       });
@@ -908,8 +908,9 @@ const ExpertCartographyPage = () => {
           <DialogHeader><DialogTitle className="font-heading">Nouvelle observation</DialogTitle></DialogHeader>
           {newObsCoord && (
             <div className="space-y-4">
-              <div className="rounded-lg bg-muted/50 border p-2 text-xs font-mono">
-                📍 {newObsCoord.lat}, {newObsCoord.lng}
+              <div className="rounded-lg bg-muted/50 border p-2 text-xs font-mono flex items-center gap-1.5">
+                <MapPin className="h-3.5 w-3.5 text-primary shrink-0" />
+                <span>{newObsCoord.lat}, {newObsCoord.lng}</span>
               </div>
               <div className="space-y-2">
                 <Label>Titre</Label>

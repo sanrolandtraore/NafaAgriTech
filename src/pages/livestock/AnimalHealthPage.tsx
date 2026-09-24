@@ -14,23 +14,23 @@ import { useOfflineData } from "@/hooks/useOfflineData";
 import BackNavigationButton from "@/components/BackNavigationButton";
 
 export const eventTypes = [
-  { value: "vaccination", label: "💉 Vaccination" },
-  { value: "traitement", label: "💊 Traitement curatif" },
-  { value: "deworming", label: "🐛 Vermifuge / Déparasitage" },
-  { value: "vitamine", label: "💪 Vitamines & Fortifiants" },
-  { value: "consultation", label: "🩺 Consultation vétérinaire" },
-  { value: "chirurgie", label: "🔪 Chirurgie / Écornage" },
-  { value: "autre", label: "📝 Autre acte" },
+  { value: "vaccination", label: "Vaccination" },
+  { value: "traitement", label: "Traitement curatif" },
+  { value: "deworming", label: "Vermifuge / Déparasitage" },
+  { value: "vitamine", label: "Vitamines & Fortifiants" },
+  { value: "consultation", label: "Consultation vétérinaire" },
+  { value: "chirurgie", label: "Chirurgie / Écornage" },
+  { value: "autre", label: "Autre acte" },
 ];
 
 export const vaccinations = [
-  "Peste des Petits Ruminants (PPR) 🐑🐐",
-  "Péripneumonie Contagieuse Bovine (PPCB) 🐄",
-  "Charbon symptomatique & bactéridien 🐄",
+  "Peste des Petits Ruminants (PPR - Ovins & Caprins)",
+  "Péripneumonie Contagieuse Bovine (PPCB - Bovins)",
+  "Charbon symptomatique & bactéridien (Bovins)",
   "Pasteurellose bovine / ovine",
-  "Maladie de Newcastle (I-2 / LaSota) 🐔",
-  "Maladie de Gumboro (IBD) 🐔",
-  "Variole aviaire / Diphtérie 🐔",
+  "Maladie de Newcastle (I-2 / LaSota - Volailles)",
+  "Maladie de Gumboro (IBD - Volailles)",
+  "Variole aviaire / Diphtérie (Volailles)",
   "Fièvre aphteuse",
   "Dermatose nodulaire contagieuse (LSD)",
   "Rage animale",

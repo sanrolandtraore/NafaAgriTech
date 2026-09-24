@@ -241,7 +241,7 @@ export const MechBookingModal = ({
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="auto_fastest" className="text-xs font-medium text-emerald-700 dark:text-emerald-400">
-                  ⚡ Attribution automatique (Opérateur le plus proche disponible)
+                  Attribution automatique (Opérateur le plus proche disponible)
                 </SelectItem>
                 {machines.map((m) => (
                   <SelectItem key={m.id} value={m.id} className="text-xs">

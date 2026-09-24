@@ -29,6 +29,14 @@ import {
   Layers,
   ArrowRight,
   TrendingUp,
+  FlaskConical,
+  Sprout,
+  Wheat,
+  Syringe,
+  Tractor,
+  Wrench,
+  Landmark,
+  ClipboardList,
 } from "lucide-react";
 
 export interface ProductServiceCatalogProps {
@@ -41,14 +49,14 @@ export interface ProductServiceCatalogProps {
 
 const CATEGORY_TABS = [
   { value: "all", label: "Toutes les offres", icon: Layers },
-  { value: "intrants", label: "🧪 Intrants & Engrais", match: ["intrants"] },
-  { value: "semences", label: "🌱 Semences Certifiées", match: ["semences"] },
-  { value: "aliments_elevage", label: "🌾 Aliments Bétail", match: ["aliments_elevage", "elevage"] },
-  { value: "sante_veterinaire", label: "💉 Soins Vétérinaires", match: ["sante_veterinaire", "sante_animale"] },
-  { value: "materiel", label: "🚜 Matériel & Équipements", match: ["materiel", "materiel_elevage"] },
-  { value: "services", label: "🛠️ Services & Travaux", match: ["services", "services_elevage", "service"] },
-  { value: "finance", label: "💰 Financement & Assurance", match: ["finance", "assurance", "banque"] },
-  { value: "mes_commandes", label: "📋 Mes Commandes", isOrders: true },
+  { value: "intrants", label: "Intrants & Engrais", match: ["intrants"], icon: FlaskConical },
+  { value: "semences", label: "Semences Certifiées", match: ["semences"], icon: Sprout },
+  { value: "aliments_elevage", label: "Aliments Bétail", match: ["aliments_elevage", "elevage"], icon: Wheat },
+  { value: "sante_veterinaire", label: "Soins Vétérinaires", match: ["sante_veterinaire", "sante_animale"], icon: Syringe },
+  { value: "materiel", label: "Matériel & Équipements", match: ["materiel", "materiel_elevage"], icon: Tractor },
+  { value: "services", label: "Services & Travaux", match: ["services", "services_elevage", "service"], icon: Wrench },
+  { value: "finance", label: "Financement & Assurance", match: ["finance", "assurance", "banque"], icon: Landmark },
+  { value: "mes_commandes", label: "Mes Commandes", isOrders: true, icon: ClipboardList },
 ];
 
 const quoteStatusConfig: Record<string, { label: string; badgeClass: string; icon: any }> = {
@@ -281,6 +289,10 @@ export default function ProductServiceCatalog({
                   : "bg-card text-muted-foreground border-border hover:text-foreground hover:bg-muted/60"
               }`}
             >
+              {(() => {
+                const CatIcon = cat.icon;
+                return CatIcon ? <CatIcon className="h-4 w-4 shrink-0" /> : null;
+              })()}
               <span>{cat.label}</span>
               <span
                 className={`px-2 py-0.5 rounded-full text-xs font-extrabold ${

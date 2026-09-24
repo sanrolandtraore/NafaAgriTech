@@ -293,7 +293,7 @@ export function CropDiagnosisTool() {
         setExpertPreventive("");
         setExpertIneraRef("Station de Recherche INERA / Contrôle Phyto");
         toast({
-          title: "⚠️ Affection non reconnue avec certitude",
+          title: "Affection non reconnue avec certitude",
           description: "Donnée non certifiée. Veuillez apporter des compléments d'expertise ci-dessous.",
           variant: "destructive",
         });

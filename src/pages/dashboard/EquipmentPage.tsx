@@ -39,6 +39,8 @@ import {
   ExternalLink,
   ChevronRight,
   Share2,
+  Sprout,
+  FileText,
 } from "lucide-react";
 import MechanizationEstimatorCard from "@/components/mechanization/MechanizationEstimatorCard";
 import MechanizationBookingModal from "@/components/mechanization/MechanizationBookingModal";
@@ -218,8 +220,8 @@ export const EquipmentPage = () => {
     <div className="space-y-6 max-w-6xl mx-auto">
       {/* NAFA - AGRITECH Field Mechanization Hero Header */}
       <section className="rounded-3xl p-6 sm:p-8 text-white relative overflow-hidden bg-gradient-to-br from-stone-950 via-emerald-950 to-amber-950 shadow-2xl border border-emerald-500/20">
-        <div className="absolute -right-6 -bottom-8 opacity-10 select-none text-[13rem] pointer-events-none font-mono">
-          🚜
+        <div className="absolute -right-6 -bottom-8 opacity-10 select-none pointer-events-none">
+          <Tractor className="w-56 h-56" />
         </div>
         <div className="absolute top-0 right-0 w-96 h-96 bg-amber-500/10 rounded-full blur-3xl pointer-events-none" />
         <div className="absolute bottom-0 left-1/3 w-80 h-80 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none" />
@@ -389,22 +391,26 @@ export const EquipmentPage = () => {
             {/* Filter pills */}
             <div className="flex items-center gap-1.5 overflow-x-auto pb-1">
               {[
-                { id: "all", label: "Tous les engins" },
-                { id: "tracteur", label: "🚜 Tracteurs 4WD" },
-                { id: "drone", label: "⚡ Drones Agricoles" },
-                { id: "moissonneuse", label: "🌾 Moissonneuses" },
-                { id: "motoculteur", label: "🌱 Motoculteurs" },
-              ].map((c) => (
-                <Button
-                  key={c.id}
-                  variant={categoryFilter === c.id ? "default" : "outline"}
-                  size="sm"
-                  onClick={() => setCategoryFilter(c.id)}
-                  className="h-7 text-xs rounded-xl px-3 whitespace-nowrap"
-                >
-                  {c.label}
-                </Button>
-              ))}
+                { id: "all", label: "Tous les engins", icon: Layers },
+                { id: "tracteur", label: "Tracteurs 4WD", icon: Tractor },
+                { id: "drone", label: "Drones Agricoles", icon: Zap },
+                { id: "moissonneuse", label: "Moissonneuses", icon: Wheat },
+                { id: "motoculteur", label: "Motoculteurs", icon: Sprout },
+              ].map((c) => {
+                const Icon = c.icon;
+                return (
+                  <Button
+                    key={c.id}
+                    variant={categoryFilter === c.id ? "default" : "outline"}
+                    size="sm"
+                    onClick={() => setCategoryFilter(c.id)}
+                    className="h-8 text-xs rounded-xl px-3 whitespace-nowrap gap-1.5"
+                  >
+                    {Icon && <Icon className="h-3.5 w-3.5" />}
+                    <span>{c.label}</span>
+                  </Button>
+                );
+              })}
             </div>
 
             {/* Machines Grid - Catalogue NAFA - AGRITECH */}
@@ -583,10 +589,10 @@ export const EquipmentPage = () => {
                           }`}
                         >
                           {job.jobStatus === "demande_recue" && "Demande Enregistrée"}
-                          {job.jobStatus === "operateur_en_route" && "🚜 Conducteur en transit vers la parcelle"}
-                          {job.jobStatus === "travail_en_cours" && "🌾 Labour / Récolte en cours"}
-                          {job.jobStatus === "controle_qualite" && "🔍 Contrôle qualité Agent Terrain"}
-                          {job.jobStatus === "termine" && "✅ Chantier Réceptionné & Terminé"}
+                          {job.jobStatus === "operateur_en_route" && "Conducteur en transit vers la parcelle"}
+                          {job.jobStatus === "travail_en_cours" && "Labour / Récolte en cours"}
+                          {job.jobStatus === "controle_qualite" && "Contrôle qualité Agent Terrain"}
+                          {job.jobStatus === "termine" && "Chantier Réceptionné & Terminé"}
                         </Badge>
                       </div>
                     </div>
@@ -675,8 +681,9 @@ export const EquipmentPage = () => {
                     </div>
 
                     {job.notes && (
-                      <p className="text-xs text-muted-foreground bg-muted/20 p-2.5 rounded-xl">
-                        📝 <strong>Consignes :</strong> {job.notes}
+                      <p className="text-xs text-muted-foreground bg-muted/20 p-2.5 rounded-xl flex items-center gap-1.5">
+                        <FileText className="h-3.5 w-3.5 text-primary shrink-0" />
+                        <span><strong>Consignes :</strong> {job.notes}</span>
                       </p>
                     )}
 

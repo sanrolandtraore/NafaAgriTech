@@ -14,7 +14,7 @@ export interface CropTechnicalSheetData {
   recommended_varieties: string[];
   yield_potential_t_ha: number;
   notes: string;
-  iconEmoji: string;
+  iconName: string;
 }
 
 export const WEST_AFRICA_12_CROPS: CropTechnicalSheetData[] = [
@@ -34,7 +34,7 @@ export const WEST_AFRICA_12_CROPS: CropTechnicalSheetData[] = [
     recommended_varieties: ["Barkas", "Bondofa", "Kabras", "Espoir (QPM)", "FBC6"],
     yield_potential_t_ha: 5.5,
     notes: "Exige un apport fractionné en urée (au semis/démariage puis au tallage/montaison). Forte sensibilité au déficit hydrique pendant la floraison.",
-    iconEmoji: "🌽",
+    iconName: "wheat",
   },
   {
     id: "sheet-riz",
@@ -52,7 +52,7 @@ export const WEST_AFRICA_12_CROPS: CropTechnicalSheetData[] = [
     recommended_varieties: ["TS2", "FKR 19", "FKR 62N (NERICA 4)", "FKR 64", "Orylux 6"],
     yield_potential_t_ha: 6.0,
     notes: "Nivellement rigoureux requis pour l'irrigation et la maîtrise de la lame d'eau. Désherbage précoce crucial les 30 premiers jours.",
-    iconEmoji: "🌾",
+    iconName: "wheat",
   },
   {
     id: "sheet-sorgho",
@@ -70,7 +70,7 @@ export const WEST_AFRICA_12_CROPS: CropTechnicalSheetData[] = [
     recommended_varieties: ["Framida (tolérante Striga)", "Sariaso 11", "Kapelga", "Soubatimi"],
     yield_potential_t_ha: 3.5,
     notes: "Grande tolérance à la sécheresse et aux sols pauvres. Clé de voûte de la résilience céréalière sahélienne.",
-    iconEmoji: "🌾",
+    iconName: "wheat",
   },
   {
     id: "sheet-mil",
@@ -88,7 +88,7 @@ export const WEST_AFRICA_12_CROPS: CropTechnicalSheetData[] = [
     recommended_varieties: ["IKMP 5", "Misari 1", "SOSAT C88", "Toroniou"],
     yield_potential_t_ha: 2.5,
     notes: "Extrêmement rustique, adapté aux sols sableux sahéliens. Idéal en association avec le niébé.",
-    iconEmoji: "🌾",
+    iconName: "wheat",
   },
   {
     id: "sheet-niebe",
@@ -106,7 +106,7 @@ export const WEST_AFRICA_12_CROPS: CropTechnicalSheetData[] = [
     recommended_varieties: ["KVx 399-05", "Komcallé", "Tiligré", "Yiisyandé", "KVx 745-11P"],
     yield_potential_t_ha: 2.0,
     notes: "Fixe l'azote atmosphérique (réduit les besoins azotés des cultures suivantes). Surveillance phytosanitaire rigoureuse à la floraison.",
-    iconEmoji: "🫘",
+    iconName: "sprout",
   },
   {
     id: "sheet-arachide",
@@ -124,7 +124,7 @@ export const WEST_AFRICA_12_CROPS: CropTechnicalSheetData[] = [
     recommended_varieties: ["SH 470 P", "RMP 12", "Fleur 11", "QH 243 C"],
     yield_potential_t_ha: 3.0,
     notes: "Nécessite un sol meuble et bien drainé pour la pénétration des gynophores. Séchage rapide au champ indispensable contre les moisissures.",
-    iconEmoji: "🥜",
+    iconName: "sprout",
   },
   {
     id: "sheet-soja",
@@ -142,7 +142,7 @@ export const WEST_AFRICA_12_CROPS: CropTechnicalSheetData[] = [
     recommended_varieties: ["TGX 1448-2E", "TGX 1904-6F", "Canarana"],
     yield_potential_t_ha: 2.8,
     notes: "Très prisé pour l'alimentation du bétail (tourteaux) et la nutrition humaine. Inoculation par Rhizobium recommandée sur terres vierges.",
-    iconEmoji: "🌱",
+    iconName: "sprout",
   },
   {
     id: "sheet-coton",
@@ -160,7 +160,7 @@ export const WEST_AFRICA_12_CROPS: CropTechnicalSheetData[] = [
     recommended_varieties: ["FK 37", "FK 64", "STAM 59 A"],
     yield_potential_t_ha: 2.8,
     notes: "Programme de protection phytosanitaire rigoureux par fenêtre de traitement (traitements raisonnés CAR). Première culture d'exportation.",
-    iconEmoji: "☁️",
+    iconName: "sprout",
   },
   {
     id: "sheet-sesame",
@@ -178,7 +178,7 @@ export const WEST_AFRICA_12_CROPS: CropTechnicalSheetData[] = [
     recommended_varieties: ["S-42", "Gimbi", "Humera", "Kola"],
     yield_potential_t_ha: 1.2,
     notes: "Semis superficiel à faible profondeur. Récolte délicate au moment du jaunissement des capsules inférieures pour éviter l'égrenage.",
-    iconEmoji: "🌾",
+    iconName: "wheat",
   },
   {
     id: "sheet-tomate",
@@ -196,7 +196,7 @@ export const WEST_AFRICA_12_CROPS: CropTechnicalSheetData[] = [
     recommended_varieties: ["Mongal F1", "Nirouz F1", "Cobra F1", "Tropimech", "Petomech"],
     yield_potential_t_ha: 45.0,
     notes: "Pépinière soignée sous voile anti-insectes indispensable. Tuteurage et paillage fortement recommandés pour préserver la qualité des fruits.",
-    iconEmoji: "🍅",
+    iconName: "sprout",
   },
   {
     id: "sheet-oignon",
@@ -214,7 +214,7 @@ export const WEST_AFRICA_12_CROPS: CropTechnicalSheetData[] = [
     recommended_varieties: ["Violet de Galmi", "Goudami", "Prema F1", "Orient F1"],
     yield_potential_t_ha: 35.0,
     notes: "Arrêt strict de l'irrigation 10 à 15 jours avant la récolte pour assurer un ressuyage optimal et prolonger la conservation en magasin ventilé.",
-    iconEmoji: "🧅",
+    iconName: "sprout",
   },
   {
     id: "sheet-gombo",
@@ -232,6 +232,6 @@ export const WEST_AFRICA_12_CROPS: CropTechnicalSheetData[] = [
     recommended_varieties: ["Clemson Spineless", "Indiana", "Hire", "Sabourou"],
     yield_potential_t_ha: 15.0,
     notes: "Récolte continue tous les 2 à 3 jours pour stimuler la floraison et éviter la lignification des gousses. Haute valeur marchande locale.",
-    iconEmoji: "🌱",
+    iconName: "sprout",
   },
 ];

@@ -16,12 +16,12 @@ import { useDefaultLivestockFarm } from "@/hooks/useDefaultLivestockFarm";
 import BackNavigationButton from "@/components/BackNavigationButton";
 
 export const speciesOptions = [
-  { value: "bovin", label: "Bovin 🐄" },
-  { value: "ovin", label: "Ovin 🐑" },
-  { value: "caprin", label: "Caprin 🐐" },
-  { value: "porcin", label: "Porcin 🐷" },
-  { value: "volaille", label: "Volaille 🐔" },
-  { value: "pisciculture", label: "Pisciculture 🐟" },
+  { value: "bovin", label: "Bovin" },
+  { value: "ovin", label: "Ovin" },
+  { value: "caprin", label: "Caprin" },
+  { value: "porcin", label: "Porcin" },
+  { value: "volaille", label: "Volaille" },
+  { value: "pisciculture", label: "Pisciculture" },
 ];
 
 export const GROUP_SPECIES = new Set(["volaille", "pisciculture"]);

@@ -224,7 +224,7 @@ export function parseGeniusCommand(text: string, activeDomain: GeniusDomain = "g
         requiresExpertValidation: true,
         unverifiedReason: "Violation de cloisonnement métier : opération cheptel/vétérinaire demandée dans le Pôle Végétal.",
         entities: {},
-        explanation: "⛔ CLOISONNEMENT MÉTIER : Vous êtes actuellement dans le module Pôle Végétal / Agronomie. Les questions d'élevage ou de médecine vétérinaire relèvent exclusivement du Pôle Vétérinaire & Cheptel. Veuillez basculer sur le module Élevage pour ces opérations.",
+        explanation: "CLOISONNEMENT MÉTIER : Vous êtes actuellement dans le module Pôle Végétal / Agronomie. Les questions d'élevage ou de médecine vétérinaire relèvent exclusivement du Pôle Vétérinaire & Cheptel. Veuillez basculer sur le module Élevage pour ces opérations.",
         actionRequired: false,
       };
     }
@@ -250,7 +250,7 @@ export function parseGeniusCommand(text: string, activeDomain: GeniusDomain = "g
         requiresExpertValidation: true,
         unverifiedReason: "Violation de cloisonnement métier : opération grandes cultures/irrigation demandée dans le Pôle Vétérinaire & Cheptel.",
         entities: {},
-        explanation: "⛔ CLOISONNEMENT MÉTIER : Vous êtes actuellement dans le module Pôle Vétérinaire & Cheptel. Les questions relatives aux cultures végétales, à l'irrigation agricole et aux pathologies végétales relèvent exclusivement du Pôle Végétal. Veuillez basculer sur le module Agronomie pour ces opérations.",
+        explanation: "CLOISONNEMENT MÉTIER : Vous êtes actuellement dans le module Pôle Vétérinaire & Cheptel. Les questions relatives aux cultures végétales, à l'irrigation agricole et aux pathologies végétales relèvent exclusivement du Pôle Végétal. Veuillez basculer sur le module Agronomie pour ces opérations.",
         actionRequired: false,
       };
     }
@@ -271,7 +271,7 @@ export function parseGeniusCommand(text: string, activeDomain: GeniusDomain = "g
         requiresExpertValidation: true,
         unverifiedReason: "Violation de cloisonnement métier : intervention terrain direct demandée dans l'Espace Partenaire.",
         entities: {},
-        explanation: "ℹ️ ESPACE PARTENAIRE : Ce module est dédié à la gestion commerciale et opérationnelle de votre entreprise (Présentation, Services, Produits, Réalisations, Devis, Commandes, Tableau de bord). Pour les interventions directes en plein champ, basculez sur le Pôle Végétal ou Élevage.",
+        explanation: "ESPACE PARTENAIRE : Ce module est dédié à la gestion commerciale et opérationnelle de votre entreprise (Présentation, Services, Produits, Réalisations, Devis, Commandes, Tableau de bord). Pour les interventions directes en plein champ, basculez sur le Pôle Végétal ou Élevage.",
         actionRequired: false,
       };
     }
@@ -469,15 +469,15 @@ function formatIntentResponse(
 ): string {
   if (!isRecognized) {
     if (lang === "dyu") {
-      return "⚠️ KUMA MA FAAMU KA ƝƐ : NAFA Genius IA tɛ jate foyi kɛ ni sɛbɛ kɔnɔna lakika tɛ. I koo fɔ ka ɲɛ (seneforo hakɛ, ji hakɛ, sise hakɛ) walima kɛrɛnkɛrɛnnen kɛ.";
+      return "KUMA MA FAAMU KA ƝƐ : NAFA Genius IA tɛ jate foyi kɛ ni sɛbɛ kɔnɔna lakika tɛ. I koo fɔ ka ɲɛ (seneforo hakɛ, ji hakɛ, sise hakɛ) walima kɛrɛnkɛrɛnnen kɛ.";
     }
     if (lang === "mos") {
-      return "⚠️ GOMDÃ PA BÃNG KA SA : NAFA Genius IA pa tõe n maan ligidi bɩ koom soorgo tɩ pa ne bõn-tɩrga ye. Togls tʋʋma sõma (puugo makre, koom yaoodo, noos sõor).";
+      return "GOMDÃ PA BÃNG KA SA : NAFA Genius IA pa tõe n maan ligidi bɩ koom soorgo tɩ pa ne bõn-tɩrga ye. Togls tʋʋma sõma (puugo makre, koom yaoodo, noos sõor).";
     }
     if (lang === "ful") {
-      return "⚠️ HAALA KAA ANNDAAKA NO FEEWNI : NAFA Genius IA waawaa waɗde limoore tawa walaa seedamteeje gese. Tinno ɓeydu kumpital laaɓngal (ngesa, ndiyam, gertode).";
+      return "HAALA KAA ANNDAAKA NO FEEWNI : NAFA Genius IA waawaa waɗde limoore tawa walaa seedamteeje gese. Tinno ɓeydu kumpital laaɓngal (ngesa, ndiyam, gertode).";
     }
-    return "⚠️ INSTRUCTION NON RECONNUE AVEC CERTITUDE : L'IA NAFA Genius ne produit aucun calcul sans données terrain certifiées (INERA / FAO-56). Veuillez préciser votre demande technique ou apporter des mesures réelles (surface en ha, culture, débit forage, effectif volailles).";
+    return "INSTRUCTION NON RECONNUE AVEC CERTITUDE : L'IA NAFA Genius ne produit aucun calcul sans données terrain certifiées (INERA / FAO-56). Veuillez préciser votre demande technique ou apporter des mesures réelles (surface en ha, culture, débit forage, effectif volailles).";
   }
   const client = entities.clientName || (lang === "dyu" ? "senekela" : lang === "mos" ? "koob soba" : lang === "ful" ? "remoowo" : "le producteur");
   const crop = entities.crop || "la culture";
