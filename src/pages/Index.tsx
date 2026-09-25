@@ -26,7 +26,9 @@ import {
   Phone,
   Mail,
   MapPinned,
-  ArrowUp
+  ArrowUp,
+  Compass,
+  Sparkles
 } from "lucide-react";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { partnerStorage, PartnerEntry } from "@/lib/partnerStorage";
@@ -43,7 +45,7 @@ const SPACES_CONFIG = [
   {
     id: "experts",
     title: "Agronomes & Vétérinaires",
-    path: "/dashboard/genius",
+    path: "/dashboard/services",
     icon: Stethoscope,
     image: galleryDigital,
     badge: "Conseil & Ingénierie",
@@ -89,8 +91,8 @@ const MARKET_CATEGORIES = [
   { id: "machinisme", name: "Machinisme & Travaux", cat: "materiel", icon: Tractor, image: galleryFarmField },
   { id: "agricole", name: "Produits Agricoles", cat: "semences", icon: Sprout, image: galleryHarvest },
   { id: "elevage", name: "Produits d'Élevage", cat: "elevage", icon: Beef, image: galleryLivestock },
-  { id: "services-agri", name: "Services Agricoles", cat: "service", icon: Wrench, image: galleryFormation },
-  { id: "services-veto", name: "Services Vétérinaires", cat: "service", icon: Stethoscope, image: galleryDigital },
+  { id: "services-agri", name: "Services Agricoles", cat: "service", path: "/dashboard/services", icon: Wrench, image: galleryFormation },
+  { id: "services-veto", name: "Services Vétérinaires", cat: "service", path: "/dashboard/veterinary-services", icon: Stethoscope, image: galleryDigital },
   { id: "finance", name: "Finance & Assurance", cat: "banque", icon: Landmark, image: galleryIrrigation },
 ];
 
@@ -350,6 +352,19 @@ const Index = () => {
               );
             })}
           </div>
+
+          {/* Bouton d'accès direct à toute la suite agronomique (39 outils) */}
+          <div className="flex justify-center pt-2">
+            <Button
+              size="lg"
+              onClick={() => navigate("/dashboard/services")}
+              className="rounded-full bg-[#111827] dark:bg-white text-white dark:text-[#111827] hover:bg-[#F97316] dark:hover:bg-[#F97316] hover:text-white dark:hover:text-white font-bold text-xs sm:text-sm px-6 py-5 shadow-md flex items-center gap-2 transition-all active:scale-95"
+            >
+              <Compass className="h-4 w-4 text-[#F97316]" />
+              <span>Accéder à toute la suite des 39 outils agronomiques</span>
+              <ArrowRight className="h-4 w-4 ml-1" />
+            </Button>
+          </div>
         </div>
       </section>
 
@@ -381,13 +396,14 @@ const Index = () => {
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
           {MARKET_CATEGORIES.map((cat) => {
             const Icon = cat.icon;
+            const targetPath = (cat as any).path || `/marketplace?cat=${cat.cat}`;
             return (
               <div
                 key={cat.id}
-                onClick={() => navigate(`/marketplace?cat=${cat.cat}`)}
+                onClick={() => navigate(targetPath)}
                 role="button"
                 tabIndex={0}
-                onKeyDown={(e) => e.key === "Enter" && navigate(`/marketplace?cat=${cat.cat}`)}
+                onKeyDown={(e) => e.key === "Enter" && navigate(targetPath)}
                 className="group relative h-48 sm:h-56 rounded-[24px] overflow-hidden bg-[#111827] shadow-sm hover:shadow-xl transition-all duration-300 hover:-translate-y-1 cursor-pointer flex flex-col justify-end p-4 border border-border/50"
               >
                 <img

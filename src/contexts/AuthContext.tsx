@@ -76,6 +76,8 @@ interface AuthContextType {
   ) => Promise<{ error: any; isNewUser?: boolean }>;
   signOut: () => Promise<void>;
   hasRole: (role: string) => boolean;
+  startGuestSession: (role?: string) => Promise<void>;
+  isGuestSession: boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -659,13 +661,62 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     explicitSignOutRef.current = false;
   };
 
+  const isGuestSession = user?.id === "00000000-0000-4000-a000-000000000001";
+
+  const startGuestSession = async (role: string = "agriculteur") => {
+    const safeRole = role || "agriculteur";
+    const partnerT: PartnerProfileType = safeRole === "partenaire" ? "expert_agronome" : "fournisseur_intrants";
+    const guestUser: User = {
+      id: "00000000-0000-4000-a000-000000000001",
+      email: "invite@nafa-agritech.bf",
+      phone: "+226 70 00 00 00",
+      aud: "authenticated",
+      role: "authenticated",
+      created_at: new Date().toISOString(),
+      user_metadata: {
+        full_name: "Invité NAFA",
+        role: safeRole,
+        phone: "+226 70 00 00 00",
+        partner_type: safeRole === "partenaire" ? partnerT : undefined,
+      },
+    } as unknown as User;
+
+    const guestProfile = {
+      full_name: "Invité NAFA",
+      phone: "+226 70 00 00 00",
+      email: "invite@nafa-agritech.bf",
+      avatar_url: null,
+    };
+
+    const guestRoles = safeRole === "expert" ? ["expert", "agronome"] : [safeRole];
+    setUser(guestUser);
+    setProfile(guestProfile);
+    setRoles(guestRoles);
+    setIsOfflineSession(true);
+    if (safeRole === "partenaire" || safeRole === "expert") {
+      setPartnerType(partnerT);
+    }
+
+    const sessionObj: NafaLocalSession = {
+      userId: guestUser.id,
+      email: guestUser.email || "",
+      phone: "+226 70 00 00 00",
+      fullName: "Invité NAFA",
+      roles: guestRoles,
+      partnerType: partnerT,
+      profile: guestProfile,
+      savedAt: Date.now(),
+    };
+    saveLocalSession(sessionObj);
+  };
+
   const hasRole = (role: string) => roles.includes(role);
   const primaryRole = roles.length > 0 ? roles[0] : null;
 
   return (
     <AuthContext.Provider value={{
-      user, session, loading, profile, roles, primaryRole, partnerType, setPartnerType, isOfflineSession,
-      signUp, signIn, signInOffline, signInWithPhoneOtp, verifyPhoneOtp, signOut, hasRole,
+      user, session, loading, profile, roles, primaryRole, partnerType, setPartnerType, isOfflineSession, isGuestSession,
+      signUp, signIn, signInOffline, signInWithPhoneOtp, verifyPhoneOtp, signOut, hasRole, startGuestSession,
     }}>
       {children}
     </AuthContext.Provider>
