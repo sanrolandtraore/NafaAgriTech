@@ -212,14 +212,14 @@ export default function ServicesPage() {
       </div>
 
       {/* ══════════════════════════════════════════════════════
-          3. CARTE HÉRO SPÉCIALE : 🤖 NAFA GENIUS IA
+          3. CARTE HERO SPECIALE : NAFA GENIUS IA
       ══════════════════════════════════════════════════════ */}
       {!searchQuery && selectedCategory === "all" && (
         <NafaGeniusHeroCard onOpenContextualModal={() => navigate("/dashboard/genius")} />
       )}
 
       {/* ══════════════════════════════════════════════════════
-          4. SECTION « MES OUTILS FAVORIS ⭐ »
+          4. SECTION « MES OUTILS FAVORIS »
       ══════════════════════════════════════════════════════ */}
       {!searchQuery && selectedCategory === "all" && favoriteTools.length > 0 && (
         <div className="space-y-4">

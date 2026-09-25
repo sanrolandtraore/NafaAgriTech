@@ -431,9 +431,9 @@ export const PhotorealisticRenderView: React.FC<PhotorealisticRenderViewProps> =
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="diurne">☀️ Plein jour sahélien</SelectItem>
-                <SelectItem value="golden_hour">🌅 Golden Hour (Crépuscule doré)</SelectItem>
-                <SelectItem value="satellite">🛰️ Vue aérienne haute fidélité</SelectItem>
+                <SelectItem value="diurne">Plein jour sahélien</SelectItem>
+                <SelectItem value="golden_hour">Golden Hour (Crépuscule doré)</SelectItem>
+                <SelectItem value="satellite">Vue aérienne haute fidélité</SelectItem>
               </SelectContent>
             </Select>
           </div>

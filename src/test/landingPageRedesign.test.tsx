@@ -70,8 +70,10 @@ describe("Landing Page Premium - Architecture UX Fulcrum", () => {
     expect(screen.getByText("Machinisme & Travaux")).toBeInTheDocument();
     expect(screen.getByText("Produits Agricoles")).toBeInTheDocument();
     expect(screen.getByText("Produits d'Élevage")).toBeInTheDocument();
-    expect(screen.getByText("Services Agricoles")).toBeInTheDocument();
-    expect(screen.getByText("Services Vétérinaires")).toBeInTheDocument();
+    // Services Agricoles appears both in the Placemarket banner and in the grid
+    expect(screen.getAllByText("Services Agricoles").length).toBeGreaterThanOrEqual(1);
+    // Services Vétérinaires appears both in the Placemarket banner and in the grid
+    expect(screen.getAllByText("Services Vétérinaires").length).toBeGreaterThanOrEqual(1);
     expect(screen.getByText("Finance & Assurance")).toBeInTheDocument();
   });
 

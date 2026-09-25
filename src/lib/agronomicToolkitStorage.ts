@@ -5,8 +5,8 @@
  * 1. Organisation visuelle en cartes interactives (Zéro liste interminable).
  * 2. 5 Grandes Catégories + Carte Spéciale NAFA Genius IA.
  * 3. Recherche Intelligente « Que voulez-vous faire ? ».
- * 4. Gestion des Outils Favoris ⭐ et Outils Récemment Utilisés.
- * 5. Badges de Connectivité : 🟢 Hors ligne (Offline-First) / ☁️ Connexion requise.
+ * 4. Gestion des Outils Favoris et Outils Récemment Utilisés.
+ * 5. Badges de Connectivité : Hors ligne (Offline-First) / Connexion requise.
  * 6. IA Contextuelle liée à chaque outil ouvert.
  */
 

@@ -491,7 +491,7 @@ export const CyberDefenseDashboard: React.FC = () => {
                 </CardDescription>
               </div>
               <Badge variant="outline" className="text-xs font-mono bg-emerald-500/10 text-emerald-600 border-emerald-500/30">
-                {integrityStatus?.isValid ? "✓ Chaîne 100% Intègre" : "✗ Altération Détectée"}
+                {integrityStatus?.isValid ? "Integre 100%" : "Alteration Detectee"}
               </Badge>
             </CardHeader>
             <CardContent>

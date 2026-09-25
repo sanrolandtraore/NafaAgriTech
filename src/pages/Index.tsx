@@ -61,7 +61,7 @@ const SPACES_CONFIG = [
   {
     id: "producteurs",
     title: "Agriculteurs & Éleveurs",
-    path: "/dashboard/marketplace",
+    path: "/marketplace?role=producteurs",
     icon: Store,
     image: galleryLivestock,
     badge: "Marketplace des Services",
@@ -76,24 +76,24 @@ const SPACES_CONFIG = [
   },
 ];
 
-// ── 2. Configuration des 6 Outils Intelligents (1 icône + 1 mot) ──
+// ── 2. Configuration des 6 Outils Intelligents avec Vraies Images Photographiques ──
 const SMART_TOOLS = [
-  { id: "gps", word: "GPS", icon: MapPin, path: "/dashboard/scouting" },
-  { id: "inspection", word: "Inspection", icon: ClipboardCheck, path: "/dashboard/smart-inspection" },
-  { id: "diagnostic", word: "Diagnostic IA", icon: Cpu, path: "/dashboard/expert-diagnosis" },
-  { id: "irrigation", word: "Irrigation", icon: Droplets, path: "/dashboard/genius" },
-  { id: "devis", word: "Devis", icon: FileText, path: "/dashboard/quote-requests" },
-  { id: "cartographie", word: "Cartographie", icon: Layers, path: "/dashboard/expert-cartography" },
+  { id: "gps", word: "GPS", icon: MapPin, path: "/dashboard/scouting", image: galleryDigital },
+  { id: "inspection", word: "Inspection", icon: ClipboardCheck, path: "/dashboard/smart-inspection", image: galleryFarmField },
+  { id: "diagnostic", word: "Diagnostic IA", icon: Cpu, path: "/dashboard/expert-diagnosis", image: galleryFormation },
+  { id: "irrigation", word: "Irrigation", icon: Droplets, path: "/dashboard/genius", image: galleryIrrigation },
+  { id: "devis", word: "Devis", icon: FileText, path: "/dashboard/quote-requests", image: galleryHarvest },
+  { id: "cartographie", word: "Cartographie", icon: Layers, path: "/dashboard/expert-cartography", image: galleryLivestock },
 ];
 
-// ── 3. Configuration des Catégories Marketplace Rapide ──
+// ── 3. Configuration des Catégories Marketplace Rapide (Accès Direct Placemarket) ──
 const MARKET_CATEGORIES = [
-  { id: "machinisme", name: "Machinisme & Travaux", cat: "materiel", icon: Tractor, image: galleryFarmField },
-  { id: "agricole", name: "Produits Agricoles", cat: "semences", icon: Sprout, image: galleryHarvest },
-  { id: "elevage", name: "Produits d'Élevage", cat: "elevage", icon: Beef, image: galleryLivestock },
-  { id: "services-agri", name: "Services Agricoles", cat: "service", path: "/dashboard/services", icon: Wrench, image: galleryFormation },
-  { id: "services-veto", name: "Services Vétérinaires", cat: "service", path: "/dashboard/veterinary-services", icon: Stethoscope, image: galleryDigital },
-  { id: "finance", name: "Finance & Assurance", cat: "banque", icon: Landmark, image: galleryIrrigation },
+  { id: "machinisme", name: "Machinisme & Travaux", cat: "machinisme", path: "/marketplace?cat=machinisme", icon: Tractor, image: galleryFarmField },
+  { id: "agricole", name: "Produits Agricoles", cat: "produits_agricoles", path: "/marketplace?cat=produits_agricoles", icon: Sprout, image: galleryHarvest },
+  { id: "elevage", name: "Produits d'Élevage", cat: "produits_elevage", path: "/marketplace?cat=produits_elevage", icon: Beef, image: galleryLivestock },
+  { id: "services-agri", name: "Services Agricoles", cat: "services_agricoles", path: "/marketplace?cat=services_agricoles", icon: Wrench, image: galleryFormation },
+  { id: "services-veto", name: "Services Vétérinaires", cat: "services_veterinaires", path: "/marketplace?cat=services_veterinaires", icon: Stethoscope, image: galleryDigital },
+  { id: "finance", name: "Finance & Assurance", cat: "finance_assurance", path: "/marketplace?cat=finance_assurance", icon: Landmark, image: galleryIrrigation },
 ];
 
 const Index = () => {
@@ -312,10 +312,51 @@ const Index = () => {
             );
           })}
         </div>
+
+        {/* ── Accès Direct Agriculteurs & Éleveurs au Placemarket ── */}
+        <div className="rounded-[28px] bg-gradient-to-r from-emerald-950/90 via-[#111827] to-teal-950/90 border border-emerald-500/40 p-6 sm:p-8 flex flex-col md:flex-row items-center justify-between gap-6 shadow-xl">
+          <div className="space-y-2 text-center md:text-left">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/20 border border-emerald-500/40 text-emerald-400 text-xs font-bold">
+              <Store className="h-3.5 w-3.5" />
+              <span>Placemarket Agriculteurs & Éleveurs</span>
+            </div>
+            <h3 className="text-xl sm:text-2xl font-heading font-extrabold text-white tracking-tight">
+              Accès direct aux services, machinisme et soins vétérinaires
+            </h3>
+            <p className="text-xs sm:text-sm text-white/70 max-w-2xl">
+              Agriculteurs et éleveurs accèdent librement aux catalogues certifiés : réservez vos labours, achetez vos intrants, programmez des visites vétérinaires ou louez du matériel.
+            </p>
+          </div>
+
+          <div className="flex flex-wrap items-center justify-center gap-2.5 shrink-0">
+            <Button
+              size="sm"
+              onClick={() => navigate("/marketplace?cat=services_agricoles")}
+              className="rounded-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs px-4 py-2.5 shadow-md transition-transform active:scale-95"
+            >
+              Services Agricoles
+            </Button>
+            <Button
+              size="sm"
+              onClick={() => navigate("/marketplace?cat=services_veterinaires")}
+              className="rounded-full bg-teal-600 hover:bg-teal-700 text-white font-bold text-xs px-4 py-2.5 shadow-md transition-transform active:scale-95"
+            >
+              Services Vétérinaires
+            </Button>
+            <Button
+              size="sm"
+              onClick={() => navigate("/marketplace")}
+              className="rounded-full bg-white text-[#111827] hover:bg-emerald-50 font-bold text-xs px-4 py-2.5 shadow-md flex items-center gap-1.5 transition-transform active:scale-95"
+            >
+              <span>Tout le Placemarket</span>
+              <ArrowRight className="h-3.5 w-3.5 text-emerald-600" />
+            </Button>
+          </div>
+        </div>
       </section>
 
       {/* ══════════════════════════════════════════════════════
-          3. TROISIÈME ÉCRAN — OUTILS INTELLIGENTS (6 Icônes + 1 Mot)
+          3. TROISIÈME ÉCRAN — OUTILS INTELLIGENTS (Vraies Images + 1 Mot)
       ══════════════════════════════════════════════════════ */}
       <section className="py-16 sm:py-24 bg-muted/20 border-y border-border/60">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 space-y-10">
@@ -328,7 +369,7 @@ const Index = () => {
             </p>
           </div>
 
-          {/* Grille des 6 Icônes : 2 colonnes Mobile, 3 Tablette, 6 Desktop */}
+          {/* Grille des 6 Outils avec Vraies Images Photographiques : 2 colonnes Mobile, 3 Tablette, 6 Desktop */}
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4 sm:gap-6">
             {SMART_TOOLS.map((tool) => {
               const Icon = tool.icon;
@@ -339,15 +380,27 @@ const Index = () => {
                   role="button"
                   tabIndex={0}
                   onKeyDown={(e) => e.key === "Enter" && navigate(tool.path)}
-                  className="group p-6 sm:p-8 rounded-[24px] bg-card border border-border/80 hover:border-[#F97316] shadow-sm hover:shadow-xl transition-all duration-300 hover:-translate-y-1 text-center flex flex-col items-center justify-center gap-4 cursor-pointer active:scale-95"
+                  className="group relative h-48 sm:h-56 rounded-[24px] overflow-hidden bg-[#111827] shadow-sm hover:shadow-2xl transition-all duration-500 hover:-translate-y-1.5 cursor-pointer flex flex-col justify-end p-4 border border-border/60 active:scale-95"
                 >
-                  <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-[20px] bg-[#F97316]/10 text-[#F97316] flex items-center justify-center transition-transform group-hover:scale-110 group-hover:bg-[#F97316] group-hover:text-white">
-                    <Icon className="h-7 w-7 sm:h-8 sm:w-8" />
+                  {/* Vraie image photographique haute fidélité */}
+                  <img
+                    src={tool.image}
+                    alt={tool.word}
+                    loading="lazy"
+                    className="absolute inset-0 w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 brightness-90 group-hover:brightness-100"
+                  />
+                  {/* Dégradé pour lisibilité parfaite */}
+                  <div className="absolute inset-0 bg-gradient-to-t from-[#111827] via-[#111827]/50 to-transparent" />
+
+                  {/* Badge & Titre avec vrai contraste */}
+                  <div className="relative z-10 space-y-2">
+                    <div className="w-9 h-9 rounded-xl bg-white/20 backdrop-blur-md text-white flex items-center justify-center group-hover:bg-[#F97316] transition-colors shadow-xs">
+                      <Icon className="h-4 w-4" />
+                    </div>
+                    <span className="font-heading font-extrabold text-sm sm:text-base text-white block group-hover:text-[#F97316] transition-colors drop-shadow-sm">
+                      {tool.word}
+                    </span>
                   </div>
-                  {/* Uniquement un mot */}
-                  <span className="font-heading font-bold text-sm sm:text-base text-foreground group-hover:text-[#F97316] transition-colors">
-                    {tool.word}
-                  </span>
                 </div>
               );
             })}

@@ -1,5 +1,5 @@
 import { useEffect, useState, useMemo } from "react";
-import { Link } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { Card, CardContent } from "@/components/ui/card";
@@ -123,6 +123,24 @@ type MarketOrder = {
 
 export const ServiceMarketplacePage = () => {
   const { user, primaryRole, partnerType } = useAuth();
+  const [searchParams] = useSearchParams();
+  const urlCat = searchParams.get("cat") || searchParams.get("category");
+  const urlRole = searchParams.get("role") || searchParams.get("target");
+  const urlIntent = searchParams.get("intent");
+
+  const normalizeCatParam = (raw: string | null): string => {
+    if (!raw) return "all";
+    const c = raw.toLowerCase();
+    if (c.includes("materiel") || c.includes("machinisme")) return "machinisme";
+    if (c.includes("semence") || c.includes("intrant") || c.includes("agricole")) return "intrants_semences";
+    if (c.includes("irrigation") || c.includes("solaire")) return "irrigation_solaire";
+    if (c.includes("elevage") || c.includes("animal")) return "produits_elevage";
+    if (c.includes("veto") || c.includes("veterinaire")) return "services_veterinaires";
+    if (c.includes("finance") || c.includes("banque") || c.includes("assurance")) return "finance_assurance";
+    if (c.includes("service")) return "services_agricoles";
+    return "all";
+  };
+
   const isPartner = primaryRole === "partenaire" || primaryRole === "agent_technique" || primaryRole === "expert" || primaryRole === "formation" || (partnerType != null && partnerType !== "");
   const isClient = !isPartner;
 
@@ -132,17 +150,25 @@ export const ServiceMarketplacePage = () => {
   const [userPosition, setUserPosition] = useState<[number, number] | null>(null);
 
   // Filtre d'action : Acheter, Louer, Demander un service (réservé aux agriculteurs et éleveurs)
-  const [intentFilter, setIntentFilter] = useState<"all" | "acheter" | "louer" | "service">("all");
+  const [intentFilter, setIntentFilter] = useState<"all" | "acheter" | "louer" | "service">(
+    (urlIntent as any) || "all"
+  );
 
   // ─── Les 6 Filtres Obligatoires ───
   const [search, setSearch] = useState("");
-  const [catFilter, setCatFilter] = useState("all");
+  const [catFilter, setCatFilter] = useState(() => normalizeCatParam(urlCat));
   const [regionFilter, setRegionFilter] = useState("all");
   const [cityFilter, setCityFilter] = useState("all");
   const [distanceMax, setDistanceMax] = useState<string>("all");
   const [priceMin, setPriceMin] = useState<string>("");
   const [priceMax, setPriceMax] = useState<string>("");
   const [availabilityFilter, setAvailabilityFilter] = useState<string>("all");
+
+  useEffect(() => {
+    if (urlCat) {
+      setCatFilter(normalizeCatParam(urlCat));
+    }
+  }, [urlCat]);
 
   const [selectedItem, setSelectedItem] = useState<PublicMarketItem | null>(null);
   const [showOrderDialog, setShowOrderDialog] = useState(false);

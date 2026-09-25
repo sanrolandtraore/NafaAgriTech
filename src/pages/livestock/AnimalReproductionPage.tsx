@@ -111,7 +111,7 @@ const AnimalReproductionPage = () => {
 
     const result = await insertRow(payload);
     if (result) {
-      toast.success("Événement de reproduction enregistré ✓");
+      toast.success("Événement de reproduction enregistré avec succès.");
       setOpenCreate(false);
       setForm({
         animal_id: "",

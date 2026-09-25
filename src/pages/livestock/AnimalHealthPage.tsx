@@ -135,7 +135,7 @@ const AnimalHealthPage = () => {
 
     const result = await insertRow(payload);
     if (result) {
-      toast.success("Événement de santé consigné ✓");
+      toast.success("Événement de santé consigné avec succès.");
       setOpen(false);
       setForm({
         animal_id: "",

@@ -129,7 +129,7 @@ const AnimalsPage = () => {
 
     const result = await insertRow(payload);
     if (result) {
-      toast.success(form.is_group ? "Lot enregistré avec succès ✓" : "Animal ajouté au registre ✓");
+      toast.success(form.is_group ? "Lot enregistré avec succès." : "Animal ajouté au registre avec succès.");
       setOpenCreate(false);
       setForm({ ...emptyForm, acquisition_date: new Date().toISOString().split("T")[0] });
     }
@@ -171,7 +171,7 @@ const AnimalsPage = () => {
 
     const ok = await updateRow(editingAnimal.id, updates);
     if (ok) {
-      toast.success("Mise à jour enregistrée ✓");
+      toast.success("Mise à jour enregistrée avec succès.");
       setEditingAnimal(null);
     }
   };

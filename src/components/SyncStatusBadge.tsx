@@ -15,7 +15,8 @@ import {
   getSyncCounts, 
   onSyncStatusChange, 
   syncPendingRecords, 
-  retryFailedRecords 
+  retryFailedRecords,
+  resolveStuckSyncErrors
 } from "@/lib/dexieDb";
 
 export const SyncStatusBadge: React.FC = () => {
@@ -52,6 +53,20 @@ export const SyncStatusBadge: React.FC = () => {
       unsubscribe();
     };
   }, []);
+
+  const handleResolveStuck = async () => {
+    setIsSyncing(true);
+    try {
+      await resolveStuckSyncErrors();
+      const updated = await getSyncCounts();
+      setCounts(updated);
+      setLastSyncTime(new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }));
+    } catch (e) {
+      console.error("Erreur déblocage synchronisation:", e);
+    } finally {
+      setIsSyncing(false);
+    }
+  };
 
   const handleManualSync = async () => {
     if (!navigator.onLine) return;
@@ -90,30 +105,44 @@ export const SyncStatusBadge: React.FC = () => {
             <span>{counts.error} échec{counts.error > 1 ? "s" : ""}</span>
           </button>
         </PopoverTrigger>
-        <PopoverContent className="w-72 p-3 text-xs space-y-2 shadow-lg" align="end">
+        <PopoverContent className="w-80 p-3 text-xs space-y-2.5 shadow-lg" align="end">
           <div className="flex items-center justify-between font-semibold text-foreground border-b pb-1.5">
             <span className="flex items-center gap-1.5 text-red-600">
               <AlertTriangle className="h-4 w-4" /> Erreur de synchronisation
             </span>
             <span className="text-[11px] text-muted-foreground">{counts.error} bloqué(s)</span>
           </div>
-          <p className="text-muted-foreground text-[11px]">
+          <p className="text-muted-foreground text-[11px] leading-relaxed">
             Certaines modifications locales n'ont pas pu être poussées vers le serveur. Vos données restent conservées en sécurité sur cet appareil.
           </p>
-          <div className="pt-1 flex items-center justify-between">
-            <span className="text-muted-foreground text-[10px]">
-              {counts.pending} en attente
-            </span>
-            <Button
-              size="sm"
-              variant="outline"
-              disabled={isSyncing || !isOnline}
-              onClick={handleManualSync}
-              className="h-7 text-xs gap-1 border-red-300 hover:bg-red-50 text-red-700"
-            >
-              <RefreshCw className={`h-3 w-3 ${isSyncing ? "animate-spin" : ""}`} />
-              Réessayer
-            </Button>
+          <div className="pt-1 flex flex-col gap-2 border-t border-border/50">
+            <div className="flex items-center justify-between text-[10px] text-muted-foreground">
+              <span>{counts.pending} en attente</span>
+              <span className="text-emerald-600 font-semibold">100% Sauvegardé en local</span>
+            </div>
+            <div className="flex items-center justify-end gap-1.5">
+              <Button
+                size="sm"
+                variant="default"
+                disabled={isSyncing}
+                onClick={handleResolveStuck}
+                className="h-7 text-xs gap-1 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold"
+                title="Conserver définitivement en sécurité locale et débloquer"
+              >
+                <CheckCircle2 className="h-3 w-3" />
+                Débloquer & Conserver
+              </Button>
+              <Button
+                size="sm"
+                variant="outline"
+                disabled={isSyncing || !isOnline}
+                onClick={handleManualSync}
+                className="h-7 text-xs gap-1 border-red-300 hover:bg-red-50 text-red-700"
+              >
+                <RefreshCw className={`h-3 w-3 ${isSyncing ? "animate-spin" : ""}`} />
+                Réessayer
+              </Button>
+            </div>
           </div>
         </PopoverContent>
       </Popover>

@@ -145,7 +145,7 @@ const AnimalFeedingPage = () => {
         }
       }
 
-      toast.success("Distribution d'aliment enregistrée ✓");
+      toast.success("Distribution d'aliment enregistrée avec succès.");
       setOpenFeeding(false);
       setFeedForm({
         animal_id: "",
@@ -181,7 +181,7 @@ const AnimalFeedingPage = () => {
     });
 
     if (result) {
-      toast.success("Stock d'aliment ajouté au magasin ✓");
+      toast.success("Stock d'aliment ajouté au magasin avec succès.");
       setOpenStock(false);
       setStockForm({
         feed_name: "",

@@ -145,7 +145,7 @@ const LivestockFinancePage = () => {
 
     const result = await insertExpense(payload);
     if (result) {
-      toast.success("Dépense enregistrée ✓");
+      toast.success("Dépense enregistrée avec succès.");
       setOpenExpense(false);
       setExpForm({
         animal_id: "",
@@ -191,7 +191,7 @@ const LivestockFinancePage = () => {
 
     const result = await insertSale(payload);
     if (result) {
-      toast.success("Vente enregistrée ✓");
+      toast.success("Vente enregistrée avec succès.");
       setOpenSale(false);
       setSaleForm({
         animal_id: "",
