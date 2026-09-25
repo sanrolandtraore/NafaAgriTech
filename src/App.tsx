@@ -133,6 +133,7 @@ const App = () => (
                 <Route path="profile" element={<Suspense fallback={<PageLoader />}><UserProfilePage /></Suspense>} />
                 <Route path="crop-planning" element={<Suspense fallback={<PageLoader />}><CropPlanningPage /></Suspense>} />
                 <Route path="services" element={<Suspense fallback={<PageLoader />}><ServicesPage /></Suspense>} />
+                <Route path="agronomic-services" element={<Suspense fallback={<PageLoader />}><ServicesPage /></Suspense>} />
                 <Route path="settings" element={<Suspense fallback={<PageLoader />}><RoleSettingsRouter /></Suspense>} />
                 <Route path="education" element={<Suspense fallback={<PageLoader />}><EducationCatalogPage /></Suspense>} />
                 <Route path="education/:slug" element={<Suspense fallback={<PageLoader />}><CourseDetailPage /></Suspense>} />

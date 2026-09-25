@@ -25,6 +25,7 @@ export type NavItem = {
 /** Module « Agriculteur » (Pôle Végétal strict : Cultures, Parcelles, Irrigation, Fiches INERA) */
 export const agriculteurNav: NavItem[] = [
   { to: "/dashboard", labelKey: "Tableau de bord", icon: LayoutDashboard },
+  { to: "/dashboard/services", labelKey: "Services & Conseils Agronomiques", icon: Compass },
   { to: "/dashboard/crop-planning", labelKey: "Planification des cultures", icon: Calculator },
   { to: "/dashboard/crops", labelKey: "Cultures & Parcelles", icon: Sprout },
   { to: "/dashboard/scouting", labelKey: "Suivi des Parcelles", icon: Eye },
@@ -84,6 +85,7 @@ export const machinismeNav: NavItem[] = [
 export const agronomeNav: NavItem[] = [
   { to: "/dashboard", labelKey: "Tableau de bord", icon: LayoutDashboard },
   { to: "/dashboard/partner-space", labelKey: "Mon Espace Partenaire (Offres & Devis)", icon: Building2, section: "Visibilité & Gestion" },
+  { to: "/dashboard/services", labelKey: "Suite d'Outils Agronomiques", icon: Compass, section: "Expertise Agronomique" },
   { to: "/dashboard/genius", labelKey: "NAFA Genius IA", icon: Sparkles, section: "Expertise Agronomique" },
   { to: "/dashboard/inspections", labelKey: "Inspection Intelligente IA", icon: Eye, section: "Expertise Agronomique" },
   { to: "/dashboard/scouting", labelKey: "Suivi terrain", icon: Eye, section: "Expertise Agronomique" },
