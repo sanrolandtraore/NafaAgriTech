@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { partnerStorage, PartnerOffer, QuoteRequest } from "@/lib/partnerStorage";
 import { getEffectiveUserId } from "@/lib/deviceIdentity";
@@ -91,6 +92,7 @@ export default function ProductServiceCatalog({
   compact = false,
 }: ProductServiceCatalogProps) {
   const { user, profile } = useAuth();
+  const navigate = useNavigate();
   const [offers, setOffers] = useState<PartnerOffer[]>([]);
   const [myQuotes, setMyQuotes] = useState<QuoteRequest[]>([]);
   const [loading, setLoading] = useState(true);
@@ -431,6 +433,31 @@ export default function ProductServiceCatalog({
       ) : (
         /* VIEW 2 : CATALOGUE PRODUITS & SERVICES */
         <div className="space-y-6">
+          {selectedCategory === "sante_veterinaire" && (
+            <div className="p-4 rounded-2xl bg-gradient-to-r from-emerald-500/10 via-emerald-500/5 to-transparent border border-emerald-500/30 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div className="flex items-start gap-3">
+                <div className="p-2.5 rounded-xl bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 shrink-0">
+                  <Syringe className="h-6 w-6" />
+                </div>
+                <div>
+                  <h4 className="font-heading font-bold text-foreground text-base">
+                    Module Spécialisé — Cabinets & Docteurs Vétérinaires Agréés (ONV-BF)
+                  </h4>
+                  <p className="text-xs text-muted-foreground mt-0.5 max-w-2xl">
+                    Consultez l'annuaire officiel des partenaires vétérinaires certifiés : fiches cabinets, tarifs officiels (FCFA), zones d'intervention, urgences 24/7 et réservation directe d'actes zootechniques.
+                  </p>
+                </div>
+              </div>
+              <Button
+                onClick={() => navigate("/dashboard/veterinary-services")}
+                className="shrink-0 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl gap-2 shadow-xs"
+              >
+                Consulter les Cabinets Partenaires
+                <ArrowRight className="h-4 w-4" />
+              </Button>
+            </div>
+          )}
+
           {/* Search bar */}
           <div className="relative">
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
