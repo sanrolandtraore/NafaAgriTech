@@ -130,14 +130,27 @@ export const ServiceMarketplacePage = () => {
 
   const normalizeCatParam = (raw: string | null): string => {
     if (!raw) return "all";
-    const c = raw.toLowerCase();
-    if (c.includes("materiel") || c.includes("machinisme")) return "machinisme";
-    if (c.includes("semence") || c.includes("intrant") || c.includes("agricole")) return "intrants_semences";
-    if (c.includes("irrigation") || c.includes("solaire")) return "irrigation_solaire";
-    if (c.includes("elevage") || c.includes("animal")) return "produits_elevage";
-    if (c.includes("veto") || c.includes("veterinaire")) return "services_veterinaires";
-    if (c.includes("finance") || c.includes("banque") || c.includes("assurance")) return "finance_assurance";
-    if (c.includes("service")) return "services_agricoles";
+    // Exact match first (safe for URL params like "services_agricoles")
+    const exactMap: Record<string, string> = {
+      machinisme: "machinisme",
+      produits_agricoles: "produits_agricoles",
+      produits_elevage: "produits_elevage",
+      services_agricoles: "services_agricoles",
+      services_veterinaires: "services_veterinaires",
+      finance_assurance: "finance_assurance",
+      intrants_semences: "intrants_semences",
+      irrigation_solaire: "irrigation_solaire",
+    };
+    const key = raw.toLowerCase().trim();
+    if (exactMap[key]) return exactMap[key];
+    // Fallback: partial match ordered from most specific to least
+    if (key.includes("irrigation") || key.includes("solaire")) return "irrigation_solaire";
+    if (key.includes("veterinaire") || key.includes("veto")) return "services_veterinaires";
+    if (key.includes("finance") || key.includes("assurance") || key.includes("banque")) return "finance_assurance";
+    if (key.includes("semence") || key.includes("intrant") || key.includes("engrais")) return "intrants_semences";
+    if (key.includes("elevage") || key.includes("animal")) return "produits_elevage";
+    if (key.includes("service")) return "services_agricoles";
+    if (key.includes("machinisme") || key.includes("materiel")) return "machinisme";
     return "all";
   };
 
@@ -485,7 +498,7 @@ export const ServiceMarketplacePage = () => {
       {/* En-tête Marketplace Unifiée */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div className="flex items-center gap-3">
-          <BackNavigationButton fallbackTo="/dashboard" />
+          <BackNavigationButton fallbackTo={user ? "/dashboard" : "/"} />
           <div>
             <h1 className="text-xl sm:text-2xl font-heading font-extrabold flex items-center gap-2 text-foreground">
               <Store className="h-6 w-6 text-emerald-600" /> Marketplace Vitrine NAFA
