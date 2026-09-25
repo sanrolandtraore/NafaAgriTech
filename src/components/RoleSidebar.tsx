@@ -93,17 +93,17 @@ export const agronomeNav: NavItem[] = [
   { to: "/dashboard/settings", labelKey: "Paramètres", icon: Settings, section: "Visibilité & Gestion" },
 ];
 
-/** 4. Profil Partenaire : Santé Animale, Élevage & Zootechnie */
+/** 4. Profil Partenaire : Clinique Vétérinaire, Santé Animale & Zootechnie (Prestations Vétérinaires) */
 export const veterinaireNav: NavItem[] = [
   { to: "/dashboard", labelKey: "Tableau de bord", icon: LayoutDashboard },
   { to: "/dashboard/partner-space", labelKey: "Mon Espace Partenaire (Offres & Devis)", icon: Building2, section: "Visibilité & Gestion" },
-  { to: "/dashboard/animals", labelKey: "Animaux", icon: Beef, section: "Pôle Vétérinaire & Cheptel" },
-  { to: "/dashboard/animal-health", labelKey: "Santé", icon: Heart, section: "Pôle Vétérinaire & Cheptel" },
-  { to: "/dashboard/animal-feeding", labelKey: "Alimentation", icon: Utensils, section: "Pôle Vétérinaire & Cheptel" },
-  { to: "/dashboard/animal-reproduction", labelKey: "Reproduction", icon: Baby, section: "Pôle Vétérinaire & Cheptel" },
-  { to: "/dashboard/livestock-services", labelKey: "Services Vétérinaires", icon: ClipboardList, section: "Pôle Vétérinaire & Cheptel" },
-  { to: "/dashboard/quote-requests", labelKey: "Demandes de devis", icon: FileText, section: "Clients & Soins" },
-  { to: "/dashboard/partenaire-kyc", labelKey: "Vérification KYC & Certification", icon: BadgeCheck, section: "Visibilité & Gestion" },
+  { to: "/dashboard/livestock-services", labelKey: "Catalogue & Réservations Vétérinaires", icon: ClipboardList, section: "Prestations Vétérinaires" },
+  { to: "/dashboard/partenaire-mes-offres", labelKey: "Mes Services & Prestations", icon: Store, section: "Prestations Vétérinaires" },
+  { to: "/dashboard/interventions", labelKey: "Interventions & Soins terrain", icon: Activity, section: "Prestations Vétérinaires" },
+  { to: "/dashboard/quote-requests", labelKey: "Demandes de devis & Réservations", icon: FileText, section: "Prestations Vétérinaires" },
+  { to: "/dashboard/provider-clients", labelKey: "Portefeuille Éleveurs & Clients", icon: Users, section: "Prestations Vétérinaires" },
+  { to: "/dashboard/revenus", labelKey: "Chiffre d'affaires & Règlements", icon: Wallet, section: "Prestations Vétérinaires" },
+  { to: "/dashboard/partenaire-kyc", labelKey: "Agrément & Vérification Ordre", icon: BadgeCheck, section: "Visibilité & Gestion" },
   { to: "/dashboard/partenaire-abonnement", labelKey: "Abonnement partenaire", icon: Sparkles, section: "Visibilité & Gestion" },
   { to: "/dashboard/settings", labelKey: "Paramètres", icon: Settings, section: "Visibilité & Gestion" },
 ];

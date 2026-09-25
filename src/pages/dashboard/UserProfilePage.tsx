@@ -1,15 +1,17 @@
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { isMissingColumnError, isValidUuid, isInvalidUuidError } from "@/hooks/useOfflineData";
 import BackNavigationButton from "@/components/BackNavigationButton";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
 import { toast } from "sonner";
-import { User, Save, Globe } from "lucide-react";
+import { User, Save, Globe, Trash2 } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 
 const AFRICAN_COUNTRIES = [
@@ -70,14 +72,37 @@ const AFRICAN_COUNTRIES = [
 ].sort((a, b) => a.name.localeCompare(b.name, "fr"));
 
 const UserProfilePage = () => {
-  const { user, profile: authProfile } = useAuth();
+  const navigate = useNavigate();
+  const { user, profile: authProfile, deleteAccount } = useAuth();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [deleteOpen, setDeleteOpen] = useState(false);
+  const [deleteConfirm, setDeleteConfirm] = useState("");
+  const [deleting, setDeleting] = useState(false);
   const [form, setForm] = useState({
     full_name: "",
     phone: "",
     country: "",
   });
+
+  const handleDeleteAccount = async () => {
+    if (deleteConfirm !== "SUPPRIMER") {
+      toast.error("Veuillez saisir SUPPRIMER pour confirmer.");
+      return;
+    }
+    setDeleting(true);
+    try {
+      const res = await deleteAccount();
+      if (res.error) throw res.error;
+      toast.success("Votre compte et toutes vos données associées ont été définitivement supprimés.");
+      navigate("/auth");
+    } catch (err: any) {
+      toast.error(err.message || "Erreur lors de la suppression du compte");
+    } finally {
+      setDeleting(false);
+      setDeleteOpen(false);
+    }
+  };
 
   useEffect(() => {
     if (!user) return;
@@ -251,6 +276,63 @@ const UserProfilePage = () => {
           </CardContent>
         </Card>
       </div>
+
+      {/* Zone de danger : Suppression définitive du compte */}
+      <Card className="border-destructive/30 bg-destructive/5">
+        <CardHeader>
+          <CardTitle className="text-base text-destructive flex items-center gap-2">
+            <Trash2 className="h-4 w-4" /> Zone de danger — Suppression du compte
+          </CardTitle>
+          <CardDescription className="text-xs text-muted-foreground">
+            La suppression de votre compte est définitive. Toutes vos données locales, parcelles, fiches et préférences associées seront définitivement purgées.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <Dialog open={deleteOpen} onOpenChange={setDeleteOpen}>
+            <DialogTrigger asChild>
+              <Button variant="destructive" size="sm" className="font-semibold text-xs rounded-xl">
+                <Trash2 className="h-4 w-4 mr-2" /> Supprimer mon compte
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="max-w-md">
+              <DialogHeader>
+                <DialogTitle className="text-destructive flex items-center gap-2">
+                  <Trash2 className="h-5 w-5" /> Confirmer la suppression définitive
+                </DialogTitle>
+                <DialogDescription className="text-xs space-y-2 pt-2 text-foreground/80">
+                  <p>
+                    Cette action est <strong>définitive et irréversible</strong>. Votre compte, vos données et vos sessions seront supprimés de cet appareil et de nos serveurs.
+                  </p>
+                  <p className="text-muted-foreground">
+                    Pour valider, tapez <strong>SUPPRIMER</strong> ci-dessous :
+                  </p>
+                </DialogDescription>
+              </DialogHeader>
+              <div className="py-2">
+                <Input
+                  value={deleteConfirm}
+                  onChange={(e) => setDeleteConfirm(e.target.value)}
+                  placeholder="Tapez SUPPRIMER"
+                  className="font-mono text-center tracking-widest uppercase text-sm"
+                />
+              </div>
+              <DialogFooter className="gap-2 sm:gap-0">
+                <Button variant="outline" size="sm" onClick={() => setDeleteOpen(false)}>
+                  Annuler
+                </Button>
+                <Button
+                  variant="destructive"
+                  size="sm"
+                  onClick={handleDeleteAccount}
+                  disabled={deleting || deleteConfirm !== "SUPPRIMER"}
+                >
+                  {deleting ? "Suppression en cours..." : "Confirmer la suppression"}
+                </Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
+        </CardContent>
+      </Card>
     </div>
   );
 };

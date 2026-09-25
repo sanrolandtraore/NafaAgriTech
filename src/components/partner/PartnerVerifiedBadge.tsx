@@ -151,10 +151,10 @@ export const PartnerVerifiedBadge: React.FC<PartnerVerifiedBadgeProps> = ({
             </>
           ) : (
             <>
-              {kyc?.physiqueData?.docNumber && (
+              {kyc?.physiqueData?.docType && (
                 <div className="flex justify-between items-center text-muted-foreground">
                   <span>Pièce d'identité ({kyc.physiqueData.docType.toUpperCase()}) :</span>
-                  <span className="font-mono text-foreground font-medium">{kyc.physiqueData.docNumber}</span>
+                  <span className="text-emerald-600 dark:text-emerald-400 font-semibold">Vérifiée & Conforme</span>
                 </div>
               )}
               {kyc?.physiqueData?.profession && (

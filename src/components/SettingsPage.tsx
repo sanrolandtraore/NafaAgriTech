@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { isMissingColumnError, isValidUuid, isInvalidUuidError } from "@/hooks/useOfflineData";
@@ -46,7 +47,8 @@ interface SettingsPageProps {
 }
 
 const SettingsPage = ({ roleLabel, roleSpecificTab, roleSpecificTabLabel }: SettingsPageProps) => {
-  const { user, signOut } = useAuth();
+  const navigate = useNavigate();
+  const { user, deleteAccount } = useAuth();
   const [loading, setLoading] = useState(true);
   const [savingProfile, setSavingProfile] = useState(false);
   const [savingPassword, setSavingPassword] = useState(false);
@@ -260,16 +262,13 @@ const SettingsPage = ({ roleLabel, roleSpecificTab, roleSpecificTabLabel }: Sett
     if (deleteConfirm !== "SUPPRIMER") { toast.error("Tapez SUPPRIMER pour confirmer"); return; }
     setDeleting(true);
     try {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) throw new Error("Non authentifié");
-
-      const res = await supabase.functions.invoke("delete-account");
+      const res = await deleteAccount();
       if (res.error) throw res.error;
 
-      toast.success("Votre compte a été supprimé.");
-      await signOut();
+      toast.success("Votre compte et toutes vos données associées ont été définitivement supprimés.");
+      navigate("/auth");
     } catch (err: any) {
-      toast.error(err.message || "Erreur lors de la suppression");
+      toast.error(err.message || "Erreur lors de la suppression du compte");
     } finally {
       setDeleting(false);
       setDeleteOpen(false);

@@ -7,8 +7,8 @@ import ServicesPage from "@/pages/dashboard/ServicesPage";
 const RoleDashboardHome = () => {
   const { primaryRole, partnerType } = useAuth();
 
-  // 1. Éleveurs pastoraux et cabinets vétérinaires accèdent directement au tableau de bord Cheptel
-  if (primaryRole === "eleveur" || (primaryRole === "partenaire" && partnerType === "elevage_veterinaire")) {
+  // 1. Éleveurs pastoraux accèdent directement au tableau de bord Cheptel
+  if (primaryRole === "eleveur") {
     return <LivestockDashboardPage />;
   }
 

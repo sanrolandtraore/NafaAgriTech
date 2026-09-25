@@ -902,17 +902,17 @@ export const ServiceMarketplacePage = () => {
                 const StIcon = st.icon;
                 return (
                   <Card key={order.id} className="shadow-xs">
-                    <CardContent className="p-4 flex items-center justify-between text-xs">
-                      <div>
-                        <p className="font-bold text-foreground text-sm">{order.item_title}</p>
-                        <div className="flex items-center gap-2 mt-1">
-                          <Badge variant={esc.variant} className="text-[10px]">{esc.label}</Badge>
-                          <span className="flex items-center gap-1 text-[11px] text-muted-foreground">
+                    <CardContent className="p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
+                      <div className="min-w-0 flex-1">
+                        <p className="font-bold text-foreground text-sm break-words">{order.item_title}</p>
+                        <div className="flex items-center gap-2 mt-1 flex-wrap">
+                          <Badge variant={esc.variant} className="text-[10px] shrink-0">{esc.label}</Badge>
+                          <span className="flex items-center gap-1 text-[11px] text-muted-foreground shrink-0">
                             <StIcon className={`h-3 w-3 ${st.color}`} /> {st.label}
                           </span>
                         </div>
                       </div>
-                      <div className="text-right">
+                      <div className="text-left sm:text-right shrink-0">
                         <div className="font-bold text-sm text-foreground">
                           {Number(order.amount).toLocaleString("fr-FR")} FCFA
                         </div>

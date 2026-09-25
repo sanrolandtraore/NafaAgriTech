@@ -75,6 +75,7 @@ interface AuthContextType {
     }
   ) => Promise<{ error: any; isNewUser?: boolean }>;
   signOut: () => Promise<void>;
+  deleteAccount: () => Promise<{ error: any }>;
   hasRole: (role: string) => boolean;
   startGuestSession: (role?: string) => Promise<void>;
   isGuestSession: boolean;
@@ -661,6 +662,80 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     explicitSignOutRef.current = false;
   };
 
+  const deleteAccount = async (): Promise<{ error: any }> => {
+    explicitSignOutRef.current = true;
+    const currentUserId = user?.id;
+    const currentPhone = user?.phone || (user?.user_metadata?.phone as string | undefined);
+
+    try {
+      // 1. Retrait du compte des comptes téléphoniques locaux enregistrés
+      try {
+        const rawAccounts = localStorage.getItem(REGISTERED_ACCOUNTS_KEY);
+        if (rawAccounts) {
+          const accounts = JSON.parse(rawAccounts) as Record<string, NafaLocalSession>;
+          let changed = false;
+          for (const key of Object.keys(accounts)) {
+            if (accounts[key]?.userId === currentUserId || (currentPhone && key === currentPhone)) {
+              delete accounts[key];
+              changed = true;
+            }
+          }
+          if (changed) {
+            localStorage.setItem(REGISTERED_ACCOUNTS_KEY, JSON.stringify(accounts));
+          }
+        }
+      } catch (err) {
+        console.warn("Nettoyage des comptes téléphoniques locaux:", err);
+      }
+
+      // 2. Nettoyage de la session locale, clés utilisateur et cache Dexie/IndexedDB
+      clearLocalSession();
+      if (currentUserId) {
+        localStorage.removeItem(`nafa_user_country_${currentUserId}`);
+        localStorage.removeItem(`nafa_user_prefs_${currentUserId}`);
+        localStorage.removeItem(`nafa_partner_type_${currentUserId}`);
+        localStorage.removeItem(`nafa_saved_crop_plans_${currentUserId}`);
+        await clearUserOfflineData(currentUserId);
+      }
+      await clearOfflineSession();
+      await clearOfflineCredentials();
+
+      // 3. Suppression dans Supabase si session distante avec UUID valide
+      if (currentUserId && isValidUuid(currentUserId) && currentUserId !== "00000000-0000-4000-a000-000000000001") {
+        try {
+          await supabase.from("profiles").delete().eq("user_id", currentUserId);
+        } catch (e) {
+          console.warn("Suppression du profil Supabase :", e);
+        }
+        try {
+          await supabase.functions.invoke("delete-account");
+        } catch (e) {
+          console.warn("Invocation edge function delete-account :", e);
+        }
+      }
+
+      // 4. Déconnexion Supabase
+      try {
+        await supabase.auth.signOut();
+      } catch (e) {
+        console.warn("Déconnexion Supabase :", e);
+      }
+
+      // 5. Réinitialisation complète de l'état en mémoire
+      setUser(null);
+      setSession(null);
+      setProfile(null);
+      setRoles([]);
+      setIsOfflineSession(false);
+      explicitSignOutRef.current = false;
+
+      return { error: null };
+    } catch (err: any) {
+      explicitSignOutRef.current = false;
+      return { error: err };
+    }
+  };
+
   const isGuestSession = user?.id === "00000000-0000-4000-a000-000000000001";
 
   const startGuestSession = async (role: string = "agriculteur") => {
@@ -716,7 +791,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   return (
     <AuthContext.Provider value={{
       user, session, loading, profile, roles, primaryRole, partnerType, setPartnerType, isOfflineSession, isGuestSession,
-      signUp, signIn, signInOffline, signInWithPhoneOtp, verifyPhoneOtp, signOut, hasRole, startGuestSession,
+      signUp, signIn, signInOffline, signInWithPhoneOtp, verifyPhoneOtp, signOut, deleteAccount, hasRole, startGuestSession,
     }}>
       {children}
     </AuthContext.Provider>
