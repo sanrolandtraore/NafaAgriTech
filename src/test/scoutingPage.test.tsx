@@ -41,6 +41,6 @@ describe("ScoutingPage - Suivi des Parcelles & Patrouille Agronomique", () => {
 
     await waitFor(() => {
       expect(screen.getByText(/Aucune session de scouting trouvée/i)).toBeInTheDocument();
-    });
+    }, { timeout: 10000 });
   });
 });

@@ -61,10 +61,10 @@ const SPACES_CONFIG = [
   {
     id: "producteurs",
     title: "Agriculteurs & Éleveurs",
-    path: "/dashboard/crop-planning",
-    icon: Sprout,
+    path: "/dashboard/marketplace",
+    icon: Store,
     image: galleryLivestock,
-    badge: "Production Terrain",
+    badge: "Marketplace des Services",
   },
   {
     id: "marketplace",

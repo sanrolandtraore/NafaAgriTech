@@ -16,7 +16,13 @@ export const ProtectedRoute = ({ children }: { children: ReactNode }) => {
       if (
         location.pathname.includes("expert") ||
         location.pathname.includes("services") ||
-        location.pathname.includes("genius")
+        location.pathname.includes("genius") ||
+        location.pathname.includes("crop-planning") ||
+        location.pathname.includes("scouting") ||
+        location.pathname.includes("inspection") ||
+        location.pathname.includes("crop-library") ||
+        location.pathname.includes("parcels") ||
+        location.pathname.includes("crops")
       ) {
         targetRole = "expert";
       } else if (

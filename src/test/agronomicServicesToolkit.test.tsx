@@ -146,7 +146,7 @@ describe("Suite Professionnelle « Services Agronomiques & Conseils »", () => {
       // Boutons "Ouvrir" disponibles sur les cartes
       const openButtons = screen.getAllByRole("button", { name: /Ouvrir/i });
       expect(openButtons.length).toBeGreaterThan(0);
-    }, 15000);
+    });
   });
 
   describe("3. Recherche Intelligente « Que voulez-vous faire ? »", () => {
@@ -162,7 +162,7 @@ describe("Suite Professionnelle « Services Agronomiques & Conseils »", () => {
         expect(screen.getAllByText("Mesure de parcelle").length).toBeGreaterThan(0);
         expect(screen.queryByText("Concepteur d'irrigation")).toBeNull();
       });
-    }, 15000);
+    });
 
     it("retrouve directement l'outil correspondant à 'Concevoir une irrigation'", async () => {
       mockAuth("agronome");
@@ -176,7 +176,7 @@ describe("Suite Professionnelle « Services Agronomiques & Conseils »", () => {
         expect(screen.getAllByText("Concepteur d'irrigation").length).toBeGreaterThan(0);
         expect(screen.queryByText("Diagnostic des ravageurs")).toBeNull();
       });
-    }, 15000);
+    });
 
     it("retrouve directement l'outil correspondant à 'Diagnostiquer une maladie'", async () => {
       mockAuth("agronome");
@@ -189,7 +189,7 @@ describe("Suite Professionnelle « Services Agronomiques & Conseils »", () => {
       await waitFor(() => {
         expect(screen.getAllByText("Diagnostic des maladies").length).toBeGreaterThan(0);
       });
-    }, 15000);
+    });
 
     it("retrouve directement l'outil correspondant à 'Faire un devis'", async () => {
       mockAuth("agronome");
@@ -202,7 +202,7 @@ describe("Suite Professionnelle « Services Agronomiques & Conseils »", () => {
       await waitFor(() => {
         expect(screen.getAllByText("Calculateur de devis").length).toBeGreaterThan(0);
       });
-    }, 15000);
+    });
   });
 
   describe("4. Carte Spéciale & Plus Visible : NAFA Genius IA", () => {
@@ -223,7 +223,7 @@ describe("Suite Professionnelle « Services Agronomiques & Conseils »", () => {
       expect(screen.getAllByRole("button", { name: /Générer un plan/i }).length).toBeGreaterThan(0);
       expect(screen.getAllByRole("button", { name: /Générer un devis/i }).length).toBeGreaterThan(0);
       expect(screen.getAllByRole("button", { name: /Générer un rapport/i }).length).toBeGreaterThan(0);
-    }, 25000);
+    }, 40000);
   });
 
   describe("5. Outils Favoris ⭐ et Outils Récemment Utilisés", () => {

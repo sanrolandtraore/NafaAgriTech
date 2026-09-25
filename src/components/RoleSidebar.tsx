@@ -23,19 +23,9 @@ export type NavItem = {
   section?: string;
 };
 
-/** Module « Agriculteur » (Pôle Végétal strict : Cultures, Parcelles, Irrigation, Fiches INERA) */
+/** Module « Agriculteur » (Strictement limité au Marketplace des Services : Réserver, Commander, Louer) */
 export const agriculteurNav: NavItem[] = [
-  { to: "/dashboard", labelKey: "Tableau de bord", icon: LayoutDashboard },
-  { to: "/dashboard/services", labelKey: "Services & Conseils Agronomiques", icon: Compass },
-  { to: "/dashboard/crop-planning", labelKey: "Planification des cultures", icon: Calculator },
-  { to: "/dashboard/crops", labelKey: "Cultures & Parcelles", icon: Sprout },
-  { to: "/dashboard/scouting", labelKey: "Suivi des Parcelles", icon: Eye },
-  { to: "/dashboard/inspections", labelKey: "Inspection Intelligente IA", icon: Eye },
-  { to: "/dashboard/marketplace", labelKey: "Marketplace Vitrine (Acheter, Louer, Services)", icon: Store },
-  { to: "/dashboard/genius", labelKey: "NAFA Genius IA (Végétal)", icon: Sparkles },
-  { to: "/dashboard/crop-library", labelKey: "Fiches Techniques INERA", icon: BookOpen },
-  { to: "/dashboard/cyber-defense", labelKey: "Bouclier Cybersécurité (IPS)", icon: ShieldAlert },
-  { to: "/dashboard/settings", labelKey: "Paramètres", icon: Settings },
+  { to: "/dashboard/marketplace", labelKey: "Marketplace des Services", icon: Store },
 ];
 
 /** Module « Éleveur » (Pôle Vétérinaire & Cheptel strict : Animaux, Santé, Nutrition, Soins) */
@@ -82,19 +72,21 @@ export const machinismeNav: NavItem[] = [
   { to: "/dashboard/settings", labelKey: "Paramètres", icon: Settings, section: "Visibilité & Gestion" },
 ];
 
-/** 3. Profil Partenaire : Cabinet d'Agronomie & Conseil Technique */
+/** 3. Profil Cabinet d'Agronomie & Conseil Technique (Suite complète des outils techniques) */
 export const agronomeNav: NavItem[] = [
   { to: "/dashboard", labelKey: "Tableau de bord", icon: LayoutDashboard },
-  { to: "/dashboard/partner-space", labelKey: "Mon Espace Partenaire (Offres & Devis)", icon: Building2, section: "Visibilité & Gestion" },
   { to: "/dashboard/services", labelKey: "Suite d'Outils Agronomiques", icon: Compass, section: "Expertise Agronomique" },
-  { to: "/dashboard/genius", labelKey: "NAFA Genius IA", icon: Sparkles, section: "Expertise Agronomique" },
+  { to: "/dashboard/crop-planning", labelKey: "Planification des cultures", icon: Calculator, section: "Expertise Agronomique" },
+  { to: "/dashboard/parcels", labelKey: "Parcelles & Cultures", icon: Sprout, section: "Expertise Agronomique" },
+  { to: "/dashboard/scouting", labelKey: "Suivi des Parcelles", icon: Eye, section: "Expertise Agronomique" },
   { to: "/dashboard/inspections", labelKey: "Inspection Intelligente IA", icon: Eye, section: "Expertise Agronomique" },
-  { to: "/dashboard/scouting", labelKey: "Suivi terrain", icon: Eye, section: "Expertise Agronomique" },
+  { to: "/dashboard/genius", labelKey: "NAFA Genius IA", icon: Sparkles, section: "Expertise Agronomique" },
   { to: "/dashboard/expert-diagnosis", labelKey: "Diagnostic IA", icon: Microscope, section: "Expertise Agronomique" },
   { to: "/dashboard/expert-prescriptions", labelKey: "Prescriptions", icon: FileText, section: "Expertise Agronomique" },
   { to: "/dashboard/expert-calculator", labelKey: "Calculateur agricole", icon: Calculator, section: "Expertise Agronomique" },
   { to: "/dashboard/expert-cartography", labelKey: "Cartographie GPS", icon: MapPin, section: "Expertise Agronomique" },
   { to: "/dashboard/crop-library", labelKey: "Fiches techniques", icon: BookOpen, section: "Expertise Agronomique" },
+  { to: "/dashboard/partner-space", labelKey: "Mon Espace Partenaire (Offres & Devis)", icon: Building2, section: "Visibilité & Gestion" },
   { to: "/dashboard/quote-requests", labelKey: "Demandes de devis", icon: FileText, section: "Clients & Conseils" },
   { to: "/dashboard/partenaire-kyc", labelKey: "Vérification KYC & Certification", icon: BadgeCheck, section: "Visibilité & Gestion" },
   { to: "/dashboard/partenaire-abonnement", labelKey: "Abonnement partenaire", icon: Sparkles, section: "Visibilité & Gestion" },
@@ -152,8 +144,8 @@ export const roleDisplayNames: Record<string, string> = {
   agriculteur: "Agriculteur",
   eleveur: "Éleveur",
   formation: "Partenaire Formation",
-  agent_technique: "Expert Agronome",
-  expert: "Expert Agronome",
+  agent_technique: "Agronome & Conseil",
+  expert: "Agronome & Conseil",
   partenaire: "Partenaire",
   admin: "Administrateur",
   manager: "Gestionnaire",
@@ -175,7 +167,7 @@ export const roleLabelKeys: Record<string, string> = {
 };
 
 export const roleIcons: Record<string, React.ElementType> = {
-  agriculteur: Calculator,
+  agriculteur: Store,
   eleveur: Beef,
   formation: Handshake,
   agent_technique: Microscope,
@@ -183,7 +175,7 @@ export const roleIcons: Record<string, React.ElementType> = {
   partenaire: Store,
   admin: LayoutDashboard,
   manager: LayoutDashboard,
-  farmer: Calculator,
+  farmer: Store,
   viewer: BarChart3,
 };
 
@@ -234,6 +226,7 @@ export const getNavLabel = (item: NavItem, t?: (key: string) => string): string 
     "nav.insurance": "Assurance agricole",
     "nav.programs": "Programmes & Projets",
     "nav.partners": "Annuaire Partenaires",
+    "Marketplace des Services": "Marketplace des Services",
   };
 
   if (dictionary[key]) {
@@ -266,17 +259,24 @@ export function getNavForRole(role: string | null, partnerType?: string | null):
     case "agriculteur":
     case "farmer":
       return { main: agriculteurNav };
-    case "partenaire":
     case "agent_technique":
     case "expert":
+      return { main: agronomeNav };
+    case "partenaire":
+      if (partnerType === "expert_agronome") return { main: agronomeNav };
+      if (partnerType === "elevage_veterinaire") return { main: veterinaireNav };
+      if (partnerType === "fournisseur_intrants") return { main: fournisseurNav };
+      if (partnerType === "machinisme_travaux") return { main: machinismeNav };
+      if (partnerType === "institution_agri") return { main: institutionNav };
+      return { main: partenaireNav };
     case "formation":
     case "admin":
     case "manager":
     default:
-      if (partnerType === "fournisseur_intrants") return { main: fournisseurNav };
-      if (partnerType === "machinisme_travaux") return { main: machinismeNav };
       if (partnerType === "expert_agronome") return { main: agronomeNav };
       if (partnerType === "elevage_veterinaire") return { main: veterinaireNav };
+      if (partnerType === "fournisseur_intrants") return { main: fournisseurNav };
+      if (partnerType === "machinisme_travaux") return { main: machinismeNav };
       if (partnerType === "institution_agri") return { main: institutionNav };
       return { main: partenaireNav };
   }
@@ -325,13 +325,14 @@ export const SidebarNavContent = ({ onNavigate }: SidebarContentProps) => {
           const { to, icon: Icon, section } = item;
           const isFirstOfSection = Boolean(section && (index === 0 || nav.main[index - 1]?.section !== section));
           const currentPath = `${location.pathname}${location.search}`;
+          const isAgriculteurHome = effectiveRole === "agriculteur" || effectiveRole === "farmer";
           const isActive = (
             to === "/dashboard"
               ? (location.pathname === "/dashboard" && !location.search)
               : to.includes("?")
                 ? (currentPath === to || (to.includes("tab=dashboard") && location.pathname === "/dashboard/partner-space" && !location.search))
-                : to === "/dashboard/crop-planning"
-                  ? (location.pathname === "/dashboard" || location.pathname.startsWith("/dashboard/crop-planning"))
+                : to === "/dashboard/marketplace"
+                  ? (location.pathname.startsWith("/dashboard/marketplace") || (isAgriculteurHome && location.pathname === "/dashboard"))
                   : location.pathname.startsWith(to)
           );
 

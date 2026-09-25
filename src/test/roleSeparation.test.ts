@@ -1,6 +1,7 @@
 import { describe, it, expect } from "vitest";
 import {
   agriculteurNav,
+  agronomeNav,
   eleveurNav,
   partenaireNav,
   getNavForRole,
@@ -8,25 +9,50 @@ import {
   roleLabelKeys,
   roleIcons,
 } from "@/components/RoleSidebar";
-import { Calculator, Store, Beef } from "lucide-react";
+import { Store, Beef, Microscope } from "lucide-react";
 
-describe("Architecture & Cloisonnement Métier : Agriculteur vs Éleveur vs Espace Partenaire", () => {
-  it("agriculteurNav contains strictly Pôle Végétal features, never livestock", () => {
+describe("Architecture & Séparation Stricte des Rôles : Agriculteur vs Agronome & Conseil vs Éleveur vs Partenaire", () => {
+  it("agriculteurNav contains STRICTLY Marketplace des Services and zero technical tools", () => {
     const paths = agriculteurNav.map((item) => item.to);
 
-    // Pôle Végétal inclus
-    expect(paths).toContain("/dashboard/crop-planning");
-    expect(paths).toContain("/dashboard/crops");
-    expect(paths).toContain("/dashboard/scouting");
-    expect(paths).toContain("/dashboard/genius");
-    expect(paths).toContain("/dashboard/crop-library");
+    // Seul le marketplace des services apparaît
+    expect(paths).toContain("/dashboard/marketplace");
+    expect(paths.length).toBe(1);
 
-    // Zéro bétail / médecine vétérinaire dans le Pôle Végétal
+    // Zéro outil technique agronomique dans le module Agriculteur
+    expect(paths).not.toContain("/dashboard/crop-planning");
+    expect(paths).not.toContain("/dashboard/crops");
+    expect(paths).not.toContain("/dashboard/parcels");
+    expect(paths).not.toContain("/dashboard/scouting");
+    expect(paths).not.toContain("/dashboard/inspections");
+    expect(paths).not.toContain("/dashboard/genius");
+    expect(paths).not.toContain("/dashboard/crop-library");
+    expect(paths).not.toContain("/dashboard/services");
+    expect(paths).not.toContain("/dashboard/expert-diagnosis");
+
+    // Zéro bétail / médecine vétérinaire
     expect(paths).not.toContain("/dashboard/animals");
     expect(paths).not.toContain("/dashboard/animal-health");
     expect(paths).not.toContain("/dashboard/animal-feeding");
     expect(paths).not.toContain("/dashboard/animal-reproduction");
     expect(paths).not.toContain("/dashboard/livestock-services");
+  });
+
+  it("agronomeNav contains ALL technical agronomic and engineering tools for Agronome & Conseil", () => {
+    const paths = agronomeNav.map((item) => item.to);
+
+    // Tous les outils techniques d'ingénierie sont regroupés ici
+    expect(paths).toContain("/dashboard/services");
+    expect(paths).toContain("/dashboard/crop-planning");
+    expect(paths).toContain("/dashboard/parcels");
+    expect(paths).toContain("/dashboard/scouting");
+    expect(paths).toContain("/dashboard/inspections");
+    expect(paths).toContain("/dashboard/genius");
+    expect(paths).toContain("/dashboard/expert-diagnosis");
+    expect(paths).toContain("/dashboard/expert-prescriptions");
+    expect(paths).toContain("/dashboard/expert-calculator");
+    expect(paths).toContain("/dashboard/expert-cartography");
+    expect(paths).toContain("/dashboard/crop-library");
   });
 
   it("eleveurNav contains strictly Pôle Élevage features, never crops or plant irrigation", () => {
@@ -63,32 +89,38 @@ describe("Architecture & Cloisonnement Métier : Agriculteur vs Éleveur vs Espa
     expect(paths.length).toBe(11);
   });
 
-  it("getNavForRole routes agriculteur, eleveur and seamlessly maps partner & legacy roles to partenaireNav", () => {
+  it("getNavForRole strictly separates roles: agriculteur gets marketplace, expert gets agronomeNav", () => {
     expect(getNavForRole("agriculteur").main).toBe(agriculteurNav);
     expect(getNavForRole("farmer").main).toBe(agriculteurNav);
     expect(getNavForRole("eleveur").main).toBe(eleveurNav);
 
-    // Consolidated roles all map to the unified Partenaire Hub
+    // Expert & Agent technique obtiennent la suite complète agronomique
+    expect(getNavForRole("expert").main).toBe(agronomeNav);
+    expect(getNavForRole("agent_technique").main).toBe(agronomeNav);
+    expect(getNavForRole("partenaire", "expert_agronome").main).toBe(agronomeNav);
+
+    // Partenaire standard
     expect(getNavForRole("partenaire").main).toBe(partenaireNav);
-    expect(getNavForRole("agent_technique").main).toBe(partenaireNav);
-    expect(getNavForRole("expert").main).toBe(partenaireNav);
     expect(getNavForRole("formation").main).toBe(partenaireNav);
   });
 
-  it("roleLabelKeys and icons correctly reflect consolidated roles", () => {
+  it("roleLabelKeys and icons correctly reflect role separation", () => {
     expect(roleLabelKeys.agriculteur).toBe("roles.agriculteur");
     expect(roleLabelKeys.partenaire).toBe("roles.partenaire");
     expect(roleLabelKeys.agent_technique).toBe("roles.partenaire");
     expect(roleLabelKeys.formation).toBe("roles.partenaire");
 
-    expect(roleIcons.agriculteur).toBe(Calculator);
-    expect(roleIcons.partenaire).toBe(Store);
+    expect(roleIcons.agriculteur).toBe(Store);
+    expect(roleIcons.farmer).toBe(Store);
+    expect(roleIcons.expert).toBe(Microscope);
+    expect(roleIcons.agent_technique).toBe(Microscope);
     expect(roleIcons.eleveur).toBe(Beef);
   });
 
   it("ensures zero 'nav.' prefixes exist in any navigation item and translates all required keys to French", () => {
     const allNavLists = [
       ...agriculteurNav,
+      ...agronomeNav,
       ...eleveurNav,
       ...partenaireNav,
     ];
@@ -109,10 +141,11 @@ describe("Architecture & Cloisonnement Métier : Agriculteur vs Éleveur vs Espa
       "Vitrine Publique": "Vitrine publique",
       "nav.providerSubscription": "Abonnement partenaire",
       "nav.settings": "Paramètres",
+      "Marketplace des Services": "Marketplace des Services",
     };
 
     Object.entries(requiredMappings).forEach(([key, expectedLabel]) => {
-      const resolved = getNavLabel({ to: "/dummy", labelKey: key, icon: Calculator });
+      const resolved = getNavLabel({ to: "/dummy", labelKey: key, icon: Store });
       expect(resolved).toBe(expectedLabel);
     });
   });

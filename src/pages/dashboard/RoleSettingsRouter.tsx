@@ -2,16 +2,21 @@ import { useAuth } from "@/contexts/AuthContext";
 import AgriculteurSettingsPage from "./AgriculteurSettingsPage";
 import EleveurSettingsPage from "./EleveurSettingsPage";
 import PartenaireSettingsPage from "./PartenaireSettingsPage";
+import ExpertSettingsPage from "./ExpertSettingsPage";
 
 const RoleSettingsRouter = () => {
-  const { primaryRole } = useAuth();
-  if (primaryRole === "eleveur") return <EleveurSettingsPage />;
+  const { primaryRole, partnerType } = useAuth();
+  if (primaryRole === "eleveur" || (primaryRole === "partenaire" && partnerType === "elevage_veterinaire")) {
+    return <EleveurSettingsPage />;
+  }
   if (
-    primaryRole === "partenaire" ||
-    primaryRole === "agent_technique" ||
     primaryRole === "expert" ||
-    primaryRole === "formation"
+    primaryRole === "agent_technique" ||
+    (primaryRole === "partenaire" && partnerType === "expert_agronome")
   ) {
+    return <ExpertSettingsPage />;
+  }
+  if (primaryRole === "partenaire" || primaryRole === "formation") {
     return <PartenaireSettingsPage />;
   }
   return <AgriculteurSettingsPage />;

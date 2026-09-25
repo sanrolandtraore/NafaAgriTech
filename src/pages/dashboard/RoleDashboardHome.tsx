@@ -1,23 +1,32 @@
 import { useAuth } from "@/contexts/AuthContext";
 import LivestockDashboardPage from "@/pages/livestock/LivestockDashboardPage";
 import PartenaireDashboard from "@/pages/dashboard/partenaire/PartenaireDashboard";
-import CropPlanningPage from "@/pages/dashboard/CropPlanningPage";
+import ServiceMarketplacePage from "@/pages/dashboard/ServiceMarketplacePage";
+import ServicesPage from "@/pages/dashboard/ServicesPage";
 
 const RoleDashboardHome = () => {
   const { primaryRole, partnerType } = useAuth();
 
-  // Éleveurs pastoraux et cabinets vétérinaires accèdent directement au tableau de bord Cheptel
+  // 1. Éleveurs pastoraux et cabinets vétérinaires accèdent directement au tableau de bord Cheptel
   if (primaryRole === "eleveur" || (primaryRole === "partenaire" && partnerType === "elevage_veterinaire")) {
     return <LivestockDashboardPage />;
   }
 
+  // 2. Cabinets d'Agronomie & Conseil Technique : suite d'outils professionnels d'ingénierie
+  if (
+    primaryRole === "expert" ||
+    primaryRole === "agent_technique" ||
+    (primaryRole === "partenaire" && partnerType === "expert_agronome")
+  ) {
+    return <ServicesPage />;
+  }
+
+  // 3. Module Agriculteur : seul le marketplace des services apparaît
   switch (primaryRole) {
     case "agriculteur":
     case "farmer":
-      return <CropPlanningPage />;
+      return <ServiceMarketplacePage />;
     case "partenaire":
-    case "agent_technique":
-    case "expert":
     case "formation":
     default:
       return <PartenaireDashboard />;
