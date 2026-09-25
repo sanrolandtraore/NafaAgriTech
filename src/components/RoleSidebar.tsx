@@ -9,6 +9,7 @@ import {
   Beef, Heart, Baby, Utensils, Wallet, Building2, Compass, Handshake, ClipboardList,
   FolderOpen, Layers, Award, Store, Eye, Microscope, FileText, BookOpen, Sparkles,
   Briefcase, ShieldCheck, ShieldAlert, Landmark, FolderKanban, FlaskConical, BadgeCheck,
+  Home,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useTranslation } from "react-i18next";
@@ -375,6 +376,15 @@ export const SidebarNavContent = ({ onNavigate }: SidebarContentProps) => {
             <p className="text-sm font-semibold text-sidebar-foreground truncate">{profile?.full_name || "Utilisateur"}</p>
             <p className="text-xs text-sidebar-foreground/60 truncate">Mon profil & compte</p>
           </div>
+        </Link>
+
+        <Link
+          to="/"
+          onClick={onNavigate}
+          className="flex items-center gap-2.5 px-3 py-2 text-xs font-semibold text-sidebar-foreground/75 hover:text-sidebar-foreground hover:bg-sidebar-accent/50 rounded-xl transition-colors"
+        >
+          <Home className="h-4 w-4 text-[#F97316]" />
+          <span>Retour sur la page d'accueil</span>
         </Link>
 
         <Button

@@ -25,7 +25,8 @@ import {
   ShieldCheck,
   Phone,
   Mail,
-  MapPinned
+  MapPinned,
+  ArrowUp
 } from "lucide-react";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { partnerStorage, PartnerEntry } from "@/lib/partnerStorage";
@@ -97,6 +98,15 @@ const Index = () => {
   const navigate = useNavigate();
   const [partners, setPartners] = useState<PartnerEntry[]>([]);
   const [loading, setLoading] = useState(true);
+  const [showBackToTop, setShowBackToTop] = useState(false);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setShowBackToTop(window.scrollY > 300);
+    };
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
 
   useEffect(() => {
     let active = true;
@@ -175,15 +185,22 @@ const Index = () => {
             </span>
           </Link>
 
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 sm:gap-3">
             <ThemeToggle />
             <Button
               variant="outline"
               size="sm"
-              onClick={() => navigate("/auth")}
-              className="rounded-[24px] bg-white/10 hover:bg-white/20 text-white border-white/20 backdrop-blur-md text-xs font-semibold px-4"
+              onClick={() => navigate("/auth?mode=login")}
+              className="rounded-[24px] bg-white/10 hover:bg-white/20 text-white border-white/20 backdrop-blur-md text-xs font-semibold px-3 sm:px-4"
             >
               Connexion
+            </Button>
+            <Button
+              size="sm"
+              onClick={() => navigate("/auth?mode=register")}
+              className="rounded-[24px] bg-[#F97316] hover:bg-[#ea580c] text-white text-xs font-bold px-3 sm:px-4 shadow-md shadow-orange-500/30 transition-transform active:scale-95"
+            >
+              S'inscrire
             </Button>
           </div>
         </header>
@@ -194,7 +211,7 @@ const Index = () => {
             La technologie au service de l'agriculture africaine.
           </h1>
 
-          <div>
+          <div className="space-y-3">
             <Button
               size="lg"
               onClick={() => navigate("/dashboard/smart-inspection")}
@@ -203,6 +220,16 @@ const Index = () => {
               <span>Commencer une mission</span>
               <ArrowRight className="h-5 w-5" />
             </Button>
+            <p className="text-xs text-white/80 font-medium">
+              Nouveau sur NAFA ?{" "}
+              <button
+                type="button"
+                onClick={() => navigate("/auth?mode=register")}
+                className="underline font-bold text-[#F97316] hover:text-white transition-colors"
+              >
+                S'inscrire
+              </button>
+            </p>
           </div>
         </div>
 
@@ -457,7 +484,61 @@ const Index = () => {
       </section>
 
       {/* ══════════════════════════════════════════════════════
-          6. PIED DE PAGE ÉPURÉ
+          6. BANNIÈRE D'INSCRIPTION & REJOINDRE L'ÉCOSYSTÈME
+      ══════════════════════════════════════════════════════ */}
+      <section className="py-12 sm:py-16 max-w-7xl mx-auto px-4 sm:px-6">
+        <div className="rounded-[32px] bg-gradient-to-br from-[#111827] via-[#1f2937] to-[#111827] text-white p-8 sm:p-12 border border-border/40 shadow-xl flex flex-col md:flex-row items-center justify-between gap-8">
+          <div className="space-y-3 text-center md:text-left max-w-2xl">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#F97316]/20 border border-[#F97316]/40 text-[#F97316] text-xs font-bold">
+              <ShieldCheck className="h-3.5 w-3.5" />
+              <span>Plateforme Agricole Sahélienne Certifiée</span>
+            </div>
+            <h3 className="text-2xl sm:text-3xl font-heading font-extrabold tracking-tight">
+              Rejoignez dès aujourd'hui l'écosystème NAFA-AGRITECH
+            </h3>
+            <p className="text-xs sm:text-sm text-white/70 leading-relaxed">
+              Agriculteurs, éleveurs, agronomes, vétérinaires et entreprises partenaires : créez votre compte gratuit et accédez aux outils professionnels 100% hors-ligne.
+            </p>
+          </div>
+
+          <div className="flex flex-col sm:flex-row items-center gap-3 shrink-0 w-full sm:w-auto">
+            <Button
+              size="lg"
+              onClick={() => navigate("/auth?mode=register")}
+              className="w-full sm:w-auto rounded-[24px] bg-[#F97316] hover:bg-[#ea580c] text-white font-bold text-sm px-6 py-6 shadow-lg shadow-orange-500/30 transition-transform active:scale-95 flex items-center justify-center gap-2"
+            >
+              <span>S'inscrire sur la plateforme</span>
+              <ArrowRight className="h-4 w-4" />
+            </Button>
+            <Button
+              variant="outline"
+              size="lg"
+              onClick={() => navigate("/auth?mode=login")}
+              className="w-full sm:w-auto rounded-[24px] bg-white/10 hover:bg-white/20 text-white border-white/20 backdrop-blur-md text-sm font-semibold px-6 py-6"
+            >
+              Connexion
+            </Button>
+          </div>
+        </div>
+      </section>
+
+      {/* Bouton d'Action Flottant : Retour sur la page d'accueil */}
+      {showBackToTop && (
+        <button
+          type="button"
+          onClick={() => {
+            window.scrollTo({ top: 0, behavior: "smooth" });
+          }}
+          aria-label="Retour sur la page d'accueil"
+          className="fixed bottom-20 right-4 z-40 px-3.5 py-2 rounded-full bg-[#111827] dark:bg-white text-white dark:text-[#111827] shadow-xl border border-border flex items-center gap-2 text-xs font-bold hover:scale-105 active:scale-95 transition-all animate-in fade-in slide-in-from-bottom-2"
+        >
+          <ArrowUp className="h-4 w-4 text-[#F97316]" />
+          <span>Retour sur la page d'accueil</span>
+        </button>
+      )}
+
+      {/* ══════════════════════════════════════════════════════
+          7. PIED DE PAGE ÉPURÉ
       ══════════════════════════════════════════════════════ */}
       <footer className="border-t border-border bg-card/50 py-10">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-muted-foreground">
@@ -476,7 +557,7 @@ const Index = () => {
       </footer>
 
       {/* ══════════════════════════════════════════════════════
-          7. NAVIGATION INFÉRIEURE FIXE (Mobile & Web App Bar)
+          8. NAVIGATION INFÉRIEURE FIXE (Mobile & Web App Bar)
           Le bouton central devient l'action principale.
       ══════════════════════════════════════════════════════ */}
       <nav
@@ -485,13 +566,14 @@ const Index = () => {
       >
         <div className="max-w-md mx-auto flex items-center justify-between relative">
           
-          {/* 1. Accueil */}
+          {/* 1. Accueil / Retour sur la page d'accueil */}
           <button
             type="button"
             onClick={() => {
               window.scrollTo({ top: 0, behavior: "smooth" });
               navigate("/");
             }}
+            aria-label="Retour sur la page d'accueil"
             className="flex flex-col items-center gap-1 text-[#F97316] active:scale-95 transition-transform w-14"
           >
             <Home className="h-5 w-5" />

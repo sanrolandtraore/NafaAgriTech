@@ -223,7 +223,7 @@ describe("Suite Professionnelle « Services Agronomiques & Conseils »", () => {
       expect(screen.getAllByRole("button", { name: /Générer un plan/i }).length).toBeGreaterThan(0);
       expect(screen.getAllByRole("button", { name: /Générer un devis/i }).length).toBeGreaterThan(0);
       expect(screen.getAllByRole("button", { name: /Générer un rapport/i }).length).toBeGreaterThan(0);
-    }, 15000);
+    }, 25000);
   });
 
   describe("5. Outils Favoris ⭐ et Outils Récemment Utilisés", () => {

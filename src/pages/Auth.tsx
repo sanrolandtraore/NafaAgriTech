@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -40,6 +40,7 @@ const isValidEmail = (e: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e.trim());
 
 export default function Auth() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { user, signInWithPhoneOtp, verifyPhoneOtp, signIn, signUp, signInOffline } = useAuth();
 
   // Redirection immédiate si déjà connecté
@@ -50,9 +51,19 @@ export default function Auth() {
   }, [user, navigate]);
 
   // Mode principal : "whatsapp" (par défaut, ultra simple) ou "classic" (fallback mot de passe)
+  const initialMode = searchParams.get("mode") === "register" || searchParams.get("mode") === "signup" ? "register" : "login";
   const [flow, setFlow] = useState<AuthFlow>("whatsapp");
   const [waStep, setWaStep] = useState<WhatsAppStep>("phone");
-  const [classicMode, setClassicMode] = useState<ClassicMode>("login");
+  const [classicMode, setClassicMode] = useState<ClassicMode>(initialMode);
+
+  useEffect(() => {
+    const mode = searchParams.get("mode");
+    if (mode === "register" || mode === "signup") {
+      setClassicMode("register");
+    } else if (mode === "login") {
+      setClassicMode("login");
+    }
+  }, [searchParams]);
 
   // Champs WhatsApp
   const [rawPhone, setRawPhone] = useState("");
@@ -308,49 +319,101 @@ export default function Auth() {
 
   return (
     <div className="flex min-h-screen items-center justify-center gradient-hero p-3 sm:p-4">
-      <Card className="w-full max-w-lg border-border/60 shadow-warm animate-fade-in my-6">
-        <CardHeader className="text-center space-y-3 pt-6 pb-4">
-          <img src={logo} alt="NAFA - AGRITECH" className="mx-auto h-20 w-auto drop-shadow-md" />
-          <div>
-            <CardTitle className="text-2xl sm:text-3xl font-heading font-extrabold text-foreground tracking-tight">
-              NAFA <span className="text-gradient-warm">- AGRITECH</span>
-            </CardTitle>
-            <CardDescription className="text-sm mt-1 font-semibold text-emerald-700 dark:text-emerald-400">
-              La technologie au service de l'agriculture africaine
-            </CardDescription>
-          </div>
-        </CardHeader>
+      <div className="w-full max-w-lg my-6 flex flex-col items-start">
+        {/* Bouton Retour sur la page d'accueil */}
+        <Button
+          type="button"
+          variant="ghost"
+          size="sm"
+          onClick={() => navigate("/")}
+          className="mb-3 inline-flex items-center gap-2 text-xs font-bold text-muted-foreground hover:text-foreground bg-white/80 dark:bg-card/80 backdrop-blur-md rounded-xl border border-border/60 shadow-2xs hover:bg-accent transition-all active:scale-95"
+          aria-label="Retour sur la page d'accueil"
+        >
+          <ArrowLeft className="h-4 w-4 text-[#F97316]" />
+          <span>Retour sur la page d'accueil</span>
+        </Button>
 
-        <CardContent className="space-y-5 px-4 sm:px-6 pb-6">
-          {/* Avertissement hors-ligne si besoin */}
-          {!isOnline && (
-            <div className="flex items-center gap-2 p-3 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-700 dark:text-amber-300 text-xs font-semibold">
-              <WifiOff className="h-4 w-4 shrink-0" />
-              <span>Mode hors-ligne détecté. Vos données locales restent accessibles.</span>
+        <Card className="w-full border-border/60 shadow-warm animate-fade-in">
+          <CardHeader className="text-center space-y-3 pt-6 pb-4">
+            <img src={logo} alt="NAFA - AGRITECH" className="mx-auto h-20 w-auto drop-shadow-md" />
+            <div>
+              <CardTitle className="text-2xl sm:text-3xl font-heading font-extrabold text-foreground tracking-tight">
+                NAFA <span className="text-gradient-warm">- AGRITECH</span>
+              </CardTitle>
+              <CardDescription className="text-sm mt-1 font-semibold text-emerald-700 dark:text-emerald-400">
+                La technologie au service de l'agriculture africaine
+              </CardDescription>
             </div>
-          )}
+          </CardHeader>
 
-          {/* ======================================================== */}
-          {/* VUE 1 : FLOW WHATSAPP (PAR DÉFAUT - ULTRA SIMPLE)        */}
-          {/* ======================================================== */}
-          {flow === "whatsapp" && (
-            <div className="space-y-4">
-              {/* ÉTAPE 1 : NUMÉRO DE TÉLÉPHONE */}
-              {waStep === "phone" && (
-                <form onSubmit={handleSendOtp} className="space-y-4">
-                  <div className="p-3.5 rounded-2xl bg-emerald-500/10 border border-emerald-500/25 flex items-start gap-3">
-                    <div className="p-2 rounded-xl bg-emerald-600 text-white shrink-0 shadow-xs">
-                      <Phone className="h-5 w-5" />
+          <CardContent className="space-y-5 px-4 sm:px-6 pb-6">
+            {/* Onglets Principaux : Connexion / S'inscrire */}
+            <div className="grid grid-cols-2 gap-1 p-1 rounded-xl bg-muted border border-border">
+              <button
+                type="button"
+                onClick={() => {
+                  setClassicMode("login");
+                  setWaStep("phone");
+                }}
+                className={cn(
+                  "py-2 rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-1.5",
+                  classicMode === "login"
+                    ? "bg-background shadow-xs text-foreground"
+                    : "text-muted-foreground hover:text-foreground"
+                )}
+              >
+                <span>Connexion</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setClassicMode("register");
+                  setWaStep("phone");
+                }}
+                className={cn(
+                  "py-2 rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-1.5",
+                  classicMode === "register"
+                    ? "bg-primary text-primary-foreground shadow-xs"
+                    : "text-muted-foreground hover:text-foreground"
+                )}
+              >
+                <span>S'inscrire</span>
+              </button>
+            </div>
+
+            {/* Avertissement hors-ligne si besoin */}
+            {!isOnline && (
+              <div className="flex items-center gap-2 p-3 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-700 dark:text-amber-300 text-xs font-semibold">
+                <WifiOff className="h-4 w-4 shrink-0" />
+                <span>Mode hors-ligne détecté. Vos données locales restent accessibles.</span>
+              </div>
+            )}
+
+            {/* ======================================================== */}
+            {/* VUE 1 : FLOW WHATSAPP (PAR DÉFAUT - ULTRA SIMPLE)        */}
+            {/* ======================================================== */}
+            {flow === "whatsapp" && (
+              <div className="space-y-4">
+                {/* ÉTAPE 1 : NUMÉRO DE TÉLÉPHONE */}
+                {waStep === "phone" && (
+                  <form onSubmit={handleSendOtp} className="space-y-4">
+                    <div className="p-3.5 rounded-2xl bg-emerald-500/10 border border-emerald-500/25 flex items-start gap-3">
+                      <div className="p-2 rounded-xl bg-emerald-600 text-white shrink-0 shadow-xs">
+                        <Phone className="h-5 w-5" />
+                      </div>
+                      <div>
+                        <h4 className="text-sm font-bold text-emerald-900 dark:text-emerald-200">
+                          {classicMode === "register"
+                            ? "Inscription instantanée par numéro WhatsApp"
+                            : "Connexion instantanée par numéro"}
+                        </h4>
+                        <p className="text-xs text-emerald-800/80 dark:text-emerald-300/80 mt-0.5 leading-relaxed">
+                          {classicMode === "register"
+                            ? "Inscrivez-vous en 30 secondes avec votre numéro WhatsApp. Aucun mot de passe complexe à retenir."
+                            : "Entrez simplement votre numéro de téléphone (comme sur WhatsApp). Aucun mot de passe complexe à mémoriser."}
+                        </p>
+                      </div>
                     </div>
-                    <div>
-                      <h4 className="text-sm font-bold text-emerald-900 dark:text-emerald-200">
-                        Connexion instantanée par numéro
-                      </h4>
-                      <p className="text-xs text-emerald-800/80 dark:text-emerald-300/80 mt-0.5 leading-relaxed">
-                        Entrez simplement votre numéro de téléphone (comme sur WhatsApp). Aucun mot de passe complexe à mémoriser.
-                      </p>
-                    </div>
-                  </div>
 
                   <div className="space-y-2">
                     <Label htmlFor="waPhone" className="text-sm font-bold text-foreground">
@@ -798,6 +861,7 @@ export default function Auth() {
           )}
         </CardContent>
       </Card>
+      </div>
     </div>
   );
 }

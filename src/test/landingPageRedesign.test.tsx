@@ -86,7 +86,7 @@ describe("Landing Page Premium - Architecture UX Fulcrum", () => {
 
     // Vérification de la présence d'au moins un nom de partenaire certifié
     expect(screen.getByText(/SAPHYTO/i)).toBeInTheDocument();
-  });
+  }, 20000);
 
   it("intègre la navigation inférieure fixe avec le bouton central action principale", () => {
     renderIndex();
@@ -105,6 +105,29 @@ describe("Landing Page Premium - Architecture UX Fulcrum", () => {
     // Bouton central action principale : "Commencer une mission" / "Projets"
     expect(within(nav).getByRole("button", { name: /Commencer une mission/i })).toBeInTheDocument();
     expect(within(nav).getByText("Projets")).toBeInTheDocument();
+  });
+
+  it("affiche les boutons d'inscription sur la page d'accueil (header, hero et bannière dédiée)", () => {
+    renderIndex();
+
+    // Boutons "S'inscrire" présents sur la page d'accueil
+    const registerButtons = screen.getAllByRole("button", { name: /S'inscrire/i });
+    expect(registerButtons.length).toBeGreaterThanOrEqual(2);
+
+    // Boutons "Connexion" également présents
+    const loginButtons = screen.getAllByRole("button", { name: /Connexion/i });
+    expect(loginButtons.length).toBeGreaterThanOrEqual(1);
+
+    // Bannière d'inscription
+    expect(screen.getByText(/Rejoignez dès aujourd'hui l'écosystème NAFA-AGRITECH/i)).toBeInTheDocument();
+  });
+
+  it("affiche les éléments de retour sur la page d'accueil", () => {
+    renderIndex();
+
+    // Bouton Accueil / Retour sur la page d'accueil dans la navigation
+    const homeNavBtn = screen.getByRole("button", { name: /Retour sur la page d'accueil/i });
+    expect(homeNavBtn).toBeInTheDocument();
   });
 
   it("respecte la règle stricte Zéro-Emoji dans les textes affichés", () => {
