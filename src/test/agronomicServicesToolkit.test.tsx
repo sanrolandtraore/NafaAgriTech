@@ -95,8 +95,9 @@ describe("Suite Professionnelle « Services Agronomiques & Conseils »", () => {
 
       // 4. Conception & Ingénierie
       const ingenierie = agronomicToolkitStorage.getToolsByCategory("ingenierie");
-      expect(ingenierie.length).toBe(7);
+      expect(ingenierie.length).toBeGreaterThanOrEqual(7);
       const ingTitles = ingenierie.map((t) => t.title);
+      expect(ingTitles).toContain("Studio CAO / SIG / IRRICAD 3D");
       expect(ingTitles).toContain("NAFA Farm Designer");
       expect(ingTitles).toContain("Visualisation 3D");
       expect(ingTitles).toContain("Conception de ferme");

@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
+import { useSearchParams } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -64,6 +65,7 @@ import { PhotorealisticRenderView } from "./PhotorealisticRenderView";
 import { TechnicalNetworkPlanView } from "./TechnicalNetworkPlanView";
 import { SmartQuoteComparator } from "./SmartQuoteComparator";
 import { CropDiagnosisTool } from "@/components/expert/CropDiagnosisTool";
+import { PrecisionCad3DStudio } from "./PrecisionCad3DStudio";
 
 // Parcelles prédéfinies de démonstration de terrain au Burkina Faso
 const PRESET_PARCELS: Record<string, { name: string; location: string; points: GeoPoint[] }> = {
@@ -101,6 +103,7 @@ const PRESET_PARCELS: Record<string, { name: string; location: string; points: G
 
 export const NafaGeniusStudio: React.FC = () => {
   const { profile, user } = useAuth();
+  const [searchParams] = useSearchParams();
 
   // État Langue & Assistant Vocal
   const [selectedLanguage, setSelectedLanguage] = useState<GeniusLanguage>("fr");
@@ -110,6 +113,31 @@ export const NafaGeniusStudio: React.FC = () => {
   const [nluResult, setNluResult] = useState<ParsedGeniusAction | null>(null);
   const [lastActionResult, setLastActionResult] = useState<any>(null);
   const [activeTab, setActiveTab] = useState<string>("geodesie");
+
+  // Synchronisation avec l'URL (permet l'ouverture directe d'un outil ou du studio CAO/3D)
+  useEffect(() => {
+    const tabParam = searchParams.get("tab") || searchParams.get("tool");
+    if (tabParam) {
+      const lower = tabParam.toLowerCase();
+      if (["cad_studio", "autocad", "qgis", "irricad", "netafim", "cad", "precision"].includes(lower)) {
+        setActiveTab("cad_studio");
+      } else if (["designer", "plan2d"].includes(lower)) {
+        setActiveTab("plan2d");
+      } else if (["3d", "vue3d"].includes(lower)) {
+        setActiveTab("vue3d");
+      } else if (["irrigation", "conception", "fao", "cirad"].includes(lower)) {
+        setActiveTab("conception");
+      } else if (["devis", "chiffrage", "quote"].includes(lower)) {
+        setActiveTab("chiffrage");
+      } else if (["diagnostic", "crop"].includes(lower)) {
+        setActiveTab("diagnostic");
+      } else if (["export", "export_pro", "pdf"].includes(lower)) {
+        setActiveTab("export_pro");
+      } else {
+        setActiveTab(tabParam);
+      }
+    }
+  }, [searchParams]);
 
   // Relevé Géodésique & GPS
   const [gpsPoints, setGpsPoints] = useState<GeoPoint[]>(PRESET_PARCELS.bama.points);
@@ -410,12 +438,21 @@ export const NafaGeniusStudio: React.FC = () => {
     if (parsed.intent === "DIAGNOSE_CROP") setActiveTab("diagnostic");
 
     const lower = text.toLowerCase();
-    if (lower.includes("3d") || lower.includes("jumeau")) setActiveTab("vue3d");
-    if (lower.includes("rendu") || lower.includes("photo") || lower.includes("image")) setActiveTab("rendu_photo");
-    if (lower.includes("plan") || lower.includes("2d") || lower.includes("cotation")) setActiveTab("plan2d");
-    if (lower.includes("reseau") || lower.includes("canalisation") || lower.includes("vanne") || lower.includes("pid")) setActiveTab("reseaux_cad");
-    if (lower.includes("fournisseur") || lower.includes("partenaire") || lower.includes("comparateur")) setActiveTab("chiffrage");
-    if (lower.includes("export") || lower.includes("pdf") || lower.includes("dossier")) setActiveTab("export_pro");
+    if (lower.includes("autocad") || lower.includes("qgis") || lower.includes("irricad") || lower.includes("netafim") || lower.includes("dxf") || lower.includes("cao") || lower.includes("sig") || lower.includes("précision") || lower.includes("precision")) {
+      setActiveTab("cad_studio");
+    } else if (lower.includes("3d") || lower.includes("jumeau")) {
+      setActiveTab("vue3d");
+    } else if (lower.includes("rendu") || lower.includes("photo") || lower.includes("image")) {
+      setActiveTab("rendu_photo");
+    } else if (lower.includes("plan") || lower.includes("2d") || lower.includes("cotation")) {
+      setActiveTab("plan2d");
+    } else if (lower.includes("reseau") || lower.includes("canalisation") || lower.includes("vanne") || lower.includes("pid")) {
+      setActiveTab("reseaux_cad");
+    } else if (lower.includes("fournisseur") || lower.includes("partenaire") || lower.includes("comparateur")) {
+      setActiveTab("chiffrage");
+    } else if (lower.includes("export") || lower.includes("pdf") || lower.includes("dossier")) {
+      setActiveTab("export_pro");
+    }
 
     // Si action directe (ex: création de visite)
     if (parsed.actionRequired) {
@@ -692,7 +729,16 @@ export const NafaGeniusStudio: React.FC = () => {
 
           {/* Suggestions d'actions rapides en un clic */}
           <div className="flex items-center gap-1.5 overflow-x-auto pb-1 text-xs no-scrollbar">
-            <span className="text-muted-foreground font-semibold shrink-0">Workflow 9 Étapes :</span>
+            <span className="text-muted-foreground font-semibold shrink-0">Workflow Pro :</span>
+            <Button
+              size="sm"
+              variant="outline"
+              className="h-7 text-xs rounded-full shrink-0 border-indigo-600/50 bg-indigo-50/60 dark:bg-indigo-950/40 text-indigo-900 dark:text-indigo-200 font-bold"
+              onClick={() => setActiveTab("cad_studio")}
+            >
+              <Compass className="h-3 w-3 mr-1 text-indigo-600" />
+              « Studio CAO / SIG / IRRICAD 3D »
+            </Button>
             <Button
               size="sm"
               variant="outline"
@@ -838,9 +884,13 @@ export const NafaGeniusStudio: React.FC = () => {
         </CardContent>
       </Card>
 
-      {/* Onglets Principaux du Studio d'Ingénierie - Processus Unifié en 9 Étapes */}
+      {/* Onglets Principaux du Studio d'Ingénierie - Processus Unifié & Studio CAO/3D Pro */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
-        <TabsList className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 lg:grid-cols-10 h-auto p-1.5 bg-muted/60 rounded-xl gap-1">
+        <TabsList className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 lg:grid-cols-11 h-auto p-1.5 bg-muted/60 rounded-xl gap-1">
+          <TabsTrigger value="cad_studio" className="text-xs py-2 px-1 gap-1 data-[state=active]:bg-background shadow-xs font-semibold text-indigo-700 dark:text-indigo-300">
+            <Compass className="h-3.5 w-3.5 text-indigo-600 shrink-0" />
+            <span className="truncate">CAO / 3D Pro</span>
+          </TabsTrigger>
           <TabsTrigger value="geodesie" className="text-xs py-2 px-1 gap-1 data-[state=active]:bg-background shadow-xs">
             <MapPin className="h-3.5 w-3.5 text-emerald-600 shrink-0" />
             <span className="truncate">1. Terrain</span>
@@ -882,6 +932,17 @@ export const NafaGeniusStudio: React.FC = () => {
             <span className="truncate">Diagnostic</span>
           </TabsTrigger>
         </TabsList>
+
+        {/* ═════════════════════════════════════════════════════════ */}
+        {/* STUDIO CAO & 3D ULTRA-PRÉCIS (AutoCAD, QGIS, IRRICAD, Netafim) */}
+        {/* ═════════════════════════════════════════════════════════ */}
+        <TabsContent value="cad_studio" className="space-y-4">
+          <PrecisionCad3DStudio
+            clientName={clientName}
+            clientPhone={clientPhone}
+            expertName={profile?.full_name || "Dr. Oumarou Sawadogo (Ingénieur Rural Agréé)"}
+          />
+        </TabsContent>
 
         {/* ═════════════════════════════════════════════════════════ */}
         {/* ONGLET 1 : GÉODÉSIE, GPS & RELIEF WGS84                   */}
@@ -1466,6 +1527,22 @@ export const NafaGeniusStudio: React.FC = () => {
         {/* ÉTAPE 3 : PLAN 2D COTÉ PROFESSIONNEL                      */}
         {/* ═════════════════════════════════════════════════════════ */}
         <TabsContent value="plan2d" className="space-y-4">
+          <div className="flex items-center justify-between p-3 rounded-xl border border-indigo-500/30 bg-indigo-50/50 dark:bg-indigo-950/20 text-xs">
+            <div className="flex items-center gap-2">
+              <Compass className="h-4 w-4 text-indigo-600 shrink-0" />
+              <span className="text-foreground font-medium">
+                Besoin d'un niveau d'ingénierie supérieur ? Ouvrez le <strong>Studio CAO / 3D Pro</strong> (calques AutoCAD DXF, MNT QGIS, hydraulique IRRICAD et Netafim).
+              </span>
+            </div>
+            <Button
+              size="sm"
+              className="h-7 text-xs bg-indigo-600 hover:bg-indigo-500 text-white font-medium shrink-0 ml-2"
+              onClick={() => setActiveTab("cad_studio")}
+            >
+              Basculer sur Studio CAO
+            </Button>
+          </div>
+
           {farmZoningPlan && (
             <FarmZoningCanvas
               plan={farmZoningPlan}
@@ -1500,6 +1577,22 @@ export const NafaGeniusStudio: React.FC = () => {
         {/* ÉTAPE 4 : JUMEAU NUMÉRIQUE 3D ISOMÉTRIQUE                 */}
         {/* ═════════════════════════════════════════════════════════ */}
         <TabsContent value="vue3d" className="space-y-4">
+          <div className="flex items-center justify-between p-3 rounded-xl border border-indigo-500/30 bg-indigo-50/50 dark:bg-indigo-950/20 text-xs">
+            <div className="flex items-center gap-2">
+              <Cpu className="h-4 w-4 text-indigo-600 shrink-0" />
+              <span className="text-foreground font-medium">
+                Pour une maquette 3D ultra-précise avec relief topographique MNT, château d'eau treillis, ombres solaires dynamiques et export DXF/GeoJSON :
+              </span>
+            </div>
+            <Button
+              size="sm"
+              className="h-7 text-xs bg-indigo-600 hover:bg-indigo-500 text-white font-medium shrink-0 ml-2"
+              onClick={() => setActiveTab("cad_studio")}
+            >
+              Maquette 3D Pro
+            </Button>
+          </div>
+
           {farmZoningPlan && <FarmIsometric3DView plan={farmZoningPlan} />}
           <div className="flex justify-between items-center pt-2">
             <Button
@@ -1553,6 +1646,22 @@ export const NafaGeniusStudio: React.FC = () => {
         {/* ÉTAPE 6 : PLANS TECHNIQUES & P&ID RÉSEAUX HYDRAULIQUES     */}
         {/* ═════════════════════════════════════════════════════════ */}
         <TabsContent value="reseaux_cad" className="space-y-4">
+          <div className="flex items-center justify-between p-3 rounded-xl border border-indigo-500/30 bg-indigo-50/50 dark:bg-indigo-950/20 text-xs">
+            <div className="flex items-center gap-2">
+              <Droplets className="h-4 w-4 text-indigo-600 shrink-0" />
+              <span className="text-foreground font-medium">
+                Simulation hydraulique sectorisée IRRICAD (débits, Hazen-Williams, vitesses, CU/EU) et chiffrage officiel Netafim :
+              </span>
+            </div>
+            <Button
+              size="sm"
+              className="h-7 text-xs bg-indigo-600 hover:bg-indigo-500 text-white font-medium shrink-0 ml-2"
+              onClick={() => setActiveTab("cad_studio")}
+            >
+              IRRICAD & Netafim
+            </Button>
+          </div>
+
           <TechnicalNetworkPlanView
             project={unifiedProject}
             onProjectUpdate={handleUnifiedProjectUpdate}

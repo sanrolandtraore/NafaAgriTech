@@ -562,6 +562,27 @@ export const AGRONOMIC_TOOLS_CATALOG: AgronomicToolItem[] = [
 
   // ─── 4. CONCEPTION & INGÉNIERIE ───
   {
+    id: "tool-precision-cad-3d",
+    title: "Studio CAO / SIG / IRRICAD 3D",
+    category: "ingenierie",
+    categoryLabel: "Conception & Ingénierie",
+    description: "Plans ultra-précis AutoCAD DXF, MNT QGIS, hydraulique IRRICAD et Netafim.",
+    route: "/dashboard/genius?tab=cad_studio",
+    iconName: "Compass",
+    isOffline: true,
+    badges: ["AutoCAD", "QGIS", "IRRICAD", "Netafim"],
+    keywords: ["autocad", "qgis", "irricad", "netafim", "dxf", "cao", "sig", "3d", "précision", "plans d'ingénierie", "netafim irrigation"],
+    contextualAi: {
+      roleDescription: "Expert en CAO rurale, SIG géodésique et modélisation hydraulique de précision.",
+      suggestedActions: [
+        { label: "Générer DXF AutoCAD", prompt: "Exporte le plan de masse et le réseau d'irrigation en format DXF R12 avec calques ISO." },
+        { label: "Topographie QGIS", prompt: "Affiche les courbes de niveau MNT et calcule les pentes géodésiques WGS84." },
+        { label: "Calcul IRRICAD", prompt: "Vérifie les vitesses d'écoulement et les pertes de charge Hazen-Williams." },
+        { label: "Devis Netafim", prompt: "Établis la nomenclature détaillée du matériel Netafim avec références officielles en FCFA." },
+      ],
+    },
+  },
+  {
     id: "tool-nafa-farm-designer",
     title: "NAFA Farm Designer",
     category: "ingenierie",
