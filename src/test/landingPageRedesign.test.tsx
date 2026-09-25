@@ -11,85 +11,100 @@ const renderIndex = () => {
   );
 };
 
-describe("Landing Page Redesign - UX Architect Standards", () => {
+describe("Landing Page Premium - Architecture UX Fulcrum", () => {
   beforeEach(() => {
     window.scrollTo = () => {};
   });
 
-  it("affiche la proposition de valeur principale en moins de 30 secondes", () => {
+  it("affiche le premier écran Hero Premium avec son slogan exact et son action principale (< 15 mots)", () => {
     renderIndex();
-    expect(screen.getByText(/L'agriculture et l'élevage intelligents/i)).toBeInTheDocument();
-    expect(screen.getByText(/à portée de main/i)).toBeInTheDocument();
-    expect(screen.getByText(/100% Hors-Ligne • Certifié Sahel/i)).toBeInTheDocument();
+
+    // Slogan 1 ligne obligatoire
+    expect(screen.getByText("La technologie au service de l'agriculture africaine.")).toBeInTheDocument();
+
+    // Bouton unique principal
+    const startMissionBtns = screen.getAllByRole("button", { name: /Commencer une mission/i });
+    expect(startMissionBtns.length).toBeGreaterThanOrEqual(1);
+
+    // Logo & Marque
+    expect(screen.getAllByAltText("NAFA-AGRITECH").length).toBeGreaterThanOrEqual(1);
   });
 
-  it("détache tout diagnostic et la section 1-Touch de la page d'accueil", () => {
+  it("affiche le deuxième écran avec les 4 grandes cartes d'espaces métiers", () => {
     renderIndex();
-    // Le diagnostic doit être absent de la page d'accueil (réservé aux agronomes et vétérinaires)
-    expect(screen.queryByText("Diagnostiquer une plante")).toBeNull();
-    expect(screen.queryByText("Diagnostic IA")).toBeNull();
-    expect(screen.queryByText("Diagnostic Plante IA")).toBeNull();
-    expect(screen.queryByText(/Accès direct 1-Touch/i)).toBeNull();
-    expect(screen.queryByText(/Que souhaitez-vous faire maintenant/i)).toBeNull();
 
-    // Pour l'agriculteur, l'outil principal est Planification des Cultures
-    expect(screen.getAllByText("Planification des Cultures").length).toBeGreaterThanOrEqual(1);
+    expect(screen.getByText("Choisissez votre espace")).toBeInTheDocument();
+
+    // Carte 1 : Agronomes & Vétérinaires
+    expect(screen.getByText("Agronomes & Vétérinaires")).toBeInTheDocument();
+
+    // Carte 2 : Partenaires
+    expect(screen.getByText("Partenaires")).toBeInTheDocument();
+
+    // Carte 3 : Agriculteurs & Éleveurs
+    expect(screen.getByText("Agriculteurs & Éleveurs")).toBeInTheDocument();
+
+    // Carte 4 : Marketplace
+    expect(screen.getAllByText("Marketplace").length).toBeGreaterThanOrEqual(1);
   });
 
-  it("conserve impérativement les piliers officiels (Entreprises, Écosystème, Marché, Terrain)", async () => {
+  it("affiche le troisième écran avec les 6 outils intelligents (uniquement icône + 1 mot)", () => {
     renderIndex();
-    // Réseau des Entreprises & Partenaires Officiels Agréés (chargé asynchronement)
-    expect(await screen.findByText(/Réseau des Entreprises & Partenaires Officiels Agréés/i)).toBeInTheDocument();
 
-    // Écosystème Actif NAFA-AGRITECH
-    expect(screen.getByText(/Écosystème Actif NAFA-AGRITECH/i)).toBeInTheDocument();
+    expect(screen.getByText("Outils intelligents")).toBeInTheDocument();
 
-    // Marché Certifié du Sahel - Matériels & Intrants de nos Partenaires
-    expect(screen.getByText(/Marché Certifié du Sahel/i)).toBeInTheDocument();
-    expect(screen.getByText(/Matériels & Intrants de nos Partenaires/i)).toBeInTheDocument();
-
-    // Conçu pour le terrain - Rapide. Léger. Fonctionnel sans connexion.
-    expect(screen.getByText(/Conçu pour le terrain/i)).toBeInTheDocument();
-    expect(screen.getByText(/Rapide\. Léger\. Fonctionnel sans connexion\./i)).toBeInTheDocument();
+    // 6 outils avec exactement 1 mot
+    expect(screen.getByText("GPS")).toBeInTheDocument();
+    expect(screen.getByText("Inspection")).toBeInTheDocument();
+    expect(screen.getByText("Diagnostic IA")).toBeInTheDocument();
+    expect(screen.getByText("Irrigation")).toBeInTheDocument();
+    expect(screen.getByText("Devis")).toBeInTheDocument();
+    expect(screen.getByText("Cartographie")).toBeInTheDocument();
   });
 
-  it("permet de basculer dynamiquement entre les 4 personas sans rechargement", () => {
+  it("affiche le quatrième écran Marketplace rapide avec les 6 catégories", () => {
     renderIndex();
 
-    // Default persona is Agriculteur
-    expect(screen.getByText("Protégez vos récoltes et maximisez vos rendements")).toBeInTheDocument();
+    expect(screen.getByText("Marketplace rapide")).toBeInTheDocument();
 
-    // Switch to Éleveur
-    const elevageBtn = screen.getByRole("button", { name: /Éleveur & Pasteur/i });
-    fireEvent.click(elevageBtn);
-    expect(screen.getByText("Pilotez la santé de votre cheptel et optimisez la nutrition")).toBeInTheDocument();
-    expect(screen.getByText("Santé & Carnet Sanitaire")).toBeInTheDocument();
-
-    // Switch to Agronome / Expert
-    const expertBtn = screen.getByRole("button", { name: /Agronome & Vétérinaire/i });
-    fireEvent.click(expertBtn);
-    expect(screen.getByText("Concevez des exploitations modernes et délivrez des ordonnances")).toBeInTheDocument();
-    expect(screen.getAllByText("Copilote NAFA Genius").length).toBeGreaterThanOrEqual(1);
-
-    // Switch to Entreprise Partenaire
-    const partBtn = screen.getByRole("button", { name: /Entreprise & Fournisseur/i });
-    fireEvent.click(partBtn);
-    expect(screen.getByText("Distribuez vos matériels et services aux producteurs du Sahel")).toBeInTheDocument();
-  }, 15000);
-
-  it("mentionne les sources scientifiques vérifiées du RAG pour garantir le zéro-hallucination", () => {
-    renderIndex();
-    expect(screen.getByText("INERA")).toBeInTheDocument();
-    expect(screen.getByText("CIRAD")).toBeInTheDocument();
-    expect(screen.getByText("FAO-56")).toBeInTheDocument();
-    expect(screen.getByText("CSP-CILSS")).toBeInTheDocument();
+    expect(screen.getByText("Machinisme & Travaux")).toBeInTheDocument();
+    expect(screen.getByText("Produits Agricoles")).toBeInTheDocument();
+    expect(screen.getByText("Produits d'Élevage")).toBeInTheDocument();
+    expect(screen.getByText("Services Agricoles")).toBeInTheDocument();
+    expect(screen.getByText("Services Vétérinaires")).toBeInTheDocument();
+    expect(screen.getByText("Finance & Assurance")).toBeInTheDocument();
   });
 
-  it("intègre la barre mobile sticky 1-touch pour smartphones", () => {
+  it("affiche le cinquième écran Partenaires proches avec distance et bouton Voir", async () => {
     renderIndex();
-    const asideMobile = screen.getByRole("complementary", { name: /Actions rapides mobiles/i });
-    expect(asideMobile).toBeInTheDocument();
-    expect(asideMobile).toHaveClass("md:hidden");
+
+    expect(screen.getByText("Partenaires proches")).toBeInTheDocument();
+
+    // Attente du chargement asynchrone des partenaires
+    const voirButtons = await screen.findAllByRole("button", { name: "Voir" });
+    expect(voirButtons.length).toBeGreaterThanOrEqual(1);
+
+    // Vérification de la présence d'au moins un nom de partenaire certifié
+    expect(screen.getByText(/SAPHYTO/i)).toBeInTheDocument();
+  });
+
+  it("intègre la navigation inférieure fixe avec le bouton central action principale", () => {
+    renderIndex();
+
+    const nav = screen.getByRole("navigation", { name: /Navigation principale inférieure/i });
+    expect(nav).toBeInTheDocument();
+    expect(nav).toHaveClass("fixed");
+    expect(nav).toHaveClass("bottom-0");
+
+    // Éléments de navigation ciblés dans la barre
+    expect(within(nav).getByRole("button", { name: /Accueil/i })).toBeInTheDocument();
+    expect(within(nav).getByRole("button", { name: /Marketplace/i })).toBeInTheDocument();
+    expect(within(nav).getByRole("button", { name: /Messages/i })).toBeInTheDocument();
+    expect(within(nav).getByRole("button", { name: /Profil/i })).toBeInTheDocument();
+
+    // Bouton central action principale : "Commencer une mission" / "Projets"
+    expect(within(nav).getByRole("button", { name: /Commencer une mission/i })).toBeInTheDocument();
+    expect(within(nav).getByText("Projets")).toBeInTheDocument();
   });
 
   it("respecte la règle stricte Zéro-Emoji dans les textes affichés", () => {
@@ -98,22 +113,5 @@ describe("Landing Page Redesign - UX Architect Standards", () => {
     // Emoji regex checking standard unicode emoji ranges
     const emojiRegex = /[\u{1F300}-\u{1F6FF}\u{1F900}-\u{1F9FF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}]/u;
     expect(emojiRegex.test(textContent)).toBe(false);
-  });
-
-  it("liste uniquement les 4 acteurs en entête (Agriculteur, Éleveur, Agronome, Entreprise)", () => {
-    renderIndex();
-    const nav = screen.getByRole("navigation", { name: /Acteurs NAFA-AGRITECH/i });
-    expect(nav).toBeInTheDocument();
-
-    // Vérifier la présence exclusive des 4 acteurs
-    expect(within(nav).getByText("Agriculteur & Maraîcher")).toBeInTheDocument();
-    expect(within(nav).getByText("Éleveur & Pasteur")).toBeInTheDocument();
-    expect(within(nav).getByText("Agronome & Vétérinaire")).toBeInTheDocument();
-    expect(within(nav).getByText("Entreprise & Fournisseur")).toBeInTheDocument();
-
-    // S'assurer qu'aucun autre lien générique n'est présent dans la navigation d'entête
-    expect(within(nav).queryByText(/Outils Rapides/i)).toBeNull();
-    expect(within(nav).queryByText(/Solutions Métiers/i)).toBeNull();
-    expect(within(nav).queryByText(/Marché Partenaires/i)).toBeNull();
   });
 });
