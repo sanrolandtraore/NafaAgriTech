@@ -4,12 +4,12 @@ import { Link, useLocation } from "react-router-dom";
 import logo from "@/assets/logo.png";
 import { cn } from "@/lib/utils";
 import {
-  GraduationCap, Sprout, LayoutDashboard, MapPin, Wheat, Activity, DollarSign, LogOut, User, Calculator,
-  Users, Wrench, Package, CalendarDays, BarChart3, Download, Settings, Tractor,
+  GraduationCap, Sprout, LayoutDashboard, MapPin, LogOut, User, Calculator,
+  Users, Package, BarChart3, Settings, Tractor,
   Beef, Heart, Baby, Utensils, Wallet, Building2, Compass, Handshake, ClipboardList,
-  FolderOpen, Layers, Award, Store, Eye, Microscope, FileText, BookOpen, Sparkles,
-  Briefcase, ShieldCheck, ShieldAlert, Landmark, FolderKanban, FlaskConical, BadgeCheck,
-  Home,
+  Award, Store, Eye, Microscope, FileText, BookOpen, Sparkles,
+  Briefcase, ShieldCheck, Landmark, FolderKanban, FlaskConical, BadgeCheck,
+  Home, Activity,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useTranslation } from "react-i18next";
@@ -28,19 +28,16 @@ export const agriculteurNav: NavItem[] = [
   { to: "/dashboard/marketplace", labelKey: "Marketplace des Services", icon: Store },
 ];
 
-/** Module « Éleveur » (Pôle Vétérinaire & Cheptel strict : Animaux, Santé, Nutrition, Soins) */
+/** Module « Éleveur » (Pôle Cheptel strict : Animaux, Santé, Reproduction, Alimentation, Finance) */
 export const eleveurNav: NavItem[] = [
   { to: "/dashboard", labelKey: "Tableau de bord", icon: LayoutDashboard },
   { to: "/dashboard/animals", labelKey: "Cheptel & Animaux", icon: Beef },
   { to: "/dashboard/animal-health", labelKey: "Santé & Vaccinations", icon: Heart },
   { to: "/dashboard/animal-reproduction", labelKey: "Reproduction & Vêlage", icon: Baby },
   { to: "/dashboard/animal-feeding", labelKey: "Alimentation & Rations", icon: Utensils },
-  { to: "/dashboard/inspections", labelKey: "Inspection d'Élevage IA", icon: ClipboardList },
-  { to: "/dashboard/marketplace", labelKey: "Marketplace Vitrine (Acheter, Louer, Services)", icon: Store },
-  { to: "/dashboard/livestock-services", labelKey: "Services Vétérinaires", icon: ClipboardList },
-  { to: "/dashboard/cyber-defense", labelKey: "Bouclier Cybersécurité (IPS)", icon: ShieldAlert },
+  { to: "/dashboard/livestock-finance", labelKey: "Finances du Cheptel", icon: Wallet },
+  { to: "/dashboard/livestock-services", labelKey: "Réserver un vétérinaire", icon: ClipboardList },
   { to: "/dashboard/settings", labelKey: "Paramètres", icon: Settings },
-  { to: "/dashboard/export", labelKey: "Export PDF/CSV", icon: Download },
 ];
 
 /** 1. Profil Partenaire : Fournisseur d'Intrants & Semences */
@@ -86,8 +83,11 @@ export const agronomeNav: NavItem[] = [
   { to: "/dashboard/expert-calculator", labelKey: "Calculateur agricole", icon: Calculator, section: "Expertise Agronomique" },
   { to: "/dashboard/expert-cartography", labelKey: "Cartographie GPS", icon: MapPin, section: "Expertise Agronomique" },
   { to: "/dashboard/crop-library", labelKey: "Fiches techniques", icon: BookOpen, section: "Expertise Agronomique" },
-  { to: "/dashboard/partner-space", labelKey: "Mon Espace Partenaire (Offres & Devis)", icon: Building2, section: "Visibilité & Gestion" },
+  { to: "/dashboard/education", labelKey: "Formation professionnelle", icon: GraduationCap, section: "Expertise Agronomique" },
+  { to: "/dashboard/expert-clients", labelKey: "Portefeuille Clients", icon: Users, section: "Clients & Conseils" },
+  { to: "/dashboard/expert-analytics", labelKey: "Analytique & Performances", icon: BarChart3, section: "Clients & Conseils" },
   { to: "/dashboard/quote-requests", labelKey: "Demandes de devis", icon: FileText, section: "Clients & Conseils" },
+  { to: "/dashboard/partner-space", labelKey: "Mon Espace Partenaire (Offres & Devis)", icon: Building2, section: "Visibilité & Gestion" },
   { to: "/dashboard/partenaire-kyc", labelKey: "Vérification KYC & Certification", icon: BadgeCheck, section: "Visibilité & Gestion" },
   { to: "/dashboard/partenaire-abonnement", labelKey: "Abonnement partenaire", icon: Sparkles, section: "Visibilité & Gestion" },
   { to: "/dashboard/settings", labelKey: "Paramètres", icon: Settings, section: "Visibilité & Gestion" },
@@ -227,6 +227,11 @@ export const getNavLabel = (item: NavItem, t?: (key: string) => string): string 
     "nav.programs": "Programmes & Projets",
     "nav.partners": "Annuaire Partenaires",
     "Marketplace des Services": "Marketplace des Services",
+    "Finances du Cheptel": "Finances du Cheptel",
+    "Réserver un vétérinaire": "Réserver un vétérinaire",
+    "Formation professionnelle": "Formation professionnelle",
+    "Portefeuille Clients": "Portefeuille Clients",
+    "Analytique & Performances": "Analytique & Performances",
   };
 
   if (dictionary[key]) {

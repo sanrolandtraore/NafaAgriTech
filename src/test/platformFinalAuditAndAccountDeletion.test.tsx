@@ -46,11 +46,14 @@ describe("Audit Final — Isolation Stricte des Modules & Cloisonnement", () => 
     expect(paths).toContain("/dashboard/animal-health");
     expect(paths).toContain("/dashboard/animal-feeding");
     expect(paths).toContain("/dashboard/animal-reproduction");
-    expect(paths).toContain("/dashboard/livestock-services");
-    expect(paths).toContain("/dashboard/marketplace");
+    expect(paths).toContain("/dashboard/livestock-services"); // Réserver un vétérinaire
+    expect(paths).toContain("/dashboard/livestock-finance");  // Finances du cheptel
 
-    // Zéro gestion de flotte machinerie
-    expect(paths).not.toContain("/dashboard/missions");
+    // Zéro contamination croisée : aucun outil agronome ni espace agriculteur
+    expect(paths).not.toContain("/dashboard/marketplace");  // réservé agriculteur
+    expect(paths).not.toContain("/dashboard/inspections");  // outil agronome
+    expect(paths).not.toContain("/dashboard/cyber-defense"); // outil admin
+    expect(paths).not.toContain("/dashboard/missions");     // outil machinisme
   });
 
   it("Module Agriculteur contient STRICTEMENT et UNIQUEMENT le Marketplace des Services", () => {
@@ -58,7 +61,7 @@ describe("Audit Final — Isolation Stricte des Modules & Cloisonnement", () => 
     expect(paths).toEqual(["/dashboard/marketplace"]);
   });
 
-  it("Module Agronome & Conseil contient STRICTEMENT les 11 outils techniques d'ingénierie agronomique", () => {
+  it("Module Agronome & Conseil contient STRICTEMENT les outils techniques d'ingénierie agronomique", () => {
     const paths = agronomeNav.map((item) => item.to);
     expect(paths).toContain("/dashboard/services");
     expect(paths).toContain("/dashboard/crop-planning");
@@ -71,9 +74,16 @@ describe("Audit Final — Isolation Stricte des Modules & Cloisonnement", () => 
     expect(paths).toContain("/dashboard/expert-calculator");
     expect(paths).toContain("/dashboard/expert-cartography");
     expect(paths).toContain("/dashboard/crop-library");
+    expect(paths).toContain("/dashboard/education");           // Formation pro
+    expect(paths).toContain("/dashboard/expert-clients");      // Portefeuille clients
+    expect(paths).toContain("/dashboard/expert-analytics");    // Analytique performances
 
-    // Zéro outil bétail ou animal
+    // Zéro outil bétail ou animal — isolation stricte
     expect(paths).not.toContain("/dashboard/animals");
+    expect(paths).not.toContain("/dashboard/animal-health");
+    expect(paths).not.toContain("/dashboard/livestock-finance");
+    // Zéro marketplace (espace agriculteur)
+    expect(paths).not.toContain("/dashboard/marketplace");
   });
 
   it("Routeur getNavForRole distribue chaque profil vers son pôle exclusif", () => {
