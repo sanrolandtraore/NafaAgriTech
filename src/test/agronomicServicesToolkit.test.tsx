@@ -227,7 +227,7 @@ describe("Suite Professionnelle « Services Agronomiques & Conseils »", () => {
     }, 40000);
   });
 
-  describe("5. Outils Favoris ⭐ et Outils Récemment Utilisés", () => {
+  describe("5. Outils Favoris et Outils Récemment Utilisés", () => {
     it("permet de basculer un outil en favori et persiste le choix localement", async () => {
       mockAuth("agronome");
 

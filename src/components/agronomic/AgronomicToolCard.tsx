@@ -142,7 +142,7 @@ export const AgronomicToolCard: React.FC<AgronomicToolCardProps> = ({
             )}
           </div>
 
-          {/* Quick Actions (Favoris ⭐ + Aide IA) */}
+          {/* Quick Actions (Favoris + Aide IA) */}
           <div className="flex items-center gap-1">
             <button
               type="button"
