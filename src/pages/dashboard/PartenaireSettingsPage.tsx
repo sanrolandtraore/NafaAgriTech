@@ -1,4 +1,4 @@
-import SettingsPage from "@/components/SettingsPage";
+﻿import SettingsPage from "@/components/SettingsPage";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -82,7 +82,7 @@ const PartenaireSettingsTab = () => {
         </CardHeader>
         <CardContent className="space-y-3 text-sm">
           <p className="text-muted-foreground">
-            Valide jusqu'au <strong>{new Date(sub.endDate).toLocaleDateString("fr-FR")}</strong>. Votre compte donne accès à l'ensemble des outils d'aide à la décision NAFA - AGRITECH : Diagnostic IA, Ordonnances signées, Scouting terrain, Flotte de location et Offres de vente.
+            Valide jusqu'au <strong>{new Date(sub.endDate).toLocaleDateString("fr-FR")}</strong>. Votre compte donne accès à l'ensemble des outils d'aide à la décision NAFA - AGRITECH : Diagnostic avancé, Ordonnances signées, Scouting terrain, Flotte de location et Offres de vente.
           </p>
           <Button asChild size="sm" className={isActiveSub ? "gradient-primary text-primary-foreground font-semibold" : "bg-amber-600 hover:bg-amber-700 text-white font-semibold"}>
             <Link to="/dashboard/partenaire-abonnement">

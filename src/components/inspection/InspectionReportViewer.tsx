@@ -1,4 +1,4 @@
-import { useState } from "react";
+﻿import { useState } from "react";
 import {
   Inspection,
   InspectionType,
@@ -304,7 +304,7 @@ export default function InspectionReportViewer({
         </Card>
       )}
 
-      {/* ── Recommandations & Observations de l'IA ── */}
+      {/* ── Recommandations & Observations ── */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <Card className="border border-border shadow-xs bg-card">
           <CardHeader className="p-4 pb-2 border-b border-border/60">
@@ -327,7 +327,7 @@ export default function InspectionReportViewer({
         <Card className="border border-border shadow-xs bg-card">
           <CardHeader className="p-4 pb-2 border-b border-border/60">
             <CardTitle className="text-sm font-bold text-foreground">
-              Recommandations NAFA Genius IA
+              Recommandations NAFA Genius
             </CardTitle>
           </CardHeader>
           <CardContent className="p-4">

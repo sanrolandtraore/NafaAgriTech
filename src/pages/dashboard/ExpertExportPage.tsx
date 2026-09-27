@@ -1,4 +1,4 @@
-import { useState } from "react";
+﻿import { useState } from "react";
 import PremiumGate from "@/components/PremiumGate";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -16,7 +16,7 @@ type ExportType = "clients" | "visits" | "diagnoses" | "prescriptions";
 const exportOptions: { value: ExportType; label: string }[] = [
   { value: "clients", label: "Clients & Producteurs suivis" },
   { value: "visits", label: "Rapports de visite terrain" },
-  { value: "diagnoses", label: "Diagnostics phytosanitaires IA" },
+  { value: "diagnoses", label: "Diagnostics phytosanitaires" },
   { value: "prescriptions", label: "Ordonnances & préconisations" },
 ];
 

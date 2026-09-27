@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
+﻿import { describe, it, expect, vi, beforeEach } from "vitest";
 import { render, screen } from "@testing-library/react";
 import { BrowserRouter, MemoryRouter, Routes, Route } from "react-router-dom";
 import Index from "@/pages/Index";
@@ -24,7 +24,7 @@ describe("Accès direct aux fonctionnalités à partir de la page d'accueil", ()
     // Outils intelligents accessibles directement
     expect(screen.getByText("GPS")).toBeInTheDocument();
     expect(screen.getByText("Inspection")).toBeInTheDocument();
-    expect(screen.getByText("Diagnostic IA")).toBeInTheDocument();
+    expect(screen.getByText("Diagnostic")).toBeInTheDocument();
     expect(screen.getByText("Irrigation")).toBeInTheDocument();
     expect(screen.getByText("Devis")).toBeInTheDocument();
     expect(screen.getByText("Cartographie")).toBeInTheDocument();

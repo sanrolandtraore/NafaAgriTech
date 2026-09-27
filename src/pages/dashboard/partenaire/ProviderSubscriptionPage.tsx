@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+﻿import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -212,7 +212,7 @@ export default function ProviderSubscriptionPage() {
             className="p-3 bg-background rounded-xl border border-border hover:border-primary transition-all flex items-center gap-2 text-xs font-semibold shadow-xs"
           >
             <Microscope className="h-4 w-4 text-primary shrink-0" />
-            <span className="truncate">Diagnostic IA Végétal</span>
+            <span className="truncate">Diagnostic Végétal</span>
           </Link>
           <Link
             to="/dashboard/expert-prescriptions"

@@ -1,4 +1,4 @@
-export type SubscriptionTier = "free" | "starter" | "pro_prestataire" | "enterprise";
+﻿export type SubscriptionTier = "free" | "starter" | "pro_prestataire" | "enterprise";
 export type ProviderActivityType = "services_agronomiques" | "vente_intrants" | "location_materiel" | "polyvalent";
 
 export interface ProviderSubscription {
@@ -46,7 +46,7 @@ export const SUBSCRIPTION_PLANS: SubscriptionPlan[] = [
     features: [
       "Consultation du catalogue d'offres",
       "Fiches techniques cultures (accès limité)",
-      "1 diagnostic IA d'essai",
+      "1 diagnostic d'essai",
       "Support communautaire",
     ],
     toolsIncluded: [
@@ -85,7 +85,7 @@ export const SUBSCRIPTION_PLANS: SubscriptionPlan[] = [
     tagline: "Pour les entrepreneurs de travaux agricoles, loueurs de tracteurs, drones et experts agronomes",
     features: [
       "Toute la suite d'aide à la décision NAFA - AGRITECH débloquée",
-      "Diagnostic IA illimité (maladies, ravageurs, carences)",
+      "Diagnostic avancé illimité (maladies, ravageurs, carences)",
       "Générateur d'ordonnances agronomiques certifiées PDF",
       "Scouting terrain géolocalisé avec relevé GPS et export de rapports",
       "Gestion de la flotte de matériel en location & réservations avec acompte séquestre",
@@ -94,7 +94,7 @@ export const SUBSCRIPTION_PLANS: SubscriptionPlan[] = [
       "Badge officiel 'Partenaire Agréé NAFA - AGRITECH'",
     ],
     toolsIncluded: [
-      { name: "Diagnostic IA Végétal", description: "Analyse instantanée par vision IA", route: "/dashboard/expert-diagnosis" },
+      { name: "Diagnostic Végétal", description: "Analyse instantanée et précise", route: "/dashboard/expert-diagnosis" },
       { name: "Ordonnances Agros PDF", description: "Génération signée et QR-code", route: "/dashboard/expert-prescriptions" },
       { name: "Scouting terrain GPS", description: "Patrouilles parcellaires et relevés", route: "/dashboard/scouting" },
       { name: "Gestion Matériel & Location", description: "Flotte tracteurs, drones, moissonneuses", route: "/dashboard/equipment" },

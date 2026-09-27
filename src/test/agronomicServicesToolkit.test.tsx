@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
+﻿import { describe, it, expect, vi, beforeEach } from "vitest";
 import { render, screen, fireEvent, waitFor, within } from "@testing-library/react";
 import { BrowserRouter } from "react-router-dom";
 import ServicesPage from "@/pages/dashboard/ServicesPage";
@@ -206,7 +206,7 @@ describe("Suite Professionnelle « Services Agronomiques & Conseils »", () => {
     });
   });
 
-  describe("4. Carte Spéciale & Plus Visible : NAFA Genius IA", () => {
+  describe("4. Carte Spéciale & Plus Visible : NAFA Genius", () => {
     it("affiche la carte héro NAFA Genius avec ses 7 actions directes", () => {
       mockAuth("agronome");
 
@@ -258,7 +258,7 @@ describe("Suite Professionnelle « Services Agronomiques & Conseils »", () => {
     });
   });
 
-  describe("6. IA Contextuelle Liée aux Outils", () => {
+  describe("6. Assistance Contextuelle Liée aux Outils", () => {
     it("ouvre la modale d'aide contextuelle pour un outil sélectionné", async () => {
       mockAuth("agronome");
 
@@ -271,7 +271,7 @@ describe("Suite Professionnelle « Services Agronomiques & Conseils »", () => {
       // Vérifier l'ouverture de la modale avec les suggestions contextuelles
       const dialog = await screen.findByRole("dialog", {}, { timeout: 8000 });
       expect(dialog).toBeInTheDocument();
-      expect(within(dialog).getByText(/IA Contextuelle NAFA Genius/i)).toBeInTheDocument();
+      expect(within(dialog).getByText(/Assistance NAFA Genius/i)).toBeInTheDocument();
       expect(within(dialog).getByText(/Contexte Métier Détecté/i)).toBeInTheDocument();
       expect(within(dialog).getByText(/Actions d'aide rapide en 1-clic/i)).toBeInTheDocument();
     }, 15000);

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useCallback } from "react";
+﻿import React, { useState, useEffect, useRef, useCallback } from "react";
 import { useSearchParams } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -415,7 +415,7 @@ export const NafaGeniusStudio: React.FC = () => {
 
     // Si instruction non reconnue avec certitude : Règle stricte de vérité réelle
     if (!parsed.isRecognized) {
-      toast.warning("Instruction non reconnue avec certitude : l'IA ne génère pas de calcul sans données terrain certifiées.");
+      toast.warning("Instruction non reconnue avec certitude : le calcul nécessite des données terrain certifiées.");
       return;
     }
 
@@ -594,26 +594,23 @@ export const NafaGeniusStudio: React.FC = () => {
 
   return (
     <div className="space-y-5">
-      {/* En-tête Premium NAFA Genius IA */}
+      {/* En-tête Premium NAFA Genius */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 p-4 sm:p-5 rounded-2xl bg-gradient-to-r from-emerald-950 via-emerald-900 to-slate-900 text-white shadow-lg border border-emerald-800/40">
         <div className="space-y-1">
           <div className="flex items-center gap-2.5 flex-wrap">
             <div className="h-9 w-9 rounded-xl bg-emerald-500/20 border border-emerald-400/40 flex items-center justify-center text-emerald-300">
               <Sparkles className="h-5 w-5" />
             </div>
-            <h1 className="text-xl sm:text-2xl font-extrabold tracking-tight">NAFA Genius IA</h1>
+            <h1 className="text-xl sm:text-2xl font-extrabold tracking-tight">NAFA Genius</h1>
             <Badge className="bg-emerald-500/25 text-emerald-200 border-emerald-400/30 text-xs px-2.5 py-0.5 font-mono">
               v{AGRONOMIC_KNOWLEDGE_VERSION}
             </Badge>
             <Badge variant="outline" className="text-xs text-emerald-300 border-emerald-600/50">
-              100% Offline-First
-            </Badge>
-            <Badge className="bg-emerald-400/20 text-emerald-200 border-emerald-400/40 text-[11px] gap-1 font-medium">
-              <ShieldCheck className="h-3 w-3 text-emerald-400" /> Données Réelles : INERA Farako-Bâ • FAO-56 • Mercuriale BF
+              Disponible sans connexion
             </Badge>
           </div>
           <p className="text-xs sm:text-sm text-emerald-100/80 max-w-2xl">
-            Copilote unifié d'ingénierie agronomique de terrain : arpentage géodésique, hydraulique FAO-56, aviculture bioclimatique et devis instantané en FCFA.
+            Suite complète d'ingénierie agronomique de terrain, disponible sans connexion.
           </p>
         </div>
 
@@ -822,7 +819,7 @@ export const NafaGeniusStudio: React.FC = () => {
             </Button>
           </div>
 
-          {/* Affichage de la compréhension de l'IA */}
+          {/* Affichage de la compréhension */}
           {nluResult && (
             <div
               className={`p-3 rounded-lg border text-xs space-y-1.5 ${
@@ -846,7 +843,7 @@ export const NafaGeniusStudio: React.FC = () => {
                     <>
                       <AlertTriangle className="h-4 w-4 text-amber-600 shrink-0" />
                       <span className="text-amber-700 dark:text-amber-300 font-bold">
-                        INSTRUCTION NON RECONNUE AVEC CERTITUDE PAR L'IA
+                        INSTRUCTION NON RECONNUE AVEC CERTITUDE
                       </span>
                     </>
                   ) : (
@@ -1119,7 +1116,7 @@ export const NafaGeniusStudio: React.FC = () => {
                 </div>
                 <div>
                   <h3 className="text-sm font-bold text-foreground">
-                    Volet A — Hydraulique Agricole & Pompage Solaire (FAO-56 / CIRAD)
+                    Volet A — Hydraulique Agricole & Pompage Solaire (normes hydrauliques certifiées)
                   </h3>
                   <p className="text-xs text-muted-foreground">
                     Besoins en eau Penman-Monteith, pertes de charge Hazen-Williams et générateur photovoltaïque.
@@ -1224,7 +1221,7 @@ export const NafaGeniusStudio: React.FC = () => {
                       </Badge>
                     ) : (
                       <Badge variant="outline" className="border-amber-500/40 text-amber-700 dark:text-amber-300 text-[11px] gap-1 bg-amber-500/10">
-                        <AlertTriangle className="h-3 w-3" /> Non certifié terrain (Calcul standard FAO-56)
+                        <AlertTriangle className="h-3 w-3" /> Non certifié terrain (Estimation standard)
                       </Badge>
                     )}
                   </div>
@@ -2044,7 +2041,7 @@ export const NafaGeniusStudio: React.FC = () => {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-muted-foreground">
                 <div className="flex items-center gap-2">
                   <CheckCircle2 className="h-3.5 w-3.5 text-emerald-600 shrink-0" />
-                  <span>Calcul d'évapotranspiration conforme au Bulletin FAO-56</span>
+                  <span>Calcul d'évapotranspiration conforme aux normes agronomiques certifiées</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <CheckCircle2 className="h-3.5 w-3.5 text-emerald-600 shrink-0" />

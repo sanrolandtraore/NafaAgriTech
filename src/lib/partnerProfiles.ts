@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Définition et gestion des profils de partenaires spécialisés NAFA - AGRITECH
  * Chaque partenaire choisit son profil de spécialisation et ses types de produits/services.
  * Les comptes partenaires ne sont PAS unifiés en bloc générique mais adaptés à leur corps de métier.
@@ -91,23 +91,23 @@ export const PARTNER_PROFILES: Record<PartnerProfileType, PartnerProfileMeta> = 
     badge: "Cabinet d'Agronomie Agréé",
     iconName: "Microscope",
     category: "service",
-    tagline: "Diagnostics phytosanitaires par IA, ordonnances officielles, analyses de sol et cartographie GPS",
+    tagline: "Diagnostics phytosanitaires avancés, ordonnances officielles, analyses de sol et cartographie GPS",
     description: "Ingénieurs et conseillers agronomes certifiés, spécialistes en protection des cultures, pédologie, télédétection et amélioration des rendements.",
     defaultProducts: [
       "Fiches techniques culturales illustrées",
       "Kits d'échantillonnage et analyse rapide du sol",
     ],
     defaultServices: [
-      "Diagnostic IA des maladies foliaires et carences",
+      "Diagnostic des maladies foliaires et carences",
       "Prescription d'ordonnances phytosanitaires signées",
       "Scouting géolocalisé et surveillance de ravageurs",
       "Cartographie GPS polygone et délimitation de parcelles",
       "Plan prévisionnel de fertilisation et de fumure",
       "Formation pratique des producteurs et coopératives",
     ],
-    suggestedTags: ["Diagnostic IA", "Ordonnance phyto", "Cartographie GPS", "Scouting", "Fertilité des sols"],
+    suggestedTags: ["Diagnostic avancé", "Ordonnance phyto", "Cartographie GPS", "Scouting", "Fertilité des sols"],
     dashboardTitle: "Cabinet d'Agronomie & Expertise Conseil",
-    dashboardSubtitle: "Délivrez vos ordonnances agronomiques, réalisez les diagnostics IA et auditez les parcelles clientes.",
+    dashboardSubtitle: "Délivrez vos ordonnances agronomiques, réalisez les diagnostics avancés et auditez les parcelles clientes.",
   },
 
   elevage_veterinaire: {

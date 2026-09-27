@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach } from "vitest";
+﻿import { describe, it, expect, beforeEach } from "vitest";
 import { render, screen, fireEvent, within } from "@testing-library/react";
 import { BrowserRouter } from "react-router-dom";
 import Index from "@/pages/Index";
@@ -56,7 +56,7 @@ describe("Landing Page Premium - Architecture UX Fulcrum", () => {
     // 6 outils avec exactement 1 mot
     expect(screen.getByText("GPS")).toBeInTheDocument();
     expect(screen.getByText("Inspection")).toBeInTheDocument();
-    expect(screen.getByText("Diagnostic IA")).toBeInTheDocument();
+    expect(screen.getByText("Diagnostic")).toBeInTheDocument();
     expect(screen.getByText("Irrigation")).toBeInTheDocument();
     expect(screen.getByText("Devis")).toBeInTheDocument();
     expect(screen.getByText("Cartographie")).toBeInTheDocument();

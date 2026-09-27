@@ -1,9 +1,9 @@
-/**
+﻿/**
  * NAFA GENIUS IA - Générateur de Dossier Technique d'Ingénierie & Devis Certifié (PDF)
  * 
  * Génère un rapport technique officiel multi-pages conforme aux normes :
  * - Cartographie Géodésique WGS84 (Gauss / Shoelace)
- * - Dimensionnement Hydraulique & Solaire FAO-56 (Hazen-Williams, HMT, Photovoltaïque)
+ * - Dimensionnement Hydraulique & Solaire (Hazen-Williams, HMT, Photovoltaïque)
  * - Conception Bioclimatique Bâtiments Avicoles Tropicaux (Thermosiphon, Axe E-O)
  * - Bordereau des Prix Unitaires (BPU) & Devis Chiffré en FCFA avec Sceau de Sécurité
  */
@@ -72,7 +72,7 @@ function drawPageHeader(doc: jsPDF, title: string, pageNumber: number, totalPage
   doc.setFontSize(7.5);
   doc.setTextColor(110, 120, 130);
   doc.text(
-    "Dossier technique certifié NAFA Genius IA • Conforme normes FAO-56 & INERA Burkina Faso",
+    "Dossier technique certifié NAFA Genius • Conforme normes agronomiques certifiées Burkina Faso",
     14,
     pageHeight - 10
   );
@@ -282,11 +282,11 @@ export function generateTechnicalDossierPdf(input: PdfDossierInput): jsPDF {
   }
 
   // ═════════════════════════════════════════════════════════════
-  // PAGE 2 : NOTE HYDRAULIQUE & SOLAIRE FAO-56
+  // PAGE 2 : Note Hydraulique & Solaire
   // ═════════════════════════════════════════════════════════════
   doc.addPage();
   currentPage++;
-  drawPageHeader(doc, "Dimensionnement Hydraulique & Solaire FAO-56", currentPage, totalPages);
+  drawPageHeader(doc, "Dimensionnement Hydraulique & Solaire", currentPage, totalPages);
 
   y = 34;
 

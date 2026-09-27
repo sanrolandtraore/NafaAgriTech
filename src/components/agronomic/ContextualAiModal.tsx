@@ -43,7 +43,7 @@ export const ContextualAiModal: React.FC<ContextualAiModalProps> = ({
         <DialogHeader className="space-y-2">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#F97316]/10 text-[#F97316] text-xs font-black uppercase tracking-wider w-fit">
             <Sparkles className="h-3.5 w-3.5 animate-spin" />
-            <span>IA Contextuelle NAFA Genius</span>
+            <span>Assistance NAFA Genius</span>
           </div>
 
           <DialogTitle className="text-xl font-heading font-black text-foreground flex items-center gap-2">

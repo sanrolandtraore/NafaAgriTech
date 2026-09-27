@@ -137,18 +137,18 @@ export const AgronomicToolCard: React.FC<AgronomicToolCardProps> = ({
             </div>
             {tool.badges.includes("IA") && (
               <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-[#F97316] text-white text-[9px] font-black shadow-xs">
-                IA
+                A
               </span>
             )}
           </div>
 
-          {/* Quick Actions (Favoris + Aide IA) */}
+          {/* Quick Actions (Favoris + Aide Intégrée) */}
           <div className="flex items-center gap-1">
             <button
               type="button"
               onClick={handleAiClick}
               title="Aide contextuelle NAFA Genius"
-              aria-label={`Aide IA pour ${tool.title}`}
+              aria-label={`Aide pour ${tool.title}`}
               className="p-1.5 rounded-full text-muted-foreground/70 hover:text-[#F97316] hover:bg-[#F97316]/10 transition-colors"
             >
               <Sparkles className="h-3.5 w-3.5" />

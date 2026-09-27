@@ -345,7 +345,7 @@ export const PhotorealisticRenderView: React.FC<PhotorealisticRenderViewProps> =
       ctx.fillStyle = "#10b981";
       ctx.font = "bold 13px Inter, sans-serif";
       ctx.textAlign = "left";
-      ctx.fillText("NAFA GENIUS IA · RENDU PHOTORÉALISTE CERTIFIÉ", cX + 16, cY + 24);
+      ctx.fillText("NAFA GENIUS · RENDU PHOTORÉALISTE CERTIFIÉ", cX + 16, cY + 24);
 
       ctx.fillStyle = "#ffffff";
       ctx.font = "bold 12px Inter, sans-serif";
@@ -354,7 +354,7 @@ export const PhotorealisticRenderView: React.FC<PhotorealisticRenderViewProps> =
       ctx.fillStyle = "#94a3b8";
       ctx.font = "11px Inter, sans-serif";
       ctx.fillText(`Maître d'ouvrage : ${project.clientName} (${project.location})`, cX + 16, cY + 62);
-      ctx.fillText(`Ingénierie : ${project.expertName} · Normes CIRAD & FAO-56`, cX + 16, cY + 80);
+      ctx.fillText(`Ingénierie : ${project.expertName} · Normes agronomiques certifiées`, cX + 16, cY + 80);
       ctx.fillText(`Ambiance : ${lightingPreset.toUpperCase()} · Résolution ${w}x${h} px`, cX + 16, cY + 98);
     }
 

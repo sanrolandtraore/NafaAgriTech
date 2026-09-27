@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+﻿import { useState, useEffect } from "react";
 import {
   Inspection,
   InspectionType,
@@ -325,13 +325,13 @@ export default function InspectionDynamicCollector({
         </CardContent>
       </Card>
 
-      {/* ── 2. Formulaire Dynamique Généré par l'IA ── */}
+      {/* ── 2. Formulaire Dynamique ── */}
       <Card className="border border-border shadow-xs bg-card">
         <CardHeader className="p-4 pb-2 border-b border-border/60">
           <CardTitle className="text-sm font-bold flex items-center justify-between">
             <span className="flex items-center gap-2 text-foreground">
               <FileCheck className="h-4 w-4 text-primary" />
-              2. Paramètres Techniques Spécifiques (Généré par NAFA Genius IA)
+              2. Paramètres Techniques Spécifiques
             </span>
             <span className="text-[11px] text-muted-foreground font-normal">
               {template.fields_schema.length} champs adaptés
