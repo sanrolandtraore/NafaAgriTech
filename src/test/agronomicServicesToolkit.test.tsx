@@ -1,4 +1,4 @@
-﻿import { describe, it, expect, vi, beforeEach } from "vitest";
+import { describe, it, expect, vi, beforeEach } from "vitest";
 import { render, screen, fireEvent, waitFor, within } from "@testing-library/react";
 import { BrowserRouter } from "react-router-dom";
 import ServicesPage from "@/pages/dashboard/ServicesPage";
@@ -265,7 +265,7 @@ describe("Suite Professionnelle « Services Agronomiques & Conseils »", () => {
       renderWithProviders(<ServicesPage />);
 
       // Cliquer sur le premier bouton d'aide IA
-      const aiButtons = await screen.findAllByRole("button", { name: /Aide IA pour/i });
+      const aiButtons = await screen.findAllByRole("button", { name: /Aide pour/i });
       fireEvent.click(aiButtons[0]);
 
       // Vérifier l'ouverture de la modale avec les suggestions contextuelles
