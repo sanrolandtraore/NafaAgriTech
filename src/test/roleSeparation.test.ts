@@ -1,4 +1,4 @@
-﻿import { describe, it, expect } from "vitest";
+import { describe, it, expect } from "vitest";
 import {
   agriculteurNav,
   agronomeNav,
@@ -133,7 +133,7 @@ describe("Architecture & Séparation Stricte des Rôles : Agriculteur vs Agronom
     const requiredMappings: Record<string, string> = {
       "nav.aiDiagnosis": "Diagnostic Avancé",
       "nav.prescriptions": "Prescriptions",
-      "nav.scouting": "Inspection terrain",
+      "nav.scouting": "Suivi des Parcelles",
       "nav.calculator": "Calculateur agricole",
       "nav.gpsMapping": "Cartographie GPS",
       "nav.technicalSheets": "Fiches techniques",

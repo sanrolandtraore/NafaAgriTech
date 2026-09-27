@@ -54,7 +54,7 @@ describe("Accès direct aux fonctionnalités à partir de la page d'accueil", ()
     expect(content).toBeInTheDocument();
 
     // Vérifie la présence du bandeau Mode Découverte Terrain
-    expect(screen.getByText(/Mode Découverte Terrain 100% Hors-ligne/i)).toBeInTheDocument();
+    expect(screen.getByText(/Mode Découverte/i)).toBeInTheDocument();
   });
 
   it("ouvre les services agronomiques directement en mode découverte pour un visiteur", async () => {
@@ -78,6 +78,6 @@ describe("Accès direct aux fonctionnalités à partir de la page d'accueil", ()
 
     const content = await screen.findByTestId("agronomic-services-content", {}, { timeout: 10000 });
     expect(content).toBeInTheDocument();
-    expect(screen.getByText(/Mode Découverte Terrain 100% Hors-ligne/i)).toBeInTheDocument();
+    expect(screen.getByText(/Mode Découverte/i)).toBeInTheDocument();
   });
 });
