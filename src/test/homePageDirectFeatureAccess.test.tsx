@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
+﻿import { describe, it, expect, vi, beforeEach } from "vitest";
 import { render, screen } from "@testing-library/react";
 import { BrowserRouter, MemoryRouter, Routes, Route } from "react-router-dom";
 import Index from "@/pages/Index";
@@ -24,7 +24,7 @@ describe("Accès direct aux fonctionnalités à partir de la page d'accueil", ()
     // Outils intelligents accessibles directement
     expect(screen.getByText("GPS")).toBeInTheDocument();
     expect(screen.getByText("Inspection")).toBeInTheDocument();
-    expect(screen.getByText("Diagnostic IA")).toBeInTheDocument();
+    expect(screen.getByText("Diagnostic")).toBeInTheDocument();
     expect(screen.getByText("Irrigation")).toBeInTheDocument();
     expect(screen.getByText("Devis")).toBeInTheDocument();
     expect(screen.getByText("Cartographie")).toBeInTheDocument();
@@ -54,7 +54,7 @@ describe("Accès direct aux fonctionnalités à partir de la page d'accueil", ()
     expect(content).toBeInTheDocument();
 
     // Vérifie la présence du bandeau Mode Découverte Terrain
-    expect(screen.getByText(/Mode Découverte Terrain 100% Hors-ligne/i)).toBeInTheDocument();
+    expect(screen.getByText(/Mode Découverte/i)).toBeInTheDocument();
   });
 
   it("ouvre les services agronomiques directement en mode découverte pour un visiteur", async () => {
@@ -78,6 +78,6 @@ describe("Accès direct aux fonctionnalités à partir de la page d'accueil", ()
 
     const content = await screen.findByTestId("agronomic-services-content", {}, { timeout: 10000 });
     expect(content).toBeInTheDocument();
-    expect(screen.getByText(/Mode Découverte Terrain 100% Hors-ligne/i)).toBeInTheDocument();
+    expect(screen.getByText(/Mode Découverte/i)).toBeInTheDocument();
   });
 });

@@ -1,4 +1,4 @@
-/**
+﻿/**
  * NAFA GENIUS IA — MOTEUR D'INSPECTION INTELLIGENTE & TERRAIN
  * 
  * Capacités clés :
@@ -486,7 +486,7 @@ export function buildInspectionTemplateForType(type: InspectionType): Inspection
         { name: "Débit au refoulement", unit: "m³/h", min_threshold: 4, max_threshold: 40, default_norm: "Selon pompe installée" },
         { name: "Pression statique tête", unit: "bar", min_threshold: 1.5, max_threshold: 5.0, default_norm: "Tolérance PEHD PN10" },
         { name: "Distance source-parcelle", unit: "m", min_threshold: 5, max_threshold: 1500, default_norm: "Relevé laser / GPS" },
-        { name: "pH de l'eau d'irrigation", unit: "pH", min_threshold: 6.0, max_threshold: 7.8, default_norm: "Norme FAO-56" },
+        { name: "pH de l'eau d'irrigation", unit: "pH", min_threshold: 6.0, max_threshold: 7.8, default_norm: "Norme agronomique certifiée" },
         { name: "Conductivité électrique", unit: "µS/cm", min_threshold: 100, max_threshold: 1800, default_norm: "Salinité admissible" },
       ],
     };
@@ -1339,7 +1339,7 @@ export const nafaInspectionEngine = {
 
     doc.setFontSize(12);
     doc.setFont("helvetica", "bold");
-    doc.text("4. Observations & Recommandations NAFA Genius IA", 14, y);
+    doc.text("4. Observations & Recommandations NAFA Genius", 14, y);
     y += 6;
 
     if (report?.observations) {

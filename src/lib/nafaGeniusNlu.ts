@@ -1,4 +1,4 @@
-/**
+﻿/**
  * NAFA GENIUS IA - Moteur de Traitement Multilingue du Langage Naturel (NLU)
  * et Dispatcher d'Actions Agronomiques Directes.
  * 
@@ -481,12 +481,12 @@ function formatIntentResponse(
       return "KUMA MA FAAMU KA ƝƐ : NAFA Genius IA tɛ jate foyi kɛ ni sɛbɛ kɔnɔna lakika tɛ. I koo fɔ ka ɲɛ (seneforo hakɛ, ji hakɛ, sise hakɛ) walima kɛrɛnkɛrɛnnen kɛ.";
     }
     if (lang === "mos") {
-      return "GOMDÃ PA BÃNG KA SA : NAFA Genius IA pa tõe n maan ligidi bɩ koom soorgo tɩ pa ne bõn-tɩrga ye. Togls tʋʋma sõma (puugo makre, koom yaoodo, noos sõor).";
+      return "GOMDÃ PA BÃNG KA SA : NAFA Genius pa tõe n maan ligidi bɩ koom soorgo tɩ pa ne bõn-tɩrga ye. Togls tʋʋma sõma (puugo makre, koom yaoodo, noos sõor).";
     }
     if (lang === "ful") {
-      return "HAALA KAA ANNDAAKA NO FEEWNI : NAFA Genius IA waawaa waɗde limoore tawa walaa seedamteeje gese. Tinno ɓeydu kumpital laaɓngal (ngesa, ndiyam, gertode).";
+      return "HAALA KAA ANNDAAKA NO FEEWNI : NAFA Genius waawaa waɗde limoore tawa walaa seedamteeje gese. Tinno ɓeydu kumpital laaɓngal (ngesa, ndiyam, gertode).";
     }
-    return "INSTRUCTION NON RECONNUE AVEC CERTITUDE : L'IA NAFA Genius ne produit aucun calcul sans données terrain certifiées (INERA / FAO-56). Veuillez préciser votre demande technique ou apporter des mesures réelles (surface en ha, culture, débit forage, effectif volailles).";
+    return "INSTRUCTION NON RECONNUE AVEC CERTITUDE : NAFA Genius ne produit aucun calcul sans données terrain certifiées (données terrain certifiées). Veuillez préciser votre demande technique ou apporter des mesures réelles (surface en ha, culture, débit forage, effectif volailles).";
   }
   const client = entities.clientName || (lang === "dyu" ? "senekela" : lang === "mos" ? "koob soba" : lang === "ful" ? "remoowo" : "le producteur");
   const crop = entities.crop || "la culture";
@@ -503,7 +503,7 @@ function formatIntentResponse(
       if (lang === "dyu") return `N bɛ ji koo ni pompi solari hakɛ jate ${area ? `dugukolo ${area} kan` : ""} ${crop} nafa kama.`;
       if (lang === "mos") return `Mam na n sõor koom la wintoogo pompe yaoodo ${area ? `pugo ${area}` : ""} ${crop} yĩnga.`;
       if (lang === "ful") return `Mi hiisoto ndiyam yarnirgal e pompi naange ngam ${area ? `ngesa ${area}` : ""} ${crop}.`;
-      return `Calcul hydraulique FAO-56 en cours : dimensionnement du débit d'irrigation, perte de charge et pompage solaire pour ${area} de ${crop}.`;
+      return `Calcul hydraulique en cours : dimensionnement du débit d'irrigation, perte de charge et pompage solaire pour ${area} de ${crop}.`;
 
     case "DESIGN_POULTRY":
       if (lang === "dyu") return `N bɛ sise so kura jate ni kɛrɛnkɛrɛnninw bɛɛ ye (orienté Est-Ouest ni thermosiphon).`;
@@ -533,7 +533,7 @@ function formatIntentResponse(
       if (lang === "dyu") return `I ni ce ! NAFA Genius bɛ yan k'i dɛmɛ forobala kow la.`;
       if (lang === "mos") return `Ne y windiga ! NAFA Genius be ka n sõng fo ne koob tʋʋma.`;
       if (lang === "ful") return `Jam waali ! NAFA Genius no ɗoo ngam ballal maa e gese maa.`;
-      return `Bonjour ! Je suis NAFA Genius IA, votre copilote d'ingénierie agronomique de terrain. Que souhaitez-vous réaliser aujourd'hui ?`;
+      return `Bonjour ! Je suis NAFA Genius, votre assistant d'ingénierie agronomique de terrain. Que souhaitez-vous réaliser aujourd'hui ?`;
   }
 }
 
@@ -567,7 +567,7 @@ export async function executeGeniusAction(action: ParsedGeniusAction): Promise<A
     if (intent === "CREATE_VISIT") {
       const clientName = entities.clientName || "Exploitant Terrain";
       const visitDate = entities.date || new Date().toISOString().slice(0, 10);
-      const observations = `Visite enregistrée automatiquement par NAFA Genius IA suite à l'instruction vocale : "${action.rawText}"`;
+      const observations = `Visite enregistrée automatiquement par NAFA Genius suite à l'instruction vocale : "${action.rawText}"`;
       const recommendations = `Recommandations agronomiques en cours d'élaboration. Culture suivie : ${entities.crop || "Polyculture"}.`;
 
       // Vérifier si un utilisateur connecté existe

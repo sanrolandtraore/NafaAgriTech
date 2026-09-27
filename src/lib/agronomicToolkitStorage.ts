@@ -1,13 +1,13 @@
-/**
+﻿/**
  * NAFA - AGRITECH : Suite d'Outils Professionnels « Services Agronomiques & Conseils »
  * 
  * Spécifications UX & Métier :
  * 1. Organisation visuelle en cartes interactives (Zéro liste interminable).
- * 2. 5 Grandes Catégories + Carte Spéciale NAFA Genius IA.
+ * 2. 5 Grandes Categories + Carte Speciale NAFA Genius.
  * 3. Recherche Intelligente « Que voulez-vous faire ? ».
  * 4. Gestion des Outils Favoris et Outils Récemment Utilisés.
  * 5. Badges de Connectivité : Hors ligne (Offline-First) / Connexion requise.
- * 6. IA Contextuelle liée à chaque outil ouvert.
+ * 6. Assistance contextuelle liee a chaque outil ouvert.
  */
 
 export type ToolkitCategory =
@@ -74,7 +74,7 @@ export const TOOLKIT_CATEGORIES: ToolkitCategoryConfig[] = [
     label: "Agronomie & Santé Végétale",
     shortLabel: "Agronomie",
     iconName: "Sprout",
-    description: "Diagnostic phytosanitaire par vision IA, sols et fertilisation.",
+    description: "Diagnostic phytosanitaire avance, sols et fertilisation.",
   },
   {
     id: "irrigation",
@@ -110,7 +110,7 @@ export const AGRONOMIC_TOOLS_CATALOG: AgronomicToolItem[] = [
     route: "/dashboard/smart-inspection",
     iconName: "ClipboardCheck",
     isOffline: true,
-    badges: ["IA", "GPS", "Hors ligne"],
+    badges: ["Analyse", "GPS", "Hors ligne"],
     keywords: ["inspection", "terrain", "gps", "audit", "visite", "contrôle", "mesure parcelle"],
     contextualAi: {
       roleDescription: "Assistant d'inspection agronomique certifié Sahel.",
@@ -202,7 +202,7 @@ export const AGRONOMIC_TOOLS_CATALOG: AgronomicToolItem[] = [
     route: "/dashboard/genius?tool=designer",
     iconName: "Compass",
     isOffline: true,
-    badges: ["IA", "Nouveau"],
+    badges: ["Nouveau"],
     keywords: ["aménagement de ferme", "plan de masse", "clôture", "zonage", "accès"],
     contextualAi: {
       roleDescription: "Architecte paysagiste et ruraliste sahélien.",
@@ -236,12 +236,12 @@ export const AGRONOMIC_TOOLS_CATALOG: AgronomicToolItem[] = [
     title: "Diagnostic des cultures",
     category: "agronomie",
     categoryLabel: "Agronomie & Santé Végétale",
-    description: "Identifier les cultures, maladies et adventices par IA.",
+    description: "Identifier les cultures, maladies et adventices avec precision.",
     route: "/dashboard/expert-diagnosis",
     iconName: "Microscope",
     isOffline: true,
-    badges: ["IA", "Hors ligne"],
-    keywords: ["diagnostic des cultures", "maladie", "ravageur", "carence", "vision ia", "diagnostiquer une maladie"],
+    badges: ["Analyse", "Hors ligne"],
+    keywords: ["diagnostic des cultures", "maladie", "ravageur", "carence", "analyse visuelle", "diagnostiquer une maladie"],
     contextualAi: {
       roleDescription: "Phytopathologiste certifié INERA/CIRAD.",
       suggestedActions: [
@@ -259,7 +259,7 @@ export const AGRONOMIC_TOOLS_CATALOG: AgronomicToolItem[] = [
     route: "/dashboard/expert-diagnosis?mode=plant_id",
     iconName: "Sprout",
     isOffline: true,
-    badges: ["IA", "Hors ligne"],
+    badges: ["Analyse", "Hors ligne"],
     keywords: ["identification des plantes", "botanique", "espèces", "variétés", "arbres"],
     contextualAi: {
       roleDescription: "Botaniste expert en flore ouest-africaine.",
@@ -277,7 +277,7 @@ export const AGRONOMIC_TOOLS_CATALOG: AgronomicToolItem[] = [
     route: "/dashboard/expert-diagnosis?mode=weeds",
     iconName: "Leaf",
     isOffline: true,
-    badges: ["IA", "Hors ligne"],
+    badges: ["Analyse", "Hors ligne"],
     keywords: ["identification des mauvaises herbes", "adventices", "striga", "sarclage", "désherbage"],
     contextualAi: {
       roleDescription: "Spécialiste en malherbologie.",
@@ -295,7 +295,7 @@ export const AGRONOMIC_TOOLS_CATALOG: AgronomicToolItem[] = [
     route: "/dashboard/expert-diagnosis?mode=disease",
     iconName: "Activity",
     isOffline: true,
-    badges: ["IA", "Hors ligne"],
+    badges: ["Analyse", "Hors ligne"],
     keywords: ["diagnostic des maladies", "diagnostiquer", "diagnostiquer une maladie", "maladie", "mildiou", "oïdium", "anthracnose", "virose", "flétrissement", "bactériose"],
     contextualAi: {
       roleDescription: "Diagnostic clinique des pathologies végétales.",
@@ -313,7 +313,7 @@ export const AGRONOMIC_TOOLS_CATALOG: AgronomicToolItem[] = [
     route: "/dashboard/expert-diagnosis?mode=pests",
     iconName: "Bug",
     isOffline: true,
-    badges: ["IA", "Hors ligne"],
+    badges: ["Analyse", "Hors ligne"],
     keywords: ["diagnostic des ravageurs", "insectes", "chenille légionnaire", "criquets", "pucerons", "sauteriaux"],
     contextualAi: {
       roleDescription: "Entomologiste agricole.",
@@ -405,7 +405,7 @@ export const AGRONOMIC_TOOLS_CATALOG: AgronomicToolItem[] = [
     route: "/dashboard/genius?tool=irrigation",
     iconName: "Droplets",
     isOffline: true,
-    badges: ["IA", "Hors ligne", "CAD"],
+    badges: ["Analyse", "Hors ligne", "CAD"],
     keywords: ["concepteur d'irrigation", "concevoir une irrigation", "goutte-à-goutte", "dimensionner irrigation", "réseau d'eau"],
     contextualAi: {
       roleDescription: "Ingénieur hydraulicien agricole spécialisé en micro-irrigation.",
@@ -591,7 +591,7 @@ export const AGRONOMIC_TOOLS_CATALOG: AgronomicToolItem[] = [
     route: "/dashboard/genius?tool=designer",
     iconName: "PencilRuler",
     isOffline: true,
-    badges: ["IA", "CAD", "Hors ligne"],
+    badges: ["CAD", "Hors ligne"],
     keywords: ["nafa farm designer", "farm designer", "plan 2d", "modélisation", "conception ferme", "plan de masse"],
     contextualAi: {
       roleDescription: "Studio de CAO/DAO d'ingénierie rurale NAFA Genius.",
@@ -628,7 +628,7 @@ export const AGRONOMIC_TOOLS_CATALOG: AgronomicToolItem[] = [
     route: "/dashboard/genius?tool=farm",
     iconName: "Building2",
     isOffline: true,
-    badges: ["IA", "Nouveau"],
+    badges: ["Nouveau"],
     keywords: ["conception de ferme", "ferme intégrée", "projet agricole", "plan d'exploitation"],
     contextualAi: {
       roleDescription: "Ingénieur en génie rural.",
@@ -682,7 +682,7 @@ export const AGRONOMIC_TOOLS_CATALOG: AgronomicToolItem[] = [
     route: "/dashboard/genius?tool=bom",
     iconName: "FileSpreadsheet",
     isOffline: true,
-    badges: ["IA", "Hors ligne"],
+    badges: ["Analyse", "Hors ligne"],
     keywords: ["calcul des matériaux", "bom", "nomenclature", "fournitures", "pièces", "vannes"],
     contextualAi: {
       roleDescription: "Métreur et économiste de la construction agricole.",

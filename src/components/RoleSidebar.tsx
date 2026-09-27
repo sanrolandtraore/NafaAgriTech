@@ -76,9 +76,9 @@ export const agronomeNav: NavItem[] = [
   { to: "/dashboard/crop-planning", labelKey: "Planification des cultures", icon: Calculator, section: "Expertise Agronomique" },
   { to: "/dashboard/parcels", labelKey: "Parcelles & Cultures", icon: Sprout, section: "Expertise Agronomique" },
   { to: "/dashboard/scouting", labelKey: "Suivi des Parcelles", icon: Eye, section: "Expertise Agronomique" },
-  { to: "/dashboard/inspections", labelKey: "Inspection Intelligente IA", icon: Eye, section: "Expertise Agronomique" },
-  { to: "/dashboard/genius", labelKey: "NAFA Genius IA", icon: Sparkles, section: "Expertise Agronomique" },
-  { to: "/dashboard/expert-diagnosis", labelKey: "Diagnostic IA", icon: Microscope, section: "Expertise Agronomique" },
+  { to: "/dashboard/inspections", labelKey: "Inspection Intelligente", icon: Eye, section: "Expertise Agronomique" },
+  { to: "/dashboard/genius", labelKey: "NAFA Genius", icon: Sparkles, section: "Expertise Agronomique" },
+  { to: "/dashboard/expert-diagnosis", labelKey: "Diagnostic Avancé", icon: Microscope, section: "Expertise Agronomique" },
   { to: "/dashboard/expert-prescriptions", labelKey: "Prescriptions", icon: FileText, section: "Expertise Agronomique" },
   { to: "/dashboard/expert-calculator", labelKey: "Calculateur agricole", icon: Calculator, section: "Expertise Agronomique" },
   { to: "/dashboard/expert-cartography", labelKey: "Cartographie GPS", icon: MapPin, section: "Expertise Agronomique" },
@@ -196,9 +196,9 @@ export const getNavLabel = (item: NavItem, t?: (key: string) => string): string 
   if (!key) return "";
 
   const dictionary: Record<string, string> = {
-    "nav.aiDiagnosis": "Diagnostic IA",
+    "nav.aiDiagnosis": "Diagnostic Avancé",
     "nav.prescriptions": "Prescriptions",
-    "nav.scouting": "Inspection terrain",
+    "nav.scouting": "Suivi des Parcelles",
     "nav.calculator": "Calculateur agricole",
     "nav.gpsMapping": "Cartographie GPS",
     "nav.technicalSheets": "Fiches techniques",
@@ -208,7 +208,7 @@ export const getNavLabel = (item: NavItem, t?: (key: string) => string): string 
     "nav.settings": "Paramètres",
     "nav.dashboard": "Tableau de bord",
     "nav.planning": "Planification",
-    "nav.expertServices": "Services Experts",
+    "nav.expertServices": "Suite d'Outils Agronomiques",
     "nav.animals": "Animaux",
     "nav.health": "Santé",
     "nav.reproduction": "Reproduction",
@@ -232,6 +232,9 @@ export const getNavLabel = (item: NavItem, t?: (key: string) => string): string 
     "Formation professionnelle": "Formation professionnelle",
     "Portefeuille Clients": "Portefeuille Clients",
     "Analytique & Performances": "Analytique & Performances",
+    "Inspection Intelligente": "Inspection Intelligente",
+    "NAFA Genius": "NAFA Genius",
+    "Diagnostic Avancé": "Diagnostic Avancé",
   };
 
   if (dictionary[key]) {

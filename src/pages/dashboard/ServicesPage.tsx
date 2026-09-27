@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect } from "react";
+﻿import React, { useState, useMemo, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import {
   agronomicToolkitStorage,
@@ -212,7 +212,7 @@ export default function ServicesPage() {
       </div>
 
       {/* ══════════════════════════════════════════════════════
-          3. CARTE HERO SPECIALE : NAFA GENIUS IA
+          3. CARTE HERO SPECIALE : NAFA GENIUS
       ══════════════════════════════════════════════════════ */}
       {!searchQuery && selectedCategory === "all" && (
         <NafaGeniusHeroCard onOpenContextualModal={() => navigate("/dashboard/genius")} />

@@ -48,7 +48,7 @@ export const NafaGeniusHeroCard: React.FC<NafaGeniusHeroCardProps> = ({
       label: "Diagnostiquer",
       route: "/dashboard/expert-diagnosis",
       icon: Microscope,
-      desc: "Vision IA & Pathologies",
+      desc: "Diagnostic & Pathologies",
     },
     {
       label: "Générer un plan",
@@ -81,7 +81,7 @@ export const NafaGeniusHeroCard: React.FC<NafaGeniusHeroCardProps> = ({
         <div className="space-y-3 max-w-xl">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#F97316]/20 border border-[#F97316]/30 text-[#F97316] text-xs font-black uppercase tracking-wider">
             <Sparkles className="h-3.5 w-3.5 animate-spin" />
-            <span>Copilote d'Ingénierie & Diagnostic IA • 100% Hors-Ligne</span>
+            <span>Suite d'Ingénierie Agricole • Disponible sans connexion</span>
           </div>
 
           <div>
@@ -97,7 +97,7 @@ export const NafaGeniusHeroCard: React.FC<NafaGeniusHeroCardProps> = ({
           </div>
 
           <p className="text-xs sm:text-sm text-gray-300 leading-relaxed">
-            Modélisez vos parcelles, dimensionnez vos réseaux d'irrigation, diagnostiquez les cultures par vision IA et chiffrez vos devis en FCFA sans connexion Internet.
+            Modélisez vos parcelles, dimensionnez vos réseaux d'irrigation, diagnostiquez les cultures et chiffrez vos devis en FCFA sans connexion Internet.
           </p>
         </div>
 
@@ -108,7 +108,7 @@ export const NafaGeniusHeroCard: React.FC<NafaGeniusHeroCardProps> = ({
             className="h-12 px-6 rounded-[20px] bg-[#F97316] hover:bg-[#ea580c] text-white font-black text-sm tracking-wide shadow-lg shadow-orange-500/30 gap-2 transition-transform active:scale-95"
           >
             <Cpu className="h-4 w-4" />
-            <span>Ouvrir NAFA Genius IA</span>
+            <span>Ouvrir NAFA Genius</span>
             <ArrowRight className="h-4 w-4" />
           </Button>
         </div>

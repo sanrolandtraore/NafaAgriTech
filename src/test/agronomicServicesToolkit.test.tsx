@@ -206,7 +206,7 @@ describe("Suite Professionnelle « Services Agronomiques & Conseils »", () => {
     });
   });
 
-  describe("4. Carte Spéciale & Plus Visible : NAFA Genius IA", () => {
+  describe("4. Carte Spéciale & Plus Visible : NAFA Genius", () => {
     it("affiche la carte héro NAFA Genius avec ses 7 actions directes", () => {
       mockAuth("agronome");
 
@@ -258,20 +258,20 @@ describe("Suite Professionnelle « Services Agronomiques & Conseils »", () => {
     });
   });
 
-  describe("6. IA Contextuelle Liée aux Outils", () => {
+  describe("6. Assistance Contextuelle Liée aux Outils", () => {
     it("ouvre la modale d'aide contextuelle pour un outil sélectionné", async () => {
       mockAuth("agronome");
 
       renderWithProviders(<ServicesPage />);
 
       // Cliquer sur le premier bouton d'aide IA
-      const aiButtons = await screen.findAllByRole("button", { name: /Aide IA pour/i });
+      const aiButtons = await screen.findAllByRole("button", { name: /Aide pour/i });
       fireEvent.click(aiButtons[0]);
 
       // Vérifier l'ouverture de la modale avec les suggestions contextuelles
       const dialog = await screen.findByRole("dialog", {}, { timeout: 8000 });
       expect(dialog).toBeInTheDocument();
-      expect(within(dialog).getByText(/IA Contextuelle NAFA Genius/i)).toBeInTheDocument();
+      expect(within(dialog).getByText(/Assistance NAFA Genius/i)).toBeInTheDocument();
       expect(within(dialog).getByText(/Contexte Métier Détecté/i)).toBeInTheDocument();
       expect(within(dialog).getByText(/Actions d'aide rapide en 1-clic/i)).toBeInTheDocument();
     }, 15000);

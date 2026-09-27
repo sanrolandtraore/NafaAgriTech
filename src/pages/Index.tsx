@@ -80,7 +80,7 @@ const SPACES_CONFIG = [
 const SMART_TOOLS = [
   { id: "gps", word: "GPS", icon: MapPin, path: "/dashboard/scouting", image: galleryDigital },
   { id: "inspection", word: "Inspection", icon: ClipboardCheck, path: "/dashboard/smart-inspection", image: galleryFarmField },
-  { id: "diagnostic", word: "Diagnostic IA", icon: Cpu, path: "/dashboard/expert-diagnosis", image: galleryFormation },
+  { id: "diagnostic", word: "Diagnostic", icon: Cpu, path: "/dashboard/expert-diagnosis", image: galleryFormation },
   { id: "irrigation", word: "Irrigation", icon: Droplets, path: "/dashboard/genius", image: galleryIrrigation },
   { id: "devis", word: "Devis", icon: FileText, path: "/dashboard/quote-requests", image: galleryHarvest },
   { id: "cartographie", word: "Cartographie", icon: Layers, path: "/dashboard/expert-cartography", image: galleryLivestock },
@@ -560,7 +560,7 @@ const Index = () => {
           <div className="space-y-3 text-center md:text-left max-w-2xl">
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#F97316]/20 border border-[#F97316]/40 text-[#F97316] text-xs font-bold">
               <ShieldCheck className="h-3.5 w-3.5" />
-              <span>Plateforme Agricole Sahélienne Certifiée</span>
+              <span>Plateforme Agricole Certifiée</span>
             </div>
             <h3 className="text-2xl sm:text-3xl font-heading font-extrabold tracking-tight">
               Rejoignez dès aujourd'hui l'écosystème NAFA-AGRITECH

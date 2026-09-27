@@ -1,4 +1,4 @@
-/**
+﻿/**
  * NAFA GENIUS IA - SYSTÈME DE DIAGNOSTIC AGRONOMIQUE SCIENTIFIQUE (RAG)
  * 
  * Sources de connaissances prioritaires intégrées :
@@ -1303,7 +1303,7 @@ export function executeScientificDiagnosisPipeline(params: {
         ],
         confidenceLevel: "Incertain",
         inconclusiveNotice:
-          "Preuves scientifiques insuffisantes. Conformément aux règles de vérité agronomique (ZÉRO HALLUCINATION), l'IA ne génère pas de diagnostic imaginaire. Veuillez solliciter la visite d'un expert agronome INERA / CREAF ou apporter des informations complémentaires.",
+          "Preuves scientifiques insuffisantes. Conformément aux règles de vérité agronomique (ZÉRO HALLUCINATION), le système ne génère pas de diagnostic imaginaire. Veuillez solliciter la visite d'un expert agronome INERA / CREAF ou apporter des informations complémentaires.",
       },
     };
   }

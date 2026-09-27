@@ -392,7 +392,7 @@ export default function ScoutingPage() {
             className="gradient-primary text-primary-foreground gap-2 font-semibold shadow-xs"
           >
             <Sparkles className="h-4 w-4" />
-            Inspection Intelligente IA
+            Inspection Intelligente
           </Button>
           <Button variant="outline" onClick={() => { resetForm(); setShowForm(true); }} className="gap-2">
             <Plus className="h-4 w-4" /> Relevé rapide
@@ -404,7 +404,7 @@ export default function ScoutingPage() {
       <div className="p-4 rounded-2xl bg-gradient-to-r from-primary/10 via-primary/5 to-muted/40 border border-primary/20 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div className="space-y-1">
           <div className="flex items-center gap-1.5 text-xs font-bold text-primary uppercase tracking-wider">
-            <Sparkles className="h-3.5 w-3.5" /> NAFA Genius IA • Module d'Inspection Avancé
+            <Sparkles className="h-3.5 w-3.5" /> NAFA Genius • Module d'Inspection Avancé
           </div>
           <h3 className="font-heading font-bold text-base text-foreground">
             Besoin d'un audit complet avec formulaires par mission, plans 2D/3D et devis ?
@@ -418,7 +418,7 @@ export default function ScoutingPage() {
           onClick={() => navigate("/dashboard/inspections")}
           className="gradient-primary text-primary-foreground text-xs font-semibold shrink-0 gap-1.5 shadow-xs"
         >
-          <span>Lancer l'Inspection IA</span>
+          <span>Lancer l'Inspection</span>
           <ArrowRight className="h-3.5 w-3.5" />
         </Button>
       </div>

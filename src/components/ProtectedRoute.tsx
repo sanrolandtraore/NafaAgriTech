@@ -55,7 +55,7 @@ export const ProtectedRoute = ({ children }: { children: ReactNode }) => {
         <div className="bg-gradient-to-r from-emerald-800 via-emerald-700 to-teal-800 text-white text-center py-2 px-4 text-xs font-semibold flex items-center justify-between shadow-xs sticky top-0 z-50">
           <div className="flex items-center gap-2 mx-auto">
             <Sparkles className="h-3.5 w-3.5 text-amber-300 animate-pulse" />
-            <span>Mode Découverte Terrain 100% Hors-ligne — Vous accédez directement à toutes les fonctionnalités.</span>
+            <span>Mode Découverte — Accès direct à toutes les fonctionnalités.</span>
           </div>
           <button
             onClick={() => navigate("/auth?mode=register")}
@@ -68,7 +68,7 @@ export const ProtectedRoute = ({ children }: { children: ReactNode }) => {
       {isOfflineSession && !isGuestSession && (
         <div className="bg-amber-500/90 text-white text-center py-1.5 text-xs font-medium flex items-center justify-center gap-2">
           <WifiOff className="h-3.5 w-3.5" />
-          <span>Session hors-ligne — les données affichées proviennent du cache local</span>
+          <span>Données locales disponibles</span>
           <Badge variant="secondary" className="text-[10px] py-0">Lecture seule</Badge>
         </div>
       )}

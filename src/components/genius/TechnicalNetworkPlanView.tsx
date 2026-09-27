@@ -1,4 +1,4 @@
-import React, { useRef, useState, useEffect, useCallback } from "react";
+﻿import React, { useRef, useState, useEffect, useCallback } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -86,7 +86,7 @@ export const TechnicalNetworkPlanView: React.FC<TechnicalNetworkPlanViewProps> =
 
     ctx.fillStyle = "#64748b";
     ctx.font = "11px Inter, sans-serif";
-    ctx.fillText(`Normes : CIRAD Hydraulique Tropicale / FAO-56 · Conduite Maîtresse PEHD Ø${project.hydraulics.mainPipeDiameterMm} PN10`, 480, 34);
+    ctx.fillText(`Normes : Hydraulique Agricole Certifiée · Conduite Maîtresse PEHD Ø${project.hydraulics.mainPipeDiameterMm} PN10`, 480, 34);
 
     // 1. Tracé des Canalisations (Pipes)
     for (const pipe of pipes) {

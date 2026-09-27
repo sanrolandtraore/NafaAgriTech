@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+﻿import { useState, useMemo } from "react";
 import {
   InspectionType,
   MissionCategory,
@@ -203,7 +203,7 @@ export default function InspectionMissionSelector({
                   Annuler
                 </Button>
                 <Button size="sm" className="gradient-primary text-primary-foreground font-semibold" onClick={handleCreateCustomType}>
-                  Créer et générer le formulaire IA
+                  Créer et générer le formulaire
                 </Button>
               </div>
             </div>
@@ -275,7 +275,7 @@ export default function InspectionMissionSelector({
                 </div>
 
                 <div className="pt-2 border-t border-border/50 flex items-center justify-between text-xs font-semibold text-primary">
-                  <span>Générer le formulaire IA</span>
+                  <span>Générer le formulaire</span>
                   <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-1" />
                 </div>
               </CardContent>

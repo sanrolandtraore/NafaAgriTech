@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+﻿import { useEffect, useState } from "react";
 import { Card } from "@/components/ui/card";
 import { BarChart3, Users, Microscope, FileText, Calendar, Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
@@ -34,7 +34,7 @@ export default function ExpertAnalyticsPage() {
     { label: "Clients suivis", value: stats.clients, icon: Users, color: "text-primary" },
     { label: "Visites ce mois", value: stats.visitsMonth, icon: Calendar, color: "text-accent-foreground" },
     { label: "Visites planifiées", value: stats.nextVisits, icon: Calendar, color: "text-primary" },
-    { label: "Diagnostics IA", value: stats.diagnoses, icon: Microscope, color: "text-accent-foreground" },
+    { label: "Diagnostics", value: stats.diagnoses, icon: Microscope, color: "text-accent-foreground" },
     { label: "Ordonnances", value: stats.prescriptions, icon: FileText, color: "text-primary" },
   ];
 

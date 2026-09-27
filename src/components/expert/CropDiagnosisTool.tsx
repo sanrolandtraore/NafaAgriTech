@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect, useCallback, useMemo } from "react";
+﻿import { useState, useRef, useEffect, useCallback, useMemo } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
@@ -321,7 +321,7 @@ export function CropDiagnosisTool() {
 
         toast({
           title: "Preuves scientifiques insuffisantes",
-          description: pipelineOutput.step4Validation.inconclusiveNotice || "L'IA ne formule aucun diagnostic non vérifié.",
+          description: pipelineOutput.step4Validation.inconclusiveNotice || "Aucun diagnostic non vérifié ne sera formulé.",
           variant: "destructive",
         });
       } else {
@@ -646,7 +646,7 @@ export function CropDiagnosisTool() {
               <Badge className="bg-emerald-600 text-white text-xs">Obligatoire</Badge>
             </div>
             <CardDescription className="text-xs text-muted-foreground">
-              L'IA doit obligatoirement certifier l'espèce et distinguer une culture d'une mauvaise herbe avant toute recherche de maladie.
+              Le système doit obligatoirement certifier l'espèce et distinguer une culture d'une mauvaise herbe avant toute recherche de maladie.
             </CardDescription>
           </CardHeader>
           <CardContent className="p-5 space-y-4">
@@ -760,7 +760,7 @@ export function CropDiagnosisTool() {
             {/* Prise de photos avec consigne scientifique */}
             <div className="space-y-2">
               <div className="flex items-center justify-between">
-                <Label className="font-bold text-xs">Photographies de l'échantillon (Obligatoire pour vision IA)</Label>
+                <Label className="font-bold text-xs">Photographies de l'échantillon (Obligatoire)</Label>
                 <span className="text-[11px] text-muted-foreground">Angles recommandés : feuille nette, collet, fleur</span>
               </div>
               <input ref={cameraRef} type="file" accept="image/*" capture="environment" className="hidden" onChange={(e) => onFile(e.target.files?.[0] ?? null)} />
@@ -993,7 +993,7 @@ export function CropDiagnosisTool() {
                     {scientificResult.step4Validation.inconclusiveNotice}
                   </p>
                   <p className="text-xs text-muted-foreground border-t border-amber-500/30 pt-2">
-                    Conformément aux règles de rigueur scientifique de NAFA-AGRITECH, l'IA refuse de délivrer une prescription hasardeuse. Vous pouvez consigner vos observations ci-dessous pour validation par un agronome référent.
+                    Conformément aux règles de rigueur scientifique de NAFA-AGRITECH, le système refuse de délivrer une prescription hasardeuse. Vous pouvez consigner vos observations ci-dessous pour validation par un agronome référent.
                   </p>
                 </div>
               ) : (
@@ -1254,7 +1254,7 @@ export function CropDiagnosisTool() {
             <Leaf className="h-4 w-4 text-amber-600" /> Référentiel Malherbologique du Burkina Faso & Afrique de l'Ouest
           </h3>
           <p className="text-xs text-muted-foreground leading-relaxed">
-            L'IA NAFA Genius dispose d'une base de connaissances dédiée aux adventices majeures du Sahel pour les différencier formellement des cultures et guider le désherbage intégré sans confusion.
+            NAFA Genius dispose d'une base de connaissances dédiée aux adventices majeures du Sahel pour les différencier formellement des cultures et guider le désherbage intégré sans confusion.
           </p>
         </div>
 

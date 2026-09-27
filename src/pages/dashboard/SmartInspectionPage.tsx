@@ -75,7 +75,7 @@ export default function SmartInspectionPage() {
 
     setCurrentInspection(newInsp);
     setWizardStep(2);
-    toast.success(`Formulaire d'inspection "${type.name}" généré automatiquement par l'IA !`);
+    toast.success(`Formulaire d'inspection "${type.name}" généré automatiquement.`);
   };
 
   // Revenir au choix du type
@@ -145,11 +145,11 @@ export default function SmartInspectionPage() {
               <Sparkles className="h-5 w-5" />
             </span>
             <h1 className="text-2xl sm:text-3xl font-heading font-extrabold text-foreground">
-              Inspection Intelligente <span className="text-primary">• NAFA Genius IA</span>
+              Inspection Intelligente <span className="text-primary">• NAFA Genius</span>
             </h1>
           </div>
           <p className="text-xs sm:text-sm text-muted-foreground">
-            Formulaires générés par l'IA selon la mission, collecte géodésique hors-ligne, plans 2D et devis chiffrés.
+            Formulaires adaptés à la mission, collecte terrain hors-ligne, plans 2D et devis chiffrés.
           </p>
         </div>
 
@@ -170,7 +170,7 @@ export default function SmartInspectionPage() {
 
           <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border border-emerald-500/20 text-xs font-semibold">
             <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-            <span>100% Offline-First</span>
+            <span>Disponible sans connexion</span>
           </div>
         </div>
       </div>
@@ -232,7 +232,7 @@ export default function SmartInspectionPage() {
               }`}
             >
               <span className="w-5 h-5 rounded-full border flex items-center justify-center text-[10px]">3</span>
-              <span>Rapport & Devis IA</span>
+              <span>Rapport & Devis</span>
             </button>
           </div>
 
@@ -244,7 +244,7 @@ export default function SmartInspectionPage() {
                   Étape 1 : Choisissez la mission d'inspection
                 </h3>
                 <p className="text-xs text-muted-foreground">
-                  NAFA Genius IA adaptera automatiquement les mesures à relever, les photos obligatoires et le devis technique.
+                  NAFA Genius adaptera automatiquement les mesures à relever, les photos obligatoires et le devis technique.
                 </p>
               </div>
 
@@ -298,7 +298,7 @@ export default function SmartInspectionPage() {
                     Étape 3 : Rapport automatique, Plans 2D & Devis Chiffré
                   </h3>
                   <p className="text-xs text-muted-foreground">
-                    Généré automatiquement par NAFA Genius IA selon les données de terrain collectées.
+                    Généré automatiquement par NAFA Genius selon les données de terrain collectées.
                   </p>
                 </div>
 
@@ -434,7 +434,7 @@ export default function SmartInspectionPage() {
             <div className="flex items-center justify-between">
               <div className="space-y-1">
                 <h3 className="font-heading font-bold text-base text-foreground">
-                  État de la synchronisation Supabase (Offline-First)
+                  État de la synchronisation
                 </h3>
                 <p className="text-xs text-muted-foreground">
                   Chaque inspection enregistrée localement sur votre appareil est synchronisée automatiquement vers Supabase dès qu'une connexion internet est détectée.

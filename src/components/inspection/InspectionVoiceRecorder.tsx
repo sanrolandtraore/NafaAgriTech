@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from "react";
+﻿import { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
@@ -56,7 +56,7 @@ export default function InspectionVoiceRecorder({
 
         // Simulation de transcription agronomique automatique locale si vide
         if (!transcription.trim()) {
-          const autoText = "Note vocale de terrain enregistrée : Relevé d'inspection effectué selon protocole NAFA Genius IA.";
+          const autoText = "Note vocale de terrain enregistrée : Relevé d'inspection effectué selon protocole NAFA Genius.";
           setTranscription(autoText);
           onSaveTranscription(autoText);
         }

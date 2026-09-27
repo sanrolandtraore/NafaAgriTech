@@ -131,9 +131,9 @@ describe("Architecture & Séparation Stricte des Rôles : Agriculteur vs Agronom
 
     // Required replacements test
     const requiredMappings: Record<string, string> = {
-      "nav.aiDiagnosis": "Diagnostic IA",
+      "nav.aiDiagnosis": "Diagnostic Avancé",
       "nav.prescriptions": "Prescriptions",
-      "nav.scouting": "Inspection terrain",
+      "nav.scouting": "Suivi des Parcelles",
       "nav.calculator": "Calculateur agricole",
       "nav.gpsMapping": "Cartographie GPS",
       "nav.technicalSheets": "Fiches techniques",
