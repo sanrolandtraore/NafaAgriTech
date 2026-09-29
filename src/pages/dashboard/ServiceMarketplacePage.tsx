@@ -19,13 +19,14 @@ import {
   Tractor, Star, Calendar, Mail, Globe, Store, Filter, RefreshCw,
   ExternalLink, MessageCircle, ShieldAlert, CheckCircle2, RotateCcw,
   LayoutDashboard, Wrench, Sparkles, AlertCircle, ChevronDown, ChevronUp,
-  Smartphone
+  Smartphone, Mic
 } from "lucide-react";
 import BackNavigationButton from "@/components/BackNavigationButton";
 import { partnerStorage, PartnerOffer } from "@/lib/partnerStorage";
 import MechEstimatorCard from "@/components/mechanization/MechanizationEstimatorCard";
 import MechBookingModal from "@/components/mechanization/MechanizationBookingModal";
 import MechUssdSimulator from "@/components/mechanization/MechanizationUssdSimulator";
+import NafaVocaleAssistant from "@/components/agriculteur/NafaVocaleAssistant";
 
 // ─── Les 8 Catégories Réglementaires Obligatoires ───
 export const MARKETPLACE_CATEGORIES = [
@@ -198,6 +199,16 @@ export const ServiceMarketplacePage = () => {
   const [orderMode, setOrderMode] = useState<"location" | "achat">("location");
   const [orderDays, setOrderDays] = useState("1");
   const [withOperator, setWithOperator] = useState(true);
+
+  // État NAFA Vocale (Assistance vocale WhatsApp en langues nationales)
+  const [showVoiceAssistant, setShowVoiceAssistant] = useState(true);
+
+  const handleApplyVoiceFilter = (params: { category?: string; city?: string; search?: string }) => {
+    if (params.category) setCatFilter(params.category);
+    if (params.city) setCityFilter(params.city);
+    if (params.search) setSearch(params.search);
+    toast.success("Catalogue actualisé selon votre message vocal !");
+  };
 
   // ─── Les 6 Filtres Obligatoires ───
   const [search, setSearch] = useState("");
@@ -552,7 +563,28 @@ export const ServiceMarketplacePage = () => {
         >
           <Wrench className="h-3.5 w-3.5 mr-1.5 text-blue-600" /> Services & Conseils (Agronomiques, Vétérinaires & Finance)
         </Button>
+        <Button
+          variant={showVoiceAssistant ? "default" : "outline"}
+          size="sm"
+          onClick={() => setShowVoiceAssistant(!showVoiceAssistant)}
+          className={`h-9 text-xs rounded-xl shrink-0 font-bold border-2 ${
+            showVoiceAssistant
+              ? "bg-emerald-600 hover:bg-emerald-700 text-white border-emerald-500 shadow-sm"
+              : "border-emerald-600/60 text-emerald-800 dark:text-emerald-300 hover:bg-emerald-500/10"
+          }`}
+        >
+          <Mic className="h-3.5 w-3.5 mr-1.5 animate-pulse text-white" />
+          NAFA Vocale (Mooré • Dioula • Fulfuldé • FR)
+        </Button>
       </div>
+
+      {/* ─── MODULE AGRICOLE : NAFA VOCALE (ASSISTANCE VOCALE SAHÉLIENNE) ─── */}
+      {showVoiceAssistant && (
+        <NafaVocaleAssistant
+          catalogItems={items}
+          onApplyFilter={handleApplyVoiceFilter}
+        />
+      )}
 
       {/* Barre d'explication du Séquestre Garanti */}
       <Card className="border-emerald-500/30 bg-emerald-500/5">
@@ -1171,6 +1203,21 @@ export const ServiceMarketplacePage = () => {
           setMechModalOpen(false);
         }}
       />
+
+      {/* ─── BOUTON FLOTTANT WHATSAPP NAFA VOCALE ─── */}
+      {!showVoiceAssistant && (
+        <button
+          type="button"
+          onClick={() => {
+            setShowVoiceAssistant(true);
+            window.scrollTo({ top: 0, behavior: "smooth" });
+          }}
+          className="fixed bottom-6 right-6 z-40 h-14 w-14 rounded-full bg-emerald-600 hover:bg-emerald-700 text-white shadow-2xl flex items-center justify-center border-2 border-white active:scale-95 transition-transform"
+          title="Ouvrir NAFA Vocale (Mooré, Dioula, Fulfuldé, Français)"
+        >
+          <Mic className="h-7 w-7 animate-pulse" />
+        </button>
+      )}
     </div>
   );
 };
