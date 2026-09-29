@@ -62,6 +62,13 @@ import {
 import { generateTechnicalDossierPdf } from "@/lib/nafaGeniusPdf";
 import { SmartQuoteComparator } from "./SmartQuoteComparator";
 import { CropDiagnosisTool } from "@/components/expert/CropDiagnosisTool";
+import { IrrisModelStudio } from "./IrrisModelStudio";
+import {
+  calculateIrrisModel,
+  irrisToIrrigationDesignResult,
+  irrisToGeodesicSurvey,
+  IrrisResult,
+} from "@/lib/irrisModelEngine";
 
 // Parcelles prédéfinies de démonstration de terrain au Burkina Faso
 const PRESET_PARCELS: Record<string, { name: string; location: string; points: GeoPoint[] }> = {
@@ -108,17 +115,15 @@ export const NafaGeniusStudio: React.FC = () => {
   const [isListening, setIsListening] = useState<boolean>(false);
   const [nluResult, setNluResult] = useState<ParsedGeniusAction | null>(null);
   const [lastActionResult, setLastActionResult] = useState<any>(null);
-  const [activeTab, setActiveTab] = useState<string>("geodesie");
+  const [activeTab, setActiveTab] = useState<string>("irris");
 
-  // Synchronisation avec l'URL (permet l'ouverture directe d'un outil ou du studio CAO/3D)
+  // Synchronisation avec l'URL (permet l'ouverture directe d'un outil)
   useEffect(() => {
     const tabParam = searchParams.get("tab") || searchParams.get("tool");
     if (tabParam) {
       const lower = tabParam.toLowerCase();
-      if (["geodesie", "terrain", "gps", "surface", "arpentage"].includes(lower)) {
-        setActiveTab("geodesie");
-      } else if (["conception", "irrigation", "fao", "cirad", "eau", "pompe"].includes(lower)) {
-        setActiveTab("conception");
+      if (["irris", "irrigation", "fao", "cirad", "eau", "pompe", "solaire", "geodesie", "terrain", "gps", "surface", "arpentage"].includes(lower)) {
+        setActiveTab("irris");
       } else if (["devis", "chiffrage", "quote", "validation_devis", "prix"].includes(lower)) {
         setActiveTab("validation_devis");
       } else if (["export", "export_pro", "pdf", "dossier"].includes(lower)) {
@@ -126,7 +131,7 @@ export const NafaGeniusStudio: React.FC = () => {
       } else if (["diagnostic", "crop", "maladie", "adventice"].includes(lower)) {
         setActiveTab("diagnostic");
       } else {
-        setActiveTab("geodesie");
+        setActiveTab("irris");
       }
     }
   }, [searchParams]);
@@ -136,8 +141,24 @@ export const NafaGeniusStudio: React.FC = () => {
   const [clientName, setClientName] = useState<string>("Issa Ouédraogo");
   const [clientPhone, setClientPhone] = useState<string>("+226 75 77 48 52");
   const [farmLocation, setFarmLocation] = useState<string>(PRESET_PARCELS.bama.location);
+
+  // Modèle Typique IRRIS (Irrigation & Pompage Solaire - CIRAD / IRRINN / Sahel)
+  const defaultIrris = calculateIrrisModel({
+    cropKey: "tomate",
+    season: "saison_seche_chaude",
+    areaHa: 1.0,
+    sourceType: "forage",
+    depthMeters: 45,
+    sourceDischargeM3h: 6.0,
+    distanceMeters: 50,
+    irrigationType: "goutte_a_goutte",
+    pumpingMode: "fil_du_soleil",
+    tankElevationM: 4,
+  });
+
+  const [irrisResult, setIrrisResult] = useState<IrrisResult>(defaultIrris);
   const [surveyResult, setSurveyResult] = useState<GeodesicSurveyResult>(() =>
-    analyzeGeodesicSurvey(PRESET_PARCELS.bama.points)
+    irrisToGeodesicSurvey(defaultIrris)
   );
 
   // Dimensionnement Irrigation FAO-56
@@ -145,19 +166,59 @@ export const NafaGeniusStudio: React.FC = () => {
   const [selectedSeason, setSelectedSeason] = useState<"saison_seche_chaude" | "saison_seche_froide" | "hivernage">("saison_seche_chaude");
   const [boreholeDepthM, setBoreholeDepthM] = useState<number>(60);
   const [waterTableDepthM, setWaterTableDepthM] = useState<number>(35);
-  const [irrigationResult, setIrrigationResult] = useState<IrrigationDesignResult | null>(null);
+  const [irrigationResult, setIrrigationResult] = useState<IrrigationDesignResult | null>(() =>
+    irrisToIrrigationDesignResult(defaultIrris)
+  );
 
   // Bâtiment Avicole Bioclimatique
-  const [includePoultry, setIncludePoultry] = useState<boolean>(true);
+  const [includePoultry, setIncludePoultry] = useState<boolean>(false);
   const [poultryFlockSize, setPoultryFlockSize] = useState<number>(2000);
   const [poultryBirdType, setPoultryBirdType] = useState<"poulet_chair" | "poule_pondeuse" | "poulet_local_ameliore">("poulet_chair");
   const [poultryResult, setPoultryResult] = useState<PoultryHousingResult | null>(null);
 
   // Plan d'aménagement & Devis
   const [farmZoningPlan, setFarmZoningPlan] = useState<FarmZoningPlan | null>(null);
-  const [engineeringQuote, setEngineeringQuote] = useState<EngineeringQuote | null>(null);
+  const [engineeringQuote, setEngineeringQuote] = useState<EngineeringQuote | null>(() =>
+    generateEngineeringQuote(
+      irrisToGeodesicSurvey(defaultIrris),
+      irrisToIrrigationDesignResult(defaultIrris),
+      null,
+      "Projet IRRIS - Tomate (1.0 ha)"
+    )
+  );
   const [canvasSnapshotDataUrl, setCanvasSnapshotDataUrl] = useState<string | undefined>(undefined);
   const [photorealisticSnapshotDataUrl, setPhotorealisticSnapshotDataUrl] = useState<string | undefined>(undefined);
+
+  // Mise à jour réactive dès calcul du modèle IRRIS
+  const handleIrrisCalculated = (res: IrrisResult) => {
+    setIrrisResult(res);
+    const adaptedIrrigation = irrisToIrrigationDesignResult(res);
+    const adaptedSurvey = irrisToGeodesicSurvey(res);
+    setIrrigationResult(adaptedIrrigation);
+    setSurveyResult(adaptedSurvey);
+
+    const quote = generateEngineeringQuote(
+      adaptedSurvey,
+      adaptedIrrigation,
+      null,
+      `Projet IRRIS - ${res.inputs.cropKey} (${res.inputs.areaHa} ha)`
+    );
+    setEngineeringQuote(quote);
+
+    const newUnified = generateUnifiedEngineeringProject({
+      survey: adaptedSurvey,
+      clientName,
+      clientPhone,
+      location: farmLocation,
+      expertName: profile?.full_name || "Dr. Oumarou Sawadogo (Ingénieur Rural)",
+      cropKey: res.inputs.cropKey,
+      season: res.inputs.season,
+      includePoultry: false,
+      boreholeDepthM: res.inputs.depthMeters,
+      waterTableDepthM: Math.round(res.inputs.depthMeters * 0.6),
+    });
+    setUnifiedProject(newUnified);
+  };
 
   // Copilote Unifié d'Ingénierie Agro-Pastorale (CIRAD / FAO-56 / Partenaires Agréés)
   const [unifiedProject, setUnifiedProject] = useState<UnifiedEngineeringProject>(() =>
@@ -424,16 +485,13 @@ export const NafaGeniusStudio: React.FC = () => {
     }
 
     // Basculer vers l'onglet pertinent
-    if (parsed.intent === "CAPTURE_GPS") setActiveTab("geodesie");
-    if (parsed.intent === "CALCULATE_IRRIGATION" || parsed.intent === "DESIGN_POULTRY") setActiveTab("conception");
-    if (parsed.intent === "GENERATE_QUOTE") setActiveTab("chiffrage");
+    if (parsed.intent === "CAPTURE_GPS" || parsed.intent === "CALCULATE_IRRIGATION" || parsed.intent === "DESIGN_POULTRY") setActiveTab("irris");
+    if (parsed.intent === "GENERATE_QUOTE") setActiveTab("validation_devis");
     if (parsed.intent === "DIAGNOSE_CROP") setActiveTab("diagnostic");
 
     const lower = text.toLowerCase();
-    if (lower.includes("gps") || lower.includes("surface") || lower.includes("arpentage") || lower.includes("terrain") || lower.includes("borne")) {
-      setActiveTab("geodesie");
-    } else if (lower.includes("eau") || lower.includes("pompe") || lower.includes("irrigation") || lower.includes("solaire") || lower.includes("poulailler")) {
-      setActiveTab("conception");
+    if (lower.includes("gps") || lower.includes("surface") || lower.includes("arpentage") || lower.includes("terrain") || lower.includes("borne") || lower.includes("eau") || lower.includes("pompe") || lower.includes("irrigation") || lower.includes("solaire") || lower.includes("irris")) {
+      setActiveTab("irris");
     } else if (lower.includes("devis") || lower.includes("prix") || lower.includes("fcfa") || lower.includes("chiffrage") || lower.includes("fournisseur")) {
       setActiveTab("validation_devis");
     } else if (lower.includes("pdf") || lower.includes("export") || lower.includes("dossier")) {
@@ -729,20 +787,11 @@ export const NafaGeniusStudio: React.FC = () => {
             <Button
               size="sm"
               variant="outline"
-              className="h-7 text-xs rounded-full shrink-0 border-emerald-500/30 text-emerald-800 dark:text-emerald-300"
-              onClick={() => setActiveTab("geodesie")}
-            >
-              <MapPin className="h-3 w-3 mr-1 text-emerald-600" />
-              « 1. Arpentage & Surface »
-            </Button>
-            <Button
-              size="sm"
-              variant="outline"
               className="h-7 text-xs rounded-full shrink-0 border-sky-500/30 text-sky-800 dark:text-sky-300"
-              onClick={() => setActiveTab("conception")}
+              onClick={() => setActiveTab("irris")}
             >
               <Droplets className="h-3 w-3 mr-1 text-sky-600" />
-              « 2. Besoins en Eau & Pompe »
+              « 1. Modèle IRRIS (Irrigation & Pompage Solaire) »
             </Button>
             <Button
               size="sm"
@@ -751,7 +800,7 @@ export const NafaGeniusStudio: React.FC = () => {
               onClick={() => setActiveTab("validation_devis")}
             >
               <FileText className="h-3 w-3 mr-1 text-rose-600" />
-              « 3. Devis Express en FCFA »
+              « 2. Devis Express en FCFA »
             </Button>
             <Button
               size="sm"
@@ -760,7 +809,7 @@ export const NafaGeniusStudio: React.FC = () => {
               onClick={() => setActiveTab("export_pro")}
             >
               <Download className="h-3 w-3 mr-1 text-teal-600" />
-              « 4. Télécharger Dossier PDF »
+              « 3. Dossier & Devis PDF »
             </Button>
             <Button
               size="sm"
@@ -769,7 +818,7 @@ export const NafaGeniusStudio: React.FC = () => {
               onClick={() => setActiveTab("diagnostic")}
             >
               <Sprout className="h-3 w-3 mr-1 text-emerald-600" />
-              « 5. Diagnostic Végétal »
+              « 4. Diagnostic Végétal »
             </Button>
           </div>
 
@@ -837,603 +886,33 @@ export const NafaGeniusStudio: React.FC = () => {
 
       {/* Onglets Principaux du Studio d'Ingénierie Simple & Adapté */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
-        <TabsList className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 h-auto p-1.5 bg-muted/60 rounded-xl gap-1">
-          <TabsTrigger value="geodesie" className="text-xs py-2 px-2 gap-1.5 data-[state=active]:bg-background shadow-xs font-semibold">
-            <MapPin className="h-3.5 w-3.5 text-emerald-600 shrink-0" />
-            <span className="truncate">1. Arpentage & Surface</span>
-          </TabsTrigger>
-          <TabsTrigger value="conception" className="text-xs py-2 px-2 gap-1.5 data-[state=active]:bg-background shadow-xs font-semibold">
+        <TabsList className="grid grid-cols-2 md:grid-cols-4 h-auto p-1.5 bg-muted/60 rounded-xl gap-1">
+          <TabsTrigger value="irris" className="text-xs py-2 px-2 gap-1.5 data-[state=active]:bg-background shadow-xs font-semibold">
             <Droplets className="h-3.5 w-3.5 text-sky-600 shrink-0" />
-            <span className="truncate">2. Besoins Eau & Pompe</span>
+            <span className="truncate">1. Modèle IRRIS</span>
           </TabsTrigger>
           <TabsTrigger value="validation_devis" className="text-xs py-2 px-2 gap-1.5 data-[state=active]:bg-background shadow-xs font-semibold">
             <FileText className="h-3.5 w-3.5 text-rose-600 shrink-0" />
-            <span className="truncate">3. Devis Express en FCFA</span>
+            <span className="truncate">2. Devis Express en FCFA</span>
           </TabsTrigger>
           <TabsTrigger value="export_pro" className="text-xs py-2 px-2 gap-1.5 data-[state=active]:bg-background shadow-xs font-semibold">
             <Download className="h-3.5 w-3.5 text-teal-600 shrink-0" />
-            <span className="truncate">4. Dossier & Devis PDF</span>
+            <span className="truncate">3. Dossier & Devis PDF</span>
           </TabsTrigger>
           <TabsTrigger value="diagnostic" className="text-xs py-2 px-2 gap-1.5 data-[state=active]:bg-background shadow-xs font-semibold">
             <Sprout className="h-3.5 w-3.5 text-emerald-500 shrink-0" />
-            <span className="truncate">5. Diagnostic Végétal</span>
+            <span className="truncate">4. Diagnostic Végétal</span>
           </TabsTrigger>
         </TabsList>
 
         {/* ═════════════════════════════════════════════════════════ */}
-        {/* ONGLET 1 : GÉODÉSIE, GPS & RELIEF WGS84                   */}
+        {/* ONGLET 1 : MODÈLE TYPIQUE IRRIS (IRRIGATION & SOLAIRE)    */}
         {/* ═════════════════════════════════════════════════════════ */}
-        <TabsContent value="geodesie" className="space-y-4">
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-            {/* Colonne Paramètres & Capture */}
-            <Card className="lg:col-span-1 space-y-4 p-4">
-              <div className="space-y-1">
-                <h3 className="text-sm font-bold text-foreground flex items-center gap-1.5">
-                  <MapPin className="h-4 w-4 text-emerald-600" /> Coordonnées & Exploitant
-                </h3>
-                <p className="text-xs text-muted-foreground">
-                  Informations d'identification de la parcelle pour le certificat d'ingénierie.
-                </p>
-              </div>
-
-              <div className="space-y-3 text-xs">
-                <div>
-                  <Label className="text-xs font-semibold">Nom de l'exploitant / Maître d'ouvrage</Label>
-                  <Input value={clientName} onChange={(e) => setClientName(e.target.value)} className="h-8 mt-1 text-xs" />
-                </div>
-                <div>
-                  <Label className="text-xs font-semibold">Numéro de téléphone</Label>
-                  <Input value={clientPhone} onChange={(e) => setClientPhone(e.target.value)} className="h-8 mt-1 text-xs" />
-                </div>
-                <div>
-                  <Label className="text-xs font-semibold">Localisation / Commune</Label>
-                  <Input value={farmLocation} onChange={(e) => setFarmLocation(e.target.value)} className="h-8 mt-1 text-xs" />
-                </div>
-
-                <div className="pt-2 space-y-2">
-                  <Label className="text-xs font-semibold">Charger un polygone modèle réel :</Label>
-                  <div className="grid grid-cols-3 gap-1.5">
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      className="text-[11px] h-7 px-1 truncate"
-                      onClick={() => {
-                        setGpsPoints(PRESET_PARCELS.bama.points);
-                        setFarmLocation(PRESET_PARCELS.bama.location);
-                        toast.success("Parcelle Bama (2.4 ha) chargée !");
-                      }}
-                    >
-                      Bama (2.4 ha)
-                    </Button>
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      className="text-[11px] h-7 px-1 truncate"
-                      onClick={() => {
-                        setGpsPoints(PRESET_PARCELS.koubri.points);
-                        setFarmLocation(PRESET_PARCELS.koubri.location);
-                        toast.success("Parcelle Koubri (1.1 ha) chargée !");
-                      }}
-                    >
-                      Koubri (1.1 ha)
-                    </Button>
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      className="text-[11px] h-7 px-1 truncate"
-                      onClick={() => {
-                        setGpsPoints(PRESET_PARCELS.sourou.points);
-                        setFarmLocation(PRESET_PARCELS.sourou.location);
-                        toast.success("Parcelle Sourou (5.0 ha) chargée !");
-                      }}
-                    >
-                      Sourou (5.0 ha)
-                    </Button>
-                  </div>
-                </div>
-
-                <div className="pt-2">
-                  <Button
-                    onClick={captureGpsPosition}
-                    className="w-full h-9 bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-xs gap-1.5 shadow-sm"
-                  >
-                    <MapPin className="h-3.5 w-3.5" /> Capturer ma position GPS actuelle
-                  </Button>
-                </div>
-              </div>
-            </Card>
-
-            {/* Colonne Résultats du Calcul Géodésique */}
-            <Card className="lg:col-span-2 p-4 space-y-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <h3 className="text-sm font-bold text-foreground">Résultats Géodésiques WGS84</h3>
-                  <p className="text-xs text-muted-foreground">Formule de Gauss / Shoelace sphérique et profil altimétrique.</p>
-                </div>
-                <Badge variant="outline" className="text-xs font-mono bg-emerald-500/10 text-emerald-700">
-                  {gpsPoints.length} bornes enregistrées
-                </Badge>
-              </div>
-
-              {/* Cartes métriques */}
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                <div className="p-3 rounded-xl bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-500/20">
-                  <span className="text-[11px] text-emerald-700 dark:text-emerald-300 font-medium">Superficie calculée</span>
-                  <p className="text-lg font-extrabold text-emerald-900 dark:text-emerald-100">{surveyResult.areaHa} ha</p>
-                  <span className="text-[10px] text-muted-foreground">{surveyResult.areaM2.toLocaleString()} m²</span>
-                </div>
-                <div className="p-3 rounded-xl bg-sky-50 dark:bg-sky-950/30 border border-sky-500/20">
-                  <span className="text-[11px] text-sky-700 dark:text-sky-300 font-medium">Périmètre clôture</span>
-                  <p className="text-lg font-extrabold text-sky-900 dark:text-sky-100">{surveyResult.perimeterM} m</p>
-                  <span className="text-[10px] text-muted-foreground">Longueur totale grillage</span>
-                </div>
-                <div className="p-3 rounded-xl bg-amber-50 dark:bg-amber-950/30 border border-amber-500/20">
-                  <span className="text-[11px] text-amber-700 dark:text-amber-300 font-medium">Dénivelé max</span>
-                  <p className="text-lg font-extrabold text-amber-900 dark:text-amber-100">Δ {surveyResult.elevation.deltaAlt} m</p>
-                  <span className="text-[10px] text-muted-foreground">Pente moy : {surveyResult.elevation.averageSlopePct}%</span>
-                </div>
-                <div className="p-3 rounded-xl bg-slate-50 dark:bg-slate-900 border border-border">
-                  <span className="text-[11px] text-muted-foreground font-medium">Centroïde GPS</span>
-                  <p className="text-xs font-bold text-foreground truncate mt-1">
-                    {surveyResult.centroid.lat.toFixed(5)}° N
-                  </p>
-                  <p className="text-xs font-bold text-foreground truncate">
-                    {surveyResult.centroid.lng.toFixed(5)}° O
-                  </p>
-                </div>
-              </div>
-
-              {/* Tableau des points */}
-              <div className="rounded-lg border border-border overflow-hidden">
-                <table className="w-full text-xs text-left">
-                  <thead className="bg-muted/80 font-semibold text-muted-foreground">
-                    <tr>
-                      <th className="p-2">Borne</th>
-                      <th className="p-2">Latitude</th>
-                      <th className="p-2">Longitude</th>
-                      <th className="p-2">Altitude</th>
-                      <th className="p-2">Description</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-border">
-                    {gpsPoints.map((pt, idx) => (
-                      <tr key={idx} className="hover:bg-muted/30">
-                        <td className="p-2 font-bold text-emerald-700">B{idx + 1}</td>
-                        <td className="p-2 font-mono">{pt.lat.toFixed(6)}° N</td>
-                        <td className="p-2 font-mono">{pt.lng.toFixed(6)}° O</td>
-                        <td className="p-2">{pt.alt ? `${pt.alt} m` : "310.0 m"}</td>
-                        <td className="p-2 text-muted-foreground">{pt.label || `Sommet ${idx + 1}`}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-
-              <div className="flex justify-end pt-1">
-                <Button
-                  size="sm"
-                  onClick={() => setActiveTab("conception")}
-                  className="bg-emerald-600 hover:bg-emerald-500 text-white text-xs gap-1"
-                >
-                  Valider géodésie et passer à l'Étape 2 (Conception CIRAD/FAO) <ArrowRight className="h-3 w-3" />
-                </Button>
-              </div>
-            </Card>
-          </div>
-        </TabsContent>
-
-        {/* ═════════════════════════════════════════════════════════ */}
-        {/* ÉTAPE 2 : CONCEPTION TECHNIQUE CIRAD & FAO-56             */}
-        {/* ═════════════════════════════════════════════════════════ */}
-        <TabsContent value="conception" className="space-y-6">
-          {/* Sous-section A : Hydraulique & Pompage Solaire FAO-56 / CIRAD */}
-          <div className="space-y-3">
-            <div className="flex items-center justify-between border-b pb-2">
-              <div className="flex items-center gap-2">
-                <div className="h-7 w-7 rounded-lg bg-sky-500/10 flex items-center justify-center text-sky-600">
-                  <Droplets className="h-4 w-4" />
-                </div>
-                <div>
-                  <h3 className="text-sm font-bold text-foreground">
-                    Volet A — Hydraulique Agricole & Pompage Solaire (normes hydrauliques certifiées)
-                  </h3>
-                  <p className="text-xs text-muted-foreground">
-                    Besoins en eau Penman-Monteith, pertes de charge Hazen-Williams et générateur photovoltaïque.
-                  </p>
-                </div>
-              </div>
-              <Badge variant="outline" className="text-xs text-sky-700 bg-sky-500/10 font-mono">
-                CIRAD Hydraulique Tropicale
-              </Badge>
-            </div>
-
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-              <Card className="lg:col-span-1 p-4 space-y-4">
-                <div className="space-y-1">
-                  <h4 className="text-xs font-bold text-foreground flex items-center gap-1.5">
-                    <Droplets className="h-3.5 w-3.5 text-sky-600" /> Paramètres Agro-Hydrauliques
-                  </h4>
-                  <p className="text-[11px] text-muted-foreground">Besoins agrométéorologiques pour le Sahel.</p>
-                </div>
-
-                <div className="space-y-3 text-xs">
-                  <div>
-                    <Label className="text-xs font-semibold">Culture principale</Label>
-                    <Select value={selectedCrop} onValueChange={setSelectedCrop}>
-                      <SelectTrigger className="h-8 text-xs mt-1">
-                        <SelectValue placeholder="Choisir une culture" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {Object.entries(FAO_SAHEL_CROPS).map(([key, data]) => (
-                          <SelectItem key={key} value={key} className="text-xs">
-                            {data.cropName} (Kc = {data.kcMid})
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-                  <div>
-                    <Label className="text-xs font-semibold">Saison d'arrosage</Label>
-                    <Select value={selectedSeason} onValueChange={(v: any) => setSelectedSeason(v)}>
-                      <SelectTrigger className="h-8 text-xs mt-1">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="saison_seche_chaude" className="text-xs">Saison sèche chaude (Mars-Mai : ETo = 7.2 mm/j)</SelectItem>
-                        <SelectItem value="saison_seche_froide" className="text-xs">Saison sèche fraîche (Nov-Fév : ETo = 5.5 mm/j)</SelectItem>
-                        <SelectItem value="hivernage" className="text-xs">Hivernage / Pluie (Juin-Oct : ETo = 4.2 mm/j)</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-2">
-                    <div>
-                      <Label className="text-xs font-semibold">Prof. Forage (m)</Label>
-                      <Input
-                        type="number"
-                        value={boreholeDepthM}
-                        onChange={(e) => setBoreholeDepthM(Number(e.target.value))}
-                        className="h-8 text-xs mt-1"
-                      />
-                    </div>
-                    <div>
-                      <Label className="text-xs font-semibold">Niveau Dynamique (m)</Label>
-                      <Input
-                        type="number"
-                        value={waterTableDepthM}
-                        onChange={(e) => setWaterTableDepthM(Number(e.target.value))}
-                        className="h-8 text-xs mt-1"
-                      />
-                    </div>
-                  </div>
-
-                  <div className="p-2.5 rounded-lg bg-sky-50 dark:bg-sky-950/30 text-sky-900 dark:text-sky-200 border border-sky-500/20 text-[11px] space-y-1">
-                    <p className="font-semibold">Superficie nette calculée : {surveyResult.areaHa} ha</p>
-                    <p className="text-muted-foreground">La surface est directement synchronisée depuis l'arpentage GPS.</p>
-                  </div>
-                </div>
-              </Card>
-
-              {/* Résultats hydrauliques */}
-              {irrigationResult && (
-                <Card className="lg:col-span-2 p-4 space-y-4">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <h4 className="text-xs font-bold text-foreground">Note de Calcul Hydraulique & Solaire</h4>
-                      <p className="text-[11px] text-muted-foreground">Pertes de charge Hazen-Williams, HMT et puissance PV.</p>
-                    </div>
-                    <Badge variant="outline" className="text-xs bg-sky-500/10 text-sky-700">
-                      Débit pointe : {irrigationResult.peakHourlyFlowM3h} m³/h
-                    </Badge>
-                  </div>
-
-                  {/* Source de Vérité Réelle & Statut de Certification */}
-                  <div className="flex items-center justify-between flex-wrap gap-2 p-2.5 rounded-lg bg-sky-50/60 dark:bg-sky-950/20 border border-sky-500/20 text-xs">
-                    <span className="flex items-center gap-1.5 text-sky-900 dark:text-sky-200 font-medium">
-                      <ShieldCheck className="h-4 w-4 text-sky-600 shrink-0" />
-                      <span><strong>Source certifiée :</strong> {irrigationResult.groundTruthSource}</span>
-                    </span>
-                    {irrigationResult.expertCertified ? (
-                      <Badge className="bg-emerald-600 text-white gap-1 text-[11px]">
-                        <CheckCircle2 className="h-3 w-3" /> Certifié par l'Expert : {irrigationResult.certifiedBy}
-                      </Badge>
-                    ) : (
-                      <Badge variant="outline" className="border-amber-500/40 text-amber-700 dark:text-amber-300 text-[11px] gap-1 bg-amber-500/10">
-                        <AlertTriangle className="h-3 w-3" /> Non certifié terrain (Estimation standard)
-                      </Badge>
-                    )}
-                  </div>
-
-                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
-                    <div className="p-3 rounded-xl bg-muted/50 border border-border">
-                      <span className="text-[11px] text-muted-foreground">Besoin brut journalier</span>
-                      <p className="text-base font-extrabold text-foreground">{irrigationResult.dailyVolumeM3} m³/j</p>
-                      <span className="text-[10px] text-muted-foreground">{irrigationResult.dailyGrossMm} mm/j brut</span>
-                    </div>
-                    <div className="p-3 rounded-xl bg-muted/50 border border-border">
-                      <span className="text-[11px] text-muted-foreground">Conduite principale</span>
-                      <p className="text-base font-extrabold text-foreground">PEHD Ø {irrigationResult.mainPipeDiameterMm} mm</p>
-                      <span className="text-[10px] text-emerald-600 font-medium">V = {irrigationResult.mainPipeVelocityMs} m/s (conforme)</span>
-                    </div>
-                    <div className="p-3 rounded-xl bg-muted/50 border border-border">
-                      <span className="text-[11px] text-muted-foreground">HMT globale</span>
-                      <p className="text-base font-extrabold text-sky-700 dark:text-sky-300">{irrigationResult.totalHeadHmtM} mCE</p>
-                      <span className="text-[10px] text-muted-foreground">Perte charge : {irrigationResult.mainPipeHeadLossM} m</span>
-                    </div>
-                    <div className="p-3 rounded-xl bg-muted/50 border border-border">
-                      <span className="text-[11px] text-muted-foreground">Générateur Solaire</span>
-                      <p className="text-base font-extrabold text-amber-700 dark:text-amber-300">
-                        {irrigationResult.recommendedPanelsCount} × {irrigationResult.panelUnitWattage} Wc
-                      </p>
-                      <span className="text-[10px] text-muted-foreground">Total : {(irrigationResult.solarPvWattPeak / 1000).toFixed(2)} kWc</span>
-                    </div>
-                  </div>
-
-                  {/* Section d'Apport d'Informations Complémentaires & Certification Terrain */}
-                  <div className="p-3.5 rounded-xl border border-sky-500/30 bg-muted/20 space-y-3">
-                    <div className="flex items-center justify-between">
-                      <span className="text-xs font-bold flex items-center gap-1.5 text-foreground">
-                        <UserCheck className="h-4 w-4 text-emerald-600" />
-                        Apport de Mesures In-Situ & Certification Hydraulique
-                      </span>
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        className="h-7 text-xs gap-1 border-sky-500/40 text-sky-700 dark:text-sky-300"
-                        onClick={() => setIsExpertEditingIrrigation(!isExpertEditingIrrigation)}
-                      >
-                        <Edit3 className="h-3 w-3" />
-                        {isExpertEditingIrrigation ? "Fermer" : "Ajuster / Certifier"}
-                      </Button>
-                    </div>
-
-                    {isExpertEditingIrrigation && (
-                      <div className="space-y-3 pt-2 border-t border-border text-xs">
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                          <div>
-                            <Label className="text-xs font-semibold">Débit réel mesuré au forage (m³/h)</Label>
-                            <Input
-                              type="number"
-                              placeholder={String(irrigationResult.peakHourlyFlowM3h)}
-                              value={expertMeasuredFlow}
-                              onChange={(e) => setExpertMeasuredFlow(e.target.value ? Number(e.target.value) : "")}
-                              className="h-8 text-xs mt-1"
-                            />
-                          </div>
-                          <div>
-                            <Label className="text-xs font-semibold">Niveau piézométrique dynamique mesuré (m)</Label>
-                            <Input
-                              type="number"
-                              placeholder={String(waterTableDepthM)}
-                              value={expertMeasuredDynamicLevel}
-                              onChange={(e) => setExpertMeasuredDynamicLevel(e.target.value ? Number(e.target.value) : "")}
-                              className="h-8 text-xs mt-1"
-                            />
-                          </div>
-                        </div>
-                        <div>
-                          <Label className="text-xs font-semibold">Notes & Justifications techniques de l'Ingénieur</Label>
-                          <Textarea
-                            placeholder="Ex: Essai de pompage de 4h validé à 12 m³/h avec rabattement stabilisé à 38m..."
-                            value={expertIrrigationNotes}
-                            onChange={(e) => setExpertIrrigationNotes(e.target.value)}
-                            className="text-xs min-h-[60px] mt-1"
-                          />
-                        </div>
-                        <div className="flex justify-end">
-                          <Button
-                            size="sm"
-                            onClick={handleCertifyIrrigation}
-                            className="h-8 text-xs bg-emerald-600 hover:bg-emerald-500 text-white font-semibold gap-1.5 shadow-sm"
-                          >
-                            <UserCheck className="h-3.5 w-3.5" /> Certifier les Données Réelles de Terrain
-                          </Button>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                </Card>
-              )}
-            </div>
-          </div>
-
-          {/* Sous-section B : Architecture Avicole Bioclimatique CIRAD */}
-          <div className="space-y-3 pt-4 border-t">
-            <div className="flex items-center justify-between border-b pb-2">
-              <div className="flex items-center gap-2">
-                <div className="h-7 w-7 rounded-lg bg-amber-500/10 flex items-center justify-center text-amber-600">
-                  <Home className="h-4 w-4" />
-                </div>
-                <div>
-                  <h3 className="text-sm font-bold text-foreground">
-                    Volet B — Architecture Avicole Bioclimatique Sahélienne (CIRAD)
-                  </h3>
-                  <p className="text-xs text-muted-foreground">
-                    Ventilation naturelle thermosiphon, orientation Est-Ouest stricte et ratios d'abreuvement.
-                  </p>
-                </div>
-              </div>
-              <Badge variant="outline" className="text-xs text-amber-700 bg-amber-500/10 font-mono">
-                CIRAD Zootechnie Sahélienne
-              </Badge>
-            </div>
-
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-              <Card className="lg:col-span-1 p-4 space-y-4">
-                <div className="space-y-1">
-                  <h4 className="text-xs font-bold text-foreground flex items-center gap-1.5">
-                    <Home className="h-3.5 w-3.5 text-amber-600" /> Paramètres d'Élevage
-                  </h4>
-                  <p className="text-[11px] text-muted-foreground">Conception adaptée aux chaleurs sahéliennes (&gt;38°C).</p>
-                </div>
-
-                <div className="space-y-3 text-xs">
-                  <div>
-                    <Label className="text-xs font-semibold">Type de volaille</Label>
-                    <Select value={poultryBirdType} onValueChange={(v: any) => setPoultryBirdType(v)}>
-                      <SelectTrigger className="h-8 text-xs mt-1">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="poulet_chair" className="text-xs">Poulet de chair (8-10 sujets/m²)</SelectItem>
-                        <SelectItem value="poule_pondeuse" className="text-xs">Poule pondeuse au sol (6-7 sujets/m²)</SelectItem>
-                        <SelectItem value="poulet_local_ameliore" className="text-xs">Poulet local amélioré / Gollé (8 sujets/m²)</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-                  <div>
-                    <Label className="text-xs font-semibold">Taille de la bande (sujets)</Label>
-                    <Input
-                      type="number"
-                      step={100}
-                      value={poultryFlockSize}
-                      onChange={(e) => setPoultryFlockSize(Number(e.target.value))}
-                      className="h-8 text-xs mt-1"
-                    />
-                  </div>
-
-                  <div className="p-3 rounded-lg bg-amber-50 dark:bg-amber-950/30 text-amber-900 dark:text-amber-200 border border-amber-500/20 text-xs space-y-1">
-                    <p className="font-semibold flex items-center gap-1">
-                      <Compass className="h-3.5 w-3.5 text-amber-600" /> Règle d'or bioclimatique CIRAD :
-                    </p>
-                    <p className="text-[11px] text-muted-foreground">
-                      Orientation Est-Ouest stricte (90°). Largeur maximale 8 à 10m pour garantir un balayage transversal par ventilation naturelle. Lanterneau faîtier de 1m.
-                    </p>
-                  </div>
-                </div>
-              </Card>
-
-              {/* Résultats bâtiment */}
-              {poultryResult && (
-                <Card className="lg:col-span-2 p-4 space-y-4">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <h4 className="text-xs font-bold text-foreground">Dimensions & Ratios d'Équipement</h4>
-                      <p className="text-[11px] text-muted-foreground">Effet thermosiphon, lanterneau et sas de biosécurité.</p>
-                    </div>
-                    <Badge variant="outline" className="text-xs bg-amber-500/10 text-amber-700">
-                      Surface utile : {poultryResult.floorAreaM2} m²
-                    </Badge>
-                  </div>
-
-                  {/* Source de Vérité Réelle & Statut de Certification */}
-                  <div className="flex items-center justify-between flex-wrap gap-2 p-2.5 rounded-lg bg-amber-50/60 dark:bg-amber-950/20 border border-amber-500/20 text-xs">
-                    <span className="flex items-center gap-1.5 text-amber-900 dark:text-amber-200 font-medium">
-                      <ShieldCheck className="h-4 w-4 text-amber-600 shrink-0" />
-                      <span><strong>Source certifiée :</strong> {poultryResult.groundTruthSource}</span>
-                    </span>
-                    {poultryResult.expertCertified ? (
-                      <Badge className="bg-emerald-600 text-white gap-1 text-[11px]">
-                        <CheckCircle2 className="h-3 w-3" /> Certifié par l'Expert : {poultryResult.certifiedBy}
-                      </Badge>
-                    ) : (
-                      <Badge variant="outline" className="border-amber-500/40 text-amber-700 dark:text-amber-300 text-[11px] gap-1 bg-amber-500/10">
-                        <AlertTriangle className="h-3 w-3" /> Non certifié terrain (Normes Sahel indicatives)
-                      </Badge>
-                    )}
-                  </div>
-
-                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
-                    <div className="p-3 rounded-xl bg-muted/50 border border-border">
-                      <span className="text-[11px] text-muted-foreground">Dimensions (L × l)</span>
-                      <p className="text-base font-extrabold text-foreground">
-                        {poultryResult.lengthM} m × {poultryResult.widthM} m
-                      </p>
-                      <span className="text-[10px] text-muted-foreground">Axe Est-Ouest strict</span>
-                    </div>
-                    <div className="p-3 rounded-xl bg-muted/50 border border-border">
-                      <span className="text-[11px] text-muted-foreground">Hauteur faîtage</span>
-                      <p className="text-base font-extrabold text-foreground">{poultryResult.ridgeHeightM} m</p>
-                      <span className="text-[10px] text-amber-600 font-medium">Lanterneau : {poultryResult.lanternWidthM} m</span>
-                    </div>
-                    <div className="p-3 rounded-xl bg-muted/50 border border-border">
-                      <span className="text-[11px] text-muted-foreground">Mangeoires trémie</span>
-                      <p className="text-base font-extrabold text-foreground">{poultryResult.feedersCount} trémies</p>
-                      <span className="text-[10px] text-muted-foreground">1 pour 28 sujets</span>
-                    </div>
-                    <div className="p-3 rounded-xl bg-muted/50 border border-border">
-                      <span className="text-[11px] text-muted-foreground">Abreuvoirs cloche</span>
-                      <p className="text-base font-extrabold text-foreground">{poultryResult.drinkersCount} unités</p>
-                      <span className="text-[10px] text-muted-foreground">Distribution continue</span>
-                    </div>
-                  </div>
-
-                  {/* Section d'Apport d'Informations Complémentaires & Certification Bâtiment */}
-                  <div className="p-3.5 rounded-xl border border-amber-500/30 bg-muted/20 space-y-3">
-                    <div className="flex items-center justify-between">
-                      <span className="text-xs font-bold flex items-center gap-1.5 text-foreground">
-                        <UserCheck className="h-4 w-4 text-emerald-600" />
-                        Apport d'Informations Complémentaires & Certification Zootechnique
-                      </span>
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        className="h-7 text-xs gap-1 border-amber-500/40 text-amber-700 dark:text-amber-300"
-                        onClick={() => setIsExpertEditingPoultry(!isExpertEditingPoultry)}
-                      >
-                        <Edit3 className="h-3 w-3" />
-                        {isExpertEditingPoultry ? "Fermer" : "Ajuster / Certifier"}
-                      </Button>
-                    </div>
-
-                    {isExpertEditingPoultry && (
-                      <div className="space-y-3 pt-2 border-t border-border text-xs">
-                        <div>
-                          <Label className="text-xs font-semibold">Effectif réel ajusté de la bande</Label>
-                          <Input
-                            type="number"
-                            placeholder={String(poultryResult.flockSize)}
-                            value={expertAdjustedFlock}
-                            onChange={(e) => setExpertAdjustedFlock(e.target.value ? Number(e.target.value) : "")}
-                            className="h-8 text-xs mt-1"
-                          />
-                        </div>
-                        <div>
-                          <Label className="text-xs font-semibold">Notes & Observations zootechniques de terrain</Label>
-                          <Textarea
-                            placeholder="Ex: Vérification de l'axe au théodolite 90° Est-Ouest, muret de 0.55m lissé au mortier étanche..."
-                            value={expertPoultryNotes}
-                            onChange={(e) => setExpertPoultryNotes(e.target.value)}
-                            className="text-xs min-h-[60px] mt-1"
-                          />
-                        </div>
-                        <div className="flex justify-end">
-                          <Button
-                            size="sm"
-                            onClick={handleCertifyPoultry}
-                            className="h-8 text-xs bg-emerald-600 hover:bg-emerald-500 text-white font-semibold gap-1.5 shadow-sm"
-                          >
-                            <UserCheck className="h-3.5 w-3.5" /> Certifier les Données Réelles du Bâtiment
-                          </Button>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                </Card>
-              )}
-            </div>
-          </div>
-
-          {/* Navigation bas d'onglet */}
-          <div className="flex justify-between items-center pt-2">
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={() => setActiveTab("geodesie")}
-              className="text-xs"
-            >
-              ← Retour Étape 1 : Arpentage & Surface
-            </Button>
-            <Button
-              size="sm"
-              onClick={() => setActiveTab("validation_devis")}
-              className="bg-emerald-600 hover:bg-emerald-500 text-white text-xs gap-1 font-semibold"
-            >
-              Valider la conception et passer à l'Étape 3 (Devis Express en FCFA) <ArrowRight className="h-3 w-3" />
-            </Button>
-          </div>
+        <TabsContent value="irris" className="space-y-4">
+          <IrrisModelStudio
+            onResultsCalculated={handleIrrisCalculated}
+            onNavigateToQuote={() => setActiveTab("validation_devis")}
+          />
         </TabsContent>
 
         {/* ═════════════════════════════════════════════════════════ */}
@@ -1619,17 +1098,17 @@ export const NafaGeniusStudio: React.FC = () => {
                   <Button
                     size="sm"
                     variant="outline"
-                    onClick={() => setActiveTab("conception")}
+                    onClick={() => setActiveTab("irris")}
                     className="text-xs"
                   >
-                    ← Retour Étape 2 : Besoins en Eau & Pompe
+                    ← Retour Étape 1 : Modèle IRRIS
                   </Button>
                   <Button
                     size="sm"
                     onClick={() => setActiveTab("export_pro")}
                     className="bg-emerald-600 hover:bg-emerald-500 text-white text-xs gap-1 font-semibold"
                   >
-                    Passer à l'Étape 4 (Dossier & Devis PDF) <ArrowRight className="h-3 w-3" />
+                    Passer à l'Étape 3 (Dossier & Devis PDF) <ArrowRight className="h-3 w-3" />
                   </Button>
                 </div>
               </div>
@@ -1739,14 +1218,14 @@ export const NafaGeniusStudio: React.FC = () => {
                 onClick={() => setActiveTab("validation_devis")}
                 className="text-xs"
               >
-                ← Retour Étape 3 : Devis Express en FCFA
+                ← Retour Étape 2 : Devis Express en FCFA
               </Button>
               <Button
                 size="sm"
                 onClick={() => setActiveTab("diagnostic")}
                 className="bg-emerald-600 hover:bg-emerald-500 text-white text-xs gap-1 font-semibold"
               >
-                Consulter le Diagnostic Végétal <ArrowRight className="h-3 w-3" />
+                Consulter le Diagnostic Végétal (Étape 4) <ArrowRight className="h-3 w-3" />
               </Button>
             </div>
           </Card>
