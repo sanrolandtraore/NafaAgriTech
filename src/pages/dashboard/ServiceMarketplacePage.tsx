@@ -154,7 +154,18 @@ export const ServiceMarketplacePage = () => {
     return "all";
   };
 
-  const isPartner = primaryRole === "partenaire" || primaryRole === "agent_technique" || primaryRole === "expert" || primaryRole === "formation" || (partnerType != null && partnerType !== "");
+  // ─── ACCÈS À LA MARKETPLACE VITRINE ───
+  // Les agriculteurs, les éleveurs ainsi que TOUS les visiteurs provenant de la page d'accueil
+  // ont un accès libre, direct et prioritaire à la Marketplace Vitrine.
+  const isAgriOrEleveur = primaryRole === "agriculteur" || primaryRole === "farmer" || primaryRole === "eleveur";
+  const isVisitorFromHome = !user || urlRole === "producteurs" || urlRole === "agriculteur" || urlRole === "eleveur";
+
+  // Seul un compte partenaire/institution connecté (qui n'est pas agriculteur ni visiteur)
+  // est identifié comme profil prestataire
+  const isPartner = !isVisitorFromHome && !isAgriOrEleveur && (
+    primaryRole === "partenaire" ||
+    primaryRole === "institution_agri"
+  );
   const isClient = !isPartner;
 
   const [items, setItems] = useState<PublicMarketItem[]>([]);
@@ -451,50 +462,27 @@ export const ServiceMarketplacePage = () => {
     );
   }
 
-  // ─── BARRIÈRE STRICTE PARTENAIRE VS AGRICULTEURS / ÉLEVEURS ───
-  // Les partenaires ont UNIQUEMENT accès à leurs pages personnelles et tableau de bord
-  // Seuls les agriculteurs et éleveurs ont accès au marketplace vitrine pour acheter, louer, demander un service
-  if (isPartner) {
-    return (
-      <div className="max-w-2xl mx-auto py-12 px-4 sm:px-6 text-center space-y-6">
-        <div className="h-16 w-16 mx-auto rounded-2xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-amber-600">
-          <ShieldAlert className="h-8 w-8" />
-        </div>
-        <div className="space-y-3">
-          <h2 className="text-xl sm:text-2xl font-heading font-extrabold text-foreground">
-            Accès Réservé aux Agriculteurs & Éleveurs
-          </h2>
-          <p className="text-sm text-muted-foreground leading-relaxed max-w-lg mx-auto">
-            La Marketplace Vitrine (Acheter, Louer, Demander un service) est exclusivement réservée aux exploitants agricoles et éleveurs.
-          </p>
-          <div className="p-4 rounded-xl bg-card border border-border/70 text-left text-xs text-muted-foreground space-y-2 mt-4">
-            <p className="font-semibold text-foreground flex items-center gap-1.5 text-sm">
-              <Store className="h-4 w-4 text-emerald-600" />
-              Espace Personnel Partenaire Dédié :
-            </p>
-            <p className="leading-relaxed">
-              En tant que partenaire certifié, vous disposez exclusivement de votre <strong>Espace Personnel</strong> et de votre <strong>Tableau de Bord</strong> pour publier, modifier et gérer vos services et produits, consulter les devis reçus et suivre vos commandes.
-            </p>
-          </div>
-        </div>
-        <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-2">
-          <Button asChild className="w-full sm:w-auto bg-emerald-600 hover:bg-emerald-700 text-white text-sm h-11 px-5 rounded-xl font-semibold shadow-xs">
-            <Link to="/dashboard/partner-space?tab=services">
-              <Package className="h-4 w-4 mr-2" /> Gérer mes Services & Produits
-            </Link>
-          </Button>
-          <Button asChild variant="outline" className="w-full sm:w-auto text-sm h-11 px-5 rounded-xl">
-            <Link to="/dashboard/partner-space?tab=dashboard">
-              <LayoutDashboard className="h-4 w-4 mr-2" /> Mon Tableau de Bord Partenaire
-            </Link>
-          </Button>
-        </div>
-      </div>
-    );
-  }
+
 
   return (
     <div className="space-y-6 max-w-7xl mx-auto pb-12 px-3 sm:px-6 animate-fade-in">
+      {/* Information pour les partenaires connectés qui consultent la vitrine */}
+      {isPartner && (
+        <div className="rounded-2xl bg-amber-500/10 border border-amber-500/30 p-4 flex flex-col sm:flex-row items-center justify-between gap-3 text-amber-800 dark:text-amber-200">
+          <div className="flex items-center gap-3 text-xs sm:text-sm">
+            <Store className="h-5 w-5 text-amber-600 shrink-0" />
+            <span>
+              <strong>Mode Consultation Partenaire :</strong> Vous visualisez la Marketplace Vitrine telle qu'affichée pour les agriculteurs et éleveurs. Pour publier ou modifier vos offres, accédez à votre espace dédié.
+            </span>
+          </div>
+          <Button asChild size="sm" className="bg-amber-600 hover:bg-amber-700 text-white shrink-0 text-xs rounded-xl font-semibold">
+            <Link to="/dashboard/partner-space?tab=services">
+              <Package className="h-3.5 w-3.5 mr-1.5" /> Gérer mes Services & Produits
+            </Link>
+          </Button>
+        </div>
+      )}
+
       {/* En-tête Marketplace Unifiée */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div className="flex items-center gap-3">
