@@ -1,4 +1,4 @@
-﻿export type SubscriptionTier = "free" | "starter" | "pro_prestataire" | "enterprise";
+export type SubscriptionTier = "free" | "starter" | "pro_prestataire" | "enterprise";
 export type ProviderActivityType = "services_agronomiques" | "vente_intrants" | "location_materiel" | "polyvalent";
 
 export interface ProviderSubscription {
@@ -97,7 +97,7 @@ export const SUBSCRIPTION_PLANS: SubscriptionPlan[] = [
       { name: "Diagnostic Végétal", description: "Analyse instantanée et précise", route: "/dashboard/expert-diagnosis" },
       { name: "Ordonnances Agros PDF", description: "Génération signée et QR-code", route: "/dashboard/expert-prescriptions" },
       { name: "Scouting terrain GPS", description: "Patrouilles parcellaires et relevés", route: "/dashboard/scouting" },
-      { name: "Gestion Matériel & Location", description: "Flotte tracteurs, drones, moissonneuses", route: "/dashboard/equipment" },
+      { name: "Matériel & Intrants (Vente & Location)", description: "Offres matériel, semences et intrants", route: "/dashboard/marketplace?cat=machinisme" },
       { name: "Calculatrice Agro & Doses", description: "Semis, fractionnement NPK, eau ETc", route: "/dashboard/expert-calculator" },
       { name: "Cartographie GPS Polygone", description: "Mesure de surface et limites", route: "/dashboard/expert-cartography" },
       { name: "Carnet Clients & Tournées", description: "Gestion des exploitations suivies", route: "/dashboard/expert-clients" },

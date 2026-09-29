@@ -54,11 +54,11 @@ export const fournisseurNav: NavItem[] = [
   { to: "/dashboard/settings", labelKey: "Paramètres", icon: Settings, section: "Visibilité & Gestion" },
 ];
 
-/** 2. Profil Partenaire : Machinisme & Travaux Agricoles (Location & Chantiers) */
+/** 2. Profil Partenaire : Machinisme & Travaux Agricoles (Prestations & Chantiers) */
 export const machinismeNav: NavItem[] = [
   { to: "/dashboard", labelKey: "Tableau de bord", icon: LayoutDashboard },
   { to: "/dashboard/partner-space", labelKey: "Mon Espace Partenaire (Offres & Devis)", icon: Building2, section: "Visibilité & Gestion" },
-  { to: "/dashboard/equipment", labelKey: "Parc matériel & Location", icon: Tractor, section: "Flotte & Chantiers" },
+  { to: "/dashboard/marketplace?cat=machinisme", labelKey: "Matériel & Intrants (Vente & Location)", icon: Tractor, section: "Flotte & Chantiers" },
   { to: "/dashboard/missions", labelKey: "Missions & Travaux", icon: Briefcase, section: "Flotte & Chantiers" },
   { to: "/dashboard/interventions", labelKey: "Interventions terrain", icon: ClipboardList, section: "Flotte & Chantiers" },
   { to: "/dashboard/quote-requests", labelKey: "Demandes de devis", icon: FileText, section: "Flotte & Chantiers" },
@@ -219,7 +219,9 @@ export const getNavLabel = (item: NavItem, t?: (key: string) => string): string 
     "nav.providerClients": "Portefeuille Clients",
     "nav.revenue": "Chiffre d'affaires & Recettes",
     "nav.suppliers": "Fournisseurs",
-    "nav.equipmentFleet": "Parc matériel & Location",
+    "nav.equipmentFleet": "Matériel & Intrants (Vente & Location)",
+    "Matériel & Intrants (Vente & Location)": "Matériel & Intrants (Vente & Location)",
+    "Parc matériel & Location": "Matériel & Intrants (Vente & Location)",
     "nav.missions": "Missions & Travaux",
     "nav.interventions": "Interventions terrain",
     "nav.banking": "Services bancaires agricoles",
