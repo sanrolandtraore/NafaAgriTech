@@ -1,4 +1,4 @@
-﻿/**
+/**
  * NAFA - AGRITECH : Suite d'Outils Professionnels « Services Agronomiques & Conseils »
  * 
  * Spécifications UX & Métier :
@@ -562,23 +562,21 @@ export const AGRONOMIC_TOOLS_CATALOG: AgronomicToolItem[] = [
 
   // ─── 4. CONCEPTION & INGÉNIERIE ───
   {
-    id: "tool-precision-cad-3d",
-    title: "Studio CAO / SIG / IRRICAD 3D",
+    id: "tool-nafa-genius-terrain",
+    title: "Arpentage & Dimensionnement Express",
     category: "ingenierie",
     categoryLabel: "Conception & Ingénierie",
-    description: "Plans ultra-précis AutoCAD DXF, MNT QGIS, hydraulique IRRICAD et Netafim.",
-    route: "/dashboard/genius?tab=cad_studio",
-    iconName: "Compass",
+    description: "Relevé GPS WGS84, superficie en hectares, débit de pompe solaire et devis en FCFA.",
+    route: "/dashboard/genius?tab=geodesie",
+    iconName: "MapPin",
     isOffline: true,
-    badges: ["AutoCAD", "QGIS", "IRRICAD", "Netafim"],
-    keywords: ["autocad", "qgis", "irricad", "netafim", "dxf", "cao", "sig", "3d", "précision", "plans d'ingénierie", "netafim irrigation"],
+    badges: ["GPS WGS84", "Pompe Solaire", "Devis FCFA"],
+    keywords: ["arpentage", "surface", "ha", "hectare", "gps", "pompe", "solaire", "irrigation", "devis", "fcfa"],
     contextualAi: {
-      roleDescription: "Expert en CAO rurale, SIG géodésique et modélisation hydraulique de précision.",
+      roleDescription: "Assistant en ingénierie de terrain et dimensionnement simplifié.",
       suggestedActions: [
-        { label: "Générer DXF AutoCAD", prompt: "Exporte le plan de masse et le réseau d'irrigation en format DXF R12 avec calques ISO." },
-        { label: "Topographie QGIS", prompt: "Affiche les courbes de niveau MNT et calcule les pentes géodésiques WGS84." },
-        { label: "Calcul IRRICAD", prompt: "Vérifie les vitesses d'écoulement et les pertes de charge Hazen-Williams." },
-        { label: "Devis Netafim", prompt: "Établis la nomenclature détaillée du matériel Netafim avec références officielles en FCFA." },
+        { label: "Calculer la superficie", prompt: "Calcule la superficie en hectares à partir des bornes GPS de la parcelle." },
+        { label: "Dimensionner la pompe", prompt: "Calcule le débit nécessaire et la puissance de la pompe solaire en fonction de la culture." },
       ],
     },
   },
