@@ -60,13 +60,8 @@ import {
 } from "@/lib/nafaGeniusLearning";
 
 import { generateTechnicalDossierPdf } from "@/lib/nafaGeniusPdf";
-import { FarmZoningCanvas } from "./FarmZoningCanvas";
-import { FarmIsometric3DView } from "./FarmIsometric3DView";
-import { PhotorealisticRenderView } from "./PhotorealisticRenderView";
-import { TechnicalNetworkPlanView } from "./TechnicalNetworkPlanView";
 import { SmartQuoteComparator } from "./SmartQuoteComparator";
 import { CropDiagnosisTool } from "@/components/expert/CropDiagnosisTool";
-import { PrecisionCad3DStudio } from "./PrecisionCad3DStudio";
 
 // Parcelles prédéfinies de démonstration de terrain au Burkina Faso
 const PRESET_PARCELS: Record<string, { name: string; location: string; points: GeoPoint[] }> = {
@@ -120,22 +115,18 @@ export const NafaGeniusStudio: React.FC = () => {
     const tabParam = searchParams.get("tab") || searchParams.get("tool");
     if (tabParam) {
       const lower = tabParam.toLowerCase();
-      if (["cad_studio", "autocad", "qgis", "irricad", "netafim", "cad", "precision"].includes(lower)) {
-        setActiveTab("cad_studio");
-      } else if (["designer", "plan2d"].includes(lower)) {
-        setActiveTab("plan2d");
-      } else if (["3d", "vue3d"].includes(lower)) {
-        setActiveTab("vue3d");
-      } else if (["irrigation", "conception", "fao", "cirad"].includes(lower)) {
+      if (["geodesie", "terrain", "gps", "surface", "arpentage"].includes(lower)) {
+        setActiveTab("geodesie");
+      } else if (["conception", "irrigation", "fao", "cirad", "eau", "pompe"].includes(lower)) {
         setActiveTab("conception");
-      } else if (["devis", "chiffrage", "quote"].includes(lower)) {
-        setActiveTab("chiffrage");
-      } else if (["diagnostic", "crop"].includes(lower)) {
-        setActiveTab("diagnostic");
-      } else if (["export", "export_pro", "pdf"].includes(lower)) {
+      } else if (["devis", "chiffrage", "quote", "validation_devis", "prix"].includes(lower)) {
+        setActiveTab("validation_devis");
+      } else if (["export", "export_pro", "pdf", "dossier"].includes(lower)) {
         setActiveTab("export_pro");
+      } else if (["diagnostic", "crop", "maladie", "adventice"].includes(lower)) {
+        setActiveTab("diagnostic");
       } else {
-        setActiveTab(tabParam);
+        setActiveTab("geodesie");
       }
     }
   }, [searchParams]);
@@ -439,20 +430,16 @@ export const NafaGeniusStudio: React.FC = () => {
     if (parsed.intent === "DIAGNOSE_CROP") setActiveTab("diagnostic");
 
     const lower = text.toLowerCase();
-    if (lower.includes("autocad") || lower.includes("qgis") || lower.includes("irricad") || lower.includes("netafim") || lower.includes("dxf") || lower.includes("cao") || lower.includes("sig") || lower.includes("précision") || lower.includes("precision")) {
-      setActiveTab("cad_studio");
-    } else if (lower.includes("3d") || lower.includes("jumeau")) {
-      setActiveTab("vue3d");
-    } else if (lower.includes("rendu") || lower.includes("photo") || lower.includes("image")) {
-      setActiveTab("rendu_photo");
-    } else if (lower.includes("plan") || lower.includes("2d") || lower.includes("cotation")) {
-      setActiveTab("plan2d");
-    } else if (lower.includes("reseau") || lower.includes("canalisation") || lower.includes("vanne") || lower.includes("pid")) {
-      setActiveTab("reseaux_cad");
-    } else if (lower.includes("fournisseur") || lower.includes("partenaire") || lower.includes("comparateur")) {
-      setActiveTab("chiffrage");
-    } else if (lower.includes("export") || lower.includes("pdf") || lower.includes("dossier")) {
+    if (lower.includes("gps") || lower.includes("surface") || lower.includes("arpentage") || lower.includes("terrain") || lower.includes("borne")) {
+      setActiveTab("geodesie");
+    } else if (lower.includes("eau") || lower.includes("pompe") || lower.includes("irrigation") || lower.includes("solaire") || lower.includes("poulailler")) {
+      setActiveTab("conception");
+    } else if (lower.includes("devis") || lower.includes("prix") || lower.includes("fcfa") || lower.includes("chiffrage") || lower.includes("fournisseur")) {
+      setActiveTab("validation_devis");
+    } else if (lower.includes("pdf") || lower.includes("export") || lower.includes("dossier")) {
       setActiveTab("export_pro");
+    } else if (lower.includes("diagnostic") || lower.includes("maladie") || lower.includes("plante") || lower.includes("feuille") || lower.includes("adventice")) {
+      setActiveTab("diagnostic");
     }
 
     // Si action directe (ex: création de visite)
@@ -736,25 +723,17 @@ export const NafaGeniusStudio: React.FC = () => {
             </Button>
           </div>
 
-          {/* Suggestions d'actions rapides en un clic */}
+          {/* Suggestions d'actions rapides simples de terrain */}
           <div className="flex items-center gap-1.5 overflow-x-auto pb-1 text-xs no-scrollbar">
-            <span className="text-muted-foreground font-semibold shrink-0">Workflow Pro :</span>
-            <Button
-              size="sm"
-              variant="outline"
-              className="h-7 text-xs rounded-full shrink-0 border-indigo-600/50 bg-indigo-50/60 dark:bg-indigo-950/40 text-indigo-900 dark:text-indigo-200 font-bold"
-              onClick={() => setActiveTab("cad_studio")}
-            >
-              <Compass className="h-3 w-3 mr-1 text-indigo-600" />
-              « Studio CAO / SIG / IRRICAD 3D »
-            </Button>
+            <span className="text-muted-foreground font-semibold shrink-0">Outils de terrain :</span>
             <Button
               size="sm"
               variant="outline"
               className="h-7 text-xs rounded-full shrink-0 border-emerald-500/30 text-emerald-800 dark:text-emerald-300"
               onClick={() => setActiveTab("geodesie")}
             >
-              « 1. Données Terrain »
+              <MapPin className="h-3 w-3 mr-1 text-emerald-600" />
+              « 1. Arpentage & Surface »
             </Button>
             <Button
               size="sm"
@@ -762,47 +741,8 @@ export const NafaGeniusStudio: React.FC = () => {
               className="h-7 text-xs rounded-full shrink-0 border-sky-500/30 text-sky-800 dark:text-sky-300"
               onClick={() => setActiveTab("conception")}
             >
-              « 2. Conception CIRAD/FAO »
-            </Button>
-            <Button
-              size="sm"
-              variant="outline"
-              className="h-7 text-xs rounded-full shrink-0 border-purple-500/30 text-purple-800 dark:text-purple-300"
-              onClick={() => setActiveTab("plan2d")}
-            >
-              « 3. Plan 2D Coté »
-            </Button>
-            <Button
-              size="sm"
-              variant="outline"
-              className="h-7 text-xs rounded-full shrink-0 border-blue-500/30 text-blue-800 dark:text-blue-300"
-              onClick={() => setActiveTab("vue3d")}
-            >
-              « 4. Jumeau 3D »
-            </Button>
-            <Button
-              size="sm"
-              variant="outline"
-              className="h-7 text-xs rounded-full shrink-0 border-amber-500/30 text-amber-800 dark:text-amber-300"
-              onClick={() => setActiveTab("rendu_photo")}
-            >
-              « 5. Rendu Photoréaliste »
-            </Button>
-            <Button
-              size="sm"
-              variant="outline"
-              className="h-7 text-xs rounded-full shrink-0 border-indigo-500/30 text-indigo-800 dark:text-indigo-300"
-              onClick={() => setActiveTab("reseaux_cad")}
-            >
-              « 6. P&ID Canalisations »
-            </Button>
-            <Button
-              size="sm"
-              variant="outline"
-              className="h-7 text-xs rounded-full shrink-0 border-emerald-600/30 text-emerald-800 dark:text-emerald-300"
-              onClick={() => setActiveTab("chiffrage")}
-            >
-              « 7. Chiffrage Partenaires »
+              <Droplets className="h-3 w-3 mr-1 text-sky-600" />
+              « 2. Besoins en Eau & Pompe »
             </Button>
             <Button
               size="sm"
@@ -810,7 +750,8 @@ export const NafaGeniusStudio: React.FC = () => {
               className="h-7 text-xs rounded-full shrink-0 border-rose-500/30 text-rose-800 dark:text-rose-300"
               onClick={() => setActiveTab("validation_devis")}
             >
-              « 8. Devis FCFA »
+              <FileText className="h-3 w-3 mr-1 text-rose-600" />
+              « 3. Devis Express en FCFA »
             </Button>
             <Button
               size="sm"
@@ -818,7 +759,8 @@ export const NafaGeniusStudio: React.FC = () => {
               className="h-7 text-xs rounded-full shrink-0 border-teal-500/30 text-teal-800 dark:text-teal-300"
               onClick={() => setActiveTab("export_pro")}
             >
-              « 9. Export Dossier PDF »
+              <Download className="h-3 w-3 mr-1 text-teal-600" />
+              « 4. Télécharger Dossier PDF »
             </Button>
             <Button
               size="sm"
@@ -827,7 +769,7 @@ export const NafaGeniusStudio: React.FC = () => {
               onClick={() => setActiveTab("diagnostic")}
             >
               <Sprout className="h-3 w-3 mr-1 text-emerald-600" />
-              « Diagnostic RAG »
+              « 5. Diagnostic Végétal »
             </Button>
           </div>
 
@@ -893,65 +835,30 @@ export const NafaGeniusStudio: React.FC = () => {
         </CardContent>
       </Card>
 
-      {/* Onglets Principaux du Studio d'Ingénierie - Processus Unifié & Studio CAO/3D Pro */}
+      {/* Onglets Principaux du Studio d'Ingénierie Simple & Adapté */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
-        <TabsList className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 lg:grid-cols-11 h-auto p-1.5 bg-muted/60 rounded-xl gap-1">
-          <TabsTrigger value="cad_studio" className="text-xs py-2 px-1 gap-1 data-[state=active]:bg-background shadow-xs font-semibold text-indigo-700 dark:text-indigo-300">
-            <Compass className="h-3.5 w-3.5 text-indigo-600 shrink-0" />
-            <span className="truncate">CAO / 3D Pro</span>
-          </TabsTrigger>
-          <TabsTrigger value="geodesie" className="text-xs py-2 px-1 gap-1 data-[state=active]:bg-background shadow-xs">
+        <TabsList className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 h-auto p-1.5 bg-muted/60 rounded-xl gap-1">
+          <TabsTrigger value="geodesie" className="text-xs py-2 px-2 gap-1.5 data-[state=active]:bg-background shadow-xs font-semibold">
             <MapPin className="h-3.5 w-3.5 text-emerald-600 shrink-0" />
-            <span className="truncate">1. Terrain</span>
+            <span className="truncate">1. Arpentage & Surface</span>
           </TabsTrigger>
-          <TabsTrigger value="conception" className="text-xs py-2 px-1 gap-1 data-[state=active]:bg-background shadow-xs">
+          <TabsTrigger value="conception" className="text-xs py-2 px-2 gap-1.5 data-[state=active]:bg-background shadow-xs font-semibold">
             <Droplets className="h-3.5 w-3.5 text-sky-600 shrink-0" />
-            <span className="truncate">2. CIRAD/FAO</span>
+            <span className="truncate">2. Besoins Eau & Pompe</span>
           </TabsTrigger>
-          <TabsTrigger value="plan2d" className="text-xs py-2 px-1 gap-1 data-[state=active]:bg-background shadow-xs">
-            <Layers className="h-3.5 w-3.5 text-purple-600 shrink-0" />
-            <span className="truncate">3. Plan 2D</span>
-          </TabsTrigger>
-          <TabsTrigger value="vue3d" className="text-xs py-2 px-1 gap-1 data-[state=active]:bg-background shadow-xs">
-            <Cpu className="h-3.5 w-3.5 text-blue-600 shrink-0" />
-            <span className="truncate">4. Jumeau 3D</span>
-          </TabsTrigger>
-          <TabsTrigger value="rendu_photo" className="text-xs py-2 px-1 gap-1 data-[state=active]:bg-background shadow-xs">
-            <Camera className="h-3.5 w-3.5 text-amber-600 shrink-0" />
-            <span className="truncate">5. Rendu HD</span>
-          </TabsTrigger>
-          <TabsTrigger value="reseaux_cad" className="text-xs py-2 px-1 gap-1 data-[state=active]:bg-background shadow-xs">
-            <Wrench className="h-3.5 w-3.5 text-indigo-600 shrink-0" />
-            <span className="truncate">6. P&ID Réseaux</span>
-          </TabsTrigger>
-          <TabsTrigger value="chiffrage" className="text-xs py-2 px-1 gap-1 data-[state=active]:bg-background shadow-xs">
-            <Store className="h-3.5 w-3.5 text-emerald-700 shrink-0" />
-            <span className="truncate">7. Partenaires</span>
-          </TabsTrigger>
-          <TabsTrigger value="validation_devis" className="text-xs py-2 px-1 gap-1 data-[state=active]:bg-background shadow-xs">
+          <TabsTrigger value="validation_devis" className="text-xs py-2 px-2 gap-1.5 data-[state=active]:bg-background shadow-xs font-semibold">
             <FileText className="h-3.5 w-3.5 text-rose-600 shrink-0" />
-            <span className="truncate">8. Devis FCFA</span>
+            <span className="truncate">3. Devis Express en FCFA</span>
           </TabsTrigger>
-          <TabsTrigger value="export_pro" className="text-xs py-2 px-1 gap-1 data-[state=active]:bg-background shadow-xs">
+          <TabsTrigger value="export_pro" className="text-xs py-2 px-2 gap-1.5 data-[state=active]:bg-background shadow-xs font-semibold">
             <Download className="h-3.5 w-3.5 text-teal-600 shrink-0" />
-            <span className="truncate">9. Export Pro</span>
+            <span className="truncate">4. Dossier & Devis PDF</span>
           </TabsTrigger>
-          <TabsTrigger value="diagnostic" className="text-xs py-2 px-1 gap-1 data-[state=active]:bg-background shadow-xs">
+          <TabsTrigger value="diagnostic" className="text-xs py-2 px-2 gap-1.5 data-[state=active]:bg-background shadow-xs font-semibold">
             <Sprout className="h-3.5 w-3.5 text-emerald-500 shrink-0" />
-            <span className="truncate">Diagnostic</span>
+            <span className="truncate">5. Diagnostic Végétal</span>
           </TabsTrigger>
         </TabsList>
-
-        {/* ═════════════════════════════════════════════════════════ */}
-        {/* STUDIO CAO & 3D ULTRA-PRÉCIS (AutoCAD, QGIS, IRRICAD, Netafim) */}
-        {/* ═════════════════════════════════════════════════════════ */}
-        <TabsContent value="cad_studio" className="space-y-4">
-          <PrecisionCad3DStudio
-            clientName={clientName}
-            clientPhone={clientPhone}
-            expertName={profile?.full_name || "Dr. Oumarou Sawadogo (Ingénieur Rural Agréé)"}
-          />
-        </TabsContent>
 
         {/* ═════════════════════════════════════════════════════════ */}
         {/* ONGLET 1 : GÉODÉSIE, GPS & RELIEF WGS84                   */}
@@ -1517,212 +1424,20 @@ export const NafaGeniusStudio: React.FC = () => {
               onClick={() => setActiveTab("geodesie")}
               className="text-xs"
             >
-              ← Retour Étape 1 : Données Terrain
-            </Button>
-            <Button
-              size="sm"
-              onClick={() => setActiveTab("plan2d")}
-              className="bg-emerald-600 hover:bg-emerald-500 text-white text-xs gap-1 font-semibold"
-            >
-              Valider la conception et passer à l'Étape 3 (Plan 2D Coté) <ArrowRight className="h-3 w-3" />
-            </Button>
-          </div>
-        </TabsContent>
-
-        {/* ═════════════════════════════════════════════════════════ */}
-        {/* ONGLET 4 : PLAN VECTORIEL 2D INTERACTIF                 */}
-        {/* ═════════════════════════════════════════════════════════ */}
-        {/* ═════════════════════════════════════════════════════════ */}
-        {/* ÉTAPE 3 : PLAN 2D COTÉ PROFESSIONNEL                      */}
-        {/* ═════════════════════════════════════════════════════════ */}
-        <TabsContent value="plan2d" className="space-y-4">
-          <div className="flex items-center justify-between p-3 rounded-xl border border-indigo-500/30 bg-indigo-50/50 dark:bg-indigo-950/20 text-xs">
-            <div className="flex items-center gap-2">
-              <Compass className="h-4 w-4 text-indigo-600 shrink-0" />
-              <span className="text-foreground font-medium">
-                Besoin d'un niveau d'ingénierie supérieur ? Ouvrez le <strong>Studio CAO / 3D Pro</strong> (calques AutoCAD DXF, MNT QGIS, hydraulique IRRICAD et Netafim).
-              </span>
-            </div>
-            <Button
-              size="sm"
-              className="h-7 text-xs bg-indigo-600 hover:bg-indigo-500 text-white font-medium shrink-0 ml-2"
-              onClick={() => setActiveTab("cad_studio")}
-            >
-              Basculer sur Studio CAO
-            </Button>
-          </div>
-
-          {farmZoningPlan && (
-            <FarmZoningCanvas
-              plan={farmZoningPlan}
-              onPlanChange={(updatedItems) => {
-                setFarmZoningPlan({ ...farmZoningPlan, items: updatedItems });
-              }}
-              onSnapshotReady={(dataUrl) => {
-                setCanvasSnapshotDataUrl(dataUrl);
-              }}
-            />
-          )}
-          <div className="flex justify-between items-center pt-2">
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={() => setActiveTab("conception")}
-              className="text-xs"
-            >
-              ← Retour Étape 2 : Conception CIRAD/FAO
-            </Button>
-            <Button
-              size="sm"
-              onClick={() => setActiveTab("vue3d")}
-              className="bg-emerald-600 hover:bg-emerald-500 text-white text-xs gap-1 font-semibold"
-            >
-              Valider le Plan 2D et passer à l'Étape 4 (Jumeau 3D) <ArrowRight className="h-3 w-3" />
-            </Button>
-          </div>
-        </TabsContent>
-
-        {/* ═════════════════════════════════════════════════════════ */}
-        {/* ÉTAPE 4 : JUMEAU NUMÉRIQUE 3D ISOMÉTRIQUE                 */}
-        {/* ═════════════════════════════════════════════════════════ */}
-        <TabsContent value="vue3d" className="space-y-4">
-          <div className="flex items-center justify-between p-3 rounded-xl border border-indigo-500/30 bg-indigo-50/50 dark:bg-indigo-950/20 text-xs">
-            <div className="flex items-center gap-2">
-              <Cpu className="h-4 w-4 text-indigo-600 shrink-0" />
-              <span className="text-foreground font-medium">
-                Pour une maquette 3D ultra-précise avec relief topographique MNT, château d'eau treillis, ombres solaires dynamiques et export DXF/GeoJSON :
-              </span>
-            </div>
-            <Button
-              size="sm"
-              className="h-7 text-xs bg-indigo-600 hover:bg-indigo-500 text-white font-medium shrink-0 ml-2"
-              onClick={() => setActiveTab("cad_studio")}
-            >
-              Maquette 3D Pro
-            </Button>
-          </div>
-
-          {farmZoningPlan && <FarmIsometric3DView plan={farmZoningPlan} />}
-          <div className="flex justify-between items-center pt-2">
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={() => setActiveTab("plan2d")}
-              className="text-xs"
-            >
-              ← Retour Étape 3 : Plan 2D Coté
-            </Button>
-            <Button
-              size="sm"
-              onClick={() => setActiveTab("rendu_photo")}
-              className="bg-emerald-600 hover:bg-emerald-500 text-white text-xs gap-1 font-semibold"
-            >
-              Passer à l'Étape 5 (Rendu Photoréaliste HD) <ArrowRight className="h-3 w-3" />
-            </Button>
-          </div>
-        </TabsContent>
-
-        {/* ═════════════════════════════════════════════════════════ */}
-        {/* ÉTAPE 5 : RENDU PHOTORÉALISTE CLIENT HD                   */}
-        {/* ═════════════════════════════════════════════════════════ */}
-        <TabsContent value="rendu_photo" className="space-y-4">
-          <PhotorealisticRenderView
-            project={unifiedProject}
-            onSnapshotExport={(dataUrl) => {
-              setPhotorealisticSnapshotDataUrl(dataUrl);
-            }}
-          />
-          <div className="flex justify-between items-center pt-2">
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={() => setActiveTab("vue3d")}
-              className="text-xs"
-            >
-              ← Retour Étape 4 : Jumeau 3D
-            </Button>
-            <Button
-              size="sm"
-              onClick={() => setActiveTab("reseaux_cad")}
-              className="bg-emerald-600 hover:bg-emerald-500 text-white text-xs gap-1 font-semibold"
-            >
-              Passer à l'Étape 6 (Plans Techniques Réseaux) <ArrowRight className="h-3 w-3" />
-            </Button>
-          </div>
-        </TabsContent>
-
-        {/* ═════════════════════════════════════════════════════════ */}
-        {/* ÉTAPE 6 : PLANS TECHNIQUES & P&ID RÉSEAUX HYDRAULIQUES     */}
-        {/* ═════════════════════════════════════════════════════════ */}
-        <TabsContent value="reseaux_cad" className="space-y-4">
-          <div className="flex items-center justify-between p-3 rounded-xl border border-indigo-500/30 bg-indigo-50/50 dark:bg-indigo-950/20 text-xs">
-            <div className="flex items-center gap-2">
-              <Droplets className="h-4 w-4 text-indigo-600 shrink-0" />
-              <span className="text-foreground font-medium">
-                Simulation hydraulique sectorisée IRRICAD (débits, Hazen-Williams, vitesses, CU/EU) et chiffrage officiel Netafim :
-              </span>
-            </div>
-            <Button
-              size="sm"
-              className="h-7 text-xs bg-indigo-600 hover:bg-indigo-500 text-white font-medium shrink-0 ml-2"
-              onClick={() => setActiveTab("cad_studio")}
-            >
-              IRRICAD & Netafim
-            </Button>
-          </div>
-
-          <TechnicalNetworkPlanView
-            project={unifiedProject}
-            onProjectUpdate={handleUnifiedProjectUpdate}
-          />
-          <div className="flex justify-between items-center pt-2">
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={() => setActiveTab("rendu_photo")}
-              className="text-xs"
-            >
-              ← Retour Étape 5 : Rendu Photoréaliste
-            </Button>
-            <Button
-              size="sm"
-              onClick={() => setActiveTab("chiffrage")}
-              className="bg-emerald-600 hover:bg-emerald-500 text-white text-xs gap-1 font-semibold"
-            >
-              Passer à l'Étape 7 (Chiffrage Partenaires) <ArrowRight className="h-3 w-3" />
-            </Button>
-          </div>
-        </TabsContent>
-
-        {/* ═════════════════════════════════════════════════════════ */}
-        {/* ÉTAPE 7 : CHIFFRAGE PARTENAIRES & COMPARATEUR MULTI-OFFRES */}
-        {/* ═════════════════════════════════════════════════════════ */}
-        <TabsContent value="chiffrage" className="space-y-4">
-          <SmartQuoteComparator
-            project={unifiedProject}
-            onProjectUpdate={handleUnifiedProjectUpdate}
-          />
-          <div className="flex justify-between items-center pt-2">
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={() => setActiveTab("reseaux_cad")}
-              className="text-xs"
-            >
-              ← Retour Étape 6 : Plans Techniques Réseaux
+              ← Retour Étape 1 : Arpentage & Surface
             </Button>
             <Button
               size="sm"
               onClick={() => setActiveTab("validation_devis")}
               className="bg-emerald-600 hover:bg-emerald-500 text-white text-xs gap-1 font-semibold"
             >
-              Passer à l'Étape 8 (Validation & Devis FCFA) <ArrowRight className="h-3 w-3" />
+              Valider la conception et passer à l'Étape 3 (Devis Express en FCFA) <ArrowRight className="h-3 w-3" />
             </Button>
           </div>
         </TabsContent>
 
         {/* ═════════════════════════════════════════════════════════ */}
-        {/* ÉTAPE 8 : VALIDATION & DEVIS ESTIMATIF GLOBAL (FCFA)       */}
+        {/* ÉTAPE 3 : DEVIS ESTIMATIF EXPRESS EN FCFA & FOURNISSEURS   */}
         {/* ═════════════════════════════════════════════════════════ */}
         <TabsContent value="validation_devis" className="space-y-4">
           {engineeringQuote && (
@@ -1881,28 +1596,49 @@ export const NafaGeniusStudio: React.FC = () => {
               </div>
 
               <div className="flex justify-between items-center pt-2 border-t">
-                <Button
-                  size="sm"
-                  variant="outline"
-                  onClick={() => setActiveTab("chiffrage")}
-                  className="text-xs"
-                >
-                  ← Retour Étape 7 : Chiffrage Partenaires
-                </Button>
-                <Button
-                  size="sm"
-                  onClick={() => setActiveTab("export_pro")}
-                  className="bg-emerald-600 hover:bg-emerald-500 text-white text-xs gap-1 font-semibold"
-                >
-                  Passer à l'Étape 9 (Export Dossier Pro) <ArrowRight className="h-3 w-3" />
-                </Button>
+                {/* Comparateur des offres partenaires locaux (Optionnel) */}
+                <div className="pt-2 border-t">
+                  <details className="group">
+                    <summary className="cursor-pointer text-xs font-bold text-foreground flex items-center justify-between p-2.5 rounded-xl bg-muted/40 hover:bg-muted">
+                      <span className="flex items-center gap-2">
+                        <Store className="h-4 w-4 text-emerald-600" />
+                        Comparer les prix des fournisseurs partenaires locaux (Optionnel)
+                      </span>
+                      <span className="text-muted-foreground group-open:rotate-180 transition-transform">▼</span>
+                    </summary>
+                    <div className="pt-3">
+                      <SmartQuoteComparator
+                        project={unifiedProject}
+                        onProjectUpdate={handleUnifiedProjectUpdate}
+                      />
+                    </div>
+                  </details>
+                </div>
+
+                <div className="flex justify-between items-center pt-3 border-t">
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => setActiveTab("conception")}
+                    className="text-xs"
+                  >
+                    ← Retour Étape 2 : Besoins en Eau & Pompe
+                  </Button>
+                  <Button
+                    size="sm"
+                    onClick={() => setActiveTab("export_pro")}
+                    className="bg-emerald-600 hover:bg-emerald-500 text-white text-xs gap-1 font-semibold"
+                  >
+                    Passer à l'Étape 4 (Dossier & Devis PDF) <ArrowRight className="h-3 w-3" />
+                  </Button>
+                </div>
               </div>
             </Card>
           )}
         </TabsContent>
 
         {/* ═════════════════════════════════════════════════════════ */}
-        {/* ÉTAPE 9 : EXPORT PROFESSIONNEL DOSSIER PDF & FICHIERS     */}
+        {/* ÉTAPE 4 : DOSSIER TECHNIQUE & DEVIS OFFICIEL (PDF/CSV)     */}
         {/* ═════════════════════════════════════════════════════════ */}
         <TabsContent value="export_pro" className="space-y-4">
           <Card className="p-4 sm:p-6 space-y-6">
@@ -1911,14 +1647,14 @@ export const NafaGeniusStudio: React.FC = () => {
                 <div className="flex items-center gap-2">
                   <h3 className="text-base font-extrabold text-foreground flex items-center gap-2">
                     <Download className="h-5 w-5 text-emerald-600" />
-                    Hub d'Export Professionnel — Dossier d'Ingénierie Clé en Main
+                    Dossier Technique & Devis Prêt à Imprimer
                   </h3>
                   <Badge className="bg-emerald-500/15 text-emerald-800 dark:text-emerald-300 border-emerald-500/30 text-xs">
-                    Format Bailleurs & Banques
+                    Certifié Conforme
                   </Badge>
                 </div>
                 <p className="text-xs text-muted-foreground mt-0.5">
-                  Génération des livrables contractuels, graphiques et financiers conformes aux standards CIRAD, FAO et banques agricoles.
+                  Génération des livrables techniques et financiers pour le client, les partenaires et les comités de financement.
                 </p>
               </div>
 
@@ -1926,38 +1662,38 @@ export const NafaGeniusStudio: React.FC = () => {
                 onClick={handleExportPdf}
                 className="bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs gap-2 shadow-md h-10 px-4"
               >
-                <Download className="h-4 w-4" /> Télécharger le Dossier PDF Officiel
+                <Download className="h-4 w-4" /> Télécharger le Dossier PDF
               </Button>
             </div>
 
-            {/* Grille des livrables exportables */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {/* Grille des 2 livrables simples de terrain */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {/* Livrable 1 : Dossier PDF Complet */}
               <div className="p-4 rounded-xl border border-emerald-500/20 bg-emerald-50/40 dark:bg-emerald-950/20 space-y-3">
                 <div className="flex items-center gap-2">
                   <FileText className="h-5 w-5 text-emerald-600" />
-                  <h4 className="text-xs font-bold text-foreground">Dossier Technique Complet</h4>
+                  <h4 className="text-xs font-bold text-foreground">Dossier Technique & Devis Complet (PDF)</h4>
                 </div>
                 <p className="text-[11px] text-muted-foreground">
-                  Rapport multi-pages officiel avec cartouche réglementaire, coordonnées WGS84, note de calcul hydraulique, BPU et sceau de sécurité.
+                  Document officiel complet avec cartouche de votre cabinet, coordonnées GPS WGS84, note de calcul hydraulique, devis chiffré en FCFA et sceau de certification.
                 </p>
                 <Button
                   size="sm"
                   onClick={handleExportPdf}
                   className="w-full text-xs bg-emerald-600 hover:bg-emerald-500 text-white font-semibold gap-1.5"
                 >
-                  <Download className="h-3.5 w-3.5" /> Exporter en PDF Officiel
+                  <Download className="h-3.5 w-3.5" /> Télécharger en PDF (1-clic)
                 </Button>
               </div>
 
-              {/* Livrable 2 : Bordereau Partenaires CSV */}
+              {/* Livrable 2 : Bordereau Matériaux CSV */}
               <div className="p-4 rounded-xl border border-border bg-card space-y-3">
                 <div className="flex items-center gap-2">
                   <Store className="h-5 w-5 text-emerald-700" />
-                  <h4 className="text-xs font-bold text-foreground">Bon de Commande Fournisseurs</h4>
+                  <h4 className="text-xs font-bold text-foreground">Bordereau Quincaillerie & Matériaux (CSV)</h4>
                 </div>
                 <p className="text-[11px] text-muted-foreground">
-                  Fichier CSV structuré contenant les métrés exacts, références matériel, prix négociés et désignation des partenaires agréés.
+                  Fichier structuré contenant les quantités exactes, références matériel et prix unitaires en FCFA pour achat auprès des quincailleries locales.
                 </p>
                 <Button
                   size="sm"
@@ -1968,89 +1704,13 @@ export const NafaGeniusStudio: React.FC = () => {
                   <Download className="h-3.5 w-3.5" /> Exporter en CSV (Excel)
                 </Button>
               </div>
-
-              {/* Livrable 3 : Rendu Photoréaliste HD */}
-              <div className="p-4 rounded-xl border border-border bg-card space-y-3">
-                <div className="flex items-center gap-2">
-                  <Camera className="h-5 w-5 text-amber-600" />
-                  <h4 className="text-xs font-bold text-foreground">Rendu Photoréaliste Client</h4>
-                </div>
-                <p className="text-[11px] text-muted-foreground">
-                  Image haute résolution (jusqu'à 4K) montrant l'aménagement final, idéale pour présentation au promoteur ou au comité de crédit.
-                </p>
-                <Button
-                  size="sm"
-                  variant="outline"
-                  onClick={() => setActiveTab("rendu_photo")}
-                  className="w-full text-xs gap-1.5 border-amber-500/30 text-amber-800 dark:text-amber-300"
-                >
-                  <Eye className="h-3.5 w-3.5" /> Ouvrir Studio Photoréaliste
-                </Button>
-              </div>
-
-              {/* Livrable 4 : Plan 2D Coté */}
-              <div className="p-4 rounded-xl border border-border bg-card space-y-3">
-                <div className="flex items-center gap-2">
-                  <Layers className="h-5 w-5 text-purple-600" />
-                  <h4 className="text-xs font-bold text-foreground">Plan Vectoriel 2D Coté</h4>
-                </div>
-                <p className="text-[11px] text-muted-foreground">
-                  Plan d'implantation avec lignes de cotes métriques, échelle graphique et orientation géographique pour les équipes de chantier.
-                </p>
-                <Button
-                  size="sm"
-                  variant="outline"
-                  onClick={() => setActiveTab("plan2d")}
-                  className="w-full text-xs gap-1.5 border-purple-500/30 text-purple-800 dark:text-purple-300"
-                >
-                  <Eye className="h-3.5 w-3.5" /> Ouvrir Plan 2D
-                </Button>
-              </div>
-
-              {/* Livrable 5 : Schéma P&ID Réseaux */}
-              <div className="p-4 rounded-xl border border-border bg-card space-y-3">
-                <div className="flex items-center gap-2">
-                  <Wrench className="h-5 w-5 text-indigo-600" />
-                  <h4 className="text-xs font-bold text-foreground">Schéma Unifilaire P&ID</h4>
-                </div>
-                <p className="text-[11px] text-muted-foreground">
-                  Schéma de tuyauterie et instrumentation (P&ID) avec diamètres nominaux, pressions et tableau des vitesses d'écoulement.
-                </p>
-                <Button
-                  size="sm"
-                  variant="outline"
-                  onClick={() => setActiveTab("reseaux_cad")}
-                  className="w-full text-xs gap-1.5 border-indigo-500/30 text-indigo-800 dark:text-indigo-300"
-                >
-                  <Eye className="h-3.5 w-3.5" /> Ouvrir Schéma P&ID
-                </Button>
-              </div>
-
-              {/* Livrable 6 : Comparateur Multi-Offres */}
-              <div className="p-4 rounded-xl border border-border bg-card space-y-3">
-                <div className="flex items-center gap-2">
-                  <Store className="h-5 w-5 text-teal-600" />
-                  <h4 className="text-xs font-bold text-foreground">Matrice des Offres Partenaires</h4>
-                </div>
-                <p className="text-[11px] text-muted-foreground">
-                  Comparatif détaillé des propositions commerciales des partenaires agréés (FASO SOLAIRE, AGRODIA, SODIMEX SAHEL, etc.).
-                </p>
-                <Button
-                  size="sm"
-                  variant="outline"
-                  onClick={() => setActiveTab("chiffrage")}
-                  className="w-full text-xs gap-1.5 border-teal-500/30 text-teal-800 dark:text-teal-300"
-                >
-                  <Eye className="h-3.5 w-3.5" /> Voir Comparateur Offres
-                </Button>
-              </div>
             </div>
 
             {/* Checklist de conformité pour financement */}
             <div className="p-4 rounded-xl bg-slate-50 dark:bg-slate-900 border border-border space-y-3 text-xs">
               <h4 className="font-bold text-foreground flex items-center gap-2">
                 <ShieldCheck className="h-4 w-4 text-emerald-600" />
-                Conformité Réglementaire & Exigences des Bailleurs
+                Conformité aux Normes Agronomiques Sahéliennes
               </h4>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-muted-foreground">
                 <div className="flex items-center gap-2">
@@ -2059,15 +1719,15 @@ export const NafaGeniusStudio: React.FC = () => {
                 </div>
                 <div className="flex items-center gap-2">
                   <CheckCircle2 className="h-3.5 w-3.5 text-emerald-600 shrink-0" />
-                  <span>Vitesse d'écoulement PEHD limitée à 1.2 m/s (CIRAD)</span>
+                  <span>Vitesse d'écoulement PEHD dimensionnée selon les règles de l'art</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <CheckCircle2 className="h-3.5 w-3.5 text-emerald-600 shrink-0" />
-                  <span>Architecture avicole bioclimatique avec lanterneau faîtier</span>
+                  <span>Bâtiment avicole bioclimatique adapté au climat sahélien</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <CheckCircle2 className="h-3.5 w-3.5 text-emerald-600 shrink-0" />
-                  <span>Prix certifiés mercuriale partenaires NAFA-AGRITECH 2026</span>
+                  <span>Prix certifiés mercuriale locale en FCFA</span>
                 </div>
               </div>
             </div>
@@ -2079,14 +1739,14 @@ export const NafaGeniusStudio: React.FC = () => {
                 onClick={() => setActiveTab("validation_devis")}
                 className="text-xs"
               >
-                ← Retour Étape 8 : Devis FCFA
+                ← Retour Étape 3 : Devis Express en FCFA
               </Button>
               <Button
                 size="sm"
                 onClick={() => setActiveTab("diagnostic")}
                 className="bg-emerald-600 hover:bg-emerald-500 text-white text-xs gap-1 font-semibold"
               >
-                Consulter le Diagnostic RAG Scientifique <ArrowRight className="h-3 w-3" />
+                Consulter le Diagnostic Végétal <ArrowRight className="h-3 w-3" />
               </Button>
             </div>
           </Card>

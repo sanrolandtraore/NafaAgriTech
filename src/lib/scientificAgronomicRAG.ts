@@ -1,4 +1,4 @@
-﻿/**
+/**
  * NAFA GENIUS IA - SYSTÈME DE DIAGNOSTIC AGRONOMIQUE SCIENTIFIQUE (RAG)
  * 
  * Sources de connaissances prioritaires intégrées :
@@ -1022,6 +1022,20 @@ export function identifyPlant(params: {
           canProceed: true,
         };
       }
+    }
+  }
+
+  // 1b. Cas où l'utilisateur ou le système a fourni une clé d'adventice
+  if (params.cropKey) {
+    const weedMatch = WEED_SPECIES_CATALOG.find((w) => w.id === params.cropKey);
+    if (weedMatch) {
+      return {
+        identifiedSpecies: weedMatch,
+        isWeed: true,
+        confidence: 0.95,
+        confidenceLevel: "Élevé",
+        canProceed: true,
+      };
     }
   }
 
