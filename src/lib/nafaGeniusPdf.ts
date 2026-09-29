@@ -1,4 +1,4 @@
-﻿/**
+/**
  * NAFA GENIUS IA - Générateur de Dossier Technique d'Ingénierie & Devis Certifié (PDF)
  * 
  * Génère un rapport technique officiel multi-pages conforme aux normes :
@@ -16,6 +16,7 @@ import {
   PoultryHousingResult,
   EngineeringQuote,
 } from "./nafaGeniusEngine";
+import { partnerBrandingStorage, PartnerBranding } from "./partnerBrandingStorage";
 
 export interface PdfDossierInput {
   survey: GeodesicSurveyResult;
@@ -33,34 +34,64 @@ export interface PdfDossierInput {
     organization: string;
   };
   canvasSnapshotDataUrl?: string;
+  branding?: PartnerBranding;
+}
+
+function hexToRgb(hex: string): [number, number, number] {
+  const clean = hex.replace("#", "");
+  const num = parseInt(clean, 16);
+  if (isNaN(num) || clean.length !== 6) return [21, 128, 61];
+  return [(num >> 16) & 255, (num >> 8) & 255, num & 255];
 }
 
 /**
  * Dessine un cartouche et une en-tête officielle sur chaque page
  */
-function drawPageHeader(doc: jsPDF, title: string, pageNumber: number, totalPages: number) {
+function drawPageHeader(
+  doc: jsPDF,
+  title: string,
+  pageNumber: number,
+  totalPages: number,
+  branding?: PartnerBranding
+) {
   const pageWidth = doc.internal.pageSize.getWidth();
+  const primaryRgb = hexToRgb(branding?.primaryColor || "#15803d");
+  const accentRgb = hexToRgb(branding?.accentColor || "#eab308");
 
-  // Bandeau supérieur dégradé Vert Émeraude / Forêt
-  doc.setFillColor(21, 128, 61); // #15803d
+  // Bandeau supérieur
+  doc.setFillColor(primaryRgb[0], primaryRgb[1], primaryRgb[2]);
   doc.rect(0, 0, pageWidth, 24, "F");
 
-  // Accent doré sous bandeau
-  doc.setFillColor(234, 179, 8); // #eab308
+  // Accent sous bandeau
+  doc.setFillColor(accentRgb[0], accentRgb[1], accentRgb[2]);
   doc.rect(0, 24, pageWidth, 2, "F");
 
-  // Logo textuel et titrage officiel
+  // Logo / Nom de l'entreprise partenaire
+  const companyName = branding?.companyName?.trim() || branding?.logoText?.trim() || "CABINET D'INGÉNIERIE AGRONOMIQUE";
+  const tagline = branding?.tagline?.trim() || "INGÉNIERIE AGRONOMIQUE • HYDRAULIQUE • BÂTIMENT BIOCLIMATIQUE";
+
+  let titleStartX = 14;
+  if (branding?.logoImage) {
+    try {
+      doc.addImage(branding.logoImage, "JPEG", 14, 3, 18, 18);
+      titleStartX = 36;
+    } catch {
+      // Fallback au texte si format image non supporté par jsPDF
+      titleStartX = 14;
+    }
+  }
+
   doc.setTextColor(255, 255, 255);
   doc.setFont("helvetica", "bold");
-  doc.setFontSize(13);
-  doc.text("NAFA - AGRITECH", 14, 12);
+  doc.setFontSize(12);
+  doc.text(companyName.toUpperCase().slice(0, 42), titleStartX, 12);
 
   doc.setFont("helvetica", "normal");
-  doc.setFontSize(8);
-  doc.text("INGÉNIERIE AGRONOMIQUE • HYDRAULIQUE • BÂTIMENT BIOCLIMATIQUE", 14, 18);
+  doc.setFontSize(7.5);
+  doc.text(tagline.slice(0, 75), titleStartX, 18);
 
   doc.setFont("helvetica", "bold");
-  doc.setFontSize(10);
+  doc.setFontSize(9.5);
   doc.text(title.toUpperCase(), pageWidth - 14, 14, { align: "right" });
 
   // Pied de page
@@ -68,23 +99,24 @@ function drawPageHeader(doc: jsPDF, title: string, pageNumber: number, totalPage
   doc.setDrawColor(220, 225, 230);
   doc.line(14, pageHeight - 16, pageWidth - 14, pageHeight - 16);
 
+  const footerText = branding
+    ? partnerBrandingStorage.getFooterText()
+    : "Dossier technique certifié • Conforme normes agronomiques certifiées Burkina Faso";
+
   doc.setFont("helvetica", "normal");
   doc.setFontSize(7.5);
   doc.setTextColor(110, 120, 130);
-  doc.text(
-    "Dossier technique certifié NAFA Genius • Conforme normes agronomiques certifiées Burkina Faso",
-    14,
-    pageHeight - 10
-  );
+  doc.text(footerText, 14, pageHeight - 10);
   doc.text(`Page ${pageNumber} sur ${totalPages}`, pageWidth - 14, pageHeight - 10, { align: "right" });
 }
 
 /**
  * Dessine un sceau géométrique de sécurité / QR Code stylisé
  */
-function drawSecuritySeal(doc: jsPDF, x: number, y: number, quoteRef: string, totalAmountFcfa: number) {
+function drawSecuritySeal(doc: jsPDF, x: number, y: number, quoteRef: string, totalAmountFcfa: number, branding?: PartnerBranding) {
+  const primaryRgb = hexToRgb(branding?.primaryColor || "#15803d");
   // Cadre du sceau
-  doc.setDrawColor(21, 128, 61);
+  doc.setDrawColor(primaryRgb[0], primaryRgb[1], primaryRgb[2]);
   doc.setLineWidth(0.8);
   doc.roundedRect(x, y, 46, 46, 3, 3, "S");
 
@@ -92,24 +124,24 @@ function drawSecuritySeal(doc: jsPDF, x: number, y: number, quoteRef: string, to
   doc.setFillColor(245, 248, 245);
   doc.rect(x + 2, y + 2, 42, 42, "F");
 
-  doc.setFillColor(21, 128, 61);
+  doc.setFillColor(primaryRgb[0], primaryRgb[1], primaryRgb[2]);
   // Marqueurs de position coins
   doc.rect(x + 4, y + 4, 10, 10, "F");
   doc.setFillColor(255, 255, 255);
   doc.rect(x + 6, y + 6, 6, 6, "F");
-  doc.setFillColor(21, 128, 61);
+  doc.setFillColor(primaryRgb[0], primaryRgb[1], primaryRgb[2]);
   doc.rect(x + 8, y + 8, 2, 2, "F");
 
   doc.rect(x + 32, y + 4, 10, 10, "F");
   doc.setFillColor(255, 255, 255);
   doc.rect(x + 34, y + 6, 6, 6, "F");
-  doc.setFillColor(21, 128, 61);
+  doc.setFillColor(primaryRgb[0], primaryRgb[1], primaryRgb[2]);
   doc.rect(x + 36, y + 8, 2, 2, "F");
 
   doc.rect(x + 4, y + 32, 10, 10, "F");
   doc.setFillColor(255, 255, 255);
   doc.rect(x + 6, y + 34, 6, 6, "F");
-  doc.setFillColor(21, 128, 61);
+  doc.setFillColor(primaryRgb[0], primaryRgb[1], primaryRgb[2]);
   doc.rect(x + 8, y + 36, 2, 2, "F");
 
   // Pixels intérieurs de données
@@ -125,10 +157,11 @@ function drawSecuritySeal(doc: jsPDF, x: number, y: number, quoteRef: string, to
   });
 
   // Libellé sous sceau
+  const sealText = branding?.companyName ? branding.companyName.toUpperCase().slice(0, 24) : "CERTIFIÉ AUTHENTIQUE";
   doc.setFont("helvetica", "bold");
-  doc.setFontSize(6.5);
-  doc.setTextColor(21, 128, 61);
-  doc.text("CERTIFIÉ AUTHENTIQUE", x + 23, y + 50, { align: "center" });
+  doc.setFontSize(6);
+  doc.setTextColor(primaryRgb[0], primaryRgb[1], primaryRgb[2]);
+  doc.text(sealText, x + 23, y + 50, { align: "center" });
   doc.setFont("helvetica", "normal");
   doc.setFontSize(5.5);
   doc.setTextColor(100, 100, 100);
@@ -139,6 +172,8 @@ function drawSecuritySeal(doc: jsPDF, x: number, y: number, quoteRef: string, to
  * Génère et déclenche le téléchargement du dossier technique complet
  */
 export function generateTechnicalDossierPdf(input: PdfDossierInput): jsPDF {
+  const branding = input.branding || partnerBrandingStorage.get();
+
   const doc = new jsPDF({
     orientation: "portrait",
     unit: "mm",
@@ -151,7 +186,7 @@ export function generateTechnicalDossierPdf(input: PdfDossierInput): jsPDF {
   // ═════════════════════════════════════════════════════════════
   // PAGE 1 : CARTOGRAPHIE GÉODÉSIQUE & AMÉNAGEMENT DU TERRAIN
   // ═════════════════════════════════════════════════════════════
-  drawPageHeader(doc, "Dossier Géodésique & Plan d'Implantation", currentPage, totalPages);
+  drawPageHeader(doc, "Dossier Géodésique & Plan d'Implantation", currentPage, totalPages, branding);
 
   let y = 34;
 
@@ -173,10 +208,14 @@ export function generateTechnicalDossierPdf(input: PdfDossierInput): jsPDF {
   doc.setFont("helvetica", "normal");
   doc.text(input.client.location, 82, y + 14);
 
+  const expertName = branding.expertName || input.expert.name;
+  const expertTitle = branding.expertTitle || input.expert.title;
+  const expertOrg = branding.companyName || input.expert.organization;
+
   doc.setFont("helvetica", "bold");
   doc.text("INGÉNIEUR EN CHARGE :", 18, y + 21);
   doc.setFont("helvetica", "normal");
-  doc.text(`${input.expert.name} (${input.expert.title} - ${input.expert.organization})`, 82, y + 21);
+  doc.text(`${expertName} (${expertTitle} - ${expertOrg})`, 82, y + 21);
 
   y += 34;
 
@@ -286,7 +325,7 @@ export function generateTechnicalDossierPdf(input: PdfDossierInput): jsPDF {
   // ═════════════════════════════════════════════════════════════
   doc.addPage();
   currentPage++;
-  drawPageHeader(doc, "Dimensionnement Hydraulique & Solaire", currentPage, totalPages);
+  drawPageHeader(doc, "Dimensionnement Hydraulique & Solaire", currentPage, totalPages, branding);
 
   y = 34;
 
@@ -382,7 +421,7 @@ export function generateTechnicalDossierPdf(input: PdfDossierInput): jsPDF {
   if (input.poultry) {
     doc.addPage();
     currentPage++;
-    drawPageHeader(doc, "Conception Bioclimatique Bâtiment Avicole", currentPage, totalPages);
+    drawPageHeader(doc, "Conception Bioclimatique Bâtiment Avicole", currentPage, totalPages, branding);
 
     y = 34;
     const p = input.poultry;
@@ -448,7 +487,7 @@ export function generateTechnicalDossierPdf(input: PdfDossierInput): jsPDF {
   // ═════════════════════════════════════════════════════════════
   doc.addPage();
   currentPage++;
-  drawPageHeader(doc, "Bordereau des Prix Unitaires & Devis Estimatif", currentPage, totalPages);
+  drawPageHeader(doc, "Bordereau des Prix Unitaires & Devis Estimatif", currentPage, totalPages, branding);
 
   y = 34;
 
@@ -476,12 +515,14 @@ export function generateTechnicalDossierPdf(input: PdfDossierInput): jsPDF {
     `${item.totalPriceFcfa.toLocaleString()} F`,
   ]);
 
+  const primaryRgb = hexToRgb(branding?.primaryColor || "#15803d");
+
   autoTable(doc, {
     startY: y,
     head: [["N°", "Désignation des Fournitures & Ouvrages", "Unité", "Qté", "Prix Unit. (FCFA)", "Total HT (FCFA)"]],
     body: quoteRows,
     theme: "striped",
-    headStyles: { fillColor: [21, 128, 61], fontSize: 8 },
+    headStyles: { fillColor: [primaryRgb[0], primaryRgb[1], primaryRgb[2]], fontSize: 8 },
     bodyStyles: { fontSize: 7.5 },
     columnStyles: {
       0: { cellWidth: 10 },
@@ -512,7 +553,7 @@ export function generateTechnicalDossierPdf(input: PdfDossierInput): jsPDF {
     bodyStyles: { fontSize: 8.5 },
     columnStyles: {
       0: { fontStyle: "bold", halign: "right", cellWidth: 122 },
-      1: { halign: "right", fontStyle: "bold", cellWidth: 60, textColor: [21, 128, 61] },
+      1: { halign: "right", fontStyle: "bold", cellWidth: 60, textColor: [primaryRgb[0], primaryRgb[1], primaryRgb[2]] },
     },
     margin: { left: 14, right: 14 },
   });
@@ -523,7 +564,7 @@ export function generateTechnicalDossierPdf(input: PdfDossierInput): jsPDF {
   const remainingSpace = doc.internal.pageSize.getHeight() - y;
   if (remainingSpace < 65) {
     doc.addPage();
-    drawPageHeader(doc, "Validation & Modalités Contractuelles", totalPages + 1, totalPages + 1);
+    drawPageHeader(doc, "Validation & Modalités Contractuelles", totalPages + 1, totalPages + 1, branding);
     y = 34;
   }
 
@@ -553,7 +594,7 @@ export function generateTechnicalDossierPdf(input: PdfDossierInput): jsPDF {
   doc.text("Assistance technique & suivi agronomique offert pendant 3 mois.", 18, y + 47);
 
   // Sceau cryptographique et signature à droite
-  drawSecuritySeal(doc, 148, y, q.quoteNumber, q.totalCostFcfa);
+  drawSecuritySeal(doc, 148, y, q.quoteNumber, q.totalCostFcfa, branding);
 
   return doc;
 }

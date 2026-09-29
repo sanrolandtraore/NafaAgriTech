@@ -71,6 +71,7 @@ const ServicesBancairesPage = lazy(() => import("./pages/dashboard/partenaire/Se
 const PartnersDirectoryPage = lazy(() => import("./pages/dashboard/PartnersDirectoryPage"));
 const ProviderSubscriptionPage = lazy(() => import("./pages/dashboard/partenaire/ProviderSubscriptionPage"));
 const PartnerKycPage = lazy(() => import("./pages/dashboard/partenaire/PartnerKycPage"));
+const PartnerBrandingPage = lazy(() => import("./pages/dashboard/PartnerBrandingPage"));
 const MyOffersPage = lazy(() => import("./pages/provider/MyOffersPage"));
 const MissionsPage = lazy(() => import("./pages/provider/MissionsPage"));
 const InterventionsPage = lazy(() => import("./pages/provider/InterventionsPage"));
@@ -179,6 +180,7 @@ const App = () => (
                 <Route path="partenaire-vitrine" element={<Suspense fallback={<PageLoader />}><PartnerStorefrontPage /></Suspense>} />
                 <Route path="partenaire-kyc" element={<Suspense fallback={<PageLoader />}><PartnerKycPage /></Suspense>} />
                 <Route path="partenaire-verification" element={<Suspense fallback={<PageLoader />}><PartnerKycPage /></Suspense>} />
+                <Route path="identite-professionnelle" element={<Suspense fallback={<PageLoader />}><PartnerBrandingPage /></Suspense>} />
                 <Route path="partner-space" element={<Suspense fallback={<PageLoader />}><PartnerDedicatedSpace /></Suspense>} />
                 <Route path="cyber-defense" element={<Suspense fallback={<PageLoader />}><CyberDefenseDashboard /></Suspense>} />
                 </Route>

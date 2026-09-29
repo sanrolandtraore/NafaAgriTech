@@ -142,9 +142,14 @@ export default function PartnerEntriesPage({ category, title, subtitle, icon }: 
             <p className="text-sm text-muted-foreground mt-0.5">{subtitle}</p>
           </div>
         </div>
-        <Button onClick={startCreate} className="gradient-primary text-primary-foreground font-semibold shadow-xs">
-          <Plus className="h-4 w-4 mr-1.5" /> Ajouter un partenaire
-        </Button>
+        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2">
+          <Badge variant="outline" className="text-[11px] text-emerald-600 border-emerald-500/30 bg-emerald-50/50 dark:bg-emerald-950/20">
+            Offres accessibles sur la Marketplace (Agriculteurs & Éleveurs)
+          </Badge>
+          <Button onClick={startCreate} className="gradient-primary text-primary-foreground font-semibold shadow-xs">
+            <Plus className="h-4 w-4 mr-1.5" /> {category === "banque" || category === "assurance" ? "Proposer une offre" : "Ajouter une entrée"}
+          </Button>
+        </div>
       </div>
 
       {/* Search Bar */}

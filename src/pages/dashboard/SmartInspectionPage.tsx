@@ -5,6 +5,7 @@ import {
   InspectionTemplate,
   nafaInspectionEngine,
 } from "@/lib/nafaSmartInspectionEngine";
+import { partnerBrandingStorage } from "@/lib/partnerBrandingStorage";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -64,13 +65,18 @@ export default function SmartInspectionPage() {
     const template = nafaInspectionEngine.getTemplateForType(type.id);
     setCurrentTemplate(template);
 
+    const branding = partnerBrandingStorage.get();
+    const defaultExpertName = branding.expertName
+      ? `${branding.expertName} (${branding.expertTitle || "Ingénieur Agronome"})`
+      : (branding.companyName ? `Expert Référent - ${branding.companyName}` : "Expert Assermenté");
+
     // Création automatique de la session d'inspection avec UUID
     const newInsp = await nafaInspectionEngine.createInspection({
       inspection_type_id: type.id,
       client_name: "",
       client_phone: "",
       client_location: "Burkina Faso",
-      expert_name: "Expert Assermenté NAFA",
+      expert_name: defaultExpertName,
     });
 
     setCurrentInspection(newInsp);

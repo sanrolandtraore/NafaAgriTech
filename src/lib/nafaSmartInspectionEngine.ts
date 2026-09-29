@@ -1,4 +1,4 @@
-﻿/**
+/**
  * NAFA GENIUS IA — MOTEUR D'INSPECTION INTELLIGENTE & TERRAIN
  * 
  * Capacités clés :
@@ -16,6 +16,7 @@
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import { supabase } from "@/integrations/supabase/client";
+import { partnerBrandingStorage } from "./partnerBrandingStorage";
 
 // ============================================================================
 // 1. TYPES & CONTRATS DE DONNÉES OBLIGATOIRES
@@ -720,6 +721,60 @@ export const nafaInspectionEngine = {
     return created;
   },
 
+  addFieldToTemplate(templateId: string, field: Omit<InspectionFieldSchema, "key"> & { key?: string }): InspectionTemplate {
+    const templates = this.getTemplates();
+    const idx = templates.findIndex((t) => t.id === templateId || t.inspection_type_id === templateId);
+    const key = field.key || `custom_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`;
+    const newField: InspectionFieldSchema = {
+      ...field,
+      key,
+    };
+    if (idx >= 0) {
+      templates[idx].fields_schema.push(newField);
+      writeLocal(LOCAL_STORAGE_KEYS.TEMPLATES, templates);
+      return templates[idx];
+    } else {
+      const template = this.getTemplateForType(templateId);
+      template.fields_schema.push(newField);
+      const all = this.getTemplates().filter((t) => t.id !== template.id);
+      all.push(template);
+      writeLocal(LOCAL_STORAGE_KEYS.TEMPLATES, all);
+      return template;
+    }
+  },
+
+  removeFieldFromTemplate(templateId: string, fieldKey: string): InspectionTemplate {
+    const templates = this.getTemplates();
+    const idx = templates.findIndex((t) => t.id === templateId || t.inspection_type_id === templateId);
+    if (idx >= 0) {
+      templates[idx].fields_schema = templates[idx].fields_schema.filter((f) => f.key !== fieldKey);
+      writeLocal(LOCAL_STORAGE_KEYS.TEMPLATES, templates);
+      return templates[idx];
+    }
+    const template = this.getTemplateForType(templateId);
+    template.fields_schema = template.fields_schema.filter((f) => f.key !== fieldKey);
+    const all = this.getTemplates().filter((t) => t.id !== template.id);
+    all.push(template);
+    writeLocal(LOCAL_STORAGE_KEYS.TEMPLATES, all);
+    return template;
+  },
+
+  updateTemplateFields(templateId: string, fields: InspectionFieldSchema[]): InspectionTemplate {
+    const templates = this.getTemplates();
+    const idx = templates.findIndex((t) => t.id === templateId || t.inspection_type_id === templateId);
+    if (idx >= 0) {
+      templates[idx].fields_schema = fields;
+      writeLocal(LOCAL_STORAGE_KEYS.TEMPLATES, templates);
+      return templates[idx];
+    }
+    const template = this.getTemplateForType(templateId);
+    template.fields_schema = fields;
+    const all = this.getTemplates().filter((t) => t.id !== template.id);
+    all.push(template);
+    writeLocal(LOCAL_STORAGE_KEYS.TEMPLATES, all);
+    return template;
+  },
+
   // ── 3. Inspections CRUD (Offline-First) ──
   getInspections(): Inspection[] {
     return readLocal<Inspection[]>(LOCAL_STORAGE_KEYS.INSPECTIONS, []);
@@ -1222,18 +1277,38 @@ export const nafaInspectionEngine = {
     const doc = new jsPDF();
     const pageW = doc.internal.pageSize.getWidth();
 
-    // 1. En-tête vert NAFA Genius
+    const branding = partnerBrandingStorage.get();
+    const isCustom = partnerBrandingStorage.isConfigured();
+
+    // 1. En-tête personnalisé ou générique officiel
+    const headerTitle = isCustom && branding.companyName.trim()
+      ? `${branding.companyName.toUpperCase().slice(0, 36)} — RAPPORT TECHNIQUE`
+      : "RAPPORT OFFICIEL D'INSPECTION TECHNIQUE";
+
     doc.setFillColor(20, 83, 45); // emerald-900
     doc.rect(0, 0, pageW, 36, "F");
     doc.setTextColor(255, 255, 255);
     doc.setFont("helvetica", "bold");
-    doc.setFontSize(16);
-    doc.text("NAFA GENIUS IA — RAPPORT OFFICIEL D'INSPECTION", 14, 16);
+    doc.setFontSize(14);
 
-    doc.setFontSize(10);
+    let titleX = 14;
+    if (branding.logoImage) {
+      try {
+        doc.addImage(branding.logoImage, "JPEG", 14, 5, 22, 22);
+        titleX = 40;
+      } catch {
+        titleX = 14;
+      }
+    }
+    doc.text(headerTitle, titleX, 16);
+
+    doc.setFontSize(9.5);
     doc.setFont("helvetica", "normal");
-    doc.text(`Mission : ${type.name} (${type.category.toUpperCase()}) | Réf : ${inspection.id.slice(0, 8)}`, 14, 25);
-    doc.text(`Date : ${new Date(inspection.inspection_date).toLocaleDateString("fr-FR")} à ${inspection.inspection_time} | Statut : ${inspection.status.toUpperCase()}`, 14, 31);
+    const subheader = isCustom && branding.tagline
+      ? branding.tagline.slice(0, 75)
+      : `Mission : ${type.name} (${type.category.toUpperCase()}) | Réf : ${inspection.id.slice(0, 8)}`;
+    doc.text(subheader, titleX, 23);
+    doc.text(`Date : ${new Date(inspection.inspection_date).toLocaleDateString("fr-FR")} à ${inspection.inspection_time} | Statut : ${inspection.status.toUpperCase()}`, titleX, 29);
 
     let y = 46;
 
@@ -1244,11 +1319,15 @@ export const nafaInspectionEngine = {
     doc.text("1. Identification & Données Géodésiques", 14, y);
     y += 6;
 
+    const expertDisplay = isCustom && branding.expertName
+      ? `${branding.expertName} (${branding.expertTitle || "Ingénieur Agronome"})`
+      : inspection.expert_name;
+
     const infoBody = [
-      ["Client / Exploitation", inspection.client_name, "Expert Assermenté", inspection.expert_name],
+      ["Client / Exploitation", inspection.client_name, "Expert Référent", expertDisplay],
       ["Téléphone Client", inspection.client_phone || "-", "Localité", inspection.client_location || "Burkina Faso"],
       ["Coordonnées GPS", inspection.latitude ? `${inspection.latitude.toFixed(5)}, ${inspection.longitude?.toFixed(5)}` : "Non renseigné", "Précision GPS", inspection.gps_accuracy ? `±${inspection.gps_accuracy} m` : "Standard"],
-      ["Altitude", inspection.altitude ? `${inspection.altitude} m` : "Non mesuré", "Statut Sync Cloud", inspection.sync_status === "synced" ? "Synchronisé Supabase" : "Sauvegarde locale PWA"],
+      ["Altitude", inspection.altitude ? `${inspection.altitude} m` : "Non mesuré", "Statut Sync Cloud", inspection.sync_status === "synced" ? "Synchronisé" : "Sauvegarde locale"],
     ];
 
     autoTable(doc, {
@@ -1298,12 +1377,12 @@ export const nafaInspectionEngine = {
 
       doc.setFontSize(12);
       doc.setFont("helvetica", "bold");
-      doc.text("3. Devis Chiffré & Bordereau des Prix Partenaires (FCFA)", 14, y);
+      doc.text("3. Devis Chiffré & Bordereau des Prix (FCFA)", 14, y);
       y += 6;
 
       const quoteBody = report.quote_summary.items.map((it) => [
         it.designation,
-        it.partner_name || "Partenaire NAFA",
+        it.partner_name || (isCustom && branding.companyName ? branding.companyName : "Fournisseur Agréé"),
         String(it.quantity),
         it.unit,
         it.unit_price_fcfa.toLocaleString("fr-FR") + " F",
@@ -1321,7 +1400,7 @@ export const nafaInspectionEngine = {
 
       autoTable(doc, {
         startY: y,
-        head: [["Désignation Équipement", "Fournisseur Agréé", "Qté", "Unité", "P.U. (FCFA)", "Total (FCFA)"]],
+        head: [["Désignation Équipement", "Fournisseur / Distributeur", "Qté", "Unité", "P.U. (FCFA)", "Total (FCFA)"]],
         body: quoteBody,
         theme: "grid",
         headStyles: { fillColor: [180, 83, 9], fontSize: 8 },
@@ -1339,7 +1418,10 @@ export const nafaInspectionEngine = {
 
     doc.setFontSize(12);
     doc.setFont("helvetica", "bold");
-    doc.text("4. Observations & Recommandations NAFA Genius", 14, y);
+    const obsHeader = isCustom && branding.companyName
+      ? `4. Observations & Recommandations — ${branding.companyName}`
+      : "4. Observations & Recommandations Techniques";
+    doc.text(obsHeader, 14, y);
     y += 6;
 
     if (report?.observations) {
@@ -1379,18 +1461,25 @@ export const nafaInspectionEngine = {
     doc.setFontSize(9);
     doc.setFont("helvetica", "bold");
     doc.text("Signature & Accord du Client", 20, y + 8);
-    doc.text("Validation de l'Expert NAFA-AGRITECH", pageW / 2 + 10, y + 8);
+
+    const validationHeader = isCustom && branding.companyName
+      ? `Validation : ${branding.companyName.slice(0, 30)}`
+      : "Validation de l'Expert Référent";
+    doc.text(validationHeader, pageW / 2 + 10, y + 8);
 
     doc.setFontSize(8);
     doc.setFont("helvetica", "normal");
     doc.text(`Nom : ${inspection.client_name}`, 20, y + 16);
     doc.text(`Mention : Bon pour accord`, 20, y + 22);
 
-    doc.text(`Nom : ${inspection.expert_name}`, pageW / 2 + 10, y + 16);
+    doc.text(`Nom : ${expertDisplay}`, pageW / 2 + 10, y + 16);
     doc.text(`Cachet électronique : SIG-${inspection.id.slice(0, 8).toUpperCase()}`, pageW / 2 + 10, y + 22);
-    doc.text(`Certifié conforme selon normes CIRAD/FAO`, pageW / 2 + 10, y + 28);
+    doc.text(`Certifié conforme selon les règles de l'art`, pageW / 2 + 10, y + 28);
 
     // Téléchargement automatique
-    doc.save(`Rapport_Inspection_${type.code}_${inspection.client_name.replace(/[^a-zA-Z0-9]/g, "_")}.pdf`);
+    const filePrefix = isCustom && branding.companyName
+      ? branding.companyName.replace(/[^a-zA-Z0-9]/g, "_").toLowerCase()
+      : "rapport_inspection";
+    doc.save(`${filePrefix}_${type.code}_${inspection.client_name.replace(/[^a-zA-Z0-9]/g, "_")}.pdf`);
   },
 };
