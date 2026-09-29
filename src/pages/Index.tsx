@@ -64,12 +64,12 @@ const SPACES_CONFIG = [
     path: "/marketplace?role=producteurs",
     icon: Store,
     image: galleryLivestock,
-    badge: "Marketplace des Services",
+    badge: "Marketplace Vitrine",
   },
   {
     id: "marketplace",
-    title: "Marketplace",
-    path: "/marketplace",
+    title: "Marketplace Vitrine",
+    path: "/marketplace?role=producteurs",
     icon: Store,
     image: galleryHarvest,
     badge: "Matériels & Intrants",
@@ -88,12 +88,12 @@ const SMART_TOOLS = [
 
 // ── 3. Configuration des Catégories Marketplace Rapide (Accès Direct Placemarket) ──
 const MARKET_CATEGORIES = [
-  { id: "machinisme", name: "Machinisme & Travaux", cat: "machinisme", path: "/marketplace?cat=machinisme", icon: Tractor, image: galleryFarmField },
-  { id: "agricole", name: "Produits Agricoles", cat: "produits_agricoles", path: "/marketplace?cat=produits_agricoles", icon: Sprout, image: galleryHarvest },
-  { id: "elevage", name: "Produits d'Élevage", cat: "produits_elevage", path: "/marketplace?cat=produits_elevage", icon: Beef, image: galleryLivestock },
-  { id: "services-agri", name: "Services Agricoles", cat: "services_agricoles", path: "/marketplace?cat=services_agricoles", icon: Wrench, image: galleryFormation },
-  { id: "services-veto", name: "Services Vétérinaires", cat: "services_veterinaires", path: "/marketplace?cat=services_veterinaires", icon: Stethoscope, image: galleryDigital },
-  { id: "finance", name: "Finance & Assurance", cat: "finance_assurance", path: "/marketplace?cat=finance_assurance", icon: Landmark, image: galleryIrrigation },
+  { id: "machinisme", name: "Machinisme & Travaux", cat: "machinisme", path: "/marketplace?cat=machinisme&role=producteurs", icon: Tractor, image: galleryFarmField },
+  { id: "agricole", name: "Produits Agricoles", cat: "produits_agricoles", path: "/marketplace?cat=produits_agricoles&role=producteurs", icon: Sprout, image: galleryHarvest },
+  { id: "elevage", name: "Produits d'Élevage", cat: "produits_elevage", path: "/marketplace?cat=produits_elevage&role=producteurs", icon: Beef, image: galleryLivestock },
+  { id: "services-agri", name: "Services Agricoles", cat: "services_agricoles", path: "/marketplace?cat=services_agricoles&role=producteurs", icon: Wrench, image: galleryFormation },
+  { id: "services-veto", name: "Services Vétérinaires", cat: "services_veterinaires", path: "/marketplace?cat=services_veterinaires&role=producteurs", icon: Stethoscope, image: galleryDigital },
+  { id: "finance", name: "Finance & Assurance", cat: "finance_assurance", path: "/marketplace?cat=finance_assurance&role=producteurs", icon: Landmark, image: galleryIrrigation },
 ];
 
 const Index = () => {
@@ -188,6 +188,15 @@ const Index = () => {
           </Link>
 
           <div className="flex items-center gap-2 sm:gap-3">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => navigate("/marketplace?role=producteurs")}
+              className="rounded-[24px] bg-emerald-600/30 hover:bg-emerald-600/50 text-white border-emerald-400/40 backdrop-blur-md text-xs font-bold px-3 sm:px-4 flex items-center gap-1.5"
+            >
+              <Store className="h-3.5 w-3.5 text-emerald-300" />
+              <span className="hidden sm:inline">Marketplace</span> Vitrine
+            </Button>
             <ThemeToggle />
             <Button
               variant="outline"
@@ -207,21 +216,31 @@ const Index = () => {
           </div>
         </header>
 
-        {/* Cœur du Hero : Slogan (1 ligne) & Action Unique Principale (< 15 mots au total) */}
+        {/* Cœur du Hero : Slogan (1 ligne) & Actions Principales */}
         <div className="relative z-10 container max-w-4xl mx-auto px-6 text-center flex flex-col items-center justify-center my-auto space-y-8">
           <h1 className="text-3xl sm:text-5xl md:text-6xl font-heading font-black text-white leading-tight tracking-tight drop-shadow-md">
             La technologie au service de l'agriculture africaine.
           </h1>
 
-          <div className="space-y-3">
-            <Button
-              size="lg"
-              onClick={() => navigate("/dashboard/smart-inspection")}
-              className="bg-[#F97316] hover:bg-[#ea580c] text-white font-heading font-extrabold text-base sm:text-lg px-8 sm:px-10 py-6 sm:py-7 rounded-[24px] shadow-2xl shadow-orange-500/30 hover:scale-105 active:scale-95 transition-all duration-300 flex items-center gap-3"
-            >
-              <span>Commencer une mission</span>
-              <ArrowRight className="h-5 w-5" />
-            </Button>
+          <div className="space-y-4">
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
+              <Button
+                size="lg"
+                onClick={() => navigate("/marketplace?role=producteurs")}
+                className="w-full sm:w-auto bg-emerald-600 hover:bg-emerald-700 text-white font-heading font-extrabold text-base sm:text-lg px-8 sm:px-10 py-6 sm:py-7 rounded-[24px] shadow-2xl shadow-emerald-500/30 hover:scale-105 active:scale-95 transition-all duration-300 flex items-center justify-center gap-3"
+              >
+                <Store className="h-5 w-5" />
+                <span>Marketplace Vitrine</span>
+                <ArrowRight className="h-5 w-5" />
+              </Button>
+              <Button
+                size="lg"
+                onClick={() => navigate("/dashboard/smart-inspection")}
+                className="w-full sm:w-auto bg-[#F97316] hover:bg-[#ea580c] text-white font-heading font-extrabold text-base sm:text-lg px-7 sm:px-9 py-6 sm:py-7 rounded-[24px] shadow-2xl shadow-orange-500/30 hover:scale-105 active:scale-95 transition-all duration-300 flex items-center justify-center gap-2"
+              >
+                <span>Commencer une mission</span>
+              </Button>
+            </div>
             <p className="text-xs text-white/80 font-medium">
               Nouveau sur NAFA ?{" "}
               <button
@@ -313,42 +332,49 @@ const Index = () => {
           })}
         </div>
 
-        {/* ── Accès Direct Agriculteurs & Éleveurs au Placemarket ── */}
+        {/* ── Accès Direct Agriculteurs & Éleveurs à la Marketplace Vitrine ── */}
         <div className="rounded-[28px] bg-gradient-to-r from-emerald-950/90 via-[#111827] to-teal-950/90 border border-emerald-500/40 p-6 sm:p-8 flex flex-col md:flex-row items-center justify-between gap-6 shadow-xl">
           <div className="space-y-2 text-center md:text-left">
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/20 border border-emerald-500/40 text-emerald-400 text-xs font-bold">
               <Store className="h-3.5 w-3.5" />
-              <span>Placemarket Agriculteurs & Éleveurs</span>
+              <span>Marketplace Vitrine Agriculteurs & Éleveurs</span>
             </div>
             <h3 className="text-xl sm:text-2xl font-heading font-extrabold text-white tracking-tight">
-              Accès direct aux services, machinisme et soins vétérinaires
+              Accès direct à la Marketplace Vitrine : intrants, machinisme, élevage & finance
             </h3>
             <p className="text-xs sm:text-sm text-white/70 max-w-2xl">
-              Agriculteurs et éleveurs accèdent librement aux catalogues certifiés : réservez vos labours, achetez vos intrants, programmez des visites vétérinaires ou louez du matériel.
+              Agriculteurs et éleveurs accèdent librement aux catalogues et services certifiés : réservez vos labours, achetez vos semences et engrais, programmez des soins vétérinaires ou sollicitez des financements et assurances.
             </p>
           </div>
 
           <div className="flex flex-wrap items-center justify-center gap-2.5 shrink-0">
             <Button
               size="sm"
-              onClick={() => navigate("/marketplace?cat=services_agricoles")}
+              onClick={() => navigate("/marketplace?cat=services_agricoles&role=producteurs")}
               className="rounded-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs px-4 py-2.5 shadow-md transition-transform active:scale-95"
             >
               Services Agricoles
             </Button>
             <Button
               size="sm"
-              onClick={() => navigate("/marketplace?cat=services_veterinaires")}
+              onClick={() => navigate("/marketplace?cat=services_veterinaires&role=producteurs")}
               className="rounded-full bg-teal-600 hover:bg-teal-700 text-white font-bold text-xs px-4 py-2.5 shadow-md transition-transform active:scale-95"
             >
               Services Vétérinaires
             </Button>
             <Button
               size="sm"
-              onClick={() => navigate("/marketplace")}
+              onClick={() => navigate("/marketplace?cat=machinisme&role=producteurs")}
+              className="rounded-full bg-amber-600 hover:bg-amber-700 text-white font-bold text-xs px-4 py-2.5 shadow-md transition-transform active:scale-95"
+            >
+              Machinisme
+            </Button>
+            <Button
+              size="sm"
+              onClick={() => navigate("/marketplace?role=producteurs")}
               className="rounded-full bg-white text-[#111827] hover:bg-emerald-50 font-bold text-xs px-4 py-2.5 shadow-md flex items-center gap-1.5 transition-transform active:scale-95"
             >
-              <span>Tout le Placemarket</span>
+              <span>Ouvrir la Marketplace Vitrine</span>
               <ArrowRight className="h-3.5 w-3.5 text-emerald-600" />
             </Button>
           </div>
@@ -437,7 +463,7 @@ const Index = () => {
           <Button
             variant="outline"
             size="sm"
-            onClick={() => navigate("/marketplace")}
+            onClick={() => navigate("/marketplace?role=producteurs")}
             className="rounded-[24px] text-xs font-semibold self-start sm:self-auto border-border hover:border-[#F97316]"
           >
             <span>Toutes les catégories</span>
@@ -652,7 +678,7 @@ const Index = () => {
           {/* 2. Marketplace */}
           <button
             type="button"
-            onClick={() => navigate("/marketplace")}
+            onClick={() => navigate("/marketplace?role=producteurs")}
             className="flex flex-col items-center gap-1 text-muted-foreground hover:text-foreground active:scale-95 transition-transform w-14"
           >
             <Store className="h-5 w-5" />
