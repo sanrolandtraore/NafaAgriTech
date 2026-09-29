@@ -18,10 +18,14 @@ import {
   Clock, Loader2, XCircle, Eye, Trash2, Package, Send, Shield,
   Tractor, Star, Calendar, Mail, Globe, Store, Filter, RefreshCw,
   ExternalLink, MessageCircle, ShieldAlert, CheckCircle2, RotateCcw,
-  LayoutDashboard, Wrench, Sparkles, AlertCircle
+  LayoutDashboard, Wrench, Sparkles, AlertCircle, ChevronDown, ChevronUp,
+  Smartphone
 } from "lucide-react";
 import BackNavigationButton from "@/components/BackNavigationButton";
 import { partnerStorage, PartnerOffer } from "@/lib/partnerStorage";
+import MechEstimatorCard from "@/components/mechanization/MechanizationEstimatorCard";
+import MechBookingModal from "@/components/mechanization/MechanizationBookingModal";
+import MechUssdSimulator from "@/components/mechanization/MechanizationUssdSimulator";
 
 // ─── Les 8 Catégories Réglementaires Obligatoires ───
 export const MARKETPLACE_CATEGORIES = [
@@ -150,7 +154,7 @@ export const ServiceMarketplacePage = () => {
     if (key.includes("semence") || key.includes("intrant") || key.includes("engrais")) return "intrants_semences";
     if (key.includes("elevage") || key.includes("animal")) return "produits_elevage";
     if (key.includes("service")) return "services_agricoles";
-    if (key.includes("machinisme") || key.includes("materiel")) return "machinisme";
+    if (key.includes("machinisme") || key.includes("materiel") || key.includes("location") || key.includes("tracteur")) return "machinisme";
     return "all";
   };
 
@@ -173,10 +177,27 @@ export const ServiceMarketplacePage = () => {
   const [loading, setLoading] = useState(true);
   const [userPosition, setUserPosition] = useState<[number, number] | null>(null);
 
-  // Filtre d'action : Acheter, Louer, Demander un service (réservé aux agriculteurs et éleveurs)
-  const [intentFilter, setIntentFilter] = useState<"all" | "acheter" | "louer" | "service">(
-    (urlIntent as any) || "all"
-  );
+  // Filtre d'action unifié : Intrants, Produits & Matériel (Achat & Location) OU Services
+  const [intentFilter, setIntentFilter] = useState<"all" | "intrants_produits" | "service">(() => {
+    if (urlIntent === "acheter" || urlIntent === "louer" || urlIntent === "intrants_produits" || urlIntent === "produits") {
+      return "intrants_produits";
+    }
+    if (urlIntent === "service" || urlIntent === "services") {
+      return "service";
+    }
+    return "all";
+  });
+
+  // ─── État d'intégration Mécanisation & Location dans le module d'achat ───
+  const [showEstimator, setShowEstimator] = useState(false);
+  const [activeToolTab, setActiveToolTab] = useState<"estimator" | "ussd">("estimator");
+  const [mechModalOpen, setMechModalOpen] = useState(false);
+  const [mechEstimateData, setMechEstimateData] = useState<any>(null);
+
+  // État de personnalisation de la commande (Achat vs Location de matériel)
+  const [orderMode, setOrderMode] = useState<"location" | "achat">("location");
+  const [orderDays, setOrderDays] = useState("1");
+  const [withOperator, setWithOperator] = useState(true);
 
   // ─── Les 6 Filtres Obligatoires ───
   const [search, setSearch] = useState("");
@@ -308,11 +329,9 @@ export const ServiceMarketplacePage = () => {
   // ─── Application rigoureuse des 6 Filtres ───
   const filteredItems = useMemo(() => {
     return items.filter((item) => {
-      // 0. Filtre d'intention spécifique : Acheter, Louer, Demander un service
-      if (intentFilter === "acheter") {
-        if (!["produits_agricoles", "produits_elevage", "intrants_semences"].includes(item.category)) return false;
-      } else if (intentFilter === "louer") {
-        if (!["machinisme", "irrigation_solaire"].includes(item.category)) return false;
+      // 0. Filtre d'intention unifié : Intrants, Produits & Matériel (Achat & Location) vs Services
+      if (intentFilter === "intrants_produits" || (intentFilter as any) === "acheter" || (intentFilter as any) === "louer") {
+        if (!["produits_agricoles", "produits_elevage", "intrants_semences", "machinisme", "irrigation_solaire"].includes(item.category)) return false;
       } else if (intentFilter === "service") {
         if (!["services_agricoles", "services_veterinaires", "finance_assurance"].includes(item.category)) return false;
       }
@@ -365,13 +384,18 @@ export const ServiceMarketplacePage = () => {
       return;
     }
 
+    const isMachinery = selectedItem.category === "machinisme" || selectedItem.category === "irrigation_solaire";
+    const finalClientNotes = isMachinery
+      ? `[${orderMode === "location" ? "LOCATION MATÉRIEL" : "ACHAT DIRECT"}] Qté/Durée: ${orderDays || "1"} ${orderMode === "location" ? `| Opérateur: ${withOperator ? "Inclus" : "Non inclus"}` : ""} | ${orderNotes || ""}`.trim()
+      : (orderNotes || null);
+
     try {
       const { error } = await supabase.from("marketplace_orders").insert({
         service_id: selectedItem.id,
         client_id: user.id,
         provider_id: selectedItem.provider_id,
         amount: selectedItem.price,
-        client_notes: orderNotes || null,
+        client_notes: finalClientNotes,
         status: "en_attente",
         escrow_status: "bloque",
       });
@@ -386,7 +410,7 @@ export const ServiceMarketplacePage = () => {
           amount: selectedItem.price,
           status: "en_attente",
           escrow_status: "bloque",
-          client_notes: orderNotes || null,
+          client_notes: finalClientNotes,
           created_at: new Date().toISOString(),
           item_title: selectedItem.title,
         };
@@ -423,11 +447,11 @@ export const ServiceMarketplacePage = () => {
   const getItemActionType = (category: string) => {
     if (category === "machinisme" || category === "irrigation_solaire") {
       return {
-        label: "Louer ce matériel",
-        action: "louer" as const,
+        label: "Acheter ou Louer ce matériel",
+        action: "materiel" as const,
         icon: Tractor,
-        dialogTitle: "Réservation de Location sous séquestre NAFA",
-        dialogButton: "Confirmer la location & Bloquer les fonds",
+        dialogTitle: "Commande & Réservation de Matériel (Achat ou Location)",
+        dialogButton: "Confirmer & Sécuriser les fonds sous séquestre",
       };
     }
     if (category === "services_agricoles" || category === "services_veterinaires" || category === "finance_assurance") {
@@ -513,20 +537,12 @@ export const ServiceMarketplacePage = () => {
           <Store className="h-3.5 w-3.5 mr-1.5" /> Toutes les offres ({items.length})
         </Button>
         <Button
-          variant={intentFilter === "acheter" ? "default" : "outline"}
+          variant={intentFilter === "intrants_produits" ? "default" : "outline"}
           size="sm"
-          onClick={() => setIntentFilter("acheter")}
-          className={`h-9 text-xs rounded-xl shrink-0 font-medium ${intentFilter === "acheter" ? "bg-emerald-600 text-white" : ""}`}
+          onClick={() => setIntentFilter("intrants_produits")}
+          className={`h-9 text-xs rounded-xl shrink-0 font-medium ${intentFilter === "intrants_produits" ? "bg-emerald-600 text-white" : ""}`}
         >
-          <ShoppingBag className="h-3.5 w-3.5 mr-1.5 text-emerald-600" /> Acheter (Produits & Intrants)
-        </Button>
-        <Button
-          variant={intentFilter === "louer" ? "default" : "outline"}
-          size="sm"
-          onClick={() => setIntentFilter("louer")}
-          className={`h-9 text-xs rounded-xl shrink-0 font-medium ${intentFilter === "louer" ? "bg-emerald-600 text-white" : ""}`}
-        >
-          <Tractor className="h-3.5 w-3.5 mr-1.5 text-amber-600" /> Louer (Matériels & Équipements)
+          <ShoppingBag className="h-3.5 w-3.5 mr-1.5 text-emerald-600" /> Achat d'intrants, Produits & Matériel (Achat & Location)
         </Button>
         <Button
           variant={intentFilter === "service" ? "default" : "outline"}
@@ -534,7 +550,7 @@ export const ServiceMarketplacePage = () => {
           onClick={() => setIntentFilter("service")}
           className={`h-9 text-xs rounded-xl shrink-0 font-medium ${intentFilter === "service" ? "bg-emerald-600 text-white" : ""}`}
         >
-          <Wrench className="h-3.5 w-3.5 mr-1.5 text-blue-600" /> Demander un service (Prestations & Vétérinaire)
+          <Wrench className="h-3.5 w-3.5 mr-1.5 text-blue-600" /> Services & Conseils (Agronomiques, Vétérinaires & Finance)
         </Button>
       </div>
 
@@ -543,8 +559,82 @@ export const ServiceMarketplacePage = () => {
         <CardContent className="p-3.5 flex items-center gap-3 text-xs">
           <Shield className="h-5 w-5 text-emerald-600 shrink-0" />
           <p className="text-foreground/90">
-            <strong>Paiement sous séquestre sécurisé NAFA :</strong> Vos fonds restent bloqués jusqu'à la livraison conforme du matériel ou l'achèvement de la prestation validée sur le terrain.
+            <strong>Paiement sous séquestre sécurisé NAFA :</strong> Vos fonds restent bloqués jusqu'à la livraison conforme des intrants et du matériel ou l'achèvement des travaux validés sur le terrain.
           </p>
+        </CardContent>
+      </Card>
+
+      {/* ─── MODULE INTÉGRÉ : SIMULATEUR DE LOCATION DE MATÉRIEL & CHANTIERS ─── */}
+      <Card className="border border-amber-500/30 bg-gradient-to-r from-amber-500/10 via-amber-500/5 to-transparent overflow-hidden">
+        <CardContent className="p-4 sm:p-5">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div className="flex items-start gap-3">
+              <div className="p-2.5 rounded-xl bg-amber-500/20 text-amber-700 dark:text-amber-400 shrink-0">
+                <Tractor className="h-6 w-6" />
+              </div>
+              <div>
+                <div className="flex items-center gap-2 flex-wrap">
+                  <h3 className="font-heading font-extrabold text-foreground text-sm sm:text-base">
+                    Simulateur de Location de Matériel & Calcul de Chantiers
+                  </h3>
+                  <Badge variant="outline" className="border-amber-500/40 text-amber-800 dark:text-amber-300 text-[10px]">
+                    Inclus dans Achat & Location
+                  </Badge>
+                </div>
+                <p className="text-xs text-muted-foreground mt-0.5 max-w-2xl">
+                  Estimez instantanément le coût d'un labour, hersage, semis, pulvérisation ou récolte selon vos hectares, le type de sol et le carburant, avec réservation directe sous séquestre garanti.
+                </p>
+              </div>
+            </div>
+            <Button
+              onClick={() => setShowEstimator(!showEstimator)}
+              variant={showEstimator ? "default" : "outline"}
+              className={`shrink-0 rounded-xl gap-2 font-bold text-xs h-9 ${showEstimator ? "bg-amber-600 hover:bg-amber-700 text-white" : "border-amber-500/40 text-amber-800 dark:text-amber-300 hover:bg-amber-500/10"}`}
+            >
+              <Tractor className="h-3.5 w-3.5" />
+              {showEstimator ? "Masquer le simulateur" : "Calculer & Réserver un matériel"}
+              {showEstimator ? <ChevronUp className="h-3.5 w-3.5" /> : <ChevronDown className="h-3.5 w-3.5" />}
+            </Button>
+          </div>
+
+          {showEstimator && (
+            <div className="mt-5 pt-4 border-t border-amber-500/20 space-y-4">
+              <div className="flex items-center gap-2">
+                <Button
+                  size="sm"
+                  variant={activeToolTab === "estimator" ? "default" : "outline"}
+                  onClick={() => setActiveToolTab("estimator")}
+                  className={`text-xs h-8 rounded-lg ${activeToolTab === "estimator" ? "bg-amber-600 text-white" : ""}`}
+                >
+                  <Tractor className="h-3.5 w-3.5 mr-1.5" /> Estimateur de chantiers (Hectares & Sol)
+                </Button>
+                <Button
+                  size="sm"
+                  variant={activeToolTab === "ussd" ? "default" : "outline"}
+                  onClick={() => setActiveToolTab("ussd")}
+                  className={`text-xs h-8 rounded-lg ${activeToolTab === "ussd" ? "bg-amber-600 text-white" : ""}`}
+                >
+                  <Smartphone className="h-3.5 w-3.5 mr-1.5" /> Réservation rurale USSD (*226#)
+                </Button>
+              </div>
+
+              {activeToolTab === "estimator" ? (
+                <MechEstimatorCard
+                  onBookNow={(estimate) => {
+                    setMechEstimateData({
+                      service: estimate.service,
+                      areaHa: estimate.areaHa,
+                      totalCost: estimate.totalCost,
+                      depositAmount: estimate.depositAmount,
+                    });
+                    setMechModalOpen(true);
+                  }}
+                />
+              ) : (
+                <MechUssdSimulator />
+              )}
+            </div>
+          )}
         </CardContent>
       </Card>
 
@@ -976,6 +1066,73 @@ export const ServiceMarketplacePage = () => {
                 </div>
               </div>
 
+              {(selectedItem.category === "machinisme" || selectedItem.category === "irrigation_solaire") && (
+                <div className="space-y-3 p-3 rounded-xl bg-amber-500/10 border border-amber-500/20">
+                  <Label className="font-semibold text-xs text-foreground">Type d'engagement souhaité</Label>
+                  <div className="grid grid-cols-2 gap-2">
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant={orderMode === "location" ? "default" : "outline"}
+                      onClick={() => setOrderMode("location")}
+                      className={`text-xs h-8 ${orderMode === "location" ? "bg-amber-600 text-white" : ""}`}
+                    >
+                      <Tractor className="h-3 w-3 mr-1" /> Location de matériel
+                    </Button>
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant={orderMode === "achat" ? "default" : "outline"}
+                      onClick={() => setOrderMode("achat")}
+                      className={`text-xs h-8 ${orderMode === "achat" ? "bg-emerald-600 text-white" : ""}`}
+                    >
+                      <ShoppingBag className="h-3 w-3 mr-1" /> Achat définitif
+                    </Button>
+                  </div>
+
+                  {orderMode === "location" ? (
+                    <div className="space-y-2 pt-1 text-xs">
+                      <div className="grid grid-cols-2 gap-2">
+                        <div>
+                          <Label className="text-[11px]">Durée ou Surface</Label>
+                          <Input
+                            placeholder="Ex: 3 jours ou 5 ha"
+                            value={orderDays}
+                            onChange={(e) => setOrderDays(e.target.value)}
+                            className="h-8 text-xs"
+                          />
+                        </div>
+                        <div>
+                          <Label className="text-[11px]">Chauffeur / Opérateur</Label>
+                          <Select value={withOperator ? "oui" : "non"} onValueChange={(v) => setWithOperator(v === "oui")}>
+                            <SelectTrigger className="h-8 text-xs">
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="oui">Opérateur inclus</SelectItem>
+                              <SelectItem value="non">Sans opérateur</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                      </div>
+                      <p className="text-[11px] text-muted-foreground">
+                        Caution et acompte de location protégés par le séquestre NAFA. Déblocage après validation des travaux.
+                      </p>
+                    </div>
+                  ) : (
+                    <div className="pt-1 text-xs">
+                      <Label className="text-[11px]">Quantité souhaitée</Label>
+                      <Input
+                        placeholder="Ex: 1 unité"
+                        value={orderDays}
+                        onChange={(e) => setOrderDays(e.target.value)}
+                        className="h-8 text-xs"
+                      />
+                    </div>
+                  )}
+                </div>
+              )}
+
               <div className="space-y-1.5">
                 <Label>Instructions ou détails pour le prestataire</Label>
                 <Input
@@ -1003,6 +1160,17 @@ export const ServiceMarketplacePage = () => {
           )}
         </DialogContent>
       </Dialog>
+
+      {/* ─── MODAL DE RÉSERVATION DE CHANTIER DE MÉCANISATION AVEC SÉQUESTRE ─── */}
+      <MechBookingModal
+        open={mechModalOpen}
+        onOpenChange={setMechModalOpen}
+        initialData={mechEstimateData}
+        onJobCreated={(job) => {
+          toast.success(`Chantier #${job.id.slice(0, 8)} réservé avec succès ! Acompte consigné sous séquestre.`);
+          setMechModalOpen(false);
+        }}
+      />
     </div>
   );
 };

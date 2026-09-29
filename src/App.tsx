@@ -127,7 +127,7 @@ const App = () => (
                 <Route path="costs" element={<Suspense fallback={<PageLoader />}><CostsPage /></Suspense>} />
                 <Route path="investment" element={<Suspense fallback={<PageLoader />}><InvestmentPlanPage /></Suspense>} />
                 <Route path="workers" element={<Suspense fallback={<PageLoader />}><WorkersPage /></Suspense>} />
-                <Route path="equipment" element={<Suspense fallback={<PageLoader />}><EquipmentPage /></Suspense>} />
+                <Route path="equipment" element={<Navigate to="/dashboard/marketplace?cat=machinisme&intent=intrants_produits" replace />} />
                 <Route path="harvests" element={<Suspense fallback={<PageLoader />}><HarvestsPage /></Suspense>} />
                 <Route path="calendar" element={<Suspense fallback={<PageLoader />}><CalendarPage /></Suspense>} />
                 <Route path="analytics" element={<Suspense fallback={<PageLoader />}><AnalyticsPage /></Suspense>} />

@@ -1,4 +1,4 @@
-﻿import { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -229,11 +229,11 @@ export default function ProviderSubscriptionPage() {
             <span className="truncate">Scouting Terrain GPS</span>
           </Link>
           <Link
-            to="/dashboard/equipment"
+            to="/dashboard/marketplace?cat=machinisme"
             className="p-3 bg-background rounded-xl border border-border hover:border-primary transition-all flex items-center gap-2 text-xs font-semibold shadow-xs"
           >
             <Tractor className="h-4 w-4 text-amber-600 shrink-0" />
-            <span className="truncate">Location & Flotte Matériel</span>
+            <span className="truncate">Matériel & Intrants (Vente & Location)</span>
           </Link>
           <Link
             to="/dashboard/expert-calculator"
@@ -421,9 +421,8 @@ export default function ProviderSubscriptionPage() {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="services_agronomiques">Services agronomiques & Traitements phyto</SelectItem>
-                  <SelectItem value="location_materiel">Location de matériel & Mécanisation (tracteurs, drones)</SelectItem>
-                  <SelectItem value="vente_intrants">Vente d'intrants, semences & fertilisants</SelectItem>
-                  <SelectItem value="polyvalent">Multi-activités (Services, Vente & Location)</SelectItem>
+                  <SelectItem value="vente_intrants">Achat d'intrants, semences & matériel agricole (Vente & Location)</SelectItem>
+                  <SelectItem value="polyvalent">Multi-activités (Services agronomiques, Vente & Location de matériel)</SelectItem>
                 </SelectContent>
               </Select>
             </div>
