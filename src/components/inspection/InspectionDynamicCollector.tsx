@@ -1,4 +1,4 @@
-﻿import { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import {
   Inspection,
   InspectionType,
@@ -38,6 +38,13 @@ import {
   Save,
 } from "lucide-react";
 import { toast } from "sonner";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog";
 import InspectionInteractiveSketch from "./InspectionInteractiveSketch";
 import InspectionSignaturePad from "./InspectionSignaturePad";
 import InspectionVoiceRecorder from "./InspectionVoiceRecorder";
@@ -98,6 +105,55 @@ export default function InspectionDynamicCollector({
   const [sketchUrl, setSketchUrl] = useState<string | null>(inspection.sketch_data_url || null);
   const [clientSigUrl, setClientSigUrl] = useState<string | null>(inspection.client_signature_url || null);
   const [expertSigUrl, setExpertSigUrl] = useState<string | null>(inspection.expert_signature_url || null);
+
+  // Modèle dynamique personnalisable par l'agronome
+  const [currentTemplate, setCurrentTemplate] = useState<InspectionTemplate>(template);
+  useEffect(() => {
+    setCurrentTemplate(template);
+  }, [template]);
+
+  // État du modal d'ajout de champ personnalisé
+  const [openAddFieldDialog, setOpenAddFieldDialog] = useState(false);
+  const [newFieldLabel, setNewFieldLabel] = useState("");
+  const [newFieldType, setNewFieldType] = useState<"text" | "number" | "select" | "boolean" | "textarea">("text");
+  const [newFieldUnit, setNewFieldUnit] = useState("");
+  const [newFieldOptions, setNewFieldOptions] = useState("");
+  const [newFieldRequired, setNewFieldRequired] = useState(false);
+
+  const handleAddCustomField = () => {
+    if (!newFieldLabel.trim()) {
+      toast.error("Veuillez renseigner le libellé du champ.");
+      return;
+    }
+
+    const optionsArray = newFieldType === "select"
+      ? newFieldOptions.split(",").map((o) => o.trim()).filter(Boolean)
+      : undefined;
+
+    const updated = nafaInspectionEngine.addFieldToTemplate(currentTemplate.id, {
+      label: newFieldLabel.trim(),
+      type: newFieldType,
+      unit: newFieldUnit.trim() || undefined,
+      options: optionsArray,
+      required: newFieldRequired,
+    });
+
+    setCurrentTemplate({ ...updated });
+    setNewFieldLabel("");
+    setNewFieldUnit("");
+    setNewFieldOptions("");
+    setNewFieldRequired(false);
+    setOpenAddFieldDialog(false);
+    toast.success("Paramètre personnalisé ajouté au formulaire terrain !");
+  };
+
+  const handleRemoveField = (key: string, label: string) => {
+    if (confirm(`Retirer le champ "${label}" de ce formulaire d'inspection ?`)) {
+      const updated = nafaInspectionEngine.removeFieldFromTemplate(currentTemplate.id, key);
+      setCurrentTemplate({ ...updated });
+      toast.success("Champ retiré du modèle.");
+    }
+  };
 
   // Synchronisation des modifications automatiques
   const persistChanges = (extra?: Partial<Inspection>) => {
@@ -325,30 +381,53 @@ export default function InspectionDynamicCollector({
         </CardContent>
       </Card>
 
-      {/* ── 2. Formulaire Dynamique ── */}
+      {/* ── 2. Formulaire Dynamique Personnalisable ── */}
       <Card className="border border-border shadow-xs bg-card">
         <CardHeader className="p-4 pb-2 border-b border-border/60">
-          <CardTitle className="text-sm font-bold flex items-center justify-between">
+          <CardTitle className="text-sm font-bold flex flex-col sm:flex-row sm:items-center justify-between gap-2">
             <span className="flex items-center gap-2 text-foreground">
               <FileCheck className="h-4 w-4 text-primary" />
               2. Paramètres Techniques Spécifiques
             </span>
-            <span className="text-[11px] text-muted-foreground font-normal">
-              {template.fields_schema.length} champs adaptés
-            </span>
+            <div className="flex items-center gap-2">
+              <span className="text-[11px] text-muted-foreground font-normal">
+                {currentTemplate.fields_schema.length} champs adaptés
+              </span>
+              <Button
+                type="button"
+                size="sm"
+                variant="outline"
+                onClick={() => setOpenAddFieldDialog(true)}
+                className="h-7 text-xs px-2.5 gap-1 border-primary/40 text-primary hover:bg-primary/10 font-semibold"
+              >
+                <Plus className="h-3.5 w-3.5" /> Ajouter un champ
+              </Button>
+            </div>
           </CardTitle>
         </CardHeader>
         <CardContent className="p-4">
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3.5">
-            {template.fields_schema.map((schema) => {
+            {currentTemplate.fields_schema.map((schema) => {
               const currentVal = fields[schema.key] !== undefined ? fields[schema.key] : schema.defaultValue;
 
               if (schema.type === "select") {
                 return (
                   <div key={schema.key} className="space-y-1">
-                    <Label className="text-xs">
-                      {schema.label} {schema.required && "*"}
-                    </Label>
+                    <div className="flex items-center justify-between">
+                      <Label className="text-xs">
+                        {schema.label} {schema.required && "*"}
+                      </Label>
+                      {schema.key.startsWith("custom_") && (
+                        <button
+                          type="button"
+                          onClick={() => handleRemoveField(schema.key, schema.label)}
+                          title="Supprimer ce champ personnalisé"
+                          className="text-muted-foreground/60 hover:text-destructive p-0.5"
+                        >
+                          <Trash2 className="h-3 w-3" />
+                        </button>
+                      )}
+                    </div>
                     <Select
                       value={String(currentVal || "")}
                       onValueChange={(val) => {
@@ -379,14 +458,26 @@ export default function InspectionDynamicCollector({
                       <Label className="text-xs block font-semibold">{schema.label}</Label>
                       {schema.unit && <span className="text-[10px] text-muted-foreground">{schema.unit}</span>}
                     </div>
-                    <Switch
-                      checked={Boolean(currentVal)}
-                      onCheckedChange={(checked) => {
-                        const next = { ...fields, [schema.key]: checked };
-                        setFields(next);
-                        nafaInspectionEngine.saveInspectionFields(inspection.id, next);
-                      }}
-                    />
+                    <div className="flex items-center gap-2">
+                      <Switch
+                        checked={Boolean(currentVal)}
+                        onCheckedChange={(checked) => {
+                          const next = { ...fields, [schema.key]: checked };
+                          setFields(next);
+                          nafaInspectionEngine.saveInspectionFields(inspection.id, next);
+                        }}
+                      />
+                      {schema.key.startsWith("custom_") && (
+                        <button
+                          type="button"
+                          onClick={() => handleRemoveField(schema.key, schema.label)}
+                          title="Supprimer ce champ personnalisé"
+                          className="text-muted-foreground/60 hover:text-destructive p-0.5"
+                        >
+                          <Trash2 className="h-3 w-3" />
+                        </button>
+                      )}
+                    </div>
                   </div>
                 );
               }
@@ -394,9 +485,21 @@ export default function InspectionDynamicCollector({
               if (schema.type === "textarea") {
                 return (
                   <div key={schema.key} className="sm:col-span-2 md:col-span-3 space-y-1">
-                    <Label className="text-xs">
-                      {schema.label} {schema.required && "*"}
-                    </Label>
+                    <div className="flex items-center justify-between">
+                      <Label className="text-xs">
+                        {schema.label} {schema.required && "*"}
+                      </Label>
+                      {schema.key.startsWith("custom_") && (
+                        <button
+                          type="button"
+                          onClick={() => handleRemoveField(schema.key, schema.label)}
+                          title="Supprimer ce champ personnalisé"
+                          className="text-muted-foreground/60 hover:text-destructive p-0.5"
+                        >
+                          <Trash2 className="h-3 w-3" />
+                        </button>
+                      )}
+                    </div>
                     <Textarea
                       value={currentVal || ""}
                       onChange={(e) => {
@@ -417,7 +520,19 @@ export default function InspectionDynamicCollector({
                     <Label className="text-xs">
                       {schema.label} {schema.required && "*"}
                     </Label>
-                    {schema.unit && <span className="text-[10px] text-muted-foreground font-mono font-bold">{schema.unit}</span>}
+                    <div className="flex items-center gap-1.5">
+                      {schema.unit && <span className="text-[10px] text-muted-foreground font-mono font-bold">{schema.unit}</span>}
+                      {schema.key.startsWith("custom_") && (
+                        <button
+                          type="button"
+                          onClick={() => handleRemoveField(schema.key, schema.label)}
+                          title="Supprimer ce champ personnalisé"
+                          className="text-muted-foreground/60 hover:text-destructive p-0.5"
+                        >
+                          <Trash2 className="h-3 w-3" />
+                        </button>
+                      )}
+                    </div>
                   </div>
                   <Input
                     type={schema.type === "number" ? "number" : "text"}
@@ -436,6 +551,98 @@ export default function InspectionDynamicCollector({
           </div>
         </CardContent>
       </Card>
+
+      {/* Modal d'ajout de paramètre personnalisé */}
+      <Dialog open={openAddFieldDialog} onOpenChange={setOpenAddFieldDialog}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="text-base font-bold flex items-center gap-2">
+              <Plus className="h-4 w-4 text-primary" />
+              Ajouter un Paramètre Terrain Personnalisé
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-3.5 py-2">
+            <div className="space-y-1.5">
+              <Label className="text-xs font-semibold">Intitulé du paramètre / question *</Label>
+              <Input
+                placeholder="Ex: Type de paillage, Taux de reprise, État clôture…"
+                value={newFieldLabel}
+                onChange={(e) => setNewFieldLabel(e.target.value)}
+                className="text-xs"
+              />
+            </div>
+
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-1.5">
+                <Label className="text-xs font-semibold">Type de saisie</Label>
+                <Select value={newFieldType} onValueChange={(val: any) => setNewFieldType(val)}>
+                  <SelectTrigger className="text-xs">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="text">Texte libre</SelectItem>
+                    <SelectItem value="number">Nombre / Mesure</SelectItem>
+                    <SelectItem value="select">Liste déroulante</SelectItem>
+                    <SelectItem value="boolean">Oui / Non (Bascule)</SelectItem>
+                    <SelectItem value="textarea">Observations longues</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-1.5">
+                <Label className="text-xs font-semibold">Unité (optionnel)</Label>
+                <Input
+                  placeholder="Ex: kg, ha, m³/h, %"
+                  value={newFieldUnit}
+                  onChange={(e) => setNewFieldUnit(e.target.value)}
+                  className="text-xs font-mono"
+                />
+              </div>
+            </div>
+
+            {newFieldType === "select" && (
+              <div className="space-y-1.5">
+                <Label className="text-xs font-semibold">Options possibles (séparées par des virgules)</Label>
+                <Input
+                  placeholder="Ex: Paille de riz, Plastique noir, Biodégradable, Aucun"
+                  value={newFieldOptions}
+                  onChange={(e) => setNewFieldOptions(e.target.value)}
+                  className="text-xs"
+                />
+              </div>
+            )}
+
+            <div className="flex items-center justify-between p-2.5 rounded-lg border bg-muted/30">
+              <Label className="text-xs font-medium cursor-pointer" htmlFor="req-switch">
+                Champ obligatoire sur le terrain
+              </Label>
+              <Switch
+                id="req-switch"
+                checked={newFieldRequired}
+                onCheckedChange={setNewFieldRequired}
+              />
+            </div>
+          </div>
+          <DialogFooter className="gap-2 sm:gap-0">
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => setOpenAddFieldDialog(false)}
+            >
+              Annuler
+            </Button>
+            <Button
+              type="button"
+              size="sm"
+              onClick={handleAddCustomField}
+              className="gradient-primary text-primary-foreground font-semibold"
+            >
+              Insérer au formulaire
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       {/* ── 3. Checklist des Photos Obligatoires & Prises de vue ── */}
       <Card className="border border-border shadow-xs bg-card">

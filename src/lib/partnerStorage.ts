@@ -770,12 +770,66 @@ export const partnerStorage = {
       list.unshift(result);
     }
     writeLocal(KEYS.ENTRIES, list);
+
+    // Synchronisation automatique vers la Marketplace des Services (accessible aux agriculteurs et éleveurs)
+    try {
+      const offerCat = entry.category === "banque"
+        ? "banque"
+        : entry.category === "assurance"
+        ? "assurance"
+        : "programme";
+
+      const offersList = readLocal<PartnerOffer[]>(KEYS.OFFERS, INITIAL_PARTNER_OFFERS);
+      const offerId = `offer-${result.id}`;
+      const offerIdx = offersList.findIndex((o) => o.id === offerId);
+      const defaultImg = result.category === "assurance"
+        ? "https://images.unsplash.com/photo-1500937386664-56d1dfef3854?w=800&auto=format&fit=crop&q=80"
+        : "https://images.unsplash.com/photo-1559526324-4b87b5e36e44?w=800&auto=format&fit=crop&q=80";
+
+      const synchronizedOffer: PartnerOffer = {
+        id: offerId,
+        owner_id: result.user_id || result.id,
+        partner_name: result.name,
+        category: offerCat,
+        title: `${result.name}${result.badge ? ` (${result.badge})` : ""}`,
+        description: result.description || "Services financiers, crédit de campagne ou assurance indicielle pour exploitants agricoles et éleveurs.",
+        price_indication: result.category === "assurance" ? "Souscription indicielle" : "Taux bonifié de campagne",
+        unit: "dossier",
+        location_name: result.location || "National Burkina Faso",
+        contact_phone: result.phone || null,
+        contact_email: result.email || null,
+        website: result.website || null,
+        image_url: defaultImg,
+        images: [defaultImg],
+        videos: [],
+        media: [],
+        is_active: true,
+        created_at: new Date().toISOString(),
+      };
+
+      if (offerIdx >= 0) {
+        offersList[offerIdx] = { ...offersList[offerIdx], ...synchronizedOffer };
+      } else {
+        offersList.unshift(synchronizedOffer);
+      }
+      writeLocal(KEYS.OFFERS, offersList);
+    } catch (err) {
+      console.warn("Erreur synchronisation offre marketplace :", err);
+    }
+
     return result;
   },
 
   async deleteEntry(id: string): Promise<void> {
     const list = await this.getEntries();
     writeLocal(KEYS.ENTRIES, list.filter((e) => e.id !== id));
+
+    try {
+      const offers = readLocal<PartnerOffer[]>(KEYS.OFFERS, INITIAL_PARTNER_OFFERS);
+      writeLocal(KEYS.OFFERS, offers.filter((o) => o.id !== `offer-${id}`));
+    } catch (err) {
+      console.warn("Erreur retrait offre marketplace :", err);
+    }
   },
 
   // ── OFFERS & PRODUCTS (avec Images & Vidéos) ──

@@ -87,6 +87,7 @@ export const agronomeNav: NavItem[] = [
   { to: "/dashboard/expert-clients", labelKey: "Portefeuille Clients", icon: Users, section: "Clients & Conseils" },
   { to: "/dashboard/expert-analytics", labelKey: "Analytique & Performances", icon: BarChart3, section: "Clients & Conseils" },
   { to: "/dashboard/quote-requests", labelKey: "Demandes de devis", icon: FileText, section: "Clients & Conseils" },
+  { to: "/dashboard/identite-professionnelle", labelKey: "Identité & Documents", icon: Building2, section: "Visibilité & Gestion" },
   { to: "/dashboard/partner-space", labelKey: "Mon Espace Partenaire (Offres & Devis)", icon: Building2, section: "Visibilité & Gestion" },
   { to: "/dashboard/partenaire-kyc", labelKey: "Vérification KYC & Certification", icon: BadgeCheck, section: "Visibilité & Gestion" },
   { to: "/dashboard/partenaire-abonnement", labelKey: "Abonnement partenaire", icon: Sparkles, section: "Visibilité & Gestion" },
@@ -108,15 +109,14 @@ export const veterinaireNav: NavItem[] = [
   { to: "/dashboard/settings", labelKey: "Paramètres", icon: Settings, section: "Visibilité & Gestion" },
 ];
 
-/** 5. Profil Partenaire : Banque, Microfinance & Assurance Agricole */
+/** 5. Profil Partenaire : Banque, Microfinance & Assurance Agricole (Finance & Assurance exclusivement) */
 export const institutionNav: NavItem[] = [
   { to: "/dashboard", labelKey: "Tableau de bord", icon: LayoutDashboard },
-  { to: "/dashboard/partner-space", labelKey: "Mon Espace Partenaire (Offres & Devis)", icon: Building2, section: "Visibilité & Gestion" },
+  { to: "/dashboard/partenaire-mes-offres", labelKey: "Mes Services & Produits Financiers", icon: Store, section: "Offres Financières" },
   { to: "/dashboard/partenaire-banques", labelKey: "Services bancaires agricoles", icon: Landmark, section: "Finance & Assurance" },
   { to: "/dashboard/partenaire-assurance", labelKey: "Assurance agricole", icon: ShieldCheck, section: "Finance & Assurance" },
   { to: "/dashboard/partenaire-programmes", labelKey: "Programmes & Projets", icon: FolderKanban, section: "Finance & Assurance" },
-  { to: "/dashboard/partners-directory", labelKey: "Annuaire Partenaires", icon: Handshake, section: "Finance & Assurance" },
-  { to: "/dashboard/quote-requests", labelKey: "Demandes de devis", icon: FileText, section: "Dossiers & Crédits" },
+  { to: "/dashboard/partner-space", labelKey: "Mon Espace Partenaire (Offres & Devis)", icon: Building2, section: "Visibilité & Gestion" },
   { to: "/dashboard/partenaire-kyc", labelKey: "Vérification KYC & Certification", icon: BadgeCheck, section: "Visibilité & Gestion" },
   { to: "/dashboard/partenaire-abonnement", labelKey: "Abonnement partenaire", icon: Sparkles, section: "Visibilité & Gestion" },
   { to: "/dashboard/settings", labelKey: "Paramètres", icon: Settings, section: "Visibilité & Gestion" },
@@ -235,6 +235,8 @@ export const getNavLabel = (item: NavItem, t?: (key: string) => string): string 
     "Inspection Intelligente": "Inspection Intelligente",
     "NAFA Genius": "NAFA Genius",
     "Diagnostic Avancé": "Diagnostic Avancé",
+    "Identité & Documents": "Identité & Documents",
+    "Mes Services & Produits Financiers": "Mes Services & Produits Financiers",
   };
 
   if (dictionary[key]) {

@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect, useRef, useCallback } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import { useSearchParams } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -17,6 +17,7 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
+import { partnerBrandingStorage } from "@/lib/partnerBrandingStorage";
 
 import {
   GeoPoint,
@@ -538,6 +539,13 @@ export const NafaGeniusStudio: React.FC = () => {
   const handleExportPdf = () => {
     if (!engineeringQuote) return;
     try {
+      const branding = partnerBrandingStorage.get();
+      const isCustom = partnerBrandingStorage.isConfigured();
+
+      const expertName = branding.expertName || profile?.full_name || "Dr. Oumarou Sawadogo";
+      const expertTitle = branding.expertTitle || "Expert Senior en Génie Rural & Agronomie";
+      const expertOrg = branding.companyName || "Cabinet d'Expertise Agronomique";
+
       const doc = generateTechnicalDossierPdf({
         survey: surveyResult,
         irrigation: irrigationResult || undefined,
@@ -549,14 +557,18 @@ export const NafaGeniusStudio: React.FC = () => {
           location: farmLocation,
         },
         expert: {
-          name: profile?.full_name || "Dr. Oumarou Sawadogo",
-          title: "Expert Senior en Génie Rural & Agronomie",
-          organization: "NAFA - AGRITECH Burkina Faso",
+          name: expertName,
+          title: expertTitle,
+          organization: expertOrg,
         },
         canvasSnapshotDataUrl,
+        branding,
       });
 
-      const fileName = `dossier_technique_nafa_${clientName.replace(/\s+/g, "_")}_${surveyResult.areaHa}ha.pdf`;
+      const filePrefix = isCustom && branding.companyName
+        ? branding.companyName.toLowerCase().replace(/[^a-z0-9]/g, "_")
+        : "dossier_technique";
+      const fileName = `${filePrefix}_${clientName.replace(/\s+/g, "_")}_${surveyResult.areaHa}ha.pdf`;
       doc.save(fileName);
       toast.success(`Dossier technique officiel téléchargé : ${fileName}`);
     } catch (err: any) {
@@ -1722,7 +1734,9 @@ export const NafaGeniusStudio: React.FC = () => {
                       DEVIS ESTIMATIF ET QUANTITATIF N° {engineeringQuote.quoteNumber}
                     </h3>
                     <Badge className="bg-emerald-500/10 text-emerald-700 border-emerald-500/20 text-xs">
-                      Certifié Partenaires NAFA
+                      {partnerBrandingStorage.isConfigured()
+                        ? `Certifié par ${partnerBrandingStorage.get().companyName || partnerBrandingStorage.get().logoText}`
+                        : "Devis d'Ingénierie Certifié"}
                     </Badge>
                   </div>
                   <p className="text-xs text-muted-foreground mt-0.5">
