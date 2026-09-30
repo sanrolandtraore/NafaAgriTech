@@ -33,6 +33,7 @@ import {
 } from "lucide-react";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { partnerStorage, PartnerEntry } from "@/lib/partnerStorage";
+import Footer from "@/components/Footer";
 import logo from "@/assets/logo.png";
 import galleryFarmField from "@/assets/gallery/farm-field.jpg";
 import galleryLivestock from "@/assets/gallery/livestock.jpg";
@@ -653,23 +654,9 @@ const Index = () => {
       )}
 
       {/* ══════════════════════════════════════════════════════
-          7. PIED DE PAGE ÉPURÉ
+          7. PIED DE PAGE COMPLET NAFA-AGRITECH
       ══════════════════════════════════════════════════════ */}
-      <footer className="border-t border-border bg-card/50 py-10">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-muted-foreground">
-          <div className="flex items-center gap-2">
-            <img src={logo} alt="NAFA-AGRITECH" className="h-6 w-auto" />
-            <span className="font-bold text-foreground">NAFA - AGRITECH</span>
-            <span>• © 2026. Conçu pour le Sahel.</span>
-          </div>
-
-          <div className="flex items-center gap-4">
-            <Link to="/mentions-legales" className="hover:text-foreground transition-colors">Mentions légales</Link>
-            <Link to="/conditions-utilisation" className="hover:text-foreground transition-colors">Conditions</Link>
-            <Link to="/politique-confidentialite" className="hover:text-foreground transition-colors">Confidentialité</Link>
-          </div>
-        </div>
-      </footer>
+      <Footer />
 
       {/* ══════════════════════════════════════════════════════
           8. NAVIGATION INFÉRIEURE FIXE (Mobile & Web App Bar)

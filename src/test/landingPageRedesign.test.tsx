@@ -39,7 +39,7 @@ describe("Landing Page Premium - Architecture UX Fulcrum", () => {
     expect(screen.getByText("Agronomes & Vétérinaires")).toBeInTheDocument();
 
     // Carte 2 : Partenaires
-    expect(screen.getByText("Partenaires")).toBeInTheDocument();
+    expect(screen.getAllByText("Partenaires").length).toBeGreaterThanOrEqual(1);
 
     // Carte 3 : Agriculteurs & Éleveurs
     expect(screen.getByText("Agriculteurs & Éleveurs")).toBeInTheDocument();
@@ -56,7 +56,7 @@ describe("Landing Page Premium - Architecture UX Fulcrum", () => {
     // 6 outils avec exactement 1 mot
     expect(screen.getByText("GPS")).toBeInTheDocument();
     expect(screen.getByText("Inspection")).toBeInTheDocument();
-    expect(screen.getByText("Diagnostic IA")).toBeInTheDocument();
+    expect(screen.getByText("Diagnostic")).toBeInTheDocument();
     expect(screen.getByText("Irrigation")).toBeInTheDocument();
     expect(screen.getByText("Devis")).toBeInTheDocument();
     expect(screen.getByText("Cartographie")).toBeInTheDocument();

@@ -18,7 +18,7 @@ describe("Page d'Authentification & Inscription — Navigation & Retour Accueil"
     vi.clearAllMocks();
   });
 
-  it("affiche le bouton 'Retour sur la page d'accueil' et redirige vers '/' au clic", () => {
+  it("affiche le bouton 'Retour sur la page d'accueil' et redirige vers '/' au clic", async () => {
     const { unmount } = render(
       <MemoryRouter initialEntries={["/auth"]}>
         <AuthProvider>
@@ -32,10 +32,11 @@ describe("Page d'Authentification & Inscription — Navigation & Retour Accueil"
 
     fireEvent.click(backHomeBtn);
     expect(mockNavigate).toHaveBeenCalledWith("/");
+    await new Promise((r) => setTimeout(r, 30));
     unmount();
   });
 
-  it("affiche les onglets 'Connexion' et 'S'inscrire' et permet de basculer", () => {
+  it("affiche les onglets 'Connexion' et 'S'inscrire' et permet de basculer", async () => {
     const { unmount } = render(
       <MemoryRouter initialEntries={["/auth"]}>
         <AuthProvider>
@@ -53,10 +54,11 @@ describe("Page d'Authentification & Inscription — Navigation & Retour Accueil"
     // Basculer vers S'inscrire
     fireEvent.click(registerTab);
     expect(screen.getByText(/Inscription instantanée par numéro WhatsApp/i)).toBeInTheDocument();
+    await new Promise((r) => setTimeout(r, 30));
     unmount();
   });
 
-  it("s'ouvre directement en mode inscription lorsque l'URL contient '?mode=register'", () => {
+  it("s'ouvre directement en mode inscription lorsque l'URL contient '?mode=register'", async () => {
     const { unmount } = render(
       <MemoryRouter initialEntries={["/auth?mode=register"]}>
         <AuthProvider>
@@ -68,6 +70,7 @@ describe("Page d'Authentification & Inscription — Navigation & Retour Accueil"
     // Vérifie que le mode inscription est actif d'emblée
     expect(screen.getByText(/Inscription instantanée par numéro WhatsApp/i)).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /^S'inscrire$/i })).toHaveClass("bg-primary");
+    await new Promise((r) => setTimeout(r, 30));
     unmount();
   });
 });
