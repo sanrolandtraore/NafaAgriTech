@@ -41,88 +41,38 @@ const mockAuth = (role = "agronome", userId = "user-agronome-1") => {
   });
 };
 
-describe("Suite Professionnelle « Services Agronomiques & Conseils »", () => {
+describe("Suite Professionnelle « NAFA FIELD DESIGNER »", () => {
   beforeEach(() => {
     vi.restoreAllMocks();
     localStorage.clear();
     window.history.pushState({}, "", "/dashboard/services");
   });
 
-  describe("1. Catalogue & Exhaustivité des 39+ Outils Professionnels", () => {
-    it("charge le catalogue complet réparti dans les 5 domaines métier sans données fictives", () => {
+  describe("1. Catalogue Exclusif NAFA FIELD DESIGNER (40 anciens outils génériques retirés)", () => {
+    it("charge uniquement les outils officiels de NAFA Field Designer sans données fictives", () => {
       const allTools = agronomicToolkitStorage.getAllTools();
-      expect(allTools.length).toBeGreaterThanOrEqual(39);
+      // Les 40 anciens outils par domaine sont retirés, il ne reste que les outils officiels de NAFA Field Designer
+      expect(allTools.length).toBe(12);
 
-      // 1. Terrain & Cartographie
-      const terrain = agronomicToolkitStorage.getToolsByCategory("terrain_carto");
-      expect(terrain.length).toBe(7);
-      const terrainTitles = terrain.map((t) => t.title);
-      expect(terrainTitles).toContain("Inspection terrain");
-      expect(terrainTitles).toContain("Cartographie GPS");
-      expect(terrainTitles).toContain("Mesure de parcelle");
-      expect(terrainTitles).toContain("Calcul superficie");
-      expect(terrainTitles).toContain("Relevé de points");
-      expect(terrainTitles).toContain("Aménagement de ferme");
-      expect(terrainTitles).toContain("Géolocalisation");
-
-      // 2. Agronomie & Santé Végétale
-      const agronomie = agronomicToolkitStorage.getToolsByCategory("agronomie");
-      expect(agronomie.length).toBe(9);
-      const agroTitles = agronomie.map((t) => t.title);
-      expect(agroTitles).toContain("Diagnostic des cultures");
-      expect(agroTitles).toContain("Identification des plantes");
-      expect(agroTitles).toContain("Identification des mauvaises herbes");
-      expect(agroTitles).toContain("Diagnostic des maladies");
-      expect(agroTitles).toContain("Diagnostic des ravageurs");
-      expect(agroTitles).toContain("Analyse des sols");
-      expect(agroTitles).toContain("Recommandation de fertilisation");
-      expect(agroTitles).toContain("Conseil cultural");
-      expect(agroTitles).toContain("Suivi des cultures");
-
-      // 3. Irrigation & Eau
-      const irrigation = agronomicToolkitStorage.getToolsByCategory("irrigation");
-      expect(irrigation.length).toBe(9);
-      const irrTitles = irrigation.map((t) => t.title);
-      expect(irrTitles).toContain("Concepteur d'irrigation");
-      expect(irrTitles).toContain("Calcul du débit");
-      expect(irrTitles).toContain("Calcul de pression");
-      expect(irrTitles).toContain("Dimensionnement des tuyaux");
-      expect(irrTitles).toContain("Dimensionnement de pompe");
-      expect(irrTitles).toContain("Goutte-à-goutte");
-      expect(irrTitles).toContain("Aspersion");
-      expect(irrTitles).toContain("Micro-aspersion");
-      expect(irrTitles).toContain("Gestion de l'eau");
-
-      // 4. Conception & Ingénierie
-      const ingenierie = agronomicToolkitStorage.getToolsByCategory("ingenierie");
-      expect(ingenierie.length).toBeGreaterThanOrEqual(7);
-      const ingTitles = ingenierie.map((t) => t.title);
-      expect(ingTitles).toContain("Arpentage & Dimensionnement Express");
-      expect(ingTitles).toContain("NAFA Farm Designer");
-      expect(ingTitles).toContain("Visualisation 3D");
-      expect(ingTitles).toContain("Conception de ferme");
-      expect(ingTitles).toContain("Conception de serre");
-      expect(ingTitles).toContain("Conception d'infrastructures");
-      expect(ingTitles).toContain("Calcul des matériaux");
-      expect(ingTitles).toContain("Calculateur de devis");
-
-      // 5. Gestion & Analyse
-      const gestion = agronomicToolkitStorage.getToolsByCategory("gestion_analyse");
-      expect(gestion.length).toBe(7);
-      const gestTitles = gestion.map((t) => t.title);
-      expect(gestTitles).toContain("Rapport d'inspection");
-      expect(gestTitles).toContain("Rapport agronomique");
-      expect(gestTitles).toContain("Tableau de bord exploitation");
-      expect(gestTitles).toContain("Suivi de projet");
-      expect(gestTitles).toContain("Analyse des données");
-      expect(gestTitles).toContain("Historique des interventions");
-      expect(gestTitles).toContain("Génération de rapports PDF");
+      const allTitles = allTools.map((t) => t.title);
+      expect(allTitles).toContain("Mesure GPS & Arpentage de Parcelle");
+      expect(allTitles).toContain("Farm Map & SIG Parcellaire");
+      expect(allTitles).toContain("Crop Designer — Lignes de Plantation");
+      expect(allTitles).toContain("Concepteur d'Irrigation — Réseaux & Pompage");
+      expect(allTitles).toContain("Livestock Designer — Bâtiments d'Élevage");
+      expect(allTitles).toContain("Farm Builder — Concepteur de Ferme 2D");
+      expect(allTitles).toContain("Calculateur de Devis Officiels FCFA");
+      expect(allTitles).toContain("Diagnostic des Cultures & Ravageurs");
+      expect(allTitles).toContain("Rapports de Visite & Diagnostic Terrain");
+      expect(allTitles).toContain("Copilote NAFA IA Terrain");
+      expect(allTitles).toContain("Bibliothèque des Cultures Sahéliennes");
+      expect(allTitles).toContain("Métrés & Estimation des Matériaux");
     });
 
-    it("vérifie que chaque outil possède son badge de connectivité Hors ligne ou En ligne", () => {
+    it("vérifie que chaque outil possède son badge de connectivité 100% Hors ligne", () => {
       const allTools = agronomicToolkitStorage.getAllTools();
       allTools.forEach((tool) => {
-        expect(typeof tool.isOffline).toBe("boolean");
+        expect(tool.isOffline).toBe(true);
         expect(tool.description.length).toBeGreaterThan(10);
         expect(tool.route).toMatch(/^\/dashboard\//);
       });
@@ -136,13 +86,13 @@ describe("Suite Professionnelle « Services Agronomiques & Conseils »", () => {
       renderWithProviders(<ServicesPage />);
 
       // En-tête officiel
-      expect(screen.getByRole("heading", { name: /Services Agronomiques & Conseils/i })).toBeInTheDocument();
-      expect(screen.getByText(/Suite Professionnelle d'Ingénierie & Conseil Agronomique/i)).toBeInTheDocument();
+      expect(screen.getByRole("heading", { level: 1, name: /NAFA FIELD DESIGNER/i })).toBeInTheDocument();
+      expect(screen.getByText(/NAFA FIELD DESIGNER — Suite d'Ingénierie & d'Intervention Terrain/i)).toBeInTheDocument();
 
-      // Vérifie la présence de cartes clés
-      expect(screen.getAllByText("Cartographie GPS").length).toBeGreaterThan(0);
-      expect(screen.getAllByText("Concepteur d'irrigation").length).toBeGreaterThan(0);
-      expect(screen.getAllByText("Diagnostic des cultures").length).toBeGreaterThan(0);
+      // Vérifie la présence de cartes clés NAFA FIELD DESIGNER
+      expect(screen.getAllByText("Mesure GPS & Arpentage de Parcelle").length).toBeGreaterThan(0);
+      expect(screen.getAllByText("Concepteur d'Irrigation — Réseaux & Pompage").length).toBeGreaterThan(0);
+      expect(screen.getAllByText("Diagnostic des Cultures & Ravageurs").length).toBeGreaterThan(0);
 
       // Boutons "Ouvrir" disponibles sur les cartes
       const openButtons = screen.getAllByRole("button", { name: /Ouvrir/i });
@@ -160,8 +110,8 @@ describe("Suite Professionnelle « Services Agronomiques & Conseils »", () => {
       fireEvent.change(searchInput, { target: { value: "Mesurer une parcelle" } });
 
       await waitFor(() => {
-        expect(screen.getAllByText("Mesure de parcelle").length).toBeGreaterThan(0);
-        expect(screen.queryByText("Concepteur d'irrigation")).toBeNull();
+        expect(screen.getAllByText("Mesure GPS & Arpentage de Parcelle").length).toBeGreaterThan(0);
+        expect(screen.queryByText("Concepteur d'Irrigation — Réseaux & Pompage")).toBeNull();
       });
     });
 
@@ -174,8 +124,8 @@ describe("Suite Professionnelle « Services Agronomiques & Conseils »", () => {
       fireEvent.change(searchInput, { target: { value: "Concevoir une irrigation" } });
 
       await waitFor(() => {
-        expect(screen.getAllByText("Concepteur d'irrigation").length).toBeGreaterThan(0);
-        expect(screen.queryByText("Diagnostic des ravageurs")).toBeNull();
+        expect(screen.getAllByText("Concepteur d'Irrigation — Réseaux & Pompage").length).toBeGreaterThan(0);
+        expect(screen.queryByText("Diagnostic des Cultures & Ravageurs")).toBeNull();
       });
     });
 
@@ -188,7 +138,7 @@ describe("Suite Professionnelle « Services Agronomiques & Conseils »", () => {
       fireEvent.change(searchInput, { target: { value: "Diagnostiquer une maladie" } });
 
       await waitFor(() => {
-        expect(screen.getAllByText("Diagnostic des maladies").length).toBeGreaterThan(0);
+        expect(screen.getAllByText("Diagnostic des Cultures & Ravageurs").length).toBeGreaterThan(0);
       });
     });
 
@@ -201,18 +151,18 @@ describe("Suite Professionnelle « Services Agronomiques & Conseils »", () => {
       fireEvent.change(searchInput, { target: { value: "Faire un devis" } });
 
       await waitFor(() => {
-        expect(screen.getAllByText("Calculateur de devis").length).toBeGreaterThan(0);
+        expect(screen.getAllByText("Calculateur de Devis Officiels FCFA").length).toBeGreaterThan(0);
       });
     });
   });
 
-  describe("4. Carte Spéciale & Plus Visible : NAFA Genius", () => {
+  describe("4. Carte Spéciale & Plus Visible : NAFA Genius / Field Designer", () => {
     it("affiche la carte héro NAFA Genius avec ses 7 actions directes", () => {
       mockAuth("agronome");
 
       renderWithProviders(<ServicesPage />);
 
-      // Titre & Badge NAFA Genius
+      // Titre & Badge
       expect(screen.getByRole("heading", { name: /NAFA Genius/i })).toBeInTheDocument();
       expect(screen.getByText(/Votre copilote d'ingénierie agricole/i)).toBeInTheDocument();
 
@@ -237,24 +187,24 @@ describe("Suite Professionnelle « Services Agronomiques & Conseils »", () => {
       expect(screen.getByText(/Mes outils favoris/i)).toBeInTheDocument();
 
       // Tester l'ajout/retrait de favori via le stockage
-      const isFavInitially = agronomicToolkitStorage.isFavorite("tool-inspection-terrain");
+      const isFavInitially = agronomicToolkitStorage.isFavorite("tool-mesure-gps");
       expect(typeof isFavInitially).toBe("boolean");
 
-      agronomicToolkitStorage.toggleFavoriteTool("tool-conception-serre");
-      expect(agronomicToolkitStorage.isFavorite("tool-conception-serre")).toBe(true);
+      agronomicToolkitStorage.toggleFavoriteTool("tool-farm-builder");
+      expect(agronomicToolkitStorage.isFavorite("tool-farm-builder")).toBe(false); // was true by default
 
-      agronomicToolkitStorage.toggleFavoriteTool("tool-conception-serre");
-      expect(agronomicToolkitStorage.isFavorite("tool-conception-serre")).toBe(false);
+      agronomicToolkitStorage.toggleFavoriteTool("tool-farm-builder");
+      expect(agronomicToolkitStorage.isFavorite("tool-farm-builder")).toBe(true);
     }, 15000);
 
     it("enregistre l'historique des outils récemment utilisés", () => {
-      agronomicToolkitStorage.recordToolUsage("tool-calcul-debit");
-      agronomicToolkitStorage.recordToolUsage("tool-analyse-sols");
+      agronomicToolkitStorage.recordToolUsage("tool-irrigation-designer");
+      agronomicToolkitStorage.recordToolUsage("tool-crop-designer");
 
       const recents = agronomicToolkitStorage.getRecentTools();
       expect(recents.length).toBeGreaterThanOrEqual(2);
-      expect(recents[0].id).toBe("tool-analyse-sols");
-      expect(recents[1].id).toBe("tool-calcul-debit");
+      expect(recents[0].id).toBe("tool-crop-designer");
+      expect(recents[1].id).toBe("tool-irrigation-designer");
     });
   });
 

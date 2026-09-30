@@ -1,4 +1,4 @@
-﻿import React, { useState, useMemo, useEffect } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import {
   agronomicToolkitStorage,
@@ -140,23 +140,23 @@ export default function ServicesPage() {
           <div>
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 text-xs font-bold mb-1 border border-emerald-500/20">
               <ShieldCheck className="h-3.5 w-3.5 text-emerald-600" />
-              <span>Suite Professionnelle d'Ingénierie & Conseil Agronomique</span>
+              <span>NAFA FIELD DESIGNER — Suite d'Ingénierie & d'Intervention Terrain</span>
             </div>
 
             <h1 className="text-2xl sm:text-3xl font-heading font-black text-foreground flex items-center gap-2.5">
               <Compass className="h-7 w-7 text-[#F97316]" />
-              <span>Services Agronomiques & Conseils</span>
+              <span>NAFA FIELD DESIGNER</span>
             </h1>
 
             <p className="text-xs sm:text-sm text-muted-foreground mt-1 max-w-2xl font-medium">
-              Toolkit opérationnel 1-Touch pour agronomes de terrain, consultants ruraux et bureaux d'études agricoles sahéliens.
+              Le logiciel professionnel de conception et d’intervention terrain pour agronomes africains (Arpentage GPS, Cultures, Irrigation, Bâtiments d'élevage, Devis & Rapports).
             </p>
           </div>
         </div>
 
         <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-muted border border-border text-xs font-bold text-muted-foreground self-start md:self-auto">
           <CheckCircle2 className="h-3.5 w-3.5 text-emerald-600" />
-          <span>{allToolsCount} outils opérationnels 100% hors-ligne</span>
+          <span>{allToolsCount} outils NAFA Field Designer opérationnels</span>
         </div>
       </div>
 
@@ -215,7 +215,7 @@ export default function ServicesPage() {
           3. CARTE HERO SPECIALE : NAFA GENIUS
       ══════════════════════════════════════════════════════ */}
       {!searchQuery && selectedCategory === "all" && (
-        <NafaGeniusHeroCard onOpenContextualModal={() => navigate("/dashboard/genius")} />
+        <NafaGeniusHeroCard onOpenContextualModal={() => navigate("/dashboard/field-designer")} />
       )}
 
       {/* ══════════════════════════════════════════════════════
@@ -283,8 +283,8 @@ export default function ServicesPage() {
       <div className="space-y-4">
         <div className="flex items-center justify-between">
           <h2 className="text-base sm:text-lg font-heading font-black text-foreground flex items-center gap-2">
-            <Layers className="h-5 w-5 text-[#F97316]" />
-            <span>Suite d'outils par domaine</span>
+            <Compass className="h-5 w-5 text-[#F97316]" />
+            <span>Outils NAFA FIELD DESIGNER</span>
             <span className="text-xs text-muted-foreground font-semibold">
               ({filteredTools.length} outil{filteredTools.length > 1 ? "s" : ""})
             </span>
