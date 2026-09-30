@@ -326,9 +326,10 @@ export function calculateIrrisModel(input: IrrisInput): IrrisResult {
  * pour permettre l'export direct vers le PDF officiel et le comparateur de devis
  */
 export function irrisToIrrigationDesignResult(irris: IrrisResult): IrrigationDesignResult {
+  const seasonConfig = (irris.input && IRRIS_SEASONS[irris.input.season]) || IRRIS_SEASONS.seche_chaude;
   return {
     dailyEtoMm: 5.5,
-    kcUsed: IRRIS_SEASONS[irris.input.season].coefEto,
+    kcUsed: seasonConfig.coefEto,
     dailyEtcMm: Math.round((irris.dailyNetWaterVolumeM3 / (irris.input.areaHa * 10)) * 10) / 10,
     irrigationEfficiency: irris.irrigationEfficiencyPct / 100,
     dailyGrossMm: Math.round((irris.dailyGrossWaterVolumeM3 / (irris.input.areaHa * 10)) * 10) / 10,
