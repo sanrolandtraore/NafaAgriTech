@@ -4,7 +4,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue, SelectGroup, SelectLabel } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
@@ -87,18 +87,100 @@ const AnimalReproductionPage = () => {
   }, [animals]);
 
   const activeAnimals = useMemo(() => {
-    return (animals || []).filter((a: any) => (a.status || "actif") === "actif");
+    return (animals || []).filter((a: any) => {
+      const st = (a.status || "actif").toString().toLowerCase();
+      return st === "actif";
+    });
   }, [animals]);
 
-  const females = useMemo(() => {
-    const directFemales = activeAnimals.filter((a: any) => a.sex === "femelle");
-    // Fallback: if user didn't set sex, allow all active animals
-    return directFemales.length > 0 ? directFemales : activeAnimals;
+  const { explicitFemales, unspecifiedAnimals, otherActiveAnimals, males } = useMemo(() => {
+    const femalesList: any[] = [];
+    const unspecifiedList: any[] = [];
+    const othersList: any[] = [];
+    const malesList: any[] = [];
+
+    activeAnimals.forEach((a: any) => {
+      const s = (a.sex || "").toString().trim().toLowerCase();
+      if (s === "femelle" || s === "female" || s === "f") {
+        femalesList.push(a);
+      } else if (!s || s === "inconnu" || s === "unknown" || a.is_group) {
+        unspecifiedList.push(a);
+      } else if (s === "male" || s === "mâle" || s === "m") {
+        malesList.push(a);
+        othersList.push(a);
+      } else {
+        othersList.push(a);
+      }
+    });
+
+    return {
+      explicitFemales: femalesList,
+      unspecifiedAnimals: unspecifiedList,
+      otherActiveAnimals: othersList,
+      males: malesList,
+    };
   }, [activeAnimals]);
 
-  const males = useMemo(() => {
-    return activeAnimals.filter((a: any) => a.sex === "male");
-  }, [activeAnimals]);
+  // Quick Add Female Reproductrice inline state & handler
+  const [quickAddFemaleOpen, setQuickAddFemaleOpen] = useState(false);
+  const [quickFemale, setQuickFemale] = useState({
+    name: "",
+    identification_number: "",
+    species: "bovin",
+    breed: "",
+  });
+  const [addingFemale, setAddingFemale] = useState(false);
+
+  const handleQuickAddFemale = async (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
+    const nameOrId = quickFemale.name.trim() || quickFemale.identification_number.trim();
+    if (!nameOrId) {
+      toast.error("Veuillez renseigner au moins un nom ou un numéro pour la reproductrice");
+      return;
+    }
+
+    setAddingFemale(true);
+    try {
+      const displayName = quickFemale.name.trim() || `Femelle #${quickFemale.identification_number.trim()}`;
+      const payload: any = {
+        farm_id: effectiveFarmId,
+        species: quickFemale.species,
+        is_group: false,
+        name: displayName,
+        identification_number: quickFemale.identification_number.trim() || null,
+        breed: quickFemale.breed.trim() || null,
+        sex: "femelle",
+        status: "actif",
+        acquisition_date: new Date().toISOString().split("T")[0],
+        acquisition_cost: 0,
+        notes: "Créée directement depuis le suivi de reproduction",
+      };
+
+      const result = await insertAnimal(payload);
+      const newAnimalId = result?.id;
+      if (newAnimalId) {
+        let expected = form.expected_birth_date;
+        if (["saillie", "insemination", "gestation"].includes(form.event_type) && form.event_date) {
+          expected = calculateExpectedBirthDate(form.event_date, quickFemale.species);
+        }
+        setForm((prev) => ({
+          ...prev,
+          animal_id: newAnimalId,
+          expected_birth_date: expected,
+        }));
+        toast.success(`Reproductrice "${displayName}" enregistrée et sélectionnée !`);
+        setQuickAddFemaleOpen(false);
+        setQuickFemale({ name: "", identification_number: "", species: "bovin", breed: "" });
+      } else {
+        toast.error("Erreur lors de l'enregistrement de la reproductrice");
+      }
+    } catch (err: any) {
+      console.error("handleQuickAddFemale error:", err);
+      toast.error("Impossible d'enregistrer la reproductrice");
+    } finally {
+      setAddingFemale(false);
+    }
+  };
 
   const getAnimalDisplayName = (animalId: string) => {
     const a = animalsMap.get(animalId);
@@ -189,6 +271,7 @@ const AnimalReproductionPage = () => {
 
       toast.success("Événement de reproduction enregistré avec succès.");
       setOpenCreate(false);
+      setQuickAddFemaleOpen(false);
       setForm({
         animal_id: "",
         event_type: "saillie",
@@ -345,20 +428,176 @@ const AnimalReproductionPage = () => {
                 </DialogTitle>
               </DialogHeader>
               <form onSubmit={handleSubmit} className="space-y-4 pt-2">
-                <div className="space-y-1">
-                  <Label className="text-xs font-semibold">Reproductrice (Mère) *</Label>
-                  <Select value={form.animal_id} onValueChange={handleAnimalSelect}>
+                <div className="space-y-1.5">
+                  <div className="flex items-center justify-between">
+                    <Label className="text-xs font-semibold flex items-center gap-1.5">
+                      <span>Reproductrice (Mère) *</span>
+                      {form.animal_id && (
+                        <Badge variant="outline" className="text-[10px] py-0 px-1 text-emerald-700 border-emerald-300 bg-emerald-50 dark:bg-emerald-950/40">
+                          Sélectionnée
+                        </Badge>
+                      )}
+                    </Label>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => setQuickAddFemaleOpen(!quickAddFemaleOpen)}
+                      className="h-6 px-2 text-[11px] font-bold text-sky-700 hover:text-sky-800 hover:bg-sky-50 dark:text-sky-400 dark:hover:bg-sky-950/50"
+                    >
+                      <Plus className="h-3 w-3 mr-1" />
+                      {quickAddFemaleOpen ? "Fermer formulaire" : "Ajouter une reproductrice"}
+                    </Button>
+                  </div>
+
+                  {quickAddFemaleOpen && (
+                    <div className="p-3 bg-sky-50/80 dark:bg-sky-950/30 rounded-lg border border-sky-200 dark:border-sky-800 space-y-2.5 animate-in fade-in duration-200">
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs font-bold text-sky-900 dark:text-sky-200 flex items-center gap-1.5">
+                          <Sparkles className="h-3.5 w-3.5 text-sky-600" />
+                          Création rapide d'une reproductrice
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() => setQuickAddFemaleOpen(false)}
+                          className="text-[11px] text-muted-foreground hover:text-foreground"
+                        >
+                          Annuler
+                        </button>
+                      </div>
+                      <div className="grid grid-cols-2 gap-2">
+                        <div>
+                          <Label className="text-[11px]">Nom ou Surnom *</Label>
+                          <Input
+                            placeholder="Ex: Bella, Blanchette..."
+                            value={quickFemale.name}
+                            onChange={(e) => setQuickFemale({ ...quickFemale, name: e.target.value })}
+                            className="h-8 text-xs bg-white dark:bg-card"
+                          />
+                        </div>
+                        <div>
+                          <Label className="text-[11px]">N° Boucle / ID</Label>
+                          <Input
+                            placeholder="Ex: BF-042"
+                            value={quickFemale.identification_number}
+                            onChange={(e) => setQuickFemale({ ...quickFemale, identification_number: e.target.value })}
+                            className="h-8 text-xs bg-white dark:bg-card"
+                          />
+                        </div>
+                      </div>
+                      <div className="grid grid-cols-2 gap-2">
+                        <div>
+                          <Label className="text-[11px]">Espèce</Label>
+                          <Select
+                            value={quickFemale.species}
+                            onValueChange={(v) => setQuickFemale({ ...quickFemale, species: v })}
+                          >
+                            <SelectTrigger className="h-8 text-xs bg-white dark:bg-card"><SelectValue /></SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="bovin">Bovin (Vache / Génisse)</SelectItem>
+                              <SelectItem value="ovin">Ovin (Brebis)</SelectItem>
+                              <SelectItem value="caprin">Caprin (Chèvre)</SelectItem>
+                              <SelectItem value="porcin">Porcin (Truie)</SelectItem>
+                              <SelectItem value="volaille">Volaille (Poule / Pondeuse)</SelectItem>
+                              <SelectItem value="pisciculture">Pisciculture (Géniteur)</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        <div>
+                          <Label className="text-[11px]">Race (optionnelle)</Label>
+                          <Input
+                            placeholder="Ex: Zébu Peulh, Djallonké..."
+                            value={quickFemale.breed}
+                            onChange={(e) => setQuickFemale({ ...quickFemale, breed: e.target.value })}
+                            className="h-8 text-xs bg-white dark:bg-card"
+                          />
+                        </div>
+                      </div>
+                      <Button
+                        type="button"
+                        onClick={() => handleQuickAddFemale()}
+                        disabled={addingFemale || (!quickFemale.name.trim() && !quickFemale.identification_number.trim())}
+                        className="w-full h-8 text-xs font-bold bg-sky-600 hover:bg-sky-700 text-white"
+                      >
+                        {addingFemale ? "Enregistrement..." : "Enregistrer et sélectionner comme mère"}
+                      </Button>
+                    </div>
+                  )}
+
+                  <Select value={form.animal_id || undefined} onValueChange={handleAnimalSelect}>
                     <SelectTrigger className="h-9 text-xs">
-                      <SelectValue placeholder="Choisir la femelle..." />
+                      <SelectValue placeholder={loadingAnimals ? "Chargement des animaux..." : "Choisir la femelle reproductrice..."} />
                     </SelectTrigger>
-                    <SelectContent>
-                      {females.map((a: any) => (
-                        <SelectItem key={a.id} value={a.id}>
-                          {a.name || a.identification_number || a.group_label || "Animal"} ({a.species})
+                    <SelectContent className="max-h-72">
+                      {/* Si l'animal sélectionné n'est pas dans les listes filtrées (ex: créé hors ligne), le garder visible */}
+                      {form.animal_id && animalsMap.has(form.animal_id) && !explicitFemales.some((a: any) => a.id === form.animal_id) && !unspecifiedAnimals.some((a: any) => a.id === form.animal_id) && !otherActiveAnimals.some((a: any) => a.id === form.animal_id) && (
+                        <SelectItem value={form.animal_id}>
+                          {getAnimalDisplayName(form.animal_id)}
                         </SelectItem>
-                      ))}
+                      )}
+
+                      {/* Groupe 1 : Femelles confirmées */}
+                      {explicitFemales.length > 0 && (
+                        <SelectGroup>
+                          <SelectLabel className="text-emerald-700 dark:text-emerald-400 font-bold text-[11px] uppercase tracking-wider">
+                            Femelles confirmées ({explicitFemales.length})
+                          </SelectLabel>
+                          {explicitFemales.map((a: any) => (
+                            <SelectItem key={a.id} value={a.id}>
+                              {a.name || a.identification_number || "Femelle"} ({a.species}{a.identification_number ? ` • #${a.identification_number}` : ""})
+                            </SelectItem>
+                          ))}
+                        </SelectGroup>
+                      )}
+
+                      {/* Groupe 2 : Sujets avec sexe non spécifié ou lots */}
+                      {unspecifiedAnimals.length > 0 && (
+                        <SelectGroup>
+                          <SelectLabel className="text-amber-700 dark:text-amber-400 font-bold text-[11px] uppercase tracking-wider">
+                            Sujets & Lots reproducteurs ({unspecifiedAnimals.length})
+                          </SelectLabel>
+                          {unspecifiedAnimals.map((a: any) => (
+                            <SelectItem key={a.id} value={a.id}>
+                              {a.is_group ? `[Lot] ${a.group_label || a.name || "Lot"}` : a.name || a.identification_number || "Animal"} ({a.species})
+                            </SelectItem>
+                          ))}
+                        </SelectGroup>
+                      )}
+
+                      {/* Groupe 3 : Autres sujets actifs du cheptel */}
+                      {otherActiveAnimals.length > 0 && (
+                        <SelectGroup>
+                          <SelectLabel className="text-muted-foreground font-semibold text-[11px] uppercase tracking-wider">
+                            Autres sujets du cheptel ({otherActiveAnimals.length})
+                          </SelectLabel>
+                          {otherActiveAnimals.map((a: any) => (
+                            <SelectItem key={a.id} value={a.id}>
+                              {a.name || a.identification_number || "Animal"} ({a.species} • {a.sex || "Sujet"})
+                            </SelectItem>
+                          ))}
+                        </SelectGroup>
+                      )}
+
+                      {activeAnimals.length === 0 && (
+                        <SelectItem value="__none__" disabled>
+                          Aucun animal dans le cheptel — Utilisez le bouton d'ajout ci-dessus
+                        </SelectItem>
+                      )}
                     </SelectContent>
                   </Select>
+
+                  {activeAnimals.length === 0 && !quickAddFemaleOpen && (
+                    <div className="flex items-center justify-between p-2 rounded-md bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-900 text-[11px] text-amber-800 dark:text-amber-200">
+                      <span>Votre cheptel n'a pas encore d'animaux enregistrés.</span>
+                      <button
+                        type="button"
+                        onClick={() => setQuickAddFemaleOpen(true)}
+                        className="font-bold underline text-amber-900 dark:text-amber-100 hover:text-sky-700 ml-1"
+                      >
+                        Créer une reproductrice
+                      </button>
+                    </div>
+                  )}
                 </div>
 
                 <div className="grid grid-cols-2 gap-3">
@@ -387,14 +626,20 @@ const AnimalReproductionPage = () => {
 
                 <div className="space-y-1">
                   <Label className="text-xs font-semibold">Reproducteur (Père ou référence semence)</Label>
-                  <Select value={form.partner_id} onValueChange={(v) => setForm({ ...form, partner_id: v })}>
+                  <Select value={form.partner_id || undefined} onValueChange={(v) => setForm({ ...form, partner_id: v === "none" ? "" : v })}>
                     <SelectTrigger className="h-9 text-xs">
                       <SelectValue placeholder="Choisir un mâle du cheptel ou laisser vide..." />
                     </SelectTrigger>
                     <SelectContent>
+                      <SelectItem value="none">-- Aucun mâle / Semence externe --</SelectItem>
                       {males.map((a: any) => (
                         <SelectItem key={a.id} value={a.id}>
                           {a.name || a.identification_number || "Mâle"} ({a.species})
+                        </SelectItem>
+                      ))}
+                      {unspecifiedAnimals.map((a: any) => (
+                        <SelectItem key={a.id} value={a.id}>
+                          {a.name || a.identification_number || "Sujet"} ({a.species})
                         </SelectItem>
                       ))}
                     </SelectContent>

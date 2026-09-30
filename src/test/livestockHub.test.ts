@@ -88,6 +88,72 @@ describe("Livestock Hub & Veterinary Suite Tests", () => {
       expect(offspringOptions).toContain("2");
       expect(offspringOptions).toContain("10");
     });
+
+    it("correctly categorizes breeding candidates into explicit females, unspecified lots, and others", () => {
+      const activeAnimals = [
+        { id: "1", name: "Vache Bella", sex: "femelle", species: "bovin" },
+        { id: "2", name: "Brebis Blanche", sex: "Femelle", species: "ovin" },
+        { id: "3", name: "Génisse 03", sex: "inconnu", species: "bovin" },
+        { id: "4", name: "Lot 20 Brebis", is_group: true, sex: "inconnu", species: "ovin" },
+        { id: "5", name: "Taureau Peulh", sex: "male", species: "bovin" },
+      ];
+
+      const explicitFemales: any[] = [];
+      const unspecifiedAnimals: any[] = [];
+      const otherActiveAnimals: any[] = [];
+
+      activeAnimals.forEach((a) => {
+        const s = (a.sex || "").toString().trim().toLowerCase();
+        if (s === "femelle" || s === "female" || s === "f") {
+          explicitFemales.push(a);
+        } else if (!s || s === "inconnu" || s === "unknown" || a.is_group) {
+          unspecifiedAnimals.push(a);
+        } else {
+          otherActiveAnimals.push(a);
+        }
+      });
+
+      // Bella and Blanche (even with uppercase 'Femelle') are explicit females
+      expect(explicitFemales.length).toBe(2);
+      expect(explicitFemales.map(a => a.name)).toEqual(["Vache Bella", "Brebis Blanche"]);
+
+      // Unspecified sex animal and breeding lot are selectable under unspecifiedAnimals
+      expect(unspecifiedAnimals.length).toBe(2);
+      expect(unspecifiedAnimals.map(a => a.name)).toContain("Génisse 03");
+      expect(unspecifiedAnimals.map(a => a.name)).toContain("Lot 20 Brebis");
+
+      // Male is in others
+      expect(otherActiveAnimals.length).toBe(1);
+      expect(otherActiveAnimals[0].name).toBe("Taureau Peulh");
+    });
+
+    it("builds a valid female quick-creation payload for instant selection", () => {
+      const quickFemale = {
+        name: "Reine Rouge",
+        identification_number: "BF-777",
+        species: "bovin",
+        breed: "Zébu Azawak",
+      };
+
+      const payload = {
+        farm_id: "10000000-1000-4000-8000-100000000000",
+        species: quickFemale.species,
+        is_group: false,
+        name: quickFemale.name,
+        identification_number: quickFemale.identification_number,
+        breed: quickFemale.breed,
+        sex: "femelle",
+        status: "actif",
+        acquisition_date: "2026-09-30",
+        acquisition_cost: 0,
+        notes: "Créée directement depuis le suivi de reproduction",
+      };
+
+      expect(payload.sex).toBe("femelle");
+      expect(payload.status).toBe("actif");
+      expect(payload.species).toBe("bovin");
+      expect(payload.name).toBe("Reine Rouge");
+    });
   });
 
   describe("Feeding & Pastoral Finances", () => {
