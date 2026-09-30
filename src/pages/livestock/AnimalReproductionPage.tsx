@@ -8,9 +8,12 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
+import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
-import { Plus, Trash2, Baby, WifiOff, CheckCircle2, HeartHandshake, Calendar, Filter } from "lucide-react";
-import { useOfflineData } from "@/hooks/useOfflineData";
+import { Plus, Trash2, Baby, WifiOff, CheckCircle2, HeartHandshake, Calendar, Filter, Sparkles } from "lucide-react";
+import { useOfflineData, isValidUuid } from "@/hooks/useOfflineData";
+import { useDefaultLivestockFarm } from "@/hooks/useDefaultLivestockFarm";
+import { calculateExpectedBirthDate, getGestationPeriodDays } from "@/lib/livestockEngine";
 import BackNavigationButton from "@/components/BackNavigationButton";
 
 export const reproTypes = [
@@ -25,15 +28,23 @@ export const reproTypes = [
 export const offspringOptions = ["0", "1", "2", "3", "4", "5", "6", "7", "8", "10", "12", "15", "20"];
 
 const AnimalReproductionPage = () => {
+  const { user } = useAuth();
+  const { farmId } = useDefaultLivestockFarm();
+  const effectiveFarmId = (farmId && isValidUuid(farmId))
+    ? farmId
+    : (user && isValidUuid(user.id))
+    ? user.id
+    : "10000000-1000-4000-8000-100000000000";
+
   const { data: events, loading: loadingEvents, isOffline, insertRow, updateRow, deleteRow } = useOfflineData({
     table: "animal_reproductions",
     select: "*",
     orderBy: "event_date",
   });
 
-  const { data: animals, loading: loadingAnimals } = useOfflineData({
+  const { data: animals, loading: loadingAnimals, insertRow: insertAnimal } = useOfflineData({
     table: "animals",
-    select: "id, name, group_label, identification_number, species, sex, status",
+    select: "*",
     orderBy: "name",
   });
 
@@ -60,6 +71,7 @@ const AnimalReproductionPage = () => {
     actual_birth_date: new Date().toISOString().split("T")[0],
     offspring_count: "1",
     offspring_alive: "1",
+    autoAddToCheptel: true,
     notes: "",
   });
 
@@ -87,6 +99,45 @@ const AnimalReproductionPage = () => {
     const a = animalsMap.get(animalId);
     if (!a) return "Animal";
     return `${a.name || a.identification_number || a.group_label || "Animal"} (${a.species})`;
+  };
+
+  const handleAnimalSelect = (animalId: string) => {
+    const animal = animalsMap.get(animalId);
+    let expected = form.expected_birth_date;
+    if (animal && ["saillie", "insemination", "gestation"].includes(form.event_type) && form.event_date) {
+      expected = calculateExpectedBirthDate(form.event_date, animal.species);
+    }
+    setForm((prev) => ({
+      ...prev,
+      animal_id: animalId,
+      expected_birth_date: expected,
+    }));
+  };
+
+  const handleEventDateChange = (date: string) => {
+    const animal = animalsMap.get(form.animal_id);
+    let expected = form.expected_birth_date;
+    if (animal && ["saillie", "insemination", "gestation"].includes(form.event_type) && date) {
+      expected = calculateExpectedBirthDate(date, animal.species);
+    }
+    setForm((prev) => ({
+      ...prev,
+      event_date: date,
+      expected_birth_date: expected,
+    }));
+  };
+
+  const handleEventTypeChange = (type: string) => {
+    const animal = animalsMap.get(form.animal_id);
+    let expected = form.expected_birth_date;
+    if (animal && ["saillie", "insemination", "gestation"].includes(type) && form.event_date) {
+      expected = calculateExpectedBirthDate(form.event_date, animal.species);
+    }
+    setForm((prev) => ({
+      ...prev,
+      event_type: type,
+      expected_birth_date: expected,
+    }));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -134,6 +185,7 @@ const AnimalReproductionPage = () => {
       actual_birth_date: new Date().toISOString().split("T")[0],
       offspring_count: gestationEvent.offspring_count ? String(gestationEvent.offspring_count) : "1",
       offspring_alive: gestationEvent.offspring_alive ? String(gestationEvent.offspring_alive) : "1",
+      autoAddToCheptel: true,
       notes: gestationEvent.notes || "",
     });
   };
@@ -152,6 +204,54 @@ const AnimalReproductionPage = () => {
 
     const ok = await updateRow(resolvingGestation.id, updates);
     if (ok) {
+      const aliveCount = Number(birthForm.offspring_alive || 0);
+      if (birthForm.autoAddToCheptel && aliveCount > 0 && insertAnimal) {
+        const mother = animalsMap.get(resolvingGestation.animal_id);
+        const species = mother?.species || "bovin";
+        const isGroupSpecies = ["volaille", "pisciculture"].includes(species) || aliveCount > 4;
+
+        try {
+          if (isGroupSpecies) {
+            await insertAnimal({
+              farm_id: effectiveFarmId,
+              species,
+              is_group: true,
+              group_label: `Portée de ${mother?.name || "reproductrice"} (${aliveCount} nés)`,
+              group_size: aliveCount,
+              mortality_count: 0,
+              name: `Portée de ${mother?.name || "reproductrice"}`,
+              status: "actif",
+              birth_date: birthForm.actual_birth_date,
+              acquisition_date: birthForm.actual_birth_date,
+              acquisition_cost: 0,
+              notes: `Issu de la mise bas du ${birthForm.actual_birth_date} (Mère: ${mother?.name || mother?.identification_number || "Inconnue"})`,
+            });
+            toast.info(`${aliveCount} jeune(s) ajouté(s) comme lot dans le cheptel.`);
+          } else {
+            for (let i = 1; i <= aliveCount; i++) {
+              const suffix = aliveCount > 1 ? ` #${i}` : "";
+              const youngName = species === "bovin" ? "Veau" : species === "ovin" ? "Agneau" : species === "caprin" ? "Chevreau" : "Porcelet";
+              await insertAnimal({
+                farm_id: effectiveFarmId,
+                species,
+                is_group: false,
+                name: `${youngName} de ${mother?.name || "Mère"}${suffix}`,
+                breed: mother?.breed || null,
+                sex: "inconnu",
+                status: "actif",
+                birth_date: birthForm.actual_birth_date,
+                acquisition_date: birthForm.actual_birth_date,
+                acquisition_cost: 0,
+                notes: `Issu de la mise bas du ${birthForm.actual_birth_date} (Mère: ${mother?.name || mother?.identification_number || "Inconnue"})`,
+              });
+            }
+            toast.info(`${aliveCount} jeune(s) enregistré(s) individuellement dans le cheptel.`);
+          }
+        } catch (_err) {
+          // non-blocking
+        }
+      }
+
       toast.success("Mise bas enregistrée avec succès");
       setResolvingGestation(null);
     }
@@ -222,7 +322,7 @@ const AnimalReproductionPage = () => {
               <form onSubmit={handleSubmit} className="space-y-4 pt-2">
                 <div className="space-y-1">
                   <Label className="text-xs font-semibold">Reproductrice (Mère) *</Label>
-                  <Select value={form.animal_id} onValueChange={(v) => setForm({ ...form, animal_id: v })}>
+                  <Select value={form.animal_id} onValueChange={handleAnimalSelect}>
                     <SelectTrigger className="h-9 text-xs">
                       <SelectValue placeholder="Choisir la femelle..." />
                     </SelectTrigger>
@@ -239,7 +339,7 @@ const AnimalReproductionPage = () => {
                 <div className="grid grid-cols-2 gap-3">
                   <div className="space-y-1">
                     <Label className="text-xs font-semibold">Type d'acte *</Label>
-                    <Select value={form.event_type} onValueChange={(v) => setForm({ ...form, event_type: v })}>
+                    <Select value={form.event_type} onValueChange={handleEventTypeChange}>
                       <SelectTrigger className="h-9 text-xs"><SelectValue /></SelectTrigger>
                       <SelectContent>
                         {reproTypes.map((t) => (
@@ -253,7 +353,7 @@ const AnimalReproductionPage = () => {
                     <Input
                       type="date"
                       value={form.event_date}
-                      onChange={(e) => setForm({ ...form, event_date: e.target.value })}
+                      onChange={(e) => handleEventDateChange(e.target.value)}
                       required
                       className="h-9 text-xs"
                     />
@@ -555,6 +655,18 @@ const AnimalReproductionPage = () => {
                   className="h-9 text-xs"
                 />
               </div>
+
+              <div className="flex items-center justify-between p-2.5 rounded-xl bg-emerald-50 dark:bg-emerald-950/20 border border-emerald-200">
+                <div className="space-y-0.5">
+                  <Label className="text-xs font-semibold cursor-pointer">Intégrer immédiatement au cheptel</Label>
+                  <p className="text-[11px] text-muted-foreground">Crée automatiquement les nouveaux nés dans le registre</p>
+                </div>
+                <Switch
+                  checked={birthForm.autoAddToCheptel}
+                  onCheckedChange={(checked) => setBirthForm({ ...birthForm, autoAddToCheptel: checked })}
+                />
+              </div>
+
               <DialogFooter className="pt-2">
                 <Button type="button" variant="outline" onClick={() => setResolvingGestation(null)}>
                   Annuler

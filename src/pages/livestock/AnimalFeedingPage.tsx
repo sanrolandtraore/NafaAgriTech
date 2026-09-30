@@ -12,7 +12,7 @@ import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
 import { Plus, Trash2, Wheat, Package, WifiOff, Calculator, Sparkles, ArrowDownRight, AlertTriangle } from "lucide-react";
-import { useOfflineData } from "@/hooks/useOfflineData";
+import { useOfflineData, isValidUuid } from "@/hooks/useOfflineData";
 import { useDefaultLivestockFarm } from "@/hooks/useDefaultLivestockFarm";
 import { LivestockZootechnicCard } from "@/components/livestock/LivestockZootechnicCard";
 import BackNavigationButton from "@/components/BackNavigationButton";
@@ -50,7 +50,11 @@ export const suppliers = [
 const AnimalFeedingPage = () => {
   const { user } = useAuth();
   const { farmId } = useDefaultLivestockFarm();
-  const effectiveFarmId = farmId || (user ? `farm-${user.id}` : "default_farm");
+  const effectiveFarmId = (farmId && isValidUuid(farmId))
+    ? farmId
+    : (user && isValidUuid(user.id))
+    ? user.id
+    : "10000000-1000-4000-8000-100000000000";
 
   const { data: feedings, loading: loadingFeedings, isOffline, insertRow: insertFeeding, deleteRow: deleteFeeding } = useOfflineData({
     table: "animal_feedings",

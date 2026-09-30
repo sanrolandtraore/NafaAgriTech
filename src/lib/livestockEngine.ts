@@ -283,3 +283,103 @@ export function calculateBroilerBatch(params: BroilerSimulationParams): BroilerS
     roiPercent,
   };
 }
+
+/**
+ * Durées moyennes de gestation / incubation par espèce (jours)
+ * Normes zootechniques adaptées au cheptel sahélien (INERA / CIRDES)
+ */
+export const GESTATION_DAYS_BY_SPECIES: Record<string, number> = {
+  bovin: 283,      // ~9 mois et 10 jours (Zébu Peulh, Gudali, Métis)
+  ovin: 150,       // ~5 mois (Mouton du Sahel, Djallonké, Bali-Bali)
+  caprin: 150,     // ~5 mois (Chèvre rousse de Maradi, Chèvre du Sahel)
+  porcin: 114,     // 3 mois, 3 semaines, 3 jours (Large White, Porc local)
+  volaille: 21,    // 21 jours d'incubation (Poule), 28 jours pour pintade
+  pisciculture: 3, // Éclosion des œufs de tilapias/silures
+};
+
+/**
+ * Récupère la durée de gestation moyenne en jours
+ */
+export function getGestationPeriodDays(species: string): number {
+  const norm = species.toLowerCase().trim();
+  return GESTATION_DAYS_BY_SPECIES[norm] || 150;
+}
+
+/**
+ * Calcule la date présumée de mise bas à partir de la date d'acte et de l'espèce
+ */
+export function calculateExpectedBirthDate(serviceDate: string, species: string): string {
+  if (!serviceDate) return "";
+  const d = new Date(serviceDate);
+  if (isNaN(d.getTime())) return "";
+
+  const days = getGestationPeriodDays(species);
+  d.setDate(d.getDate() + days);
+  return d.toISOString().split("T")[0];
+}
+
+export interface WaterNeedsParams {
+  species: string;
+  headCount: number;
+  isHotDrySeason?: boolean; // Période chaude et sèche sahélienne (mars - mai, temp > 38°C)
+}
+
+export interface WaterNeedsResult {
+  dailyPerHeadLiters: number;
+  dailyTotalLiters: number;
+  monthlyTotalLiters: number;
+  isHotDrySeason: boolean;
+  recommendation: string;
+}
+
+/**
+ * Calculateur des besoins hydriques pour l'élevage en zone sahélienne (Burkina Faso)
+ * En saison sèche chaude (mars-mai), la consommation en eau augmente de 35 à 50%
+ */
+export function calculateSahelianWaterNeeds(params: WaterNeedsParams): WaterNeedsResult {
+  const { species, headCount, isHotDrySeason = false } = params;
+  const count = Math.max(0, headCount);
+  const spec = species.toLowerCase().trim();
+
+  let normalLiters = 45;
+  let hotDryLiters = 70;
+  let recommendation = "Veiller à un abreuvoir ombragé et de l'eau propre à volonté.";
+
+  if (spec === "bovin") {
+    normalLiters = 45;
+    hotDryLiters = 70;
+    recommendation = "Bovins : Distribuer de l'eau fraîche 2 à 3 fois par jour ou en continu à l'ombre.";
+  } else if (spec === "ovin") {
+    normalLiters = 5;
+    hotDryLiters = 8;
+    recommendation = "Ovins : Abreuvement indispensable aux heures chaudes pour éviter le stress thermique.";
+  } else if (spec === "caprin") {
+    normalLiters = 5;
+    hotDryLiters = 8;
+    recommendation = "Caprins : Eau propre renouvelée quotidiennement avec apport en sel minéral.";
+  } else if (spec === "porcin") {
+    normalLiters = 18;
+    hotDryLiters = 28;
+    recommendation = "Porcins : Eau de boisson abondante et brumisation/bain de boue pour thermorégulation.";
+  } else if (spec === "volaille") {
+    normalLiters = 0.25;
+    hotDryLiters = 0.35;
+    recommendation = "Volailles : Ajouter un complexe anti-stress / électrolytes dans l'eau lors des pics de chaleur (>35°C).";
+  } else if (spec === "pisciculture") {
+    normalLiters = 100;
+    hotDryLiters = 200;
+    recommendation = "Pisciculture : Compensation quotidienne de l'évaporation et maintien de l'oxygénation de l'eau.";
+  }
+
+  const perHead = isHotDrySeason ? hotDryLiters : normalLiters;
+  const dailyTotal = Math.round(perHead * count * 10) / 10;
+  const monthlyTotal = Math.round(dailyTotal * 30);
+
+  return {
+    dailyPerHeadLiters: perHead,
+    dailyTotalLiters: dailyTotal,
+    monthlyTotalLiters: monthlyTotal,
+    isHotDrySeason,
+    recommendation,
+  };
+}

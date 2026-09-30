@@ -3,6 +3,9 @@ import {
   calculateFatteningPlan,
   calculateLayerProduction,
   calculateBroilerBatch,
+  getGestationPeriodDays,
+  calculateExpectedBirthDate,
+  calculateSahelianWaterNeeds,
 } from "../lib/livestockEngine";
 
 describe("Livestock Zootechnic Engine", () => {
@@ -111,4 +114,47 @@ describe("Livestock Zootechnic Engine", () => {
       expect(res.roiPercent).toBeCloseTo(15.9, 1);
     });
   });
+
+  describe("Gestation & Birth Calculator", () => {
+    it("returns correct gestation duration per species", () => {
+      expect(getGestationPeriodDays("bovin")).toBe(283);
+      expect(getGestationPeriodDays("ovin")).toBe(150);
+      expect(getGestationPeriodDays("caprin")).toBe(150);
+      expect(getGestationPeriodDays("porcin")).toBe(114);
+      expect(getGestationPeriodDays("volaille")).toBe(21);
+      expect(getGestationPeriodDays("inconnu")).toBe(150); // fallback
+    });
+
+    it("projects accurate birth dates", () => {
+      // 2026-01-01 + 283 days = 2026-10-11
+      const cowBirth = calculateExpectedBirthDate("2026-01-01", "bovin");
+      expect(cowBirth).toBe("2026-10-11");
+
+      // 2026-01-01 + 150 days = 2026-05-31
+      const sheepBirth = calculateExpectedBirthDate("2026-01-01", "ovin");
+      expect(sheepBirth).toBe("2026-05-31");
+    });
+  });
+
+  describe("Sahelian Water Requirements", () => {
+    it("calculates daily and monthly water needs in normal and hot dry seasons", () => {
+      // 20 cattle in normal season (45L/head/day)
+      const normalCattle = calculateSahelianWaterNeeds({ species: "bovin", headCount: 20, isHotDrySeason: false });
+      expect(normalCattle.dailyPerHeadLiters).toBe(45);
+      expect(normalCattle.dailyTotalLiters).toBe(900);
+      expect(normalCattle.monthlyTotalLiters).toBe(27000);
+
+      // 20 cattle in hot dry season (70L/head/day)
+      const dryCattle = calculateSahelianWaterNeeds({ species: "bovin", headCount: 20, isHotDrySeason: true });
+      expect(dryCattle.dailyPerHeadLiters).toBe(70);
+      expect(dryCattle.dailyTotalLiters).toBe(1400);
+      expect(dryCattle.monthlyTotalLiters).toBe(42000);
+
+      // 500 chickens in hot dry season (0.35L/bird/day)
+      const chickens = calculateSahelianWaterNeeds({ species: "volaille", headCount: 500, isHotDrySeason: true });
+      expect(chickens.dailyPerHeadLiters).toBe(0.35);
+      expect(chickens.dailyTotalLiters).toBe(175);
+    });
+  });
 });
+
