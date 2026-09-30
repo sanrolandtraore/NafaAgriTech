@@ -44,22 +44,22 @@ const OBJECT_TEMPLATES: {
   color: string;
   subType?: string;
 }[] = [
-  { type: "parcelle" as any, label: "🌱 Parcelle", defaultLength: 50, defaultWidth: 30, defaultHeight: 0, color: "#16a34a" },
-  { type: "poulailler", label: "🐔 Poulailler", defaultLength: 20, defaultWidth: 9, defaultHeight: 3.8, color: "#ea580c", subType: "chair" },
-  { type: "etable", label: "🐄 Étable", defaultLength: 24, defaultWidth: 12, defaultHeight: 4.2, color: "#854d0e", subType: "engraissement" },
-  { type: "bergerie", label: "🐑 Bergerie", defaultLength: 16, defaultWidth: 8, defaultHeight: 3.5, color: "#ca8a04", subType: "ovins" },
-  { type: "porcherie", label: "🐖 Porcherie", defaultLength: 15, defaultWidth: 8, defaultHeight: 3.2, color: "#db2777" },
-  { type: "clapier", label: "🐇 Clapier", defaultLength: 10, defaultWidth: 5, defaultHeight: 2.8, color: "#d97706" },
-  { type: "pisciculture", label: "🐟 Bassin Piscicole", defaultLength: 12, defaultWidth: 6, defaultHeight: 1.5, color: "#0284c7" },
-  { type: "forage", label: "💧 Forage", defaultLength: 3, defaultWidth: 3, defaultHeight: 1.5, color: "#2563eb" },
-  { type: "bassin", label: "💧 Bassin d'eau", defaultLength: 10, defaultWidth: 10, defaultHeight: 2.0, color: "#0ea5e9" },
-  { type: "chateau_eau", label: "🚰 Château d'eau", defaultLength: 4, defaultWidth: 4, defaultHeight: 8.0, color: "#3b82f6" },
-  { type: "magasin", label: "🏭 Magasin", defaultLength: 12, defaultWidth: 6, defaultHeight: 3.5, color: "#475569" },
-  { type: "serre", label: "🌿 Serre", defaultLength: 30, defaultWidth: 8, defaultHeight: 3.5, color: "#059669" },
-  { type: "hangar", label: "🏗️ Hangar", defaultLength: 18, defaultWidth: 10, defaultHeight: 4.5, color: "#64748b" },
-  { type: "logement", label: "🏠 Logement/Bureau", defaultLength: 10, defaultWidth: 8, defaultHeight: 3.2, color: "#9333ea" },
-  { type: "route", label: "🛣️ Route / Piste", defaultLength: 60, defaultWidth: 4, defaultHeight: 0.1, color: "#78716c" },
-  { type: "cloture", label: "🔒 Clôture", defaultLength: 80, defaultWidth: 1, defaultHeight: 2.0, color: "#a8a29e" },
+  { type: "parcelle" as any, label: "Parcelle", defaultLength: 50, defaultWidth: 30, defaultHeight: 0, color: "#16a34a" },
+  { type: "poulailler", label: "Poulailler", defaultLength: 20, defaultWidth: 9, defaultHeight: 3.8, color: "#ea580c", subType: "chair" },
+  { type: "etable", label: "Étable bovine", defaultLength: 24, defaultWidth: 12, defaultHeight: 4.2, color: "#854d0e", subType: "engraissement" },
+  { type: "bergerie", label: "Bergerie", defaultLength: 16, defaultWidth: 8, defaultHeight: 3.5, color: "#ca8a04", subType: "ovins" },
+  { type: "porcherie", label: "Porcherie", defaultLength: 15, defaultWidth: 8, defaultHeight: 3.2, color: "#db2777" },
+  { type: "clapier", label: "Clapier cunicole", defaultLength: 10, defaultWidth: 5, defaultHeight: 2.8, color: "#d97706" },
+  { type: "pisciculture", label: "Bassin Piscicole", defaultLength: 12, defaultWidth: 6, defaultHeight: 1.5, color: "#0284c7" },
+  { type: "forage", label: "Forage", defaultLength: 3, defaultWidth: 3, defaultHeight: 1.5, color: "#2563eb" },
+  { type: "bassin", label: "Bassin d'eau", defaultLength: 10, defaultWidth: 10, defaultHeight: 2.0, color: "#0ea5e9" },
+  { type: "chateau_eau", label: "Château d'eau", defaultLength: 4, defaultWidth: 4, defaultHeight: 8.0, color: "#3b82f6" },
+  { type: "magasin", label: "Magasin d'intrants", defaultLength: 12, defaultWidth: 6, defaultHeight: 3.5, color: "#475569" },
+  { type: "serre", label: "Serre maraîchère", defaultLength: 30, defaultWidth: 8, defaultHeight: 3.5, color: "#059669" },
+  { type: "hangar", label: "Hangar agricole", defaultLength: 18, defaultWidth: 10, defaultHeight: 4.5, color: "#64748b" },
+  { type: "logement", label: "Logement / Bureau", defaultLength: 10, defaultWidth: 8, defaultHeight: 3.2, color: "#9333ea" },
+  { type: "route", label: "Route / Piste", defaultLength: 60, defaultWidth: 4, defaultHeight: 0.1, color: "#78716c" },
+  { type: "cloture", label: "Clôture", defaultLength: 80, defaultWidth: 1, defaultHeight: 2.0, color: "#a8a29e" },
 ];
 
 export const FarmBuilderCanvas: React.FC<FarmBuilderCanvasProps> = ({

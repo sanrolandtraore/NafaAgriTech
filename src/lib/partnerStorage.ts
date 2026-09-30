@@ -419,16 +419,16 @@ const INITIAL_PARTNER_OFFERS: PartnerOffer[] = [
     contact_phone: "+226 20 98 22 22",
     contact_email: "commercial@sncitec.bf",
     website: "https://sncitec.bf",
-    image_url: "https://images.unsplash.com/photo-1516467508483-a7212febe31a?w=800&auto=format&fit=crop&q=80",
+    image_url: "https://images.unsplash.com/photo-1595974482597-4b8da8879bc5?w=800&auto=format&fit=crop&q=80",
     images: [
-      "https://images.unsplash.com/photo-1516467508483-a7212febe31a?w=800&auto=format&fit=crop&q=80",
+      "https://images.unsplash.com/photo-1595974482597-4b8da8879bc5?w=800&auto=format&fit=crop&q=80",
     ],
     videos: [],
     media: [
       {
         id: "m-5",
         type: "image",
-        url: "https://images.unsplash.com/photo-1516467508483-a7212febe31a?w=800&auto=format&fit=crop&q=80",
+        url: "https://images.unsplash.com/photo-1595974482597-4b8da8879bc5?w=800&auto=format&fit=crop&q=80",
         title: "Tourteau de coton haute qualité",
       },
     ],
@@ -535,16 +535,16 @@ const INITIAL_PARTNER_OFFERS: PartnerOffer[] = [
     contact_phone: "+226 25 33 22 28",
     contact_email: "metallerie@pastoral-bf.com",
     website: null,
-    image_url: "https://images.unsplash.com/photo-1500595046743-cd271d694d30?w=800&auto=format&fit=crop&q=80",
+    image_url: "https://images.unsplash.com/photo-1516467508483-a7212febe31a?w=800&auto=format&fit=crop&q=80",
     images: [
-      "https://images.unsplash.com/photo-1500595046743-cd271d694d30?w=800&auto=format&fit=crop&q=80",
+      "https://images.unsplash.com/photo-1516467508483-a7212febe31a?w=800&auto=format&fit=crop&q=80",
     ],
     videos: [],
     media: [
       {
         id: "m-9",
         type: "image",
-        url: "https://images.unsplash.com/photo-1500595046743-cd271d694d30?w=800&auto=format&fit=crop&q=80",
+        url: "https://images.unsplash.com/photo-1516467508483-a7212febe31a?w=800&auto=format&fit=crop&q=80",
         title: "Équipement d'abreuvement et alimentation",
       },
     ],
@@ -783,7 +783,7 @@ export const partnerStorage = {
       const offerId = `offer-${result.id}`;
       const offerIdx = offersList.findIndex((o) => o.id === offerId);
       const defaultImg = result.category === "assurance"
-        ? "https://images.unsplash.com/photo-1500937386664-56d1dfef3854?w=800&auto=format&fit=crop&q=80"
+        ? "https://images.unsplash.com/photo-1450133064473-71024230f91b?w=800&auto=format&fit=crop&q=80"
         : "https://images.unsplash.com/photo-1559526324-4b87b5e36e44?w=800&auto=format&fit=crop&q=80";
 
       const synchronizedOffer: PartnerOffer = {
@@ -1146,8 +1146,8 @@ export const partnerStorage = {
         whatsapp: sub.phone || sub.contactPhone || "+226 25 30 00 00",
         email: sub.email || sub.contactEmail || "partenaire@nafa-agritech.com",
         website: "https://nafa-agritech.com",
-        logo: "https://images.unsplash.com/photo-1592982537447-7440770cbfc9?w=200&auto=format&fit=crop&q=80",
-        cover: "https://images.unsplash.com/photo-1500937386664-56d1dfef3854?w=1200&auto=format&fit=crop&q=80",
+        logo: "https://images.unsplash.com/photo-1560493676-04071c5f467b?w=200&auto=format&fit=crop&q=80",
+        cover: "https://images.unsplash.com/photo-1495107334309-fcf20504a5ab?w=1200&auto=format&fit=crop&q=80",
         badge: "Partenaire Agréé NAFA - AGRITECH",
         is_verified: true,
         offersCount: userOffers.length,
@@ -1185,8 +1185,8 @@ export const partnerStorage = {
         whatsapp: entry.phone || "+226 25 00 00 00",
         email: entry.email || "contact@nafa-agritech.com",
         website: entry.website || null,
-        logo: "https://images.unsplash.com/photo-1592982537447-7440770cbfc9?w=200&auto=format&fit=crop&q=80",
-        cover: "https://images.unsplash.com/photo-1500937386664-56d1dfef3854?w=1200&auto=format&fit=crop&q=80",
+        logo: "https://images.unsplash.com/photo-1560493676-04071c5f467b?w=200&auto=format&fit=crop&q=80",
+        cover: "https://images.unsplash.com/photo-1495107334309-fcf20504a5ab?w=1200&auto=format&fit=crop&q=80",
         badge: entry.badge || "Partenaire Agréé NAFA - AGRITECH",
         is_verified: true,
         offersCount: partnerOffers.length,
@@ -1216,8 +1216,8 @@ export const partnerStorage = {
         whatsapp: offerMatch.contact_phone || "+226 25 00 00 00",
         email: offerMatch.contact_email || "contact@nafa-agritech.com",
         website: offerMatch.website || null,
-        logo: offerMatch.image_url || "https://images.unsplash.com/photo-1592982537447-7440770cbfc9?w=200&auto=format&fit=crop&q=80",
-        cover: "https://images.unsplash.com/photo-1500937386664-56d1dfef3854?w=1200&auto=format&fit=crop&q=80",
+        logo: offerMatch.image_url || "https://images.unsplash.com/photo-1560493676-04071c5f467b?w=200&auto=format&fit=crop&q=80",
+        cover: "https://images.unsplash.com/photo-1495107334309-fcf20504a5ab?w=1200&auto=format&fit=crop&q=80",
         badge: "Partenaire Agréé NAFA - AGRITECH",
         is_verified: true,
         offersCount: partnerOffers.length,
@@ -1236,8 +1236,8 @@ export const partnerStorage = {
       whatsapp: "+226 25 00 00 00",
       email: "contact@nafa-agritech.com",
       website: "https://nafa-agritech.com",
-      logo: "https://images.unsplash.com/photo-1592982537447-7440770cbfc9?w=200&auto=format&fit=crop&q=80",
-      cover: "https://images.unsplash.com/photo-1500937386664-56d1dfef3854?w=1200&auto=format&fit=crop&q=80",
+      logo: "https://images.unsplash.com/photo-1560493676-04071c5f467b?w=200&auto=format&fit=crop&q=80",
+      cover: "https://images.unsplash.com/photo-1495107334309-fcf20504a5ab?w=1200&auto=format&fit=crop&q=80",
       badge: "Partenaire Agréé NAFA - AGRITECH",
       is_verified: true,
       offersCount: 0,

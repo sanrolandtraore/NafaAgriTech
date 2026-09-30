@@ -1,7 +1,7 @@
 /**
  * NAFA FIELD DESIGNER — STOCKAGE LOCAL OFFLINE-FIRST (INDEXEDDB) & SYNCHRONISATION
  * Fonctionne 100% hors connexion avec IndexedDB et réplication Supabase lorsque la connexion est active.
- * Indicateurs visuels : 🟢 Synchronisé, 🟠 Synchronisation en cours, 🔴 Erreur, ⚪ Hors connexion.
+ * Indicateurs visuels : Synchronisé (vert), Synchronisation en cours (orange), Erreur (rouge), Hors connexion (gris).
  */
 
 import { openDB, DBSchema, IDBPDatabase } from "idb";

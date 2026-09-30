@@ -1,8 +1,7 @@
 /**
  * NAFA FIELD DESIGNER — NAFA AI COPILOT
  * Copilote agronomique senior d'ingénierie et d'aménagement de terrain.
- * Respecte strictement la séparation :
- * 🟢 Données mesurées | 🔵 Données saisies | 🧮 Calculs | 💡 Hypothèses | 🎯 Recommandations
+ * Respecte strictement la séparation : Données mesurées | Données saisies | Calculs | Hypothèses | Recommandations
  */
 
 import React, { useState } from "react";
@@ -63,15 +62,15 @@ export const NafaAiCopilot: React.FC<NafaAiCopilotProps> = ({
   const getCategoryBadge = (cat: string) => {
     switch (cat) {
       case "measured":
-        return <Badge className="bg-emerald-600 text-white font-bold text-[10px]">🟢 Données mesurées</Badge>;
+        return <Badge className="bg-emerald-600 text-white font-bold text-[10px] flex items-center gap-1.5"><span className="h-1.5 w-1.5 rounded-full bg-white" />Données mesurées</Badge>;
       case "input":
-        return <Badge className="bg-sky-600 text-white font-bold text-[10px]">🔵 Données saisies</Badge>;
+        return <Badge className="bg-sky-600 text-white font-bold text-[10px] flex items-center gap-1.5"><span className="h-1.5 w-1.5 rounded-full bg-white" />Données saisies</Badge>;
       case "calculated":
-        return <Badge className="bg-purple-600 text-white font-bold text-[10px]">🧮 Calculs</Badge>;
+        return <Badge className="bg-purple-600 text-white font-bold text-[10px] flex items-center gap-1.5"><Calculator className="h-3 w-3" />Calculs</Badge>;
       case "hypothesis":
-        return <Badge className="bg-amber-600 text-white font-bold text-[10px]">💡 Hypothèses (À valider)</Badge>;
+        return <Badge className="bg-amber-600 text-white font-bold text-[10px] flex items-center gap-1.5"><AlertCircle className="h-3 w-3" />Hypothèses (À valider)</Badge>;
       case "recommendation":
-        return <Badge className="bg-indigo-600 text-white font-bold text-[10px]">🎯 Recommandations</Badge>;
+        return <Badge className="bg-indigo-600 text-white font-bold text-[10px] flex items-center gap-1.5"><CheckCircle2 className="h-3 w-3" />Recommandations</Badge>;
       default:
         return null;
     }

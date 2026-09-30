@@ -847,7 +847,15 @@ export const ServiceMarketplacePage = () => {
                   <div>
                     {item.imageUrl && (
                       <div className="relative h-44 bg-muted overflow-hidden">
-                        <img src={item.imageUrl} alt={item.title} className="w-full h-full object-cover" />
+                        <img
+                          src={item.imageUrl}
+                          alt={item.title}
+                          className="w-full h-full object-cover"
+                          loading="lazy"
+                          onError={(e) => {
+                            e.currentTarget.src = "https://images.unsplash.com/photo-1592982537447-7440770cbfc9?w=800&auto=format&fit=crop&q=80";
+                          }}
+                        />
                         <Badge className="absolute top-2.5 left-2.5 bg-card/90 text-foreground backdrop-blur-md text-[10px] border shadow-xs">
                           {getCategoryLabel(item.category)}
                         </Badge>

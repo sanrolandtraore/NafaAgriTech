@@ -132,13 +132,13 @@ export const LivestockDesignerTool: React.FC<LivestockDesignerToolProps> = ({
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="poulailler">🐔 Poulailler (chair, ponte, poussins)</SelectItem>
-                  <SelectItem value="etable">🐄 Étable bovine (engraissement, laitière)</SelectItem>
-                  <SelectItem value="bergerie">🐑 Bergerie ovine / caprine</SelectItem>
-                  <SelectItem value="porcherie">🐖 Porcherie moderne</SelectItem>
-                  <SelectItem value="clapier">🐇 Clapier cunicole</SelectItem>
-                  <SelectItem value="pisciculture">🐟 Bassin piscicole</SelectItem>
-                  <SelectItem value="magasin">🏭 Magasin de stockage / intrants</SelectItem>
+                  <SelectItem value="poulailler">Poulailler (chair, ponte, poussins)</SelectItem>
+                  <SelectItem value="etable">Étable bovine (engraissement, laitière)</SelectItem>
+                  <SelectItem value="bergerie">Bergerie ovine / caprine</SelectItem>
+                  <SelectItem value="porcherie">Porcherie moderne</SelectItem>
+                  <SelectItem value="clapier">Clapier cunicole</SelectItem>
+                  <SelectItem value="pisciculture">Bassin piscicole</SelectItem>
+                  <SelectItem value="magasin">Magasin de stockage / intrants</SelectItem>
                 </SelectContent>
               </Select>
             </div>

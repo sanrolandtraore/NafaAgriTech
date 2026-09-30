@@ -28,7 +28,8 @@ import {
   MapPinned,
   ArrowUp,
   Compass,
-  Sparkles
+  Sparkles,
+  ShoppingBag
 } from "lucide-react";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { partnerStorage, PartnerEntry } from "@/lib/partnerStorage";
@@ -45,10 +46,10 @@ const SPACES_CONFIG = [
   {
     id: "experts",
     title: "Agronomes & Vétérinaires",
-    path: "/dashboard/services",
-    icon: Stethoscope,
+    path: "/dashboard/field-designer",
+    icon: Compass,
     image: galleryDigital,
-    badge: "Conseil & Ingénierie",
+    badge: "NAFA FIELD DESIGNER",
   },
   {
     id: "partenaires",
@@ -68,11 +69,11 @@ const SPACES_CONFIG = [
   },
   {
     id: "marketplace",
-    title: "Marketplace Vitrine",
-    path: "/marketplace?role=producteurs",
-    icon: Store,
+    title: "Marketplace Intrants & Services",
+    path: "/marketplace?cat=produits_agricoles&role=producteurs",
+    icon: ShoppingBag,
     image: galleryHarvest,
-    badge: "Matériels & Intrants",
+    badge: "Semences & Matériels",
   },
 ];
 
@@ -432,15 +433,15 @@ const Index = () => {
             })}
           </div>
 
-          {/* Bouton d'accès direct à toute la suite agronomique (39 outils) */}
+          {/* Bouton d'accès direct à la suite NAFA FIELD DESIGNER */}
           <div className="flex justify-center pt-2">
             <Button
               size="lg"
-              onClick={() => navigate("/dashboard/services")}
+              onClick={() => navigate("/dashboard/field-designer")}
               className="rounded-full bg-[#111827] dark:bg-white text-white dark:text-[#111827] hover:bg-[#F97316] dark:hover:bg-[#F97316] hover:text-white dark:hover:text-white font-bold text-xs sm:text-sm px-6 py-5 shadow-md flex items-center gap-2 transition-all active:scale-95"
             >
               <Compass className="h-4 w-4 text-[#F97316]" />
-              <span>Accéder à toute la suite des 39 outils agronomiques</span>
+              <span>Accéder à la suite complète NAFA FIELD DESIGNER</span>
               <ArrowRight className="h-4 w-4 ml-1" />
             </Button>
           </div>
