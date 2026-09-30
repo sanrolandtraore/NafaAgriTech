@@ -153,6 +153,8 @@ export interface QuoteItem {
   quantity: number;
   unitPriceFcfa: number;
   totalPriceFcfa: number;
+  supplierName?: string;
+  isCustomized?: boolean;
 }
 
 export interface IrrigationDesignResult {
