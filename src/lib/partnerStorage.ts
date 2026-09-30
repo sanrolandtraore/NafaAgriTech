@@ -733,6 +733,14 @@ function writeLocal<T>(key: string, val: T): void {
 // ─── API Partenaire ───
 export const partnerStorage = {
   // ── ENTRIES (Fournisseurs, Assurances, Banques, Programmes) ──
+  getEntriesSync(category?: PartnerCategory): PartnerEntry[] {
+    const list = readLocal<PartnerEntry[]>(KEYS.ENTRIES, INITIAL_PARTNER_ENTRIES);
+    if (category) {
+      return list.filter((e) => e.category === category);
+    }
+    return list;
+  },
+
   async getEntries(category?: PartnerCategory): Promise<PartnerEntry[]> {
     const list = readLocal<PartnerEntry[]>(KEYS.ENTRIES, INITIAL_PARTNER_ENTRIES);
     // Sauvegarder l'état initial s'il n'existait pas encore

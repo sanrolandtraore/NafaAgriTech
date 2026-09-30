@@ -5,7 +5,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { getEffectiveUserId } from "@/lib/deviceIdentity";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -46,24 +46,128 @@ import {
   calculateOrchardPlan,
   PlantingPattern,
 } from "@/lib/agronomicEngine";
-import { WEST_AFRICA_12_CROPS } from "@/lib/cropLibraryData";
+import { BURKINA_ALL_CROPS_TECHNICAL_SHEETS } from "@/lib/cropLibraryData";
 
-const fallbackCrops = WEST_AFRICA_12_CROPS.map(c => ({
-  id: c.id,
-  name: c.name_fr.split(" (")[0],
-  variety: c.recommended_varieties?.[0] || "Standard",
-  type: c.category === "Céréales" ? "annual" : "perennial",
-  avg_yield_per_ha: (c.yield_potential_t_ha || 3) * 1000,
-  avg_price_per_kg: 200,
-  growth_duration_days: c.cycle_days_max || 120,
-  spacing_m: 0.8,
-  plants_per_ha: 50000,
-  input_requirements: {
-    "NPK (15-15-15)": { qty_per_ha: (c.npk_needs?.N || 100) * 2, unit: "kg" },
-    "Urée 46%": { qty_per_ha: 100, unit: "kg" },
-    "Fumure organique": { qty_per_ha: 2000, unit: "kg" },
+// Spécifications de prix de vente indicatifs au producteur au Burkina Faso (FCFA/kg)
+const getCropDefaultPrice = (name: string, category?: string): number => {
+  const n = name.toLowerCase();
+  // Céréales
+  if (n.includes("maïs") || n.includes("mais")) return 200;
+  if (n.includes("sorgho")) return 220;
+  if (n.includes("mil")) return 250;
+  if (n.includes("fonio")) return 600;
+  if (n.includes("riz")) return 450;
+  if (n.includes("blé") || n.includes("ble")) return 350;
+  // Légumineuses
+  if (n.includes("niébé") || n.includes("niebe")) return 450;
+  if (n.includes("arachide")) return 500;
+  if (n.includes("soja")) return 350;
+  if (n.includes("voandzou")) return 500;
+  if (n.includes("pois")) return 400;
+  // Rente & fibres
+  if (n.includes("coton")) return 325; // Prix officiel Sofitex
+  if (n.includes("sésame") || n.includes("sesame")) return 750;
+  if (n.includes("anacarde") || n.includes("cajou")) return 450;
+  if (n.includes("karité") || n.includes("karite")) return 250;
+  if (n.includes("canne")) return 40;
+  if (n.includes("tournesol")) return 350;
+  if (n.includes("bissap") || n.includes("hibiscus")) return 800;
+  if (n.includes("tabac")) return 1200;
+  if (n.includes("jatropha") || n.includes("ricin")) return 250;
+  // Tubercules & Racines
+  if (n.includes("igname")) return 350;
+  if (n.includes("manioc")) return 150;
+  if (n.includes("patate douce")) return 250;
+  if (n.includes("pomme de terre")) return 400;
+  if (n.includes("taro")) return 300;
+  if (n.includes("souchet")) return 600;
+  if (n.includes("gingembre")) return 700;
+  if (n.includes("curcuma")) return 800;
+  // Maraîchage
+  if (n.includes("tomate")) return 350;
+  if (n.includes("oignon")) return 400;
+  if (n.includes("chou")) return 250;
+  if (n.includes("aubergine")) return 300;
+  if (n.includes("gombo")) return 450;
+  if (n.includes("piment")) return 1000;
+  if (n.includes("poivron")) return 600;
+  if (n.includes("carotte")) return 450;
+  if (n.includes("laitue")) return 500;
+  if (n.includes("concombre") || n.includes("courgette") || n.includes("courge")) return 300;
+  if (n.includes("haricot vert")) return 700;
+  if (n.includes("pasteque") || n.includes("pastèque") || n.includes("melon")) return 200;
+  if (n.includes("ail")) return 1200;
+  if (n.includes("échalote") || n.includes("echalote")) return 500;
+  // Fruits
+  if (n.includes("mangue") || n.includes("manguier")) return 250;
+  if (n.includes("banane") || n.includes("bananier")) return 300;
+  if (n.includes("papaye") || n.includes("papayer")) return 250;
+  if (n.includes("agrume") || n.includes("orange") || n.includes("citron")) return 350;
+  if (n.includes("goyave") || n.includes("goyavier")) return 300;
+  if (n.includes("ananas")) return 400;
+  if (n.includes("avocat")) return 500;
+  // Fourrages & Aromatiques
+  if (category === "Fourrages" || n.includes("fourrag") || n.includes("brachiaria") || n.includes("mucuna") || n.includes("stylosanthes")) return 100;
+  if (n.includes("moringa")) return 1000;
+  if (n.includes("artemisia")) return 1500;
+  if (n.includes("citronnelle")) return 500;
+  return 300;
+};
+
+// Spécifications de densités et espacements burkinabè
+const getCropDefaultSpacing = (name: string, category?: string) => {
+  const n = name.toLowerCase();
+  if (category === "Fruits" || n.includes("manguier") || n.includes("anacard") || n.includes("avocat")) {
+    return { spacing_m: 10, plants_per_ha: 100, isPerennial: true };
   }
-}));
+  if (n.includes("agrum") || n.includes("goyav") || n.includes("papay") || n.includes("banan")) {
+    return { spacing_m: 4, plants_per_ha: 625, isPerennial: true };
+  }
+  if (n.includes("manioc") || n.includes("igname")) return { spacing_m: 1.0, plants_per_ha: 10000, isPerennial: false };
+  if (n.includes("patate douce") || n.includes("pomme de terre") || n.includes("taro")) return { spacing_m: 0.8, plants_per_ha: 33000, isPerennial: false };
+  if (n.includes("maïs") || n.includes("mais") || n.includes("sorgho") || n.includes("coton")) return { spacing_m: 0.8, plants_per_ha: 50000, isPerennial: false };
+  if (n.includes("mil")) return { spacing_m: 0.8, plants_per_ha: 35000, isPerennial: false };
+  if (n.includes("riz")) return { spacing_m: 0.2, plants_per_ha: 250000, isPerennial: false };
+  if (n.includes("arachide") || n.includes("niébé") || n.includes("soja") || n.includes("voandzou")) return { spacing_m: 0.5, plants_per_ha: 100000, isPerennial: false };
+  if (n.includes("sésame")) return { spacing_m: 0.5, plants_per_ha: 133000, isPerennial: false };
+  if (n.includes("tomate") || n.includes("aubergine") || n.includes("poivron") || n.includes("piment")) return { spacing_m: 0.6, plants_per_ha: 30000, isPerennial: false };
+  if (n.includes("oignon") || n.includes("ail") || n.includes("carotte") || n.includes("laitue")) return { spacing_m: 0.2, plants_per_ha: 250000, isPerennial: false };
+  if (n.includes("chou")) return { spacing_m: 0.5, plants_per_ha: 40000, isPerennial: false };
+  if (n.includes("pasteque") || n.includes("pastèque") || n.includes("melon")) return { spacing_m: 1.5, plants_per_ha: 4500, isPerennial: false };
+  return { spacing_m: 0.8, plants_per_ha: 50000, isPerennial: false };
+};
+
+// Catalogue étendu de toutes les spéculations du Burkina Faso pour la planification
+const fallbackCrops = BURKINA_ALL_CROPS_TECHNICAL_SHEETS.map(c => {
+  const spacingInfo = getCropDefaultSpacing(c.name_fr, c.category);
+  const defaultPrice = getCropDefaultPrice(c.name_fr, c.category);
+  const isTree = spacingInfo.isPerennial || c.category === "Fruits";
+  const n = c.npk_needs?.N || 80;
+  const p = c.npk_needs?.P || 40;
+  const k = c.npk_needs?.K || 40;
+
+  return {
+    id: c.id,
+    name: c.name_fr.split(" (")[0],
+    variety: c.recommended_varieties?.[0] || "Standard INERA",
+    type: isTree ? "perennial" : "annual",
+    avg_yield_per_ha: Math.round((c.yield_potential_t_ha || 3) * 1000),
+    avg_price_per_kg: defaultPrice,
+    growth_duration_days: c.cycle_days_max || 110,
+    spacing_m: spacingInfo.spacing_m,
+    plants_per_ha: spacingInfo.plants_per_ha,
+    category: c.category,
+    input_requirements: {
+      "NPK (15-15-15)": { qty_per_ha: Math.max(100, n + p + k), unit: "kg" },
+      "Urée 46%": { qty_per_ha: Math.round(n * 0.8), unit: "kg" },
+      "Fumure organique": { qty_per_ha: isTree ? 3000 : 2000, unit: "kg" },
+      "Semences certifiées / Plants": {
+        qty_per_ha: isTree ? spacingInfo.plants_per_ha : (c.category === "Tubercules & Racines" ? 800 : 25),
+        unit: isTree ? "plants" : "kg"
+      },
+    },
+  };
+});
 
 // Prix de référence réalistes au Burkina Faso (FCFA)
 const getInputDefaultPrice = (name: string): number => {
@@ -77,7 +181,7 @@ const getInputDefaultPrice = (name: string): number => {
   return 500;
 };
 
-// Coefficients de main-d'œuvre par hectare (estimations indicatives modifiables)
+// Coefficients de main-d'œuvre par hectare calibrés par spéculation et filière
 const labourCoefficients: Record<string, { labour_per_ha: number; daily_rate: number; phases: { name: string; days_per_ha: number }[] }> = {
   "Maïs": {
     labour_per_ha: 85, daily_rate: 2000,
@@ -100,6 +204,27 @@ const labourCoefficients: Record<string, { labour_per_ha: number; daily_rate: nu
       { name: "Épandage engrais", days_per_ha: 6 },
       { name: "Récolte", days_per_ha: 18 },
       { name: "Battage/Séchage", days_per_ha: 12 },
+    ],
+  },
+  "Mil": {
+    labour_per_ha: 65, daily_rate: 2000,
+    phases: [
+      { name: "Préparation sol", days_per_ha: 12 },
+      { name: "Semis / Poquet", days_per_ha: 6 },
+      { name: "Démariage / Sarclage (×2)", days_per_ha: 18 },
+      { name: "Épandage fumure", days_per_ha: 5 },
+      { name: "Récolte des chandelles", days_per_ha: 14 },
+      { name: "Battage traditionnel", days_per_ha: 10 },
+    ],
+  },
+  "Fonio": {
+    labour_per_ha: 70, daily_rate: 2000,
+    phases: [
+      { name: "Nettoyage fin du lit de semence", days_per_ha: 15 },
+      { name: "Semis à la volée / Épandage", days_per_ha: 5 },
+      { name: "Désherbage manuel délicat (×2)", days_per_ha: 22 },
+      { name: "Récolte à la faucille", days_per_ha: 16 },
+      { name: "Battage et premier vannage", days_per_ha: 12 },
     ],
   },
   "Riz": {
@@ -125,6 +250,114 @@ const labourCoefficients: Record<string, { labour_per_ha: number; daily_rate: nu
       { name: "Traitement phyto (×6)", days_per_ha: 18 },
       { name: "Récolte (×3)", days_per_ha: 30 },
       { name: "Conditionnement", days_per_ha: 4 },
+    ],
+  },
+  "Niébé": {
+    labour_per_ha: 65, daily_rate: 2000,
+    phases: [
+      { name: "Labour léger", days_per_ha: 10 },
+      { name: "Semis en poquets", days_per_ha: 6 },
+      { name: "Sarclo-buttage (×2)", days_per_ha: 16 },
+      { name: "Traitements bio/phyto gousses (×2)", days_per_ha: 6 },
+      { name: "Récolte échelonnée des gousses", days_per_ha: 16 },
+      { name: "Battage et vannage", days_per_ha: 11 },
+    ],
+  },
+  "Arachide": {
+    labour_per_ha: 80, daily_rate: 2000,
+    phases: [
+      { name: "Labour meuble", days_per_ha: 12 },
+      { name: "Semis en ligne", days_per_ha: 8 },
+      { name: "Sarclo-buttage précoce (×2)", days_per_ha: 18 },
+      { name: "Arrachage et mise en meules", days_per_ha: 22 },
+      { name: "Écoussage et triage", days_per_ha: 20 },
+    ],
+  },
+  "Sésame": {
+    labour_per_ha: 60, daily_rate: 2000,
+    phases: [
+      { name: "Préparation superficielle soignée", days_per_ha: 10 },
+      { name: "Semis / Éclaircissage minutieux", days_per_ha: 10 },
+      { name: "Sarclage manuel (×2)", days_per_ha: 16 },
+      { name: "Coupe en gerbes et séchage sur claies", days_per_ha: 14 },
+      { name: "Battage doux sur bâche", days_per_ha: 10 },
+    ],
+  },
+  "Tomate": {
+    labour_per_ha: 140, daily_rate: 2500,
+    phases: [
+      { name: "Confection pépinière et billonnage", days_per_ha: 18 },
+      { name: "Repiquage et tuteurage", days_per_ha: 26 },
+      { name: "Binage / Désherbage (×3)", days_per_ha: 20 },
+      { name: "Taille / Ébourgeonnage régulier", days_per_ha: 16 },
+      { name: "Fertilisation et phyto raisonné", days_per_ha: 15 },
+      { name: "Récoltes manuelles échelonnées", days_per_ha: 35 },
+      { name: "Tri et conditionnement en cageots", days_per_ha: 10 },
+    ],
+  },
+  "Oignon": {
+    labour_per_ha: 130, daily_rate: 2500,
+    phases: [
+      { name: "Planches maraîchères & pépinière", days_per_ha: 20 },
+      { name: "Repiquage des bulbilles", days_per_ha: 30 },
+      { name: "Sarclages et binages fréquents (×3)", days_per_ha: 22 },
+      { name: "Fertilisation et traitement foliaire", days_per_ha: 12 },
+      { name: "Arrachage, fanage et ressuyage", days_per_ha: 28 },
+      { name: "Triage et mise en sacs", days_per_ha: 18 },
+    ],
+  },
+  "Igname": {
+    labour_per_ha: 150, daily_rate: 2500,
+    phases: [
+      { name: "Défrichage et labour profond", days_per_ha: 22 },
+      { name: "Confection des grosses buttes", days_per_ha: 38 },
+      { name: "Plantation des semenceaux", days_per_ha: 12 },
+      { name: "Tuteurage des lianes", days_per_ha: 20 },
+      { name: "Sarclage et buttage d'entretien", days_per_ha: 20 },
+      { name: "Récolte manuelle délicate à la fourche", days_per_ha: 30 },
+      { name: "Conditionnement et stockage aéré", days_per_ha: 8 },
+    ],
+  },
+  "Manioc": {
+    labour_per_ha: 90, daily_rate: 2000,
+    phases: [
+      { name: "Labour et confection des billons", days_per_ha: 18 },
+      { name: "Préparation et découpe des boutures", days_per_ha: 8 },
+      { name: "Plantation inclinée des boutures", days_per_ha: 10 },
+      { name: "Sarclage précoce (×2)", days_per_ha: 18 },
+      { name: "Arrachage manuel des tubercules", days_per_ha: 26 },
+      { name: "Épluchage/Conditionnement", days_per_ha: 10 },
+    ],
+  },
+  "Patate": {
+    labour_per_ha: 85, daily_rate: 2000,
+    phases: [
+      { name: "Labour et billonnage", days_per_ha: 16 },
+      { name: "Bouturage des lianes", days_per_ha: 10 },
+      { name: "Sarclage-buttage (×2)", days_per_ha: 16 },
+      { name: "Arrachage et récolte", days_per_ha: 25 },
+      { name: "Tri et stockage", days_per_ha: 18 },
+    ],
+  },
+  "Manguier": {
+    labour_per_ha: 70, daily_rate: 2500,
+    phases: [
+      { name: "Piquetage et trouaison 60×60×60 cm", days_per_ha: 15 },
+      { name: "Apport fumure de fond et rebouchage", days_per_ha: 10 },
+      { name: "Plantation des plants greffés", days_per_ha: 8 },
+      { name: "Taille de formation et entretien", days_per_ha: 12 },
+      { name: "Désherbage sous couronne", days_per_ha: 10 },
+      { name: "Récolte manuelle soignée", days_per_ha: 15 },
+    ],
+  },
+  "Anacardier": {
+    labour_per_ha: 60, daily_rate: 2000,
+    phases: [
+      { name: "Piquetage et trouaison", days_per_ha: 12 },
+      { name: "Fumure et plantation", days_per_ha: 8 },
+      { name: "Pare-feux et désherbage sous couronne", days_per_ha: 15 },
+      { name: "Taille d'entretien", days_per_ha: 10 },
+      { name: "Ramassage des noix", days_per_ha: 15 },
     ],
   },
 };
@@ -275,7 +508,12 @@ const CropPlanningPage = () => {
       supabase.from("climate_zones").select("*"),
     ]).then(([pRes, cRes, czRes]) => {
       setParcels(pRes.data || []);
-      const loadedCrops = (cRes.data && cRes.data.length > 0) ? cRes.data : fallbackCrops;
+      const loadedCrops = (cRes.data && cRes.data.length > 0)
+        ? [
+            ...cRes.data,
+            ...fallbackCrops.filter(fc => !cRes.data.some((sc: any) => sc.name?.toLowerCase() === fc.name.toLowerCase() || sc.id === fc.id))
+          ]
+        : fallbackCrops;
       setCrops(loadedCrops);
 
       // Assurer que la culture sélectionnée existe bien dans la liste chargée
@@ -293,6 +531,17 @@ const CropPlanningPage = () => {
       setLoading(false);
     });
   }, []);
+
+  // Regroupement thématique des spéculations agricoles du Burkina Faso
+  const groupedCrops = useMemo(() => {
+    const groups: Record<string, typeof crops> = {};
+    for (const c of crops) {
+      const cat = (c as any).category || "Autres spéculations";
+      if (!groups[cat]) groups[cat] = [];
+      groups[cat].push(c);
+    }
+    return groups;
+  }, [crops]);
 
   const parcel = parcels.find(p => p.id === selectedParcel);
   // Résolution sécurisée : ne peut jamais être undefined
@@ -358,7 +607,9 @@ const CropPlanningPage = () => {
   }, [crop, area]);
 
   const suggestedPhases: PhaseRow[] = useMemo(() => {
-    const labourData = crop ? (labourCoefficients[crop.name] || defaultLabour) : defaultLabour;
+    const cropName = crop?.name || "";
+    const matchedKey = Object.keys(labourCoefficients).find(k => cropName.toLowerCase().includes(k.toLowerCase()));
+    const labourData = crop ? (labourCoefficients[cropName] || (matchedKey ? labourCoefficients[matchedKey] : defaultLabour)) : defaultLabour;
     return labourData.phases.map(p => ({
       name: p.name,
       totalDays: Math.round(p.days_per_ha * area * 10) / 10,
@@ -808,11 +1059,18 @@ const CropPlanningPage = () => {
                     <SelectTrigger className="h-12 text-base rounded-xl">
                       <SelectValue placeholder="Choisir la culture" />
                     </SelectTrigger>
-                    <SelectContent>
-                      {crops.map(c => (
-                        <SelectItem key={c.id} value={c.id}>
-                          {c.name}{c.variety ? ` (${c.variety})` : ""}
-                        </SelectItem>
+                    <SelectContent className="max-h-80">
+                      {Object.entries(groupedCrops).map(([groupName, groupCrops]) => (
+                        <SelectGroup key={groupName}>
+                          <SelectLabel className="text-xs uppercase font-extrabold text-primary bg-muted/60 px-3 py-1.5 my-1 rounded-md">
+                            {groupName} ({groupCrops.length})
+                          </SelectLabel>
+                          {groupCrops.map(c => (
+                            <SelectItem key={c.id} value={c.id}>
+                              {c.name}{c.variety ? ` (${c.variety})` : ""}
+                            </SelectItem>
+                          ))}
+                        </SelectGroup>
                       ))}
                     </SelectContent>
                   </Select>

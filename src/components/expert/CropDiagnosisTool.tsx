@@ -151,6 +151,27 @@ export function CropDiagnosisTool() {
   const [history, setHistory] = useState<LocalDiagnosis[]>([]);
   const [validatedCases, setValidatedCases] = useState<ValidatedCase[]>(() => getStoredValidatedCases());
 
+  // Regroupement des cultures du catalogue par filières agronomiques du Burkina Faso
+  const groupedSpeciesCatalog = useMemo(() => {
+    const categoryLabels: Record<string, string> = {
+      cereale: "Céréales",
+      legumineuse: "Légumineuses",
+      racine_tubercule: "Tubercules & Racines",
+      plante_fibre: "Plantes à fibres & Textiles",
+      oleagineux: "Oléagineux",
+      maraichage: "Maraîchage & Légumes",
+      arboriculture: "Arboriculture, Fruits & Arbres",
+      adventice: "Adventices",
+    };
+    const groups: Record<string, typeof PLANT_SPECIES_CATALOG> = {};
+    for (const crop of PLANT_SPECIES_CATALOG) {
+      const label = categoryLabels[crop.category] || "Autres cultures";
+      if (!groups[label]) groups[label] = [];
+      groups[label].push(crop);
+    }
+    return groups;
+  }, []);
+
   // ── Modale Ordonnance PDF ──
   const [prescriptionOpen, setPrescriptionOpen] = useState(false);
   const [prescriptionData, setPrescriptionData] = useState<PrescriptionInitialData | null>(null);
@@ -863,11 +884,18 @@ export function CropDiagnosisTool() {
                   <SelectTrigger className="h-11 rounded-xl">
                     <SelectValue placeholder="Choisir la culture" />
                   </SelectTrigger>
-                  <SelectContent className="max-h-72">
-                    {PLANT_SPECIES_CATALOG.map((c) => (
-                      <SelectItem key={c.id} value={c.id}>
-                        {c.commonName} — <em>{c.scientificName}</em> ({c.category})
-                      </SelectItem>
+                  <SelectContent className="max-h-80">
+                    {Object.entries(groupedSpeciesCatalog).map(([groupTitle, crops]) => (
+                      <SelectGroup key={groupTitle}>
+                        <SelectLabel className="text-xs uppercase font-extrabold text-primary bg-muted/60 px-3 py-1.5 my-1 rounded-md">
+                          {groupTitle} ({crops.length})
+                        </SelectLabel>
+                        {crops.map((c) => (
+                          <SelectItem key={c.id} value={c.id}>
+                            {c.commonName} — <em>{c.scientificName}</em>
+                          </SelectItem>
+                        ))}
+                      </SelectGroup>
                     ))}
                   </SelectContent>
                 </Select>
