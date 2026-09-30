@@ -14,6 +14,7 @@ import {
   ArrowRight,
   ShieldCheck,
   Cpu,
+  Compass,
 } from "lucide-react";
 
 interface NafaGeniusHeroCardProps {
@@ -85,30 +86,33 @@ export const NafaGeniusHeroCard: React.FC<NafaGeniusHeroCardProps> = ({
           </div>
 
           <div>
-            <h2 className="text-2xl sm:text-3xl font-heading font-black tracking-tight flex items-center gap-2.5">
-              <span>NAFA Genius</span>
+            <h2 className="text-2xl sm:text-3xl font-heading font-black tracking-tight flex items-center gap-2.5 flex-wrap">
+              <span>NAFA FIELD DESIGNER</span>
               <span className="text-xs px-2.5 py-0.5 rounded-full bg-emerald-500 text-white font-black tracking-wide">
-                Pro
+                (NAFA Genius Pro)
               </span>
             </h2>
+            <p className="text-xs font-bold text-[#F97316] mt-0.5">
+              Remplace et surclasse NAFA Genius Pro • Le logiciel de conception et d’intervention terrain pour agronomes africains
+            </p>
             <p className="text-sm sm:text-base font-medium text-white/90 mt-1">
               Votre copilote d'ingénierie agricole certifié Sahel.
             </p>
           </div>
 
           <p className="text-xs sm:text-sm text-gray-300 leading-relaxed">
-            Modélisez vos parcelles, dimensionnez vos réseaux d'irrigation, diagnostiquez les cultures et chiffrez vos devis en FCFA sans connexion Internet.
+            Mesurez vos parcelles au GPS, concevez vos lignes de plantation, dimensionnez vos réseaux d'irrigation et bâtiments d'élevage, et chiffrez vos devis en FCFA sans connexion Internet.
           </p>
         </div>
 
         {/* Right Side: Launch button */}
         <div className="shrink-0 self-start lg:self-center">
           <Button
-            onClick={() => navigate("/dashboard/genius")}
+            onClick={() => navigate("/dashboard/field-designer")}
             className="h-12 px-6 rounded-[20px] bg-[#F97316] hover:bg-[#ea580c] text-white font-black text-sm tracking-wide shadow-lg shadow-orange-500/30 gap-2 transition-transform active:scale-95"
           >
-            <Cpu className="h-4 w-4" />
-            <span>Ouvrir NAFA Genius</span>
+            <Compass className="h-4 w-4" />
+            <span>Ouvrir Field Designer</span>
             <ArrowRight className="h-4 w-4" />
           </Button>
         </div>

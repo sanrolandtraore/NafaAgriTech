@@ -62,6 +62,7 @@ const CropLibraryPage = lazy(() => import("./pages/dashboard/expert/CropLibraryP
 const ExpertClientsPage = lazy(() => import("./pages/dashboard/expert/ExpertClientsPage"));
 const ExpertAnalyticsPage = lazy(() => import("./pages/dashboard/expert/ExpertAnalyticsPage"));
 const NafaGeniusPage = lazy(() => import("./pages/dashboard/NafaGeniusPage"));
+const FieldDesignerPage = lazy(() => import("./pages/dashboard/FieldDesignerPage"));
 const PartnerStorefrontPage = lazy(() => import("./pages/partner/PartnerStorefrontPage"));
 const PartnerDedicatedSpace = lazy(() => import("./pages/partner/PartnerDedicatedSpace"));
 const FournisseursPage = lazy(() => import("./pages/dashboard/partenaire/FournisseursPage"));
@@ -160,7 +161,8 @@ const App = () => (
                 <Route path="expert-calculator" element={<Suspense fallback={<PageLoader />}><ExpertCalculatorPage /></Suspense>} />
                 <Route path="expert-prescriptions" element={<Suspense fallback={<PageLoader />}><ExpertPrescriptionsPage /></Suspense>} />
                 <Route path="crop-library" element={<Suspense fallback={<PageLoader />}><CropLibraryPage /></Suspense>} />
-                <Route path="genius" element={<Suspense fallback={<PageLoader />}><NafaGeniusPage /></Suspense>} />
+                <Route path="field-designer" element={<Suspense fallback={<PageLoader />}><FieldDesignerPage /></Suspense>} />
+                <Route path="genius" element={<Suspense fallback={<PageLoader />}><FieldDesignerPage /></Suspense>} />
                 <Route path="expert-clients" element={<Suspense fallback={<PageLoader />}><ExpertClientsPage /></Suspense>} />
                 <Route path="expert-analytics" element={<Suspense fallback={<PageLoader />}><ExpertAnalyticsPage /></Suspense>} />
                 <Route path="partenaire-abonnement" element={<Suspense fallback={<PageLoader />}><ProviderSubscriptionPage /></Suspense>} />
