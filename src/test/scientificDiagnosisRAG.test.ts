@@ -257,4 +257,84 @@ describe("NAFA Genius IA - Diagnostic Agronomique Scientifique (RAG)", () => {
       expect(matching?.diseaseCatalogId).toBe("tom_mildiou");
     });
   });
+
+  // ─────────────────────────────────────────────────────────────
+  // 5. INTÉGRATION VISION NUMÉRIQUE SUR CLICHÉ RÉEL & DONNÉES RÉELLES
+  // ─────────────────────────────────────────────────────────────
+  describe("Vision numérique foliaire & Données réelles non génériques", () => {
+    it("doit intégrer les métriques biométriques d'image et fournir une prescription CSP-CILSS authentique", () => {
+      const identification = identifyPlant({ cropKey: "mais" });
+      const context: AgronomicContext = {
+        region: "hauts_bassins",
+        season: "hivernage",
+        growthStage: "vegetatif_tallage",
+        soilType: "limoneux",
+        affectedOrgans: ["feuilles"],
+        symptoms: "perforations des feuilles avec déjections",
+      };
+
+      const mockImageAnalysis = {
+        hasImage: true,
+        dominantColors: ["#3b7d23", "#8a3b14"],
+        measuredMetrics: {
+          healthyTissuePercent: 62,
+          necrosisPercent: 24,
+          chlorosisPercent: 14,
+          powderyMildewPercent: 0,
+          rustPustulePercent: 0,
+          totalFoliarDamagePercent: 38,
+        },
+        detectedVisualLesions: ["Lésions nécrotiques foliaires", "Perforations et défoliation"],
+        severityAssessment: "moyen" as const,
+        identifiedOrgan: "feuille" as const,
+        confidence: 0.88,
+      };
+
+      const result = executeScientificDiagnosisPipeline({
+        identification,
+        context,
+        imageAnalysis: mockImageAnalysis,
+      });
+
+      // Vérification que le diagnostic est confirmé et non générique
+      expect(result.isConfirmed).toBe(true);
+      expect(result.step4Validation.primaryDiagnosis).toBeDefined();
+      const primary = result.step4Validation.primaryDiagnosis!;
+      expect(primary.scientificName).not.toContain("générique");
+      expect(primary.scientificName).not.toContain("indéterminé");
+
+      // Vérification des détails de prescription réels CSP / INERA
+      expect(result.realPrescriptionDetails).toBeDefined();
+      const prescription = result.realPrescriptionDetails!;
+      expect(prescription.commercialProduct).toBe("TITANE 50 WG");
+      expect(prescription.cspHomologation).toContain("CSP");
+      expect(prescription.recommendedDosage).toContain("250 g/ha");
+      expect(prescription.darDays).toBe(7);
+      expect(prescription.ineraResearchStation).toContain("INERA");
+
+      // Vérification que l'analyse d'image est attachée
+      expect(result.imageAnalysis).toBeDefined();
+      expect(result.imageAnalysis?.measuredMetrics.totalFoliarDamagePercent).toBe(38);
+    });
+
+    it("doit fournir des protocoles et matières actives réelles pour la tomate sans placeholders", () => {
+      const identification = identifyPlant({ cropKey: "tomate" });
+      const context: AgronomicContext = {
+        region: "hauts_bassins",
+        season: "contre_saison_irrigee",
+        growthStage: "fructification_grossissement",
+        soilType: "limoneux",
+        affectedOrgans: ["feuilles", "fruits"],
+        symptoms: "taches nécrotiques concentriques brun foncé flétrissement",
+      };
+
+      const result = executeScientificDiagnosisPipeline({ identification, context });
+      expect(result.realPrescriptionDetails).toBeDefined();
+      const rx = result.realPrescriptionDetails!;
+      expect(rx.commercialProduct).toBe("RIDOMIL GOLD MZ 68 WG");
+      expect(rx.cspHomologation).toBe("CSP n°08-011");
+      expect(rx.darDays).toBe(7);
+      expect(rx.activeIngredient).toContain("Métalaxyl-M");
+    });
+  });
 });
