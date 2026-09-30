@@ -111,8 +111,14 @@ const MARKET_CATEGORIES = [
 
 const Index = () => {
   const navigate = useNavigate();
-  const [partners, setPartners] = useState<PartnerEntry[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [partners, setPartners] = useState<PartnerEntry[]>(() => {
+    try {
+      return partnerStorage.getEntriesSync();
+    } catch {
+      return [];
+    }
+  });
+  const [loading, setLoading] = useState(false);
   const [showBackToTop, setShowBackToTop] = useState(false);
 
   useEffect(() => {
@@ -128,13 +134,11 @@ const Index = () => {
     const fetchPartners = async () => {
       try {
         const list = await partnerStorage.getEntries();
-        if (active) {
+        if (active && list.length > 0) {
           setPartners(list);
         }
       } catch (err) {
         console.error("Erreur chargement partenaires", err);
-      } finally {
-        if (active) setLoading(false);
       }
     };
     void fetchPartners();
