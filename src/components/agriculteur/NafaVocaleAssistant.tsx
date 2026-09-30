@@ -14,6 +14,8 @@ import {
   analyzeVoiceQuery,
   NafaVoiceAnalysisResult,
   playVoiceSpeech,
+  playNativeSahelianSpeech,
+  SAHELIAN_VOICE_CONFIGS,
 } from "@/lib/nafaVocaleEngine";
 import { PublicMarketItem } from "@/pages/dashboard/ServiceMarketplacePage";
 
@@ -54,6 +56,7 @@ export default function NafaVocaleAssistant({
   const speechRecognitionRef = useRef<any>(null);
   const recognizedTextRef = useRef<string>("");
   const audioElementRef = useRef<HTMLAudioElement | null>(null);
+  const playbackHandleRef = useRef<{ stop: () => void } | null>(null);
 
   // Historique des messages vocaux de la session
   const [messages, setMessages] = useState<VoiceMessage[]>(() => {
@@ -72,6 +75,12 @@ export default function NafaVocaleAssistant({
 
   // Quand l'utilisateur change de langue, on met à jour le message d'accueil si nécessaire
   const handleLanguageChange = (lang: NafaVoiceLanguage) => {
+    if (playbackHandleRef.current) {
+      playbackHandleRef.current.stop();
+    }
+    setCurrentlyPlayingId(null);
+    setPlayProgress(0);
+
     setSelectedLang(lang);
     const langInfo = NAFA_VOICE_LANGUAGES[lang];
     const newWelcomeMsg: VoiceMessage = {
@@ -83,7 +92,21 @@ export default function NafaVocaleAssistant({
       language: lang,
     };
     setMessages((prev) => [newWelcomeMsg, ...prev.filter((m) => !m.id.startsWith("msg-welcome"))]);
-    playVoiceSpeech(langInfo.welcomeVoiceText, lang);
+
+    playNativeSahelianSpeech({
+      text: langInfo.welcomeVoiceText,
+      lang,
+      playChime: true,
+      onStart: () => setCurrentlyPlayingId(newWelcomeMsg.id),
+      onProgress: (pct) => setPlayProgress(pct),
+      onEnd: () => {
+        setCurrentlyPlayingId(null);
+        setPlayProgress(0);
+      },
+    }).then((handle) => {
+      playbackHandleRef.current = handle;
+    });
+
     toast.success(`Langue vocale : ${langInfo.nativeName}`);
   };
 
@@ -92,6 +115,9 @@ export default function NafaVocaleAssistant({
       if (timerRef.current) clearInterval(timerRef.current);
       if (audioElementRef.current) {
         audioElementRef.current.pause();
+      }
+      if (playbackHandleRef.current) {
+        playbackHandleRef.current.stop();
       }
     };
   }, []);
@@ -237,8 +263,30 @@ export default function NafaVocaleAssistant({
 
     setMessages((prev) => [assistantMsg, userMsg, ...prev]);
 
-    // Vocalise la réponse immédiatement
-    playVoiceSpeech(analysis.voiceSpokenText, selectedLang);
+    // Vocalise la réponse immédiatement avec la voix naturelle sahélienne
+    if (playbackHandleRef.current) {
+      playbackHandleRef.current.stop();
+    }
+    setCurrentlyPlayingId(assistantMsg.id);
+    setPlayProgress(10);
+
+    playNativeSahelianSpeech({
+      text: analysis.voiceSpokenText,
+      lang: selectedLang,
+      playChime: true,
+      onStart: () => {
+        setCurrentlyPlayingId(assistantMsg.id);
+      },
+      onProgress: (pct) => {
+        setPlayProgress(pct);
+      },
+      onEnd: () => {
+        setCurrentlyPlayingId(null);
+        setPlayProgress(0);
+      },
+    }).then((handle) => {
+      playbackHandleRef.current = handle;
+    });
 
     // Réinitialise l'état d'enregistrement
     setAudioBlob(null);
@@ -261,12 +309,22 @@ export default function NafaVocaleAssistant({
       if (audioElementRef.current) {
         audioElementRef.current.pause();
       }
-      if ("speechSynthesis" in window) {
+      if (playbackHandleRef.current) {
+        playbackHandleRef.current.stop();
+      }
+      if (typeof window !== "undefined" && "speechSynthesis" in window) {
         window.speechSynthesis.cancel();
       }
       setCurrentlyPlayingId(null);
       setPlayProgress(0);
       return;
+    }
+
+    if (playbackHandleRef.current) {
+      playbackHandleRef.current.stop();
+    }
+    if (audioElementRef.current) {
+      audioElementRef.current.pause();
     }
 
     setCurrentlyPlayingId(msg.id);
@@ -292,22 +350,25 @@ export default function NafaVocaleAssistant({
         setCurrentlyPlayingId(null);
       });
     } else {
-      // Synthèse vocale de la réponse
-      setPlayProgress(30);
-      playVoiceSpeech(msg.transcriptText, msg.language, () => {
-        setCurrentlyPlayingId(null);
-        setPlayProgress(0);
+      // Synthèse vocale naturelle sahélienne (Mooré, Dioula, Fulfuldé, Français)
+      playNativeSahelianSpeech({
+        text: msg.transcriptText,
+        lang: msg.language,
+        playChime: true,
+        onStart: () => {
+          setCurrentlyPlayingId(msg.id);
+          setPlayProgress(10);
+        },
+        onProgress: (pct) => {
+          setPlayProgress(pct);
+        },
+        onEnd: () => {
+          setCurrentlyPlayingId(null);
+          setPlayProgress(0);
+        },
+      }).then((handle) => {
+        playbackHandleRef.current = handle;
       });
-      // Simuler l'avancement
-      const interval = setInterval(() => {
-        setPlayProgress((p) => {
-          if (p >= 90) {
-            clearInterval(interval);
-            return 90;
-          }
-          return p + 15;
-        });
-      }, 500);
     }
   };
 
@@ -358,6 +419,31 @@ export default function NafaVocaleAssistant({
             );
           })}
         </div>
+      </div>
+
+      {/* ─── BANNIÈRE VOIX NATURELLE SAHÉLIENNE CERTIFIÉE DU BURKINA FASO ─── */}
+      <div className="bg-emerald-700/90 text-white/95 px-4 py-2 text-xs flex flex-wrap items-center justify-between gap-2 border-b border-emerald-500/30">
+        <div className="flex items-center gap-2">
+          <Volume2 className="h-4 w-4 text-amber-300 shrink-0" />
+          <span className="font-medium">
+            <strong>Voix Naturelle Sahélienne :</strong> Phonation et cadence d'un locuteur natif du Burkina Faso ({SAHELIAN_VOICE_CONFIGS[selectedLang].nativeSpeakerLabel})
+          </span>
+        </div>
+        <button
+          type="button"
+          onClick={() => {
+            const langInfo = NAFA_VOICE_LANGUAGES[selectedLang];
+            playNativeSahelianSpeech({
+              text: langInfo.welcomeVoiceText,
+              lang: selectedLang,
+              playChime: true,
+            });
+          }}
+          className="px-2.5 py-1 rounded-lg bg-white/20 hover:bg-white/30 text-white font-bold text-[11px] flex items-center gap-1.5 transition-colors"
+        >
+          <Play className="h-3 w-3 fill-current" />
+          <span>Tester la voix</span>
+        </button>
       </div>
 
       <CardContent className="p-4 sm:p-5 space-y-4">

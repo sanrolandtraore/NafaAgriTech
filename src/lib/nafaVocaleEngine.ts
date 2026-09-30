@@ -4,6 +4,13 @@
  * Supporte : Français, Mooré, Dioula, Fulfuldé.
  */
 
+import {
+  playNativeSahelianSpeech,
+  convertToSahelianPhonetics,
+  SAHELIAN_VOICE_CONFIGS,
+  findBestNaturalVoice,
+} from "./sahelianVoiceSynthesizer";
+
 export type NafaVoiceLanguage = "fr" | "moore" | "dioula" | "fulfulde";
 
 export interface NafaVoiceLanguageInfo {
@@ -284,16 +291,16 @@ export function analyzeVoiceQuery(
     understoodNeedFr = `Location ou travaux de machinisme agricole (Tracteur / Labour / Matériel)${cityLabel}`;
     switch (selectedLanguage) {
       case "moore":
-        voiceReplyText = `M wʋma fo koɛɛga. Fo baooda toraaktɛɛr bɩ machinisme tʋʋma${detectedCity ? ` ${detectedCity} pʋgẽ` : ""}. M paama ofert rãmb sõama. Ges-y la f bool nengẽ roogã kaset zutu !`;
-        voiceSpokenText = `M wum-a fo koɛɛga. Fo baooda toraaktɛɛr. M paama ofert rãmb. Ges-y n bool vendor wã.`;
+        voiceReplyText = `M wʋma fo koɛɛga sõma. Fo baooda toraaktɛɛr bɩ machinisme tʋʋma${detectedCity ? ` ${detectedCity} pʋgẽ` : ""}. M paama ofert rãmb sõama. Ges-y la f bool kaset soaba sisan !`;
+        voiceSpokenText = `M wʋma fo koɛɛga sõma. Fo baooda toraaktɛɛr. M paama ofert rãmb sõama. Ges-y n bool kaset soaba.`;
         break;
       case "dioula":
-        voiceReplyText = `N ye i ka kuma mɛn. I bɛ traktɛri walima sɛnɛkɛ minanw sɔrɔli fɛ${detectedCity ? ` ${detectedCity} kɔnɔ` : ""}. N ye ofert ɲumanw sɔrɔ. I bɛ se ka butɔn kɛrɛnkɛrɛnnen digi ka feerela wele !`;
-        voiceSpokenText = `N ye i ka kuma mɛn. I bɛ traktɛri fɛ. Ofert bɛ yen. Digi ka feerela wele.`;
+        voiceReplyText = `N ye i ka kuma mɛn ka ɲɛ. I bɛ traktɛri walima sɛnɛkɛ minanw sɔrɔli fɛ${detectedCity ? ` ${detectedCity} kɔnɔ` : ""}. N ye ofert ɲumanw sɔrɔ. I bɛ se ka butɔn kɛrɛnkɛrɛnnen digi ka feerela wele sisan !`;
+        voiceSpokenText = `N ye i ka kuma mɛn ka ɲɛ. I bɛ traktɛri fɛ. Ofert ɲumanw bɛ yen. Digi ka feerela wele sisan.`;
         break;
       case "fulfulde":
-        voiceReplyText = `Mi nani haala maa. A ɗon ɗaɓɓa traktɛɛr malla remrugal${detectedCity ? ` nder ${detectedCity}` : ""}. Mi heɓii jaabi lobbi. Pettu butoŋ cewɗo ngam noddude koohoowo !`;
-        voiceSpokenText = `Mi nani haala maa. A ɗon ɗaɓɓa traktɛɛr. Mi heɓii jaabi. Noddu koohoowo jooni.`;
+        voiceReplyText = `Mi nani haala maa lobbo. A ɗon ɗaɓɓa traktɛɛr malla remrugal${detectedCity ? ` nder ${detectedCity}` : ""}. Mi heɓii jaabi lobbi. Pettu butoŋ cewɗo ngam noddude koohoowo !`;
+        voiceSpokenText = `Mi nani haala maa lobbo. A ɗon ɗaɓɓa traktɛɛr. Mi heɓii jaabi lobbi. Noddu koohoowo jooni.`;
         break;
       default:
         voiceReplyText = `J'ai bien compris votre message vocal. Vous recherchez un tracteur ou du matériel agricole${cityLabel}. Voici les offres disponibles vérifiées par NAFA. Appuyez sur le grand bouton vert pour appeler directement le prestataire.`;
@@ -304,16 +311,16 @@ export function analyzeVoiceQuery(
     understoodNeedFr = `Achat d'intrants ou de semences certifiées (Engrais NPK, Urée, Semences)${cityLabel}`;
     switch (selectedLanguage) {
       case "moore":
-        voiceReplyText = `M wʋma fo koɛɛga. Fo baooda semences certifiées bɩ engrais NPK${detectedCity ? ` ${detectedCity} pʋgẽ` : ""}. M paama ofert sõama. F tõe n boola kaset soaba !`;
-        voiceSpokenText = `M wum-a fo koɛɛga. Fo baooda semences la engrais. M paama nabídka. Bool kaset soaba.`;
+        voiceReplyText = `M wʋma fo koɛɛga sõma. Fo baooda semences certifiées bɩ engrais NPK${detectedCity ? ` ${detectedCity} pʋgẽ` : ""}. M paama ofert sõama. F tõe n boola kaset soaba sisan !`;
+        voiceSpokenText = `M wʋma fo koɛɛga sõma. Fo baooda semences certifiées la engrais NPK. M paama ofert rãmb sõama. Bool kaset soaba sisan !`;
         break;
       case "dioula":
-        voiceReplyText = `N ye i ka kuma mɛn. I bɛ si ɲuman walima fari NPK fɛ${detectedCity ? ` ${detectedCity} kɔnɔ` : ""}. Ofert bɛ yen. Digi ka feerela wele sisan !`;
-        voiceSpokenText = `N ye i ka kuma mɛn. I bɛ si ni fari fɛ. Digi ka feerela wele sisan.`;
+        voiceReplyText = `N ye i ka kuma mɛn ka ɲɛ. I bɛ si ɲuman walima fari NPK fɛ${detectedCity ? ` ${detectedCity} kɔnɔ` : ""}. Ofert ɲumanw bɛ yen. Digi ka feerela wele sisan !`;
+        voiceSpokenText = `N ye i ka kuma mɛn ka ɲɛ. I bɛ si ni fari fɛ. Digi ka feerela wele sisan.`;
         break;
       case "fulfulde":
-        voiceReplyText = `Mi nani haala maa. A ɗon yidi aawdi lobbiri malla lekki ngesa NPK${detectedCity ? ` nder ${detectedCity}` : ""}. Jaabi ɗon. Pettu ngam noddude !`;
-        voiceSpokenText = `Mi nani haala maa. A ɗon yidi aawdi e lekki ngesa. Pettu ngam noddude.`;
+        voiceReplyText = `Mi nani haala maa lobbo. A ɗon yidi aawdi lobbiri malla lekki ngesa NPK${detectedCity ? ` nder ${detectedCity}` : ""}. Jaabi lobbi ɗon. Pettu ngam noddude !`;
+        voiceSpokenText = `Mi nani haala maa lobbo. A ɗon yidi aawdi e lekki ngesa. Pettu ngam noddude koohoowo !`;
         break;
       default:
         voiceReplyText = `J'ai bien compris votre message vocal. Vous cherchez des semences certifiées ou de l'engrais${cityLabel}. Voici les fournisseurs disponibles. Vous pouvez les appeler directement ou leur envoyer un WhatsApp.`;
@@ -340,20 +347,60 @@ export function analyzeVoiceQuery(
         voiceSpokenText = `J'ai bien compris votre besoin en motopompe solaire et irrigation. Voici les équipements disponibles.`;
         break;
     }
+  } else if (bestCategory === "produits_elevage") {
+    understoodNeedFr = `Aliments pour bétail, tourteaux, provendes ou animaux d'élevage${cityLabel}`;
+    switch (selectedLanguage) {
+      case "moore":
+        voiceReplyText = `M wʋma fo koɛɛga sõma. Fo baooda rũm-dɩtla bɩ tourteau fo nii wã yĩnga${detectedCity ? ` ${detectedCity} pʋgẽ` : ""}. Ofert sõama be n bilga. F tõe n boola kaset soaba sisan !`;
+        voiceSpokenText = `M wʋma fo koɛɛga sõma. Fo baooda rũm-dɩtla la tourteau fo nii wã yĩnga. Ofert sõama be n bilga. Bool-y kaset soaba sisan !`;
+        break;
+      case "dioula":
+        voiceReplyText = `N ye i ka kuma mɛn ka ɲɛ. I bɛ balo ni tourteau sɔrɔli fɛ i ka misi kama${detectedCity ? ` ${detectedCity} kɔnɔ` : ""}. Ofert ɲumanw bɛ yen. Digi ka feerela wele sisan !`;
+        voiceSpokenText = `N ye i ka kuma mɛn ka ɲɛ. I bɛ balo ni tourteau fɛ i ka misi kama. Ofert ɲumanw bɛ yen. Digi ka feerela wele !`;
+        break;
+      case "fulfulde":
+        voiceReplyText = `Mi nani haala maa lobbo. A ɗon ɗaɓɓa tourteau e ñamri na'i maa${detectedCity ? ` nder ${detectedCity}` : ""}. Jaabi lobbi ɗon. Pettu butoŋ ngam noddude koohoowo !`;
+        voiceSpokenText = `Mi nani haala maa lobbo. A ɗon ɗaɓɓa tourteau e ñamri na'i maa. Jaabi lobbi ɗon. Pettu ngam noddude !`;
+        break;
+      default:
+        voiceReplyText = `J'ai bien compris votre demande. Vous recherchez des aliments pour bétail ou des tourteaux${cityLabel}. Voici les offres disponibles. Appuyez sur Appeler pour contacter le vendeur.`;
+        voiceSpokenText = `J'ai bien compris votre demande d'aliments et soins pour bétail. Voici les offres disponibles pour vos animaux.`;
+        break;
+    }
+  } else if (bestCategory === "services_veterinaires") {
+    understoodNeedFr = `Soins vétérinaires, vaccins ou santé animale${cityLabel}`;
+    switch (selectedLanguage) {
+      case "moore":
+        voiceReplyText = `M wʋma fo koɛɛga. Fo baooda dokotoro bɩ tĩim fo rũmsi yĩnga${detectedCity ? ` ${detectedCity} pʋgẽ` : ""}. Dokotoro rãmb kaset soaba be n bilga !`;
+        voiceSpokenText = `M wʋma fo koɛɛga. Fo baooda dokotoro rũmsi yĩnga. Bool-y dokotoro sisan.`;
+        break;
+      case "dioula":
+        voiceReplyText = `N ye i ka kuma mɛn. I bɛ bagan dokotoro walima furaw fɛ${detectedCity ? ` ${detectedCity} kɔnɔ` : ""}. Dokotoro sɔrɔlen bɛ yen. Digi ka wele !`;
+        voiceSpokenText = `N ye i ka kuma mɛn. I bɛ bagan dokotoro fɛ. Digi ka dokotoro wele sisan.`;
+        break;
+      case "fulfulde":
+        voiceReplyText = `Mi nani haala maa. A ɗon ɗaɓɓa doktoro jawdi malla lekki na'i${detectedCity ? ` nder ${detectedCity}` : ""}. Doktoro'en ɗon. Pettu ngam noddude !`;
+        voiceSpokenText = `Mi nani haala maa. A ɗon ɗaɓɓa doktoro jawdi. Noddu doktoro jooni.`;
+        break;
+      default:
+        voiceReplyText = `J'ai bien compris votre message vocal. Vous recherchez un vétérinaire ou des soins pour vos animaux${cityLabel}. Voici les professionnels certifiés disponibles.`;
+        voiceSpokenText = `J'ai bien compris votre besoin vétérinaire. Voici les professionnels certifiés disponibles pour soigner vos animaux.`;
+        break;
+    }
   } else {
     understoodNeedFr = `Recherche de produits ou services agricoles & d'élevage${cityLabel}`;
     switch (selectedLanguage) {
       case "moore":
-        voiceReplyText = `M wʋma fo koɛɛga. M tigma ofert rãmb sẽn zems fo tʋʋmdã. Ges-y n bool kaset soaba !`;
-        voiceSpokenText = `M wum-a fo koɛɛga. Ges-y ofert rãmb n bool kaset soaba.`;
+        voiceReplyText = `M wʋma fo koɛɛga sõma. M tigma ofert rãmb sõama sẽn zems fo tʋʋmdã. Ges-y n bool kaset soaba !`;
+        voiceSpokenText = `M wʋma fo koɛɛga sõma. Ges-y ofert rãmb n bool kaset soaba.`;
         break;
       case "dioula":
-        voiceReplyText = `N ye i ka kuma mɛn. N ye feerew sɔrɔ min bɛ bɛn i ka haaju ma. I bɛ se ka feerela wele !`;
-        voiceSpokenText = `N ye i ka kuma mɛn. Feerew bɛ yen. Wele kɛ sisan.`;
+        voiceReplyText = `N ye i ka kuma mɛn ka ɲɛ. N ye feere ɲumanw sɔrɔ min bɛ bɛn i ka haaju ma. I bɛ se ka feerela wele sisan !`;
+        voiceSpokenText = `N ye i ka kuma mɛn. Feerew bɛ yen. Digi ka feerela wele sisan.`;
         break;
       case "fulfulde":
-        voiceReplyText = `Mi nani haala maa. Mi heɓii ko potɗaa e haaju maa. Pettu ngam noddude !`;
-        voiceSpokenText = `Mi nani haala maa. Mi heɓii ko potɗaa. Noddu koohoowo.`;
+        voiceReplyText = `Mi nani haala maa lobbo. Mi heɓii ko potɗaa e haaju maa. Pettu butoŋ ngam noddude !`;
+        voiceSpokenText = `Mi nani haala maa lobbo. Mi heɓii ko potɗaa. Noddu koohoowo jooni.`;
         break;
       default:
         voiceReplyText = `J'ai bien compris votre message vocal. Voici les meilleures offres répondant à votre besoin${cityLabel}. Appuyez sur le bouton pour contacter le fournisseur.`;
@@ -381,7 +428,7 @@ export function analyzeVoiceQuery(
 }
 
 /**
- * Lit le message à voix haute avec l'API Web Speech ou synthèse audio
+ * Lit le message à voix haute avec le synthétiseur vocal sahélien naturel
  */
 export function playVoiceSpeech(
   text: string,
@@ -394,20 +441,12 @@ export function playVoiceSpeech(
   }
 
   try {
-    window.speechSynthesis.cancel();
-    const utterance = new SpeechSynthesisUtterance(text);
-    
-    // Pour le français ou adaptation phonétique des langues burkinabé
-    utterance.lang = "fr-FR";
-    utterance.rate = 0.9;
-    utterance.pitch = 1.0;
-    
-    if (onEnd) {
-      utterance.onend = onEnd;
-      utterance.onerror = () => onEnd();
-    }
-    
-    window.speechSynthesis.speak(utterance);
+    playNativeSahelianSpeech({
+      text,
+      lang,
+      playChime: true,
+      onEnd,
+    });
     return true;
   } catch (e) {
     console.warn("Speech synthesis error:", e);
@@ -415,3 +454,10 @@ export function playVoiceSpeech(
     return false;
   }
 }
+
+export {
+  playNativeSahelianSpeech,
+  convertToSahelianPhonetics,
+  SAHELIAN_VOICE_CONFIGS,
+  findBestNaturalVoice,
+};
