@@ -100,25 +100,25 @@ describe("NAFA Vocale — Moteur d'assistance vocale multilingue sahélien", () 
   });
 });
 
-describe("Composant UI : NafaVocaleAssistant (Style WhatsApp Voice Note)", () => {
-  it("affiche le composant NAFA Vocale avec les 4 langues et les exemples vocaux", () => {
+describe("Composant UI : NafaVocaleAssistant (Style WhatsApp Voice Note - Français Unique)", () => {
+  it("affiche le composant NAFA Vocale exclusivement en Français", () => {
     render(<NafaVocaleAssistant catalogItems={mockCatalogItems} />);
 
     expect(screen.getAllByText(/NAFA Vocale/i).length).toBeGreaterThanOrEqual(1);
     expect(screen.getByText(/100% Sans Écriture/i)).toBeInTheDocument();
 
-    // Boutons de langues présents
-    expect(screen.getByRole("button", { name: /Mooré/i })).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: /Julakan/i })).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: /Fulfulde/i })).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: /Français/i })).toBeInTheDocument();
+    // Badge Français unique présent, langues locales absentes
+    expect(screen.getByText(/Français \(Burkina\)/i)).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /Mooré/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /Julakan/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /Fulfulde/i })).not.toBeInTheDocument();
   });
 
-  it("permet de déclencher un exemple vocal et affiche les résultats avec boutons d'appel et WhatsApp", () => {
+  it("permet de déclencher un exemple vocal en Français et affiche les résultats avec boutons d'appel et WhatsApp", () => {
     render(<NafaVocaleAssistant catalogItems={mockCatalogItems} />);
 
-    // Clic sur l'exemple vocal du tracteur
-    const sampleBtn = screen.getByRole("button", { name: /Toraaktɛɛr labour yĩnga Bobo/i });
+    // Clic sur l'exemple vocal du tracteur en Français
+    const sampleBtn = screen.getByRole("button", { name: /Labour au tracteur à Bobo/i });
     fireEvent.click(sampleBtn);
 
     // Vérifie que les offres trouvées sont affichées
@@ -134,10 +134,10 @@ describe("Composant UI : NafaVocaleAssistant (Style WhatsApp Voice Note)", () =>
     expect(waButtons.length).toBeGreaterThanOrEqual(1);
   });
 
-  it("affiche la bannière Voix Naturelle Sahélienne et le bouton de test audio", () => {
+  it("affiche la bannière Voix Naturelle en Français et le bouton de test audio", () => {
     render(<NafaVocaleAssistant catalogItems={mockCatalogItems} />);
 
-    expect(screen.getByText(/Voix Naturelle Sahélienne :/i)).toBeInTheDocument();
+    expect(screen.getByText(/Voix Naturelle :/i)).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /Tester la voix/i })).toBeInTheDocument();
   });
 });

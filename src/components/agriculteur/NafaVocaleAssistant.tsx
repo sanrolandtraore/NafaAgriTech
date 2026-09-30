@@ -42,7 +42,7 @@ export default function NafaVocaleAssistant({
   onApplyFilter,
   className = "",
 }: NafaVocaleAssistantProps) {
-  const [selectedLang, setSelectedLang] = useState<NafaVoiceLanguage>("moore");
+  const [selectedLang, setSelectedLang] = useState<NafaVoiceLanguage>("fr");
   const [isRecording, setIsRecording] = useState(false);
   const [recordingSeconds, setRecordingSeconds] = useState(0);
   const [audioBlob, setAudioBlob] = useState<Blob | null>(null);
@@ -60,7 +60,7 @@ export default function NafaVocaleAssistant({
 
   // Historique des messages vocaux de la session
   const [messages, setMessages] = useState<VoiceMessage[]>(() => {
-    const langInfo = NAFA_VOICE_LANGUAGES["moore"];
+    const langInfo = NAFA_VOICE_LANGUAGES["fr"];
     return [
       {
         id: "msg-welcome",
@@ -68,7 +68,7 @@ export default function NafaVocaleAssistant({
         durationSeconds: 6,
         timeString: new Date().toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" }),
         transcriptText: langInfo.welcomeVoiceText,
-        language: "moore",
+        language: "fr",
       },
     ];
   });
@@ -392,41 +392,24 @@ export default function NafaVocaleAssistant({
               </Badge>
             </div>
             <p className="text-xs text-white/90 mt-0.5">
-              Parlez en <strong>Mooré</strong>, <strong>Dioula</strong>, <strong>Fulfuldé</strong> ou <strong>Français</strong> comme sur WhatsApp pour trouver vos besoins.
+              Parlez en <strong>Français</strong> comme sur WhatsApp pour trouver vos besoins (matériel, semences, intrants, bétail).
             </p>
           </div>
         </div>
 
-        {/* Sélecteur de langue en gros boutons faciles à toucher */}
-        <div className="flex items-center gap-1.5 bg-black/20 p-1.5 rounded-2xl shrink-0 self-start sm:self-auto overflow-x-auto max-w-full">
-          {(["moore", "dioula", "fulfulde", "fr"] as NafaVoiceLanguage[]).map((lang) => {
-            const isSelected = selectedLang === lang;
-            const info = NAFA_VOICE_LANGUAGES[lang];
-            return (
-              <button
-                key={lang}
-                type="button"
-                onClick={() => handleLanguageChange(lang)}
-                className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 shrink-0 ${
-                  isSelected
-                    ? "bg-white text-emerald-900 shadow-md scale-105"
-                    : "text-white/80 hover:text-white hover:bg-white/10"
-                }`}
-              >
-                <Volume2 className={`h-3.5 w-3.5 ${isSelected ? "text-emerald-700" : "text-white/70"}`} />
-                <span>{info.nativeName}</span>
-              </button>
-            );
-          })}
+        {/* Badge de langue officielle : Français */}
+        <div className="flex items-center gap-2 bg-black/25 px-3 py-1.5 rounded-2xl shrink-0 self-start sm:self-auto border border-white/20">
+          <Volume2 className="h-4 w-4 text-amber-300" />
+          <span className="text-xs font-bold text-white">Français (Burkina)</span>
         </div>
       </div>
 
-      {/* ─── BANNIÈRE VOIX NATURELLE SAHÉLIENNE CERTIFIÉE DU BURKINA FASO ─── */}
+      {/* ─── BANNIÈRE VOIX NATURELLE EN FRANÇAIS ─── */}
       <div className="bg-emerald-700/90 text-white/95 px-4 py-2 text-xs flex flex-wrap items-center justify-between gap-2 border-b border-emerald-500/30">
         <div className="flex items-center gap-2">
           <Volume2 className="h-4 w-4 text-amber-300 shrink-0" />
           <span className="font-medium">
-            <strong>Voix Naturelle Sahélienne :</strong> Phonation et cadence d'un locuteur natif du Burkina Faso ({SAHELIAN_VOICE_CONFIGS[selectedLang].nativeSpeakerLabel})
+            <strong>Voix Naturelle :</strong> Synthèse vocale fluide en Français (Burkina Faso)
           </span>
         </div>
         <button

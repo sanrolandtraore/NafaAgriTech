@@ -721,21 +721,6 @@ export const NafaGeniusStudio: React.FC = () => {
                   <Languages className="h-3.5 w-3.5 text-muted-foreground" /> Français (FR)
                 </span>
               </SelectItem>
-              <SelectItem value="dyu">
-                <span className="flex items-center gap-1.5 font-medium">
-                  <Languages className="h-3.5 w-3.5 text-muted-foreground" /> Dioula (DYU)
-                </span>
-              </SelectItem>
-              <SelectItem value="mos">
-                <span className="flex items-center gap-1.5 font-medium">
-                  <Languages className="h-3.5 w-3.5 text-muted-foreground" /> Mooré (MOS)
-                </span>
-              </SelectItem>
-              <SelectItem value="ful">
-                <span className="flex items-center gap-1.5 font-medium">
-                  <Languages className="h-3.5 w-3.5 text-muted-foreground" /> Fulfuldé (FUL)
-                </span>
-              </SelectItem>
             </SelectContent>
           </Select>
 
