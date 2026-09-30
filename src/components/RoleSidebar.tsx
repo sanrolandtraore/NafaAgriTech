@@ -9,7 +9,7 @@ import {
   Beef, Heart, Baby, Utensils, Wallet, Building2, Compass, Handshake, ClipboardList,
   Award, Store, Eye, Microscope, FileText, BookOpen, Sparkles,
   Briefcase, ShieldCheck, Landmark, FolderKanban, FlaskConical, BadgeCheck,
-  Home, Activity,
+  Home, Activity, Megaphone,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useTranslation } from "react-i18next";
@@ -114,14 +114,14 @@ export const veterinaireNav: NavItem[] = [
 /** 5. Profil Partenaire : Banque, Microfinance & Assurance Agricole (Finance & Assurance exclusivement) */
 export const institutionNav: NavItem[] = [
   { to: "/dashboard", labelKey: "Tableau de bord", icon: LayoutDashboard },
-  { to: "/dashboard/partenaire-mes-offres", labelKey: "Mes Services & Produits Financiers", icon: Store, section: "Offres Financières" },
-  { to: "/dashboard/partenaire-banques", labelKey: "Services bancaires agricoles", icon: Landmark, section: "Finance & Assurance" },
-  { to: "/dashboard/partenaire-assurance", labelKey: "Assurance agricole", icon: ShieldCheck, section: "Finance & Assurance" },
-  { to: "/dashboard/partenaire-programmes", labelKey: "Programmes & Projets", icon: FolderKanban, section: "Finance & Assurance" },
-  { to: "/dashboard/partner-space", labelKey: "Mon Espace Partenaire (Offres & Devis)", icon: Building2, section: "Visibilité & Gestion" },
-  { to: "/dashboard/partenaire-kyc", labelKey: "Vérification KYC & Certification", icon: BadgeCheck, section: "Visibilité & Gestion" },
-  { to: "/dashboard/partenaire-abonnement", labelKey: "Abonnement partenaire", icon: Sparkles, section: "Visibilité & Gestion" },
-  { to: "/dashboard/settings", labelKey: "Paramètres", icon: Settings, section: "Visibilité & Gestion" },
+  { to: "/dashboard/partenaire-mes-offres", labelKey: "Mes Services & Produits Financiers", icon: Store, section: "Finance & Crédit" },
+  { to: "/dashboard/partenaire-assurance", labelKey: "Assurance agricole", icon: ShieldCheck, section: "Finance & Crédit" },
+  { to: "/dashboard/partenaire-programmes", labelKey: "Programmes & Subventions", icon: FolderKanban, section: "Finance & Crédit" },
+  { to: "/dashboard/partenaire-marketing", labelKey: "Campagnes Pub & Marketing", icon: Megaphone, section: "Marketing & Visibilité" },
+  { to: "/dashboard/partenaire-demandes", labelKey: "Demandes de Financement", icon: FileText, section: "Dossiers Clients" },
+  { to: "/dashboard/partenaire-kyc", labelKey: "Vérification KYC & Agrément", icon: BadgeCheck, section: "Conformité & Compte" },
+  { to: "/dashboard/partenaire-abonnement", labelKey: "Abonnement partenaire", icon: Sparkles, section: "Conformité & Compte" },
+  { to: "/dashboard/settings", labelKey: "Paramètres", icon: Settings, section: "Conformité & Compte" },
 ];
 
 /**
@@ -243,6 +243,10 @@ export const getNavLabel = (item: NavItem, t?: (key: string) => string): string 
     "Identité & Documents": "Identité & Documents",
     "Mes Services & Produits Financiers": "Mes Services & Produits Financiers",
     "Rapport d'activité": "Rapport d'activité",
+    "Campagnes Pub & Marketing": "Campagnes Pub & Marketing",
+    "Demandes de Financement": "Demandes de Financement",
+    "Programmes & Subventions": "Programmes & Subventions",
+    "Vérification KYC & Agrément": "Vérification KYC & Agrément",
   };
 
   if (dictionary[key]) {

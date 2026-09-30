@@ -33,12 +33,13 @@ const emptyForm = {
 };
 
 export default function MyOffersPage() {
-  const { user, profile } = useAuth();
+  const { user, profile, partnerType } = useAuth();
+  const isFinance = partnerType === "institution_agri";
   const [offers, setOffers] = useState<PartnerOffer[]>([]);
   const [loading, setLoading] = useState(true);
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState<PartnerOffer | null>(null);
-  const [form, setForm] = useState({ ...emptyForm });
+  const [form, setForm] = useState({ ...emptyForm, category: isFinance ? "financement" : "intrants" });
   const [saving, setSaving] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("all");
@@ -69,7 +70,8 @@ export default function MyOffersPage() {
     setEditing(null);
     setForm({
       ...emptyForm,
-      partner_name: profile?.full_name || "Mon Entreprise Agricole",
+      category: isFinance ? "financement" : "intrants",
+      partner_name: profile?.full_name || (isFinance ? "Établissement Financier" : "Mon Entreprise Agricole"),
       contact_phone: profile?.phone || "+226 ",
       media: [],
     });
@@ -167,15 +169,17 @@ export default function MyOffersPage() {
         <div>
           <h1 className="text-2xl md:text-3xl font-heading font-bold flex items-center gap-2.5">
             <Store className="h-7 w-7 text-primary" />
-            Mes Produits & Services ({offers.length})
+            {isFinance ? "Mes Services & Produits Financiers" : "Mes Produits & Services"} ({offers.length})
           </h1>
           <p className="text-sm text-muted-foreground mt-1">
-            Publiez vos offres avec <strong>photos et vidéos démonstratives</strong> pour les agriculteurs et éleveurs.
+            {isFinance
+              ? "Publiez vos offres de crédit de campagne, microfinances, assurances et bannières promotionnelles pour les agriculteurs et éleveurs."
+              : "Publiez vos offres avec photos et vidéos démonstratives pour les agriculteurs et éleveurs."}
           </p>
         </div>
         <Button onClick={openNew} className="gradient-primary text-primary-foreground font-semibold shadow-sm">
           <Plus className="h-4 w-4 mr-2" />
-          Publier un produit / service
+          {isFinance ? "Publier un service financier" : "Publier un produit / service"}
         </Button>
       </div>
 

@@ -1,6 +1,7 @@
 import { useAuth } from "@/contexts/AuthContext";
 import LivestockDashboardPage from "@/pages/livestock/LivestockDashboardPage";
 import PartenaireDashboard from "@/pages/dashboard/partenaire/PartenaireDashboard";
+import InstitutionFinanceDashboard from "@/pages/dashboard/partenaire/InstitutionFinanceDashboard";
 import ServiceMarketplacePage from "@/pages/dashboard/ServiceMarketplacePage";
 import ServicesPage from "@/pages/dashboard/ServicesPage";
 
@@ -19,6 +20,11 @@ const RoleDashboardHome = () => {
     (primaryRole === "partenaire" && partnerType === "expert_agronome")
   ) {
     return <ServicesPage />;
+  }
+
+  // 2.5 Acteurs Finance & Assurance Agricole : Portail dédié Finance, Crédit, Assurance & Marketing
+  if (primaryRole === "partenaire" && partnerType === "institution_agri") {
+    return <InstitutionFinanceDashboard />;
   }
 
   // 3. Module Agriculteur : seul le marketplace des services apparaît
