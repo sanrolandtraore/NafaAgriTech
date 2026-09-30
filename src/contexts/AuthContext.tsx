@@ -290,12 +290,16 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   useEffect(() => {
+    let isMounted = true;
+
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
+        if (!isMounted) return;
         if (!session) {
           if (explicitSignOutRef.current) {
             clearLocalSession();
             await clearOfflineSession();
+            if (!isMounted) return;
             setSession(null);
             setUser(null);
             setIsOfflineSession(false);
@@ -305,6 +309,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             return;
           }
           const restored = await tryOfflineRestore(true);
+          if (!isMounted) return;
           if (restored) {
             setSession(null);
             setLoading(false);
@@ -332,6 +337,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         }
 
         setTimeout(async () => {
+          if (!isMounted) return;
           const p = await fetchProfile(session.user.id);
           const r = await fetchRoles(session.user.id);
           await cacheSession(session.user.id, session.user.email || '', p, r, session.user.phone);
@@ -341,6 +347,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     );
 
     supabase.auth.getSession().then(async ({ data: { session } }) => {
+      if (!isMounted) return;
       if (session?.user) {
         setSession(session);
         setUser(session.user);
@@ -354,34 +361,41 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         }
         const p = await fetchProfile(session.user.id);
         const r = await fetchRoles(session.user.id);
+        if (!isMounted) return;
         await cacheSession(session.user.id, session.user.email || '', p, r, session.user.phone);
         setLoading(false);
       } else {
         if (!explicitSignOutRef.current) {
           await tryOfflineRestore(true);
         } else {
-          setUser(null);
-          setProfile(null);
-          setRoles([]);
+          if (isMounted) {
+            setUser(null);
+            setProfile(null);
+            setRoles([]);
+          }
         }
-        setLoading(false);
+        if (isMounted) setLoading(false);
       }
     }).catch(async () => {
+      if (!isMounted) return;
       if (!explicitSignOutRef.current) {
         await tryOfflineRestore(true);
       }
-      setLoading(false);
+      if (isMounted) setLoading(false);
     });
 
     const handleOnline = async () => {
+      if (!isMounted) return;
       try {
         const { data: { session: fresh } } = await supabase.auth.getSession();
+        if (!isMounted) return;
         if (fresh?.user) {
           setSession(fresh);
           setUser(fresh.user);
           setIsOfflineSession(false);
           const p = await fetchProfile(fresh.user.id);
           const r = await fetchRoles(fresh.user.id);
+          if (!isMounted) return;
           await cacheSession(fresh.user.id, fresh.user.email || '', p, r);
         }
       } catch (e) {
@@ -391,13 +405,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     window.addEventListener('online', handleOnline);
 
     const handlePartnerTypeEvent = (e: any) => {
-      if (e?.detail?.type) {
+      if (e?.detail?.type && isMounted) {
         setPartnerTypeState(e.detail.type);
       }
     };
     window.addEventListener("nafa-partner-type-updated", handlePartnerTypeEvent);
 
     return () => {
+      isMounted = false;
       subscription.unsubscribe();
       window.removeEventListener('online', handleOnline);
       window.removeEventListener("nafa-partner-type-updated", handlePartnerTypeEvent);
