@@ -298,26 +298,26 @@ export const FieldDesignerStudio: React.FC = () => {
           <div className="flex items-center gap-2">
             {syncState.status === "synced" && (
               <span className="flex items-center gap-1.5 text-xs font-bold text-emerald-400">
-                <span className="h-2.5 w-2.5 rounded-full bg-emerald-500 animate-pulse" />
-                🟢 Synchronisé
+                <span className="h-2 w-2 rounded-full bg-emerald-400 animate-pulse" />
+                Synchronisé
               </span>
             )}
             {syncState.status === "syncing" && (
               <span className="flex items-center gap-1.5 text-xs font-bold text-amber-400">
-                <span className="h-2.5 w-2.5 rounded-full bg-amber-500 animate-ping" />
-                🟠 Synchronisation en cours ({syncState.pendingCount})
+                <span className="h-2 w-2 rounded-full bg-amber-400 animate-ping" />
+                Synchronisation ({syncState.pendingCount})
               </span>
             )}
             {syncState.status === "error" && (
               <span className="flex items-center gap-1.5 text-xs font-bold text-red-400">
-                <span className="h-2.5 w-2.5 rounded-full bg-red-500" />
-                🔴 Erreur de synchronisation
+                <span className="h-2 w-2 rounded-full bg-red-400" />
+                Erreur de synchronisation
               </span>
             )}
             {syncState.status === "offline" && (
               <span className="flex items-center gap-1.5 text-xs font-bold text-slate-300">
-                <span className="h-2.5 w-2.5 rounded-full bg-slate-400" />
-                ⚪ Hors connexion (Sauvegardé localement)
+                <span className="h-2 w-2 rounded-full bg-slate-400" />
+                Mode local hors connexion
               </span>
             )}
           </div>
@@ -365,35 +365,45 @@ export const FieldDesignerStudio: React.FC = () => {
       {/* ── NAVIGATION PAR ONGLETS MÉTIER ── */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
         <TabsList className="grid grid-cols-2 sm:grid-cols-5 lg:grid-cols-10 h-auto p-1.5 gap-1 rounded-2xl bg-muted/70">
-          <TabsTrigger value="dashboard" className="h-10 text-xs font-bold rounded-xl">
-            MON TERRAIN
+          <TabsTrigger value="dashboard" className="h-10 text-xs font-bold rounded-xl flex items-center justify-center gap-1">
+            <Compass className="h-3.5 w-3.5" />
+            <span>Mon Terrain</span>
           </TabsTrigger>
-          <TabsTrigger value="gps" className="h-10 text-xs font-bold rounded-xl">
-            📍 Mesure GPS
+          <TabsTrigger value="gps" className="h-10 text-xs font-bold rounded-xl flex items-center justify-center gap-1">
+            <Navigation className="h-3.5 w-3.5" />
+            <span>Mesure GPS</span>
           </TabsTrigger>
-          <TabsTrigger value="crop" className="h-10 text-xs font-bold rounded-xl">
-            🌱 Culture
+          <TabsTrigger value="crop" className="h-10 text-xs font-bold rounded-xl flex items-center justify-center gap-1">
+            <Sprout className="h-3.5 w-3.5" />
+            <span>Culture</span>
           </TabsTrigger>
-          <TabsTrigger value="irrigation" className="h-10 text-xs font-bold rounded-xl" aria-label="1. Modèle IRRIS — Conception">
-            💧 Irrigation
+          <TabsTrigger value="irrigation" className="h-10 text-xs font-bold rounded-xl flex items-center justify-center gap-1" aria-label="1. Modèle IRRIS — Conception">
+            <Droplets className="h-3.5 w-3.5" />
+            <span>Irrigation</span>
           </TabsTrigger>
-          <TabsTrigger value="batiment" className="h-10 text-xs font-bold rounded-xl">
-            🏗️ Bâtiment
+          <TabsTrigger value="batiment" className="h-10 text-xs font-bold rounded-xl flex items-center justify-center gap-1">
+            <Home className="h-3.5 w-3.5" />
+            <span>Bâtiment</span>
           </TabsTrigger>
-          <TabsTrigger value="builder" className="h-10 text-xs font-bold rounded-xl">
-            🗺️ Carte 2D
+          <TabsTrigger value="builder" className="h-10 text-xs font-bold rounded-xl flex items-center justify-center gap-1">
+            <Layers className="h-3.5 w-3.5" />
+            <span>Carte 2D</span>
           </TabsTrigger>
-          <TabsTrigger value="interventions" className="h-10 text-xs font-bold rounded-xl">
-            📋 Visites
+          <TabsTrigger value="interventions" className="h-10 text-xs font-bold rounded-xl flex items-center justify-center gap-1">
+            <FileText className="h-3.5 w-3.5" />
+            <span>Visites</span>
           </TabsTrigger>
-          <TabsTrigger value="devis" className="h-10 text-xs font-bold rounded-xl" aria-label="2. Devis Express en FCFA">
-            📄 Devis FCFA
+          <TabsTrigger value="devis" className="h-10 text-xs font-bold rounded-xl flex items-center justify-center gap-1" aria-label="2. Devis Express en FCFA">
+            <Wallet className="h-3.5 w-3.5" />
+            <span>Devis FCFA</span>
           </TabsTrigger>
-          <TabsTrigger value="copilot" className="h-10 text-xs font-bold rounded-xl">
-            🤖 AI Copilot
+          <TabsTrigger value="copilot" className="h-10 text-xs font-bold rounded-xl flex items-center justify-center gap-1">
+            <Sparkles className="h-3.5 w-3.5" />
+            <span>AI Copilot</span>
           </TabsTrigger>
-          <TabsTrigger value="diagnostic" className="h-10 text-xs font-bold rounded-xl" aria-label="4. Diagnostic Végétal">
-            🔬 Diagnostic
+          <TabsTrigger value="diagnostic" className="h-10 text-xs font-bold rounded-xl flex items-center justify-center gap-1" aria-label="4. Diagnostic Végétal">
+            <Microscope className="h-3.5 w-3.5" />
+            <span>Diagnostic</span>
           </TabsTrigger>
         </TabsList>
 
@@ -458,7 +468,7 @@ export const FieldDesignerStudio: React.FC = () => {
                 className="flex items-center gap-3.5 p-4 rounded-2xl border-2 border-primary/20 bg-card hover:border-primary hover:bg-primary/5 text-left transition-all shadow-xs group"
               >
                 <div className="w-12 h-12 rounded-xl bg-primary/10 text-primary flex items-center justify-center font-bold text-xl group-hover:scale-105 transition-transform">
-                  📍
+                  <Navigation className="h-6 w-6 text-primary" />
                 </div>
                 <div>
                   <h4 className="font-extrabold text-sm text-foreground">Mesurer une parcelle</h4>
@@ -471,7 +481,7 @@ export const FieldDesignerStudio: React.FC = () => {
                 className="flex items-center gap-3.5 p-4 rounded-2xl border-2 border-green-500/20 bg-card hover:border-green-500 hover:bg-green-500/5 text-left transition-all shadow-xs group"
               >
                 <div className="w-12 h-12 rounded-xl bg-green-500/10 text-green-600 flex items-center justify-center font-bold text-xl group-hover:scale-105 transition-transform">
-                  🌱
+                  <Sprout className="h-6 w-6 text-green-600" />
                 </div>
                 <div>
                   <h4 className="font-extrabold text-sm text-foreground">Concevoir une culture</h4>
@@ -484,7 +494,7 @@ export const FieldDesignerStudio: React.FC = () => {
                 className="flex items-center gap-3.5 p-4 rounded-2xl border-2 border-sky-500/20 bg-card hover:border-sky-500 hover:bg-sky-500/5 text-left transition-all shadow-xs group"
               >
                 <div className="w-12 h-12 rounded-xl bg-sky-500/10 text-sky-600 flex items-center justify-center font-bold text-xl group-hover:scale-105 transition-transform">
-                  💧
+                  <Droplets className="h-6 w-6 text-sky-600" />
                 </div>
                 <div>
                   <h4 className="font-extrabold text-sm text-foreground">Concevoir irrigation</h4>
@@ -497,7 +507,7 @@ export const FieldDesignerStudio: React.FC = () => {
                 className="flex items-center gap-3.5 p-4 rounded-2xl border-2 border-amber-500/20 bg-card hover:border-amber-500 hover:bg-amber-500/5 text-left transition-all shadow-xs group"
               >
                 <div className="w-12 h-12 rounded-xl bg-amber-500/10 text-amber-600 flex items-center justify-center font-bold text-xl group-hover:scale-105 transition-transform">
-                  🏗️
+                  <Home className="h-6 w-6 text-amber-600" />
                 </div>
                 <div>
                   <h4 className="font-extrabold text-sm text-foreground">Concevoir bâtiment</h4>
@@ -510,7 +520,7 @@ export const FieldDesignerStudio: React.FC = () => {
                 className="flex items-center gap-3.5 p-4 rounded-2xl border-2 border-purple-500/20 bg-card hover:border-purple-500 hover:bg-purple-500/5 text-left transition-all shadow-xs group"
               >
                 <div className="w-12 h-12 rounded-xl bg-purple-500/10 text-purple-600 flex items-center justify-center font-bold text-xl group-hover:scale-105 transition-transform">
-                  🗺️
+                  <Layers className="h-6 w-6 text-purple-600" />
                 </div>
                 <div>
                   <h4 className="font-extrabold text-sm text-foreground">Carte & Farm Builder</h4>
@@ -523,7 +533,7 @@ export const FieldDesignerStudio: React.FC = () => {
                 className="flex items-center gap-3.5 p-4 rounded-2xl border-2 border-indigo-500/20 bg-card hover:border-indigo-500 hover:bg-indigo-500/5 text-left transition-all shadow-xs group"
               >
                 <div className="w-12 h-12 rounded-xl bg-indigo-500/10 text-indigo-600 flex items-center justify-center font-bold text-xl group-hover:scale-105 transition-transform">
-                  📋
+                  <FileText className="h-6 w-6 text-indigo-600" />
                 </div>
                 <div>
                   <h4 className="font-extrabold text-sm text-foreground">Mes interventions</h4>
@@ -536,7 +546,7 @@ export const FieldDesignerStudio: React.FC = () => {
                 className="flex items-center gap-3.5 p-4 rounded-2xl border-2 border-emerald-500/20 bg-card hover:border-emerald-500 hover:bg-emerald-500/5 text-left transition-all shadow-xs group"
               >
                 <div className="w-12 h-12 rounded-xl bg-emerald-500/10 text-emerald-600 flex items-center justify-center font-bold text-xl group-hover:scale-105 transition-transform">
-                  📄
+                  <Wallet className="h-6 w-6 text-emerald-600" />
                 </div>
                 <div>
                   <h4 className="font-extrabold text-sm text-foreground">Mes devis</h4>

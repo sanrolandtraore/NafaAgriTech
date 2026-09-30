@@ -139,7 +139,7 @@ export const INITIAL_VETERINARY_PARTNERS: VeterinaryPartner[] = [
     doctor_name: "Dr. Oumarou Sawadogo",
     order_number: "ONV-BF N° 084",
     logo: "https://images.unsplash.com/photo-1583337130417-3346a1be7dee?w=200&auto=format&fit=crop&q=80",
-    cover_image: "https://images.unsplash.com/photo-1548550023-2bdb3c5beed7?w=1200&auto=format&fit=crop&q=80",
+    cover_image: "https://images.unsplash.com/photo-1584467735871-8e85353a8413?w=1200&auto=format&fit=crop&q=80",
     presentation: "Structure agréée par l'Ordre National des Vétérinaires du Burkina Faso. Plus de 15 ans d'expérience en santé bovine, embouche, prophylaxie ovine/caprine et aviculture sahélienne.",
     city: "Bobo-Dioulasso",
     region: "Hauts-Bassins",
@@ -254,9 +254,9 @@ export const INITIAL_VETERINARY_PARTNERS: VeterinaryPartner[] = [
       },
     ],
     gallery: [
-      "https://images.unsplash.com/photo-1548550023-2bdb3c5beed7?w=800&auto=format&fit=crop&q=80",
-      "https://images.unsplash.com/photo-1576092768241-dec231879fc3?w=800&auto=format&fit=crop&q=80",
-      "https://images.unsplash.com/photo-1570042225831-d98fa7577f1e?w=800&auto=format&fit=crop&q=80",
+      "https://images.unsplash.com/photo-1629909613654-28e377c37b09?w=800&auto=format&fit=crop&q=80",
+      "https://images.unsplash.com/photo-1576201836106-db1758fd1c97?w=800&auto=format&fit=crop&q=80",
+      "https://images.unsplash.com/photo-1584820927498-cfe5211fd8bf?w=800&auto=format&fit=crop&q=80",
     ],
     reviews: [
       {
@@ -284,7 +284,7 @@ export const INITIAL_VETERINARY_PARTNERS: VeterinaryPartner[] = [
     doctor_name: "Dr. Aminata Kaboré",
     order_number: "ONV-BF N° 112",
     logo: "https://images.unsplash.com/photo-1628009368231-7bb7cfcb0def?w=200&auto=format&fit=crop&q=80",
-    cover_image: "https://images.unsplash.com/photo-1570042225831-d98fa7577f1e?w=1200&auto=format&fit=crop&q=80",
+    cover_image: "https://images.unsplash.com/photo-1579684385127-1ef15d508118?w=1200&auto=format&fit=crop&q=80",
     presentation: "Clinique de référence dotée d'un laboratoire d'analyses, service d'imagerie et bloc chirurgical vétérinaire pour grands et petits animaux.",
     city: "Ouagadougou",
     region: "Centre",
@@ -366,8 +366,8 @@ export const INITIAL_VETERINARY_PARTNERS: VeterinaryPartner[] = [
       },
     ],
     gallery: [
-      "https://images.unsplash.com/photo-1570042225831-d98fa7577f1e?w=800&auto=format&fit=crop&q=80",
-      "https://images.unsplash.com/photo-1583337130417-3346a1be7dee?w=800&auto=format&fit=crop&q=80",
+      "https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?w=800&auto=format&fit=crop&q=80",
+      "https://images.unsplash.com/photo-1532938911079-1b06ac7ceec7?w=800&auto=format&fit=crop&q=80",
     ],
     reviews: [
       {
@@ -387,7 +387,7 @@ export const INITIAL_VETERINARY_PARTNERS: VeterinaryPartner[] = [
     doctor_name: "Dr. Salif Traoré",
     order_number: "ONV-BF N° 067",
     logo: "https://images.unsplash.com/photo-1537151625747-768eb6cf92b2?w=200&auto=format&fit=crop&q=80",
-    cover_image: "https://images.unsplash.com/photo-1500595046743-cd271d694d30?w=1200&auto=format&fit=crop&q=80",
+    cover_image: "https://images.unsplash.com/photo-1514733670139-4d87a1941d55?w=1200&auto=format&fit=crop&q=80",
     presentation: "Spécialiste de la santé animale en zones pastorales et agropastorales. Partenaire des organisations d'éleveurs et coopératives laitières du Mouhoun.",
     city: "Dédougou",
     region: "Boucle du Mouhoun",
@@ -457,7 +457,8 @@ export const INITIAL_VETERINARY_PARTNERS: VeterinaryPartner[] = [
       },
     ],
     gallery: [
-      "https://images.unsplash.com/photo-1500595046743-cd271d694d30?w=800&auto=format&fit=crop&q=80",
+      "https://images.unsplash.com/photo-1527153857715-3908f2ae5e81?w=800&auto=format&fit=crop&q=80",
+      "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=800&auto=format&fit=crop&q=80",
     ],
     reviews: [
       {
@@ -476,8 +477,8 @@ export const INITIAL_VETERINARY_PARTNERS: VeterinaryPartner[] = [
     name: "Cabinet Vétérinaire Sahélien (Dori)",
     doctor_name: "Dr. Harouna Dicko",
     order_number: "ONV-BF N° 145",
-    logo: "https://images.unsplash.com/photo-1544717305-2782549b5136?w=200&auto=format&fit=crop&q=80",
-    cover_image: "https://images.unsplash.com/photo-1516467508483-a7212febe31a?w=1200&auto=format&fit=crop&q=80",
+    logo: "https://images.unsplash.com/photo-1534361960057-19889db9621e?w=200&auto=format&fit=crop&q=80",
+    cover_image: "https://images.unsplash.com/photo-1541781774459-bb2af2f05b55?w=1200&auto=format&fit=crop&q=80",
     presentation: "Interventions mobiles de proximité dans les campements pastoraux et marchés à bétail du Sahel. Spécialiste des pathologies des zones arides.",
     city: "Dori",
     region: "Sahel",
@@ -547,7 +548,8 @@ export const INITIAL_VETERINARY_PARTNERS: VeterinaryPartner[] = [
       },
     ],
     gallery: [
-      "https://images.unsplash.com/photo-1516467508483-a7212febe31a?w=800&auto=format&fit=crop&q=80",
+      "https://images.unsplash.com/photo-1484557052118-f32bd25b45b5?w=800&auto=format&fit=crop&q=80",
+      "https://images.unsplash.com/photo-1520072959219-c595dc870360?w=800&auto=format&fit=crop&q=80",
     ],
     reviews: [
       {

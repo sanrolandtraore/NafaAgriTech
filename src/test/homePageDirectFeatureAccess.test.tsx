@@ -1,4 +1,4 @@
-﻿import { describe, it, expect, vi, beforeEach } from "vitest";
+import { describe, it, expect, vi, beforeEach } from "vitest";
 import { render, screen } from "@testing-library/react";
 import { BrowserRouter, MemoryRouter, Routes, Route } from "react-router-dom";
 import Index from "@/pages/Index";
@@ -19,7 +19,7 @@ describe("Accès direct aux fonctionnalités à partir de la page d'accueil", ()
     );
 
     // Bouton de lancement rapide de toute la suite d'outils
-    expect(screen.getByText(/Accéder à toute la suite des 39 outils agronomiques/i)).toBeInTheDocument();
+    expect(screen.getByText(/Accéder à la suite complète NAFA FIELD DESIGNER/i)).toBeInTheDocument();
 
     // Outils intelligents accessibles directement
     expect(screen.getByText("GPS")).toBeInTheDocument();

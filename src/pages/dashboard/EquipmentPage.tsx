@@ -427,6 +427,9 @@ export const EquipmentPage = () => {
                       alt={machine.title}
                       className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 opacity-90 group-hover:opacity-100"
                       loading="lazy"
+                      onError={(e) => {
+                        e.currentTarget.src = "https://images.unsplash.com/photo-1592982537447-7440770cbfc9?auto=format&fit=crop&w=800&q=80";
+                      }}
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-stone-950 via-stone-950/30 to-transparent" />
 
