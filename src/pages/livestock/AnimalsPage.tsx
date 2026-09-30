@@ -197,7 +197,7 @@ const AnimalsPage = () => {
   };
 
   const filtered = useMemo(() => {
-    let list = animals as any[];
+    let list = (animals || []) as any[];
     if (filterSpecies !== "all") list = list.filter((a) => a.species === filterSpecies);
     if (filterMode === "individual") list = list.filter((a) => !a.is_group);
     if (filterMode === "group") list = list.filter((a) => a.is_group);
@@ -213,7 +213,7 @@ const AnimalsPage = () => {
     let totalMortalites = 0;
     let totalVendus = 0;
 
-    (animals as any[]).forEach((a) => {
+    ((animals || []) as any[]).forEach((a) => {
       const st = a.status || "actif";
       if (st === "actif") {
         if (a.is_group) {
@@ -230,7 +230,7 @@ const AnimalsPage = () => {
       }
     });
 
-    return { totalActifs, totalMortalites, totalVendus, totalRegistered: animals.length };
+    return { totalActifs, totalMortalites, totalVendus, totalRegistered: (animals || []).length };
   }, [animals]);
 
   const currentBreeds = breedsBySpecies[form.species] || [];

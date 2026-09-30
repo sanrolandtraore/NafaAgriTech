@@ -144,7 +144,7 @@ const LivestockServicesPage = () => {
       ...prev,
       serviceId: defaultService?.id || (partner.services[0]?.id ?? ""),
       serviceName: defaultService?.title || (partner.services[0]?.title ?? "Consultation"),
-      phone: prev.phone || user?.email?.includes("+") ? user?.email.split("@")[0] : "",
+      phone: prev.phone || (user?.email?.includes("+") ? user?.email.split("@")[0] : ""),
       clientName: prev.clientName || "Éleveur Partenaire",
     }));
     setBookingModalOpen(true);
@@ -193,7 +193,7 @@ const LivestockServicesPage = () => {
     setQuoteForm((prev) => ({
       ...prev,
       serviceName: partner.services[0]?.title || "Intervention vétérinaire",
-      phone: prev.phone || user?.email?.includes("+") ? user?.email.split("@")[0] : "",
+      phone: prev.phone || (user?.email?.includes("+") ? user?.email.split("@")[0] : ""),
       clientName: prev.clientName || "Éleveur Partenaire",
     }));
     setQuoteModalOpen(true);

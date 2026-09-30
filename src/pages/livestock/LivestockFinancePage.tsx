@@ -1,6 +1,6 @@
 import { useState, useMemo } from "react";
 import { useAuth } from "@/contexts/AuthContext";
-import { useOfflineData } from "@/hooks/useOfflineData";
+import { useOfflineData, isValidUuid } from "@/hooks/useOfflineData";
 import { useDefaultLivestockFarm } from "@/hooks/useDefaultLivestockFarm";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -64,7 +64,11 @@ export const buyers = ["Marché à bétail local", "Boucher / Charcutier", "Comm
 const LivestockFinancePage = () => {
   const { user } = useAuth();
   const { farmId } = useDefaultLivestockFarm();
-  const effectiveFarmId = farmId || (user ? `farm-${user.id}` : "default_farm");
+  const effectiveFarmId = (farmId && isValidUuid(farmId))
+    ? farmId
+    : (user && isValidUuid(user.id))
+    ? user.id
+    : "10000000-1000-4000-8000-100000000000";
 
   const { data: expenses, loading: loadingExp, isOffline, insertRow: insertExpense, deleteRow: deleteExpense } = useOfflineData({
     table: "livestock_expenses",
@@ -78,7 +82,7 @@ const LivestockFinancePage = () => {
     orderBy: "sale_date",
   });
 
-  const { data: animals, loading: loadingAnimals } = useOfflineData({
+  const { data: animals, loading: loadingAnimals, updateRow: updateAnimal } = useOfflineData({
     table: "animals",
     select: "id, name, group_label, identification_number, species, status",
     orderBy: "name",
@@ -191,6 +195,14 @@ const LivestockFinancePage = () => {
 
     const result = await insertSale(payload);
     if (result) {
+      if (saleForm.sale_type === "animal" && saleForm.animal_id && updateAnimal) {
+        try {
+          await updateAnimal(saleForm.animal_id, { status: "vendu" });
+          toast.info("Statut de l'animal mis à jour : 'Vendu'");
+        } catch (_err) {
+          // non-blocking
+        }
+      }
       toast.success("Vente enregistrée avec succès.");
       setOpenSale(false);
       setSaleForm({

@@ -5,6 +5,7 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Switch } from "@/components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import {
   Calculator,
@@ -17,11 +18,14 @@ import {
   ShieldCheck,
   Sparkles,
   Beef,
+  Droplets,
+  Sun,
 } from "lucide-react";
 import {
   calculateFatteningPlan,
   calculateLayerProduction,
   calculateBroilerBatch,
+  calculateSahelianWaterNeeds,
 } from "@/lib/livestockEngine";
 
 const fmt = (n: number) => Math.round(n).toLocaleString("fr-FR");
@@ -49,6 +53,11 @@ export const LivestockZootechnicCard = () => {
   const [broilerChickPrice, setBroilerChickPrice] = useState<number>(500);
   const [broilerFeedKgPrice, setBroilerFeedKgPrice] = useState<number>(400);
   const [broilerSalePrice, setBroilerSalePrice] = useState<number>(2500);
+
+  // Eau & Climat Sahélien state
+  const [waterSpecies, setWaterSpecies] = useState<string>("bovin");
+  const [waterHeadCount, setWaterHeadCount] = useState<number>(20);
+  const [isHotDrySeason, setIsHotDrySeason] = useState<boolean>(false);
 
   // Calculations
   const fatteningResult = useMemo(() => {
@@ -83,6 +92,14 @@ export const LivestockZootechnicCard = () => {
     });
   }, [broilerBatchSize, broilerMortality, broilerChickPrice, broilerFeedKgPrice, broilerSalePrice]);
 
+  const waterResult = useMemo(() => {
+    return calculateSahelianWaterNeeds({
+      species: waterSpecies,
+      headCount: waterHeadCount,
+      isHotDrySeason,
+    });
+  }, [waterSpecies, waterHeadCount, isHotDrySeason]);
+
   return (
     <Card className="border-amber-500/20 shadow-sm">
       <CardHeader className="pb-3">
@@ -104,15 +121,18 @@ export const LivestockZootechnicCard = () => {
       </CardHeader>
       <CardContent className="space-y-4">
         <Tabs defaultValue="embouche">
-          <TabsList className="grid w-full grid-cols-3">
+          <TabsList className="grid w-full grid-cols-2 sm:grid-cols-4">
             <TabsTrigger value="embouche" className="flex items-center gap-1.5 text-xs">
-              <Beef className="h-3.5 w-3.5" /> Embouche (Gains & Poids)
+              <Beef className="h-3.5 w-3.5" /> Embouche
             </TabsTrigger>
             <TabsTrigger value="pondeuses" className="flex items-center gap-1.5 text-xs">
-              <Egg className="h-3.5 w-3.5" /> Poules Pondeuses
+              <Egg className="h-3.5 w-3.5" /> Pondeuses
             </TabsTrigger>
             <TabsTrigger value="poulets" className="flex items-center gap-1.5 text-xs">
-              <Bird className="h-3.5 w-3.5" /> Poulets de Chair
+              <Bird className="h-3.5 w-3.5" /> Poulets
+            </TabsTrigger>
+            <TabsTrigger value="eau" className="flex items-center gap-1.5 text-xs">
+              <Droplets className="h-3.5 w-3.5 text-sky-500" /> Eau & Climat
             </TabsTrigger>
           </TabsList>
 
@@ -303,6 +323,77 @@ export const LivestockZootechnicCard = () => {
                 </p>
                 <p className="text-[10px] text-muted-foreground">ROI: {broilerResult.roiPercent}% ({fmt(broilerResult.marginPerChickenFcfa)} F/poulet)</p>
               </div>
+            </div>
+          </TabsContent>
+
+          {/* ONGLET EAU & CLIMAT SAHÉLIEN */}
+          <TabsContent value="eau" className="space-y-4 pt-3">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 items-end">
+              <div className="space-y-1">
+                <Label className="text-xs">Espèce concernée</Label>
+                <Select value={waterSpecies} onValueChange={(v) => setWaterSpecies(v)}>
+                  <SelectTrigger className="h-8 text-xs"><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="bovin">Bovin (Zébu / Métis)</SelectItem>
+                    <SelectItem value="ovin">Ovin (Mouton du Sahel)</SelectItem>
+                    <SelectItem value="caprin">Caprin (Chèvre)</SelectItem>
+                    <SelectItem value="porcin">Porcin (Porc charcutier)</SelectItem>
+                    <SelectItem value="volaille">Volaille (Poule / Pintade)</SelectItem>
+                    <SelectItem value="pisciculture">Pisciculture (Bassin)</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-1">
+                <Label className="text-xs">Effectif du cheptel (têtes)</Label>
+                <Input
+                  type="number"
+                  min="1"
+                  value={waterHeadCount}
+                  onChange={(e) => setWaterHeadCount(Math.max(1, Number(e.target.value)))}
+                  className="h-8 text-xs"
+                />
+              </div>
+
+              <div className="flex items-center justify-between p-2 rounded-lg border bg-amber-500/5 border-amber-500/20 h-8">
+                <div className="flex items-center gap-1.5 text-xs font-semibold">
+                  <Sun className="h-3.5 w-3.5 text-amber-600" />
+                  <span>Saison chaude (&gt;38°C)</span>
+                </div>
+                <Switch
+                  checked={isHotDrySeason}
+                  onCheckedChange={setIsHotDrySeason}
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 p-3 bg-muted/40 rounded-lg text-center">
+              <div>
+                <p className="text-xs text-muted-foreground">Besoin par tête</p>
+                <p className="text-lg font-bold text-sky-600">{waterResult.dailyPerHeadLiters} L / jour</p>
+                <p className="text-[10px] text-muted-foreground">{isHotDrySeason ? "+50% (Pic de chaleur)" : "Régime standard"}</p>
+              </div>
+              <div>
+                <p className="text-xs text-muted-foreground">Besoin troupeau / jour</p>
+                <p className="text-lg font-bold">{fmt(waterResult.dailyTotalLiters)} L / jour</p>
+                <p className="text-[10px] text-muted-foreground">({Math.ceil(waterResult.dailyTotalLiters / 200)} fûts de 200L)</p>
+              </div>
+              <div>
+                <p className="text-xs text-muted-foreground">Volume mensuel troupeau</p>
+                <p className="text-lg font-bold text-primary">{Math.round((waterResult.monthlyTotalLiters / 1000) * 10) / 10} m³</p>
+                <p className="text-[10px] text-muted-foreground">({fmt(waterResult.monthlyTotalLiters)} Litres / mois)</p>
+              </div>
+              <div>
+                <p className="text-xs text-muted-foreground">Statut d'approvisionnement</p>
+                <p className="text-lg font-bold text-emerald-600 flex items-center justify-center gap-1">
+                  <ShieldCheck className="h-4 w-4" /> Garanti
+                </p>
+                <p className="text-[10px] text-muted-foreground">Forage / Puits / Réseau</p>
+              </div>
+            </div>
+
+            <div className="p-2.5 rounded-lg bg-sky-500/10 border border-sky-500/20 text-xs text-sky-950 dark:text-sky-200">
+              <strong>💡 Recommandation Sahélienne :</strong> {waterResult.recommendation}
             </div>
           </TabsContent>
         </Tabs>
