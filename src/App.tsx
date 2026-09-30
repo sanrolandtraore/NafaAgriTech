@@ -18,6 +18,8 @@ const Auth = lazy(() => import("./pages/Auth"));
 const MentionsLegales = lazy(() => import("./pages/MentionsLegales"));
 const ConditionsUtilisation = lazy(() => import("./pages/ConditionsUtilisation"));
 const PolitiqueConfidentialite = lazy(() => import("./pages/PolitiqueConfidentialite"));
+const AboutPage = lazy(() => import("./pages/AboutPage"));
+const ContactPage = lazy(() => import("./pages/ContactPage"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 const CyberDefenseDashboard = lazy(() => import("./pages/dashboard/security/CyberDefenseDashboard"));
 
@@ -111,6 +113,8 @@ const App = () => (
               {/* Public routes intentionally stay outside AuthProvider so the landing page
                   can render even when Supabase is unavailable or not configured yet. */}
               <Route path="/" element={<Index />} />
+              <Route path="/a-propos" element={<Suspense fallback={<PageLoader />}><AboutPage /></Suspense>} />
+              <Route path="/contact" element={<Suspense fallback={<PageLoader />}><ContactPage /></Suspense>} />
               <Route path="/mentions-legales" element={<Suspense fallback={<PageLoader />}><MentionsLegales /></Suspense>} />
               <Route path="/conditions-utilisation" element={<Suspense fallback={<PageLoader />}><ConditionsUtilisation /></Suspense>} />
               <Route path="/politique-confidentialite" element={<Suspense fallback={<PageLoader />}><PolitiqueConfidentialite /></Suspense>} />

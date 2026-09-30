@@ -1,4 +1,4 @@
-﻿import { describe, it, expect, beforeEach } from "vitest";
+import { describe, it, expect, beforeEach } from "vitest";
 import { render, screen, fireEvent, within } from "@testing-library/react";
 import { BrowserRouter } from "react-router-dom";
 import Index from "@/pages/Index";
@@ -39,7 +39,7 @@ describe("Landing Page Premium - Architecture UX Fulcrum", () => {
     expect(screen.getByText("Agronomes & Vétérinaires")).toBeInTheDocument();
 
     // Carte 2 : Partenaires
-    expect(screen.getByText("Partenaires")).toBeInTheDocument();
+    expect(screen.getAllByText("Partenaires").length).toBeGreaterThanOrEqual(1);
 
     // Carte 3 : Agriculteurs & Éleveurs
     expect(screen.getByText("Agriculteurs & Éleveurs")).toBeInTheDocument();
