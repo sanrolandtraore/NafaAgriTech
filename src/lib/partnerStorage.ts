@@ -38,6 +38,15 @@ export interface PartnerOffer {
   is_active: boolean;
   created_at: string;
   updated_at?: string;
+  finance_type?: string;
+  interest_rate?: string;
+  min_amount?: number;
+  max_amount?: number;
+  duration_months?: string;
+  target_audience?: string;
+  campaign_badge?: string;
+  is_sponsored?: boolean;
+  marketing_cta?: string;
 }
 
 export interface PartnerProfile {
@@ -885,6 +894,7 @@ export const partnerStorage = {
         list[idx] = saved;
       } else {
         saved = {
+          ...offer,
           id: offer.id,
           owner_id: offer.owner_id || getEffectiveUserId(),
           partner_name: offer.partner_name,
@@ -908,6 +918,7 @@ export const partnerStorage = {
       }
     } else {
       saved = {
+        ...offer,
         id: "po-" + Date.now() + "-" + Math.random().toString(36).substring(2, 7),
         owner_id: offer.owner_id || getEffectiveUserId(),
         partner_name: offer.partner_name,

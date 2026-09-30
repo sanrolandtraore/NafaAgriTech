@@ -83,6 +83,9 @@ const ProviderClientsPage = lazy(() => import("./pages/provider/ProviderClientsP
 const QuoteRequestsPage = lazy(() => import("./pages/provider/QuoteRequestsPage"));
 const RevenuePage = lazy(() => import("./pages/provider/RevenuePage"));
 const PartnerMarketplacePage = lazy(() => import("./pages/provider/PartnerMarketplacePage"));
+const InstitutionFinanceDashboard = lazy(() => import("./pages/dashboard/partenaire/InstitutionFinanceDashboard"));
+const PartnerMarketingPage = lazy(() => import("./pages/dashboard/partenaire/PartnerMarketingPage"));
+const PartnerDemandesPage = lazy(() => import("./pages/dashboard/partenaire/PartnerDemandesPage"));
 
 const PageLoader = () => (
   <div className="flex items-center justify-center h-48">
@@ -184,6 +187,9 @@ const App = () => (
                 <Route path="partenaire-assurance" element={<Suspense fallback={<PageLoader />}><AssurancePage /></Suspense>} />
                 <Route path="partenaire-programmes" element={<Suspense fallback={<PageLoader />}><ProgrammesPage /></Suspense>} />
                 <Route path="partenaire-banques" element={<Suspense fallback={<PageLoader />}><ServicesBancairesPage /></Suspense>} />
+                <Route path="partenaire-marketing" element={<Suspense fallback={<PageLoader />}><PartnerMarketingPage /></Suspense>} />
+                <Route path="partenaire-demandes" element={<Suspense fallback={<PageLoader />}><PartnerDemandesPage /></Suspense>} />
+                <Route path="partenaire-finance" element={<Suspense fallback={<PageLoader />}><InstitutionFinanceDashboard /></Suspense>} />
                 <Route path="partners-directory" element={<Suspense fallback={<PageLoader />}><PartnersDirectoryPage /></Suspense>} />
                 <Route path="partenaire-vitrine" element={<Suspense fallback={<PageLoader />}><PartnerStorefrontPage /></Suspense>} />
                 <Route path="partenaire-kyc" element={<Suspense fallback={<PageLoader />}><PartnerKycPage /></Suspense>} />
