@@ -50,7 +50,7 @@ describe("NafaGeniusPage & NafaGeniusStudio", () => {
     expect(screen.getByRole("tab", { name: /4\. Diagnostic Végétal/i })).toBeInTheDocument();
 
     // Vérifie le contenu de l'onglet 1 (Modèle IRRIS)
-    expect(screen.getByText(/Modèle IRRIS — Conception & Dimensionnement Solaire/i)).toBeInTheDocument();
+    expect(screen.getByText(/Modèle IRRIS — Conception/i)).toBeInTheDocument();
   });
 
   it("ouvre et affiche l'onglet Devis Express en FCFA via le paramètre URL tab=validation_devis", () => {
@@ -99,6 +99,25 @@ describe("NafaGeniusPage & NafaGeniusStudio", () => {
     // Clic sur Recalculer déclenche handleIrrisCalculated sans erreur
     recalculerBtn.click();
     
-    expect(screen.getByText(/Modèle IRRIS — Conception & Dimensionnement Solaire/i)).toBeInTheDocument();
+    expect(screen.getByText(/Modèle IRRIS — Conception/i)).toBeInTheDocument();
+  });
+
+  it("affiche la section de personnalisation expert (Énergie, Pompe, Tuyauterie & Marketplace)", () => {
+    render(
+      <MemoryRouter initialEntries={["/dashboard/genius"]}>
+        <NafaGeniusPage />
+      </MemoryRouter>
+    );
+
+    // Section 4 de personnalisation avancée
+    expect(screen.getByText(/4\. Personnalisation Ingénieur/i)).toBeInTheDocument();
+    expect(screen.getByText(/A\. Source d'Énergie du Projet/i)).toBeInTheDocument();
+    expect(screen.getByText(/B\. Pompe & Motorisation/i)).toBeInTheDocument();
+    expect(screen.getByText(/C\. Tuyauterie, Conduites & Goutteurs/i)).toBeInTheDocument();
+
+    // Bordereau Marketplace interactif
+    expect(screen.getByText(/Bordereau & Prix Marketplace Interactifs/i)).toBeInTheDocument();
+    expect(screen.getAllByText(/FASO SOLAIRE & POMPAGE SARL/i).length).toBeGreaterThan(0);
   });
 });
+
