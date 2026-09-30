@@ -1,0 +1,353 @@
+/**
+ * NAFA FIELD DESIGNER — BIBLIOTHÈQUE DYNAMIQUE DES CULTURES
+ * Paramètres agronomiques sahéliens (Burkina Faso / Afrique de l'Ouest)
+ * Référentiels : INERA, CIRAD, FAO-56
+ * TOUTES les valeurs sont modifiables par l'agronome.
+ */
+
+import { CropConfig } from "@/types/fieldDesigner";
+
+export const DEFAULT_SAHEL_CROPS: CropConfig[] = [
+  {
+    id: "oignon",
+    name: "Oignon de garde",
+    category: "maraichage",
+    commonVarieties: ["Safary", "Violet de Galmi", "Damani", "Goudami"],
+    recommendedRowSpacingCm: 20,
+    recommendedPlantSpacingCm: 10,
+    recommendedDensityHa: 500000,
+    sowingDepthCm: 1.5,
+    cycleDays: 120,
+    waterRequirementMm: 450,
+    kcInit: 0.5,
+    kcMid: 1.05,
+    kcEnd: 0.75,
+  },
+  {
+    id: "tomate",
+    name: "Tomate maraîchère",
+    category: "maraichage",
+    commonVarieties: ["Mongal F1", "Nadira", "TROPIMECH", "Roma VF"],
+    recommendedRowSpacingCm: 80,
+    recommendedPlantSpacingCm: 40,
+    recommendedDensityHa: 31250,
+    sowingDepthCm: 1.0,
+    cycleDays: 95,
+    waterRequirementMm: 550,
+    kcInit: 0.6,
+    kcMid: 1.15,
+    kcEnd: 0.8,
+  },
+  {
+    id: "mais",
+    name: "Maïs grain / doux",
+    category: "cereale",
+    commonVarieties: ["Bondofa", "Barka", "Espoir", "Komsaya", "SR21"],
+    recommendedRowSpacingCm: 80,
+    recommendedPlantSpacingCm: 25,
+    recommendedDensityHa: 50000,
+    sowingDepthCm: 4.0,
+    cycleDays: 90,
+    waterRequirementMm: 500,
+    kcInit: 0.4,
+    kcMid: 1.2,
+    kcEnd: 0.6,
+  },
+  {
+    id: "riz",
+    name: "Riz irrigué / bas-fond",
+    category: "cereale",
+    commonVarieties: ["FKR 64", "TS2", "ORYLUX 6", "NERICA 4", "FKR 19"],
+    recommendedRowSpacingCm: 20,
+    recommendedPlantSpacingCm: 20,
+    recommendedDensityHa: 250000,
+    sowingDepthCm: 2.0,
+    cycleDays: 115,
+    waterRequirementMm: 950,
+    kcInit: 1.05,
+    kcMid: 1.2,
+    kcEnd: 0.9,
+  },
+  {
+    id: "coton",
+    name: "Coton conventionnel / Bio",
+    category: "industrielle",
+    commonVarieties: ["FK 37", "FK 290", "Célia"],
+    recommendedRowSpacingCm: 80,
+    recommendedPlantSpacingCm: 30,
+    recommendedDensityHa: 41666,
+    sowingDepthCm: 3.0,
+    cycleDays: 140,
+    waterRequirementMm: 650,
+    kcInit: 0.35,
+    kcMid: 1.2,
+    kcEnd: 0.65,
+  },
+  {
+    id: "pomme_de_terre",
+    name: "Pomme de terre",
+    category: "tubercule",
+    commonVarieties: ["Sahel", "Pamela", "Spunta", "Claustar"],
+    recommendedRowSpacingCm: 70,
+    recommendedPlantSpacingCm: 30,
+    recommendedDensityHa: 47600,
+    sowingDepthCm: 7.0,
+    cycleDays: 90,
+    waterRequirementMm: 450,
+    kcInit: 0.5,
+    kcMid: 1.15,
+    kcEnd: 0.75,
+  },
+  {
+    id: "carotte",
+    name: "Carotte",
+    category: "maraichage",
+    commonVarieties: ["New Kuroda", "Touchon", "Amazonia"],
+    recommendedRowSpacingCm: 25,
+    recommendedPlantSpacingCm: 5,
+    recommendedDensityHa: 800000,
+    sowingDepthCm: 1.0,
+    cycleDays: 85,
+    waterRequirementMm: 400,
+    kcInit: 0.45,
+    kcMid: 1.05,
+    kcEnd: 0.9,
+  },
+  {
+    id: "chou",
+    name: "Chou pommé",
+    category: "maraichage",
+    commonVarieties: ["Tropica Cross", "KK Cross", "Oxylus"],
+    recommendedRowSpacingCm: 50,
+    recommendedPlantSpacingCm: 40,
+    recommendedDensityHa: 50000,
+    sowingDepthCm: 1.0,
+    cycleDays: 80,
+    waterRequirementMm: 450,
+    kcInit: 0.45,
+    kcMid: 1.05,
+    kcEnd: 0.95,
+  },
+  {
+    id: "laitue",
+    name: "Laitue batavia",
+    category: "maraichage",
+    commonVarieties: ["Blonde de Paris", "Eden", "Maya"],
+    recommendedRowSpacingCm: 25,
+    recommendedPlantSpacingCm: 20,
+    recommendedDensityHa: 200000,
+    sowingDepthCm: 0.5,
+    cycleDays: 45,
+    waterRequirementMm: 280,
+    kcInit: 0.4,
+    kcMid: 1.0,
+    kcEnd: 0.9,
+  },
+  {
+    id: "poivron",
+    name: "Poivron doux / Piment",
+    category: "maraichage",
+    commonVarieties: ["Yolo Wonder", "Piment Bec d'Oiseau", "Big Sun"],
+    recommendedRowSpacingCm: 70,
+    recommendedPlantSpacingCm: 40,
+    recommendedDensityHa: 35700,
+    sowingDepthCm: 1.0,
+    cycleDays: 110,
+    waterRequirementMm: 550,
+    kcInit: 0.6,
+    kcMid: 1.05,
+    kcEnd: 0.85,
+  },
+  {
+    id: "aubergine",
+    name: "Aubergine locale / violette",
+    category: "maraichage",
+    commonVarieties: ["Black Beauty", "Kumba (locale africaine)", "Bonida"],
+    recommendedRowSpacingCm: 80,
+    recommendedPlantSpacingCm: 50,
+    recommendedDensityHa: 25000,
+    sowingDepthCm: 1.0,
+    cycleDays: 120,
+    waterRequirementMm: 600,
+    kcInit: 0.6,
+    kcMid: 1.05,
+    kcEnd: 0.85,
+  },
+  {
+    id: "pasteque",
+    name: "Pastèque",
+    category: "maraichage",
+    commonVarieties: ["Kaolack", "Crimson Sweet", "Sugar Baby"],
+    recommendedRowSpacingCm: 150,
+    recommendedPlantSpacingCm: 100,
+    recommendedDensityHa: 6666,
+    sowingDepthCm: 3.0,
+    cycleDays: 85,
+    waterRequirementMm: 450,
+    kcInit: 0.4,
+    kcMid: 1.0,
+    kcEnd: 0.75,
+  },
+  {
+    id: "melon",
+    name: "Melon cantaloup",
+    category: "maraichage",
+    commonVarieties: ["Charentais", "Ananas"],
+    recommendedRowSpacingCm: 120,
+    recommendedPlantSpacingCm: 80,
+    recommendedDensityHa: 10400,
+    sowingDepthCm: 2.0,
+    cycleDays: 80,
+    waterRequirementMm: 400,
+    kcInit: 0.45,
+    kcMid: 1.05,
+    kcEnd: 0.75,
+  },
+  {
+    id: "concombre",
+    name: "Concombre",
+    category: "maraichage",
+    commonVarieties: ["Poinsett", "Marketmore", "Darina"],
+    recommendedRowSpacingCm: 100,
+    recommendedPlantSpacingCm: 40,
+    recommendedDensityHa: 25000,
+    sowingDepthCm: 2.0,
+    cycleDays: 60,
+    waterRequirementMm: 350,
+    kcInit: 0.45,
+    kcMid: 1.0,
+    kcEnd: 0.8,
+  },
+  {
+    id: "haricot",
+    name: "Haricot / Niébé",
+    category: "legumineuse",
+    commonVarieties: ["KVx 399-56", "KVx 745-11", "Tiligré", "Komcallé"],
+    recommendedRowSpacingCm: 50,
+    recommendedPlantSpacingCm: 20,
+    recommendedDensityHa: 100000,
+    sowingDepthCm: 3.0,
+    cycleDays: 70,
+    waterRequirementMm: 350,
+    kcInit: 0.4,
+    kcMid: 1.1,
+    kcEnd: 0.55,
+  },
+  {
+    id: "soja",
+    name: "Soja",
+    category: "legumineuse",
+    commonVarieties: ["TGX 1910-14F", "Canarana", "Gourma"],
+    recommendedRowSpacingCm: 50,
+    recommendedPlantSpacingCm: 10,
+    recommendedDensityHa: 200000,
+    sowingDepthCm: 3.0,
+    cycleDays: 95,
+    waterRequirementMm: 480,
+    kcInit: 0.4,
+    kcMid: 1.15,
+    kcEnd: 0.5,
+  },
+  {
+    id: "sorgho",
+    name: "Sorgho grain",
+    category: "cereale",
+    commonVarieties: ["Sariasso 14", "Soumba", "ICSV 1049", "Kapelga"],
+    recommendedRowSpacingCm: 80,
+    recommendedPlantSpacingCm: 25,
+    recommendedDensityHa: 50000,
+    sowingDepthCm: 3.0,
+    cycleDays: 110,
+    waterRequirementMm: 450,
+    kcInit: 0.35,
+    kcMid: 1.1,
+    kcEnd: 0.55,
+  },
+  {
+    id: "mil",
+    name: "Mil pénicillaire",
+    category: "cereale",
+    commonVarieties: ["IKMP 5", "MISARI 1", "SOSAT C88"],
+    recommendedRowSpacingCm: 80,
+    recommendedPlantSpacingCm: 40,
+    recommendedDensityHa: 31250,
+    sowingDepthCm: 3.0,
+    cycleDays: 85,
+    waterRequirementMm: 380,
+    kcInit: 0.35,
+    kcMid: 1.05,
+    kcEnd: 0.45,
+  },
+  {
+    id: "arachide",
+    name: "Arachide",
+    category: "legumineuse",
+    commonVarieties: ["SH 470 P", "TS 32-1", "QH 243 C"],
+    recommendedRowSpacingCm: 40,
+    recommendedPlantSpacingCm: 15,
+    recommendedDensityHa: 166666,
+    sowingDepthCm: 4.0,
+    cycleDays: 90,
+    waterRequirementMm: 450,
+    kcInit: 0.4,
+    kcMid: 1.15,
+    kcEnd: 0.6,
+  },
+  {
+    id: "arbres_fruitiers",
+    name: "Arbres fruitiers (Verger)",
+    category: "arboriculture",
+    commonVarieties: ["Manguier (Kent/Amélie)", "Agrumes (Tangelo/Citronnier)", "Goyavier", "Papayer Solo"],
+    recommendedRowSpacingCm: 800,
+    recommendedPlantSpacingCm: 800,
+    recommendedDensityHa: 156,
+    sowingDepthCm: 40.0,
+    cycleDays: 365,
+    waterRequirementMm: 1100,
+    kcInit: 0.65,
+    kcMid: 0.85,
+    kcEnd: 0.75,
+  },
+];
+
+const CROPS_STORAGE_KEY = "nafa_field_designer_crops";
+
+export const cropsStorage = {
+  getAll(): CropConfig[] {
+    try {
+      const stored = localStorage.getItem(CROPS_STORAGE_KEY);
+      if (!stored) return DEFAULT_SAHEL_CROPS;
+      const parsed: CropConfig[] = JSON.parse(stored);
+      // Merge with default to guarantee new crops are always available
+      const ids = new Set(parsed.map((c) => c.id));
+      const merged = [...parsed];
+      for (const def of DEFAULT_SAHEL_CROPS) {
+        if (!ids.has(def.id)) {
+          merged.push(def);
+        }
+      }
+      return merged;
+    } catch {
+      return DEFAULT_SAHEL_CROPS;
+    }
+  },
+
+  getById(id: string): CropConfig | undefined {
+    return this.getAll().find((c) => c.id === id);
+  },
+
+  save(crop: CropConfig): void {
+    const list = this.getAll();
+    const idx = list.findIndex((c) => c.id === crop.id);
+    if (idx >= 0) {
+      list[idx] = crop;
+    } else {
+      list.push(crop);
+    }
+    localStorage.setItem(CROPS_STORAGE_KEY, JSON.stringify(list));
+  },
+
+  reset(): void {
+    localStorage.setItem(CROPS_STORAGE_KEY, JSON.stringify(DEFAULT_SAHEL_CROPS));
+  },
+};
