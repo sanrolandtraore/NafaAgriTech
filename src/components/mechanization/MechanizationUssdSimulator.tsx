@@ -59,11 +59,8 @@ export const MechUssdSimulator = () => {
     if (!val && ussdStep !== 0) return;
 
     if (ussdStep === 1) {
-      // Choix de la langue
-      if (val === "1") setSelectedLang("fr");
-      else if (val === "2") setSelectedLang("moore");
-      else if (val === "3") setSelectedLang("dioula");
-      else setSelectedLang("fr");
+      // Langue officielle unique : Français
+      setSelectedLang("fr");
       setUssdStep(2);
       setInputVal("");
     } else if (ussdStep === 2) {
@@ -141,10 +138,8 @@ export const MechUssdSimulator = () => {
               {ussdStep === 1 && (
                 <div className="space-y-1 text-xs">
                   <p className="font-bold text-white mb-1.5">=== NAFA - AGRITECH FASO ===</p>
-                  <p>1. Français</p>
-                  <p>2. Mooré (Gom-biis)</p>
-                  <p>3. Dioula (Kuma)</p>
-                  <p className="text-[10px] text-emerald-400 mt-2">Répondre avec le numéro :</p>
+                  <p>1. Continuer en Français</p>
+                  <p className="text-[10px] text-emerald-400 mt-2">Répondre avec 1 pour continuer :</p>
                 </div>
               )}
 

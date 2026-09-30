@@ -574,7 +574,7 @@ export const ServiceMarketplacePage = () => {
           }`}
         >
           <Mic className="h-3.5 w-3.5 mr-1.5 animate-pulse text-white" />
-          NAFA Vocale (Mooré • Dioula • Fulfuldé • FR)
+          NAFA Vocale (Français)
         </Button>
       </div>
 
@@ -1221,7 +1221,7 @@ export const ServiceMarketplacePage = () => {
             window.scrollTo({ top: 0, behavior: "smooth" });
           }}
           className="fixed bottom-6 right-6 z-40 h-14 w-14 rounded-full bg-emerald-600 hover:bg-emerald-700 text-white shadow-2xl flex items-center justify-center border-2 border-white active:scale-95 transition-transform"
-          title="Ouvrir NAFA Vocale (Mooré, Dioula, Fulfuldé, Français)"
+          title="Ouvrir NAFA Vocale (Français)"
         >
           <Mic className="h-7 w-7 animate-pulse" />
         </button>

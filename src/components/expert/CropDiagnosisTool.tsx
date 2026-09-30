@@ -1176,13 +1176,6 @@ export function CropDiagnosisTool() {
                         </div>
                       </div>
 
-                      {scientificResult.weedManagementPlan.localNames && (
-                        <div className="p-3 rounded-xl bg-card/80 border text-xs">
-                          <strong className="text-foreground">Dénominations locales : </strong>
-                          <span className="text-muted-foreground">{scientificResult.weedManagementPlan.localNames}</span>
-                        </div>
-                      )}
-
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-3 pt-1">
                         <div className="p-3.5 rounded-xl bg-emerald-500/10 border border-emerald-500/25 space-y-1.5">
                           <h4 className="font-bold text-xs flex items-center gap-1.5 text-emerald-800 dark:text-emerald-200">
@@ -1542,12 +1535,6 @@ export function CropDiagnosisTool() {
                   <span>Famille : {weed.family}</span>
                   <span>•</span>
                   <span>Cycle : {weed.cycle}</span>
-                  {weed.localNames.moore && (
-                    <Badge variant="outline" className="text-[10px]">Mooré : {weed.localNames.moore}</Badge>
-                  )}
-                  {weed.localNames.dioula && (
-                    <Badge variant="outline" className="text-[10px]">Dioula : {weed.localNames.dioula}</Badge>
-                  )}
                 </div>
               </CardHeader>
               <CardContent className="p-4 space-y-3 text-xs">

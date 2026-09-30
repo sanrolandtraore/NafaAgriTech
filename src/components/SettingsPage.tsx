@@ -431,11 +431,6 @@ const SettingsPage = ({ roleLabel, roleSpecificTab, roleSpecificTabLabel }: Sett
                   <SelectTrigger><SelectValue /></SelectTrigger>
                   <SelectContent>
                     <SelectItem value="fr">Français</SelectItem>
-                    <SelectItem value="en">English</SelectItem>
-                    <SelectItem value="bm">Bambara</SelectItem>
-                    <SelectItem value="ff">Fulfuldé</SelectItem>
-                    <SelectItem value="wo">Wolof</SelectItem>
-                    <SelectItem value="mos">Mooré</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
