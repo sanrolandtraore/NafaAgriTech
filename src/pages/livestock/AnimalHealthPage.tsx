@@ -10,7 +10,8 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { Plus, Trash2, Heart, AlertTriangle, WifiOff, Syringe, Pill, Stethoscope, Filter, Users } from "lucide-react";
-import { useOfflineData } from "@/hooks/useOfflineData";
+import { useOfflineData, isValidUuid } from "@/hooks/useOfflineData";
+import { useDefaultLivestockFarm } from "@/hooks/useDefaultLivestockFarm";
 import BackNavigationButton from "@/components/BackNavigationButton";
 
 export const eventTypes = [
@@ -62,6 +63,14 @@ export const dosageUnits = [
 ];
 
 const AnimalHealthPage = () => {
+  const { user } = useAuth();
+  const { farmId } = useDefaultLivestockFarm();
+  const effectiveFarmId = (farmId && isValidUuid(farmId))
+    ? farmId
+    : (user && isValidUuid(user.id))
+    ? user.id
+    : "10000000-1000-4000-8000-100000000000";
+
   const { data: events, loading: loadingEvents, isOffline, insertRow, deleteRow } = useOfflineData({
     table: "animal_health_events",
     select: "*",
@@ -72,6 +81,11 @@ const AnimalHealthPage = () => {
     table: "animals",
     select: "id, name, group_label, identification_number, species, is_group, status",
     orderBy: "created_at",
+  });
+
+  const { insertRow: insertExpense } = useOfflineData({
+    table: "livestock_expenses",
+    select: "*",
   });
 
   const [open, setOpen] = useState(false);
@@ -135,6 +149,26 @@ const AnimalHealthPage = () => {
 
     const result = await insertRow(payload);
     if (result) {
+      // Synchronisation immédiate avec la comptabilité pastorale
+      const healthCost = Number(form.cost || 0);
+      if (healthCost > 0 && insertExpense) {
+        try {
+          const typeLabel = eventTypes.find((t) => t.value === form.event_type)?.label || form.event_type;
+          await insertExpense({
+            farm_id: effectiveFarmId,
+            animal_id: form.animal_id || null,
+            category: "sante",
+            description: `${typeLabel} : ${form.medication || form.description || "Acte sanitaire"}`,
+            amount: healthCost,
+            expense_date: form.event_date,
+            notes: form.vet_name ? `Vétérinaire : ${form.vet_name}` : "Synchronisé automatiquement depuis le carnet de santé",
+          });
+          toast.info(`Frais de santé (${healthCost.toLocaleString()} FCFA) synchronisés en comptabilité`);
+        } catch (_syncErr) {
+          // non-blocking
+        }
+      }
+
       toast.success("Événement de santé consigné avec succès.");
       setOpen(false);
       setForm({

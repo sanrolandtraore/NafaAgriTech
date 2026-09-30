@@ -48,6 +48,11 @@ const AnimalReproductionPage = () => {
     orderBy: "name",
   });
 
+  const { insertRow: insertExpense } = useOfflineData({
+    table: "livestock_expenses",
+    select: "*",
+  });
+
   const [openCreate, setOpenCreate] = useState(false);
   const [resolvingGestation, setResolvingGestation] = useState<any | null>(null);
 
@@ -162,6 +167,26 @@ const AnimalReproductionPage = () => {
 
     const result = await insertRow(payload);
     if (result) {
+      // Synchronisation immédiate avec la comptabilité pastorale
+      const reproCost = Number(form.cost || 0);
+      if (reproCost > 0 && insertExpense) {
+        try {
+          const typeLabel = reproTypes.find((t) => t.value === form.event_type)?.label || form.event_type;
+          await insertExpense({
+            farm_id: effectiveFarmId,
+            animal_id: form.animal_id || null,
+            category: "sante",
+            description: `Acte de reproduction : ${typeLabel}`,
+            amount: reproCost,
+            expense_date: form.event_date,
+            notes: form.notes ? `Reproduction - ${form.notes}` : "Synchronisé automatiquement depuis le suivi de reproduction",
+          });
+          toast.info(`Frais de reproduction (${reproCost.toLocaleString()} FCFA) synchronisés en comptabilité`);
+        } catch (_syncErr) {
+          // non-blocking
+        }
+      }
+
       toast.success("Événement de reproduction enregistré avec succès.");
       setOpenCreate(false);
       setForm({

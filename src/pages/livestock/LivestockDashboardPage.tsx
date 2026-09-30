@@ -7,7 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
   Heart, Baby, Wallet, AlertTriangle, WifiOff, ArrowUpRight,
-  Stethoscope, Wheat, Sprout, ShoppingCart, TrendingUp, TrendingDown, Bird, Fish, Beef,
+  Stethoscope, Wheat, Sprout, ShoppingCart, TrendingUp, TrendingDown, Bird, Fish, Beef, FileText,
 } from "lucide-react";
 import { LivestockZootechnicCard } from "@/components/livestock/LivestockZootechnicCard";
 import ProductServiceCatalog from "@/components/marketplace/ProductServiceCatalog";
@@ -151,7 +151,7 @@ const LivestockDashboardPage = () => {
     { to: "/dashboard/animal-reproduction", label: "Reproduction", icon: Baby, tone: "bg-sky-100 dark:bg-sky-950/40" },
     { to: "/dashboard/animal-feeding", label: "Alimentation", icon: Wheat, tone: "bg-amber-100 dark:bg-amber-950/40" },
     { to: "/dashboard/livestock-finance", label: "Finances", icon: Wallet, tone: "bg-primary/15" },
-    { to: "/dashboard/livestock-services", label: "Services", icon: ShoppingCart, tone: "bg-muted" },
+    { to: "/dashboard/livestock-report", label: "Rapport", icon: FileText, tone: "bg-emerald-100 dark:bg-emerald-950/40" },
   ];
 
   const speciesEntries = Object.entries(stats.bySpecies);
@@ -191,16 +191,28 @@ const LivestockDashboardPage = () => {
           </div>
         </div>
 
-        <Button
-          asChild
-          variant="outline"
-          className="h-11 px-4 text-sm font-bold rounded-xl border-border hover:border-primary/50 shrink-0"
-        >
-          <Link to="/dashboard/livestock-services">
-            <Stethoscope className="h-4 w-4 mr-2 text-primary" />
-            Demandes Vétérinaires
-          </Link>
-        </Button>
+        <div className="flex items-center gap-2 shrink-0 flex-wrap">
+          <Button
+            asChild
+            variant="outline"
+            className="h-11 px-3 sm:px-4 text-xs sm:text-sm font-bold rounded-xl border-border hover:border-primary/50"
+          >
+            <Link to="/dashboard/livestock-services">
+              <Stethoscope className="h-4 w-4 mr-1.5 sm:mr-2 text-primary" />
+              Vétérinaires
+            </Link>
+          </Button>
+
+          <Button
+            asChild
+            className="h-11 px-3 sm:px-4 text-xs sm:text-sm font-bold rounded-xl gradient-primary text-primary-foreground shadow-sm"
+          >
+            <Link to="/dashboard/livestock-report">
+              <FileText className="h-4 w-4 mr-1.5 sm:mr-2" />
+              Rapport d'Activité
+            </Link>
+          </Button>
+        </div>
       </div>
 
       {activeView === "catalogue" ? (

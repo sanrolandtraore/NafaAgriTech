@@ -36,6 +36,7 @@ export const eleveurNav: NavItem[] = [
   { to: "/dashboard/animal-reproduction", labelKey: "Reproduction & Vêlage", icon: Baby },
   { to: "/dashboard/animal-feeding", labelKey: "Alimentation & Rations", icon: Utensils },
   { to: "/dashboard/livestock-finance", labelKey: "Finances du Cheptel", icon: Wallet },
+  { to: "/dashboard/livestock-report", labelKey: "Rapport d'activité", icon: FileText },
   { to: "/dashboard/livestock-services", labelKey: "Réserver un vétérinaire", icon: ClipboardList },
   { to: "/dashboard/settings", labelKey: "Paramètres", icon: Settings },
 ];
@@ -241,6 +242,7 @@ export const getNavLabel = (item: NavItem, t?: (key: string) => string): string 
     "Diagnostic Avancé": "Diagnostic Avancé",
     "Identité & Documents": "Identité & Documents",
     "Mes Services & Produits Financiers": "Mes Services & Produits Financiers",
+    "Rapport d'activité": "Rapport d'activité",
   };
 
   if (dictionary[key]) {
