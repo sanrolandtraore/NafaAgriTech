@@ -659,6 +659,196 @@ function writeLocal<T>(key: string, val: T, silent = false): void {
   }
 }
 
+// ============================================================================
+// 3.5. GÉNÉRATEUR INTELLIGENT DE FORMULAIRES SUR-MESURE (NAFA GENIUS)
+// ============================================================================
+
+export interface CustomFormTemplateInput {
+  typeId?: string;
+  name: string;
+  category: MissionCategory;
+  description: string;
+  fields_schema: InspectionFieldSchema[];
+  required_photos: InspectionRequiredPhotoRule[];
+  default_measurements: InspectionMeasurementRule[];
+  generates_plan?: boolean;
+  generates_quote?: boolean;
+}
+
+export function generateSmartFormTemplate(input: {
+  prompt?: string;
+  name?: string;
+  category?: MissionCategory;
+  description?: string;
+}): {
+  name: string;
+  category: MissionCategory;
+  description: string;
+  fields_schema: InspectionFieldSchema[];
+  required_photos: InspectionRequiredPhotoRule[];
+  default_measurements: InspectionMeasurementRule[];
+  generates_plan: boolean;
+  generates_quote: boolean;
+} {
+  const query = `${input.name || ""} ${input.prompt || ""} ${input.description || ""}`.toLowerCase();
+  let category: MissionCategory = input.category || "agriculture";
+  let name = input.name?.trim() || "";
+  let description = input.description?.trim() || "";
+  let fields: InspectionFieldSchema[] = [];
+  let photos: InspectionRequiredPhotoRule[] = [];
+  let measurements: InspectionMeasurementRule[] = [];
+  let generates_plan = true;
+  let generates_quote = true;
+
+  if (query.includes("irrig") || query.includes("goutte") || query.includes("eau") || query.includes("pompe") || query.includes("forage") || query.includes("pivot") || query.includes("bassin")) {
+    category = "agriculture";
+    if (!name) name = "Inspection Système d'Irrigation & Hydraulique";
+    if (!description) description = "Audit technique des infrastructures hydro-agricoles, débits, pressions et distribution de l'eau.";
+    fields = [
+      { key: "superficie_ha", label: "Superficie à irriguer", type: "number", unit: "ha", required: true, defaultValue: 2.5 },
+      { key: "source_eau", label: "Source d'approvisionnement en eau", type: "select", options: ["Forage profond", "Puits maraîcher", "Retenue d'eau / Barrage", "Bassin bâche PEHD", "Cours d'eau"], required: true, defaultValue: "Forage profond" },
+      { key: "debit_disponible_m3h", label: "Débit disponible de la source", type: "number", unit: "m³/h", required: true, defaultValue: 12 },
+      { key: "type_irrigation", label: "Technologie d'irrigation", type: "select", options: ["Goutte-à-goutte haute efficience", "Aspersion couverture totale", "Micro-aspersion sous canopée", "Pivot central", "Gravitaire régulé"], required: true, defaultValue: "Goutte-à-goutte haute efficience" },
+      { key: "type_sol", label: "Texture dominante du sol", type: "select", options: ["Sablo-limoneux", "Argilo-limoneux", "Sableux filtrant", "Latéritique gravelleux"], required: true, defaultValue: "Sablo-limoneux" },
+      { key: "filtration_type", label: "Station de filtration", type: "select", options: ["Filtre à disques automatique", "Filtre à tamis manuel", "Filtre à sable + disques", "Hydrocyclone séparateur"], required: true, defaultValue: "Filtre à disques automatique" },
+      { key: "pression_service_bar", label: "Pression requise aux rampes", type: "number", unit: "bar", required: true, defaultValue: 1.5 },
+    ];
+    photos = [
+      { key: "photo_source_eau", label: "Source d'eau & Tête de captage", description: "Vue claire du forage, margelle et vannage.", is_mandatory: true },
+      { key: "photo_station_pompage", label: "Station de pompage & Filtration", description: "Ensemble pompe, manomètres et filtres.", is_mandatory: true },
+      { key: "photo_vue_parcelle", label: "Vue d'ensemble de la parcelle", description: "Perspective montrant le relief et les lignes de cultures.", is_mandatory: true },
+      { key: "photo_conduite_maitresse", label: "Tracé de la conduite principale", description: "Emplacement des vannes de sectorisation.", is_mandatory: false },
+    ];
+    measurements = [
+      { name: "Débit mesuré en tête de réseau", unit: "m³/h", min_threshold: 4.0, max_threshold: 45.0, default_norm: "Norme FAO-56" },
+      { name: "Pression statique en tête", unit: "bar", min_threshold: 1.2, max_threshold: 6.0, default_norm: "1.5 à 3.0 bars" },
+      { name: "pH de l'eau d'irrigation", unit: "pH", min_threshold: 6.0, max_threshold: 8.5, default_norm: "Optimal 6.5 - 7.5" },
+      { name: "Hauteur Manométrique Totale (HMT)", unit: "m", min_threshold: 15, max_threshold: 100, default_norm: "HMT = Hg + Pc" },
+    ];
+  } else if (query.includes("poulet") || query.includes("poul") || query.includes("avic") || query.includes("oeuf") || query.includes("chair") || query.includes("ponte")) {
+    category = "elevage";
+    if (!name) name = "Inspection Élevage Avicole & Bâtiment Bioclimatique";
+    if (!description) description = "Audit de biosécurité, confort thermique sahélien, densité de peuplement et équipements avicoles.";
+    fields = [
+      { key: "type_volaille", label: "Spéculation avicole", type: "select", options: ["Poulets de chair", "Poules pondeuses d'œufs de table", "Reproducteurs locaux améliorés (Gollé)", "Poussins démarrage"], required: true, defaultValue: "Poulets de chair" },
+      { key: "effectif_sujets", label: "Effectif actuel de la bande", type: "number", unit: "sujets", required: true, defaultValue: 2500 },
+      { key: "surface_utile_m2", label: "Surface utile du bâtiment", type: "number", unit: "m²", required: true, defaultValue: 250 },
+      { key: "type_ventilation", label: "Système de ventilation", type: "select", options: ["Naturelle traversante Ouest-Est", "Tunnel dynamique avec extracteurs", "Semi-ouverte avec brise-vent"], required: true, defaultValue: "Naturelle traversante Ouest-Est" },
+      { key: "materiau_toiture", label: "Toiture et isolation", type: "select", options: ["Tôle bac alu avec sous-toiture isolante", "Tôle ondulée simple surélevée", "Paille / Chaume isolant local"], required: true, defaultValue: "Tôle bac alu avec sous-toiture isolante" },
+      { key: "sas_sanitaire", label: "Présence d'un pédiluve et sas de désinfection", type: "boolean", required: true, defaultValue: true },
+      { key: "statut_vaccination", label: "Protocole vaccinal à jour (Gumboro, Newcastle)", type: "boolean", required: true, defaultValue: true },
+    ];
+    photos = [
+      { key: "photo_batiment_exterieur", label: "Bâtiment avicole (axe faîtage)", description: "Orientation solaire Est-Ouest et débord de toiture.", is_mandatory: true },
+      { key: "photo_mangeoires_abreuvoirs", label: "Lignes d'abreuvoirs et mangeoires", description: "Hauteur adaptée au dos des oiseaux et propreté de l'eau.", is_mandatory: true },
+      { key: "photo_litiere_sujets", label: "État de la litière et densité", description: "Litière sèche friable et répartition homogène des sujets.", is_mandatory: true },
+      { key: "photo_sas_biosecurite", label: "Sas sanitaire et pédiluve d'entrée", description: "Dispositif de biosécurité opérationnel.", is_mandatory: false },
+    ];
+    measurements = [
+      { name: "Densité animale mesurée", unit: "sujets/m²", min_threshold: 8, max_threshold: 14, default_norm: "Max 10-12 au Sahel" },
+      { name: "Hauteur sous faîtage", unit: "m", min_threshold: 3.5, max_threshold: 5.5, default_norm: "Confort thermique" },
+      { name: "Température ambiante dans le bâtiment", unit: "°C", min_threshold: 22, max_threshold: 34, default_norm: "Optimum 24 - 30 °C" },
+      { name: "Humidité relative de l'air", unit: "%", min_threshold: 45, max_threshold: 75, default_norm: "50 - 70%" },
+    ];
+  } else if (query.includes("bovin") || query.includes("vache") || query.includes("lait") || query.includes("engraiss") || query.includes("embouche") || query.includes("ovin") || query.includes("mouton") || query.includes("chevr") || query.includes("porc")) {
+    category = "elevage";
+    if (!name) name = "Inspection Élevage & Stabulation Bétail";
+    if (!description) description = "Audit des étables, bergeries ou porcheries, alimentation, abreuvement et santé animale.";
+    fields = [
+      { key: "espece_elevage", label: "Espèce concernée", type: "select", options: ["Bovins embouche / engraissement", "Vaches laitières", "Ovins / Moutons de case", "Caprins sahéliens", "Porcins engraissement"], required: true, defaultValue: "Bovins embouche / engraissement" },
+      { key: "effectif_tetes", label: "Effectif total présent", type: "number", unit: "têtes", required: true, defaultValue: 25 },
+      { key: "surface_stabulation_m2", label: "Surface de l'aire abritée", type: "number", unit: "m²", required: true, defaultValue: 150 },
+      { key: "couloir_contention", label: "Couloir de contention / soins disponible", type: "boolean", required: true, defaultValue: true },
+      { key: "type_abreuvement", label: "Type d'abreuvoir", type: "select", options: ["Abreuvoir automatique à niveau constant", "Bacs maçonnés régulés", "Abreuvement manuel bâche"], required: true, defaultValue: "Abreuvoir automatique à niveau constant" },
+      { key: "stockage_fourrage", label: "Hangar de stockage du foin/fourrage", type: "boolean", required: true, defaultValue: true },
+    ];
+    photos = [
+      { key: "photo_stabulation", label: "Vue globale de la stabulation", description: "Enclos, couloirs et aire de circulation.", is_mandatory: true },
+      { key: "photo_couloir_soins", label: "Couloir de contention et balance", description: "Dispositif de contention sécurisé pour l'expert et l'animal.", is_mandatory: true },
+      { key: "photo_mangeoires", label: "Mangeoires et râteliers", description: "Hauteur et propreté du distributeur d'aliments.", is_mandatory: true },
+    ];
+    measurements = [
+      { name: "Surface unitaire par tête", unit: "m²/tête", min_threshold: 4.0, max_threshold: 15.0, default_norm: "CIRAD / FAO" },
+      { name: "Hauteur libre de toiture", unit: "m", min_threshold: 3.2, max_threshold: 5.5, default_norm: "Ventilation thermosiphon" },
+      { name: "Débit d'eau abreuvoir", unit: "L/min", min_threshold: 10, max_threshold: 30, default_norm: "Abreuvement continu" },
+    ];
+  } else if (query.includes("verger") || query.includes("arbre") || query.includes("mangu") || query.includes("anacard") || query.includes("agrum") || query.includes("maraich") || query.includes("tomate") || query.includes("oignon") || query.includes("coton")) {
+    category = "agriculture";
+    if (!name) name = "Inspection Phytosanitaire & Conduite de Culture";
+    if (!description) description = "Évaluation agronomique de la parcelle, vigueur végétative, état sanitaire et besoins d'amendement.";
+    fields = [
+      { key: "culture_variete", label: "Culture et variété cultivée", type: "text", required: true, defaultValue: "Manguiers Kent / Amélie" },
+      { key: "superficie_cultivee_ha", label: "Superficie de la parcelle", type: "number", unit: "ha", required: true, defaultValue: 3.0 },
+      { key: "stade_vegetatif", label: "Stade phénologique observé", type: "select", options: ["Semis / Repiquage", "Croissance végétative", "Floraison", "Nouaison / Grossissement fruits", "Maturation / Récolte"], required: true, defaultValue: "Floraison" },
+      { key: "densite_ha", label: "Densité de peuplement", type: "number", unit: "pieds/ha", required: true, defaultValue: 100 },
+      { key: "type_fertilisation", label: "Type d'amendement appliqué", type: "select", options: ["Fumure organique compostée", "Engrais minéral NPK + Urée", "Mixte organique + biofertilisant", "Aucune fertilisation récente"], required: true, defaultValue: "Mixte organique + biofertilisant" },
+      { key: "presence_maladies", label: "Présence de bio-agresseurs ou symptômes anormaux", type: "boolean", required: true, defaultValue: false },
+    ];
+    photos = [
+      { key: "photo_panoramique_parcelle", label: "Vue générale de la parcelle", description: "Alignement des rangs et vigueur d'ensemble.", is_mandatory: true },
+      { key: "photo_feuillage_fleurs", label: "Gros plan sur les feuilles et inflorescences", description: "Recherche de chenilles, cochenilles, anthracnose.", is_mandatory: true },
+      { key: "photo_racines_collet", label: "Collet et zone racinaire", description: "Absence de pourriture racinaire ou nématodes.", is_mandatory: false },
+    ];
+    measurements = [
+      { name: "Incidence phytosanitaire mesurée", unit: "%", min_threshold: 0, max_threshold: 25, default_norm: "Seuil économique d'intervention" },
+      { name: "Espacement moyen entre rangs", unit: "m", min_threshold: 1.0, max_threshold: 12.0, default_norm: "Fiche technique INERA" },
+      { name: "Teneur en humidité du sol", unit: "%", min_threshold: 30, max_threshold: 80, default_norm: "Capacité au champ" },
+    ];
+  } else if (query.includes("tracteur") || query.includes("machin") || query.includes("semoir") || query.includes("charrue") || query.includes("moisson") || query.includes("travaux")) {
+    category = "machinisme";
+    if (!name) name = "Inspection Machinisme Agricole & Matériel";
+    if (!description) description = "Audit technique des équipements motorisés, attelages, sécurité et calendrier de maintenance.";
+    fields = [
+      { key: "marque_modele", label: "Marque et modèle de l'équipement", type: "text", required: true, defaultValue: "Tracteur 75 CV 4RM" },
+      { key: "annee_service", label: "Année de mise en service", type: "number", required: true, defaultValue: 2021 },
+      { key: "heures_compteur", label: "Heures au compteur", type: "number", unit: "heures", required: true, defaultValue: 1450 },
+      { key: "etat_moteur", label: "État du moteur thermique", type: "select", options: ["Excellent / Démarrage immédiat", "Bon état général", "Fumée anormale / Perte de puissance", "Fuite d'huile critique"], required: true, defaultValue: "Bon état général" },
+      { key: "etat_hydraulique", label: "Circuit hydraulique et relevage", type: "select", options: ["Pression nominale optimale", "Fuite légère sur raccords", "Défaut de relevage sous charge"], required: true, defaultValue: "Pression nominale optimale" },
+      { key: "securite_arceau", label: "Arceau de sécurité ROPS conforme", type: "boolean", required: true, defaultValue: true },
+    ];
+    photos = [
+      { key: "photo_vue_machine", label: "Vue d'ensemble de l'engin", description: "Carrosserie, roues et attelage.", is_mandatory: true },
+      { key: "photo_plaque_moteur", label: "Plaque constructeur et numéro de série", description: "Identification officielle indélébile.", is_mandatory: true },
+      { key: "photo_points_graissage", label: "Prise de force et relevage 3 points", description: "État des cannelures et axes de traction.", is_mandatory: false },
+    ];
+    measurements = [
+      { name: "Pression hydraulique de refoulement", unit: "bar", min_threshold: 140, max_threshold: 210, default_norm: "Normes constructeur" },
+      { name: "Tension batterie à l'arrêt", unit: "V", min_threshold: 12.2, max_threshold: 13.0, default_norm: "12.6V nominal" },
+      { name: "Profondeur usure pneumatiques", unit: "mm", min_threshold: 10, max_threshold: 50, default_norm: "Adhérence agricole" },
+    ];
+    generates_plan = false;
+  } else {
+    if (!name) name = input.name?.trim() || "Inspection Technique Sur-Mesure";
+    if (!description) description = input.description?.trim() || "Formulaire personnalisé configuré par l'agronome référent pour les besoins spécifiques du chantier.";
+    fields = [
+      { key: "objet_inspection", label: "Désignation de l'aménagement ou équipement", type: "text", required: true, defaultValue: name },
+      { key: "etat_global", label: "État général constaté", type: "select", options: ["Conforme / Excellent", "Opérationnel avec réserves mineures", "Dégradation nécessitant intervention", "Arrêt technique impératif"], required: true, defaultValue: "Opérationnel avec réserves mineures" },
+      { key: "surface_impactee", label: "Surface ou volume concerné", type: "number", unit: "m²", required: true, defaultValue: 100 },
+      { key: "priorite_intervention", label: "Niveau d'urgence des préconisations", type: "select", options: ["Immédiate (< 48h)", "Moyenne échéance (15 jours)", "Maintenance programmée"], required: true, defaultValue: "Moyenne échéance (15 jours)" },
+      { key: "notes_consignes", label: "Consignes spécifiques & observations", type: "textarea", required: true, defaultValue: "Inspection réalisée selon le cahier des charges NAFA Genius." },
+    ];
+    photos = [
+      { key: "photo_ensemble_chantier", label: "Vue globale de l'aménagement", description: "Perspective complète avec repères cardinaux.", is_mandatory: true },
+      { key: "photo_anomalie_point_cle", label: "Détail technique critique", description: "Gros plan sur l'anomalie ou point d'arbitrage.", is_mandatory: true },
+    ];
+    measurements = [
+      { name: "Niveau de conformité technique", unit: "%", min_threshold: 70, max_threshold: 100, default_norm: "Seuil agrément NAFA" },
+      { name: "Dimensionnement mesuré", unit: "m", min_threshold: 1, max_threshold: 50, default_norm: "Tolérance +/- 5%" },
+    ];
+  }
+
+  return {
+    name,
+    category,
+    description,
+    fields_schema: fields,
+    required_photos: photos,
+    default_measurements: measurements,
+    generates_plan,
+    generates_quote,
+  };
+}
+
 export const nafaInspectionEngine = {
   // ── 1. Types d'inspections ──
   getTypes(): InspectionType[] {
@@ -676,6 +866,10 @@ export const nafaInspectionEngine = {
       writeLocal(LOCAL_STORAGE_KEYS.TYPES, list);
     }
     return list.filter((t) => t.is_active);
+  },
+
+  getCustomTypes(): InspectionType[] {
+    return this.getTypes().filter((t) => !t.is_system);
   },
 
   registerCustomType(newType: Omit<InspectionType, "id" | "is_system">, customTemplate?: Partial<InspectionTemplate>): InspectionType {
@@ -700,6 +894,136 @@ export const nafaInspectionEngine = {
     writeLocal(LOCAL_STORAGE_KEYS.TEMPLATES, templates);
 
     return created;
+  },
+
+  saveCustomFormTemplate(input: CustomFormTemplateInput): { type: InspectionType; template: InspectionTemplate } {
+    const types = this.getTypes();
+    const templates = this.getTemplates();
+
+    let targetType: InspectionType;
+    let targetTemplate: InspectionTemplate;
+
+    if (input.typeId) {
+      // Mise à jour d'un type existant
+      const typeIdx = types.findIndex((t) => t.id === input.typeId);
+      if (typeIdx >= 0) {
+        types[typeIdx] = {
+          ...types[typeIdx],
+          name: input.name.trim(),
+          category: input.category,
+          description: input.description.trim(),
+        };
+        targetType = types[typeIdx];
+      } else {
+        targetType = {
+          id: input.typeId,
+          name: input.name.trim(),
+          code: `CUSTOM_${input.name.trim().toUpperCase().replace(/[^A-Z0-9]/g, "_")}`,
+          category: input.category,
+          description: input.description.trim(),
+          iconName: "Sparkles",
+          is_active: true,
+          is_system: false,
+        };
+        types.unshift(targetType);
+      }
+
+      const tmplIdx = templates.findIndex((t) => t.id === input.typeId || t.inspection_type_id === input.typeId);
+      if (tmplIdx >= 0) {
+        templates[tmplIdx] = {
+          ...templates[tmplIdx],
+          name: input.name.trim(),
+          fields_schema: input.fields_schema,
+          required_photos: input.required_photos,
+          default_measurements: input.default_measurements,
+          generates_plan: input.generates_plan ?? true,
+          generates_quote: input.generates_quote ?? true,
+        };
+        targetTemplate = templates[tmplIdx];
+      } else {
+        targetTemplate = {
+          id: `tmpl-${targetType.id}`,
+          inspection_type_id: targetType.id,
+          name: input.name.trim(),
+          version: "1.0",
+          fields_schema: input.fields_schema,
+          required_photos: input.required_photos,
+          default_measurements: input.default_measurements,
+          generates_plan: input.generates_plan ?? true,
+          generates_quote: input.generates_quote ?? true,
+        };
+        templates.push(targetTemplate);
+      }
+    } else {
+      // Création d'un nouveau type personnalisé
+      const id = `it-custom-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`;
+      targetType = {
+        id,
+        name: input.name.trim(),
+        code: `CUSTOM_${input.name.trim().toUpperCase().replace(/[^A-Z0-9]/g, "_")}`,
+        category: input.category,
+        description: input.description.trim() || "Formulaire d'inspection personnalisé créé par l'utilisateur.",
+        iconName: "Sparkles",
+        is_active: true,
+        is_system: false,
+      };
+      types.unshift(targetType);
+
+      targetTemplate = {
+        id: `tmpl-${id}`,
+        inspection_type_id: id,
+        name: input.name.trim(),
+        version: "1.0",
+        fields_schema: input.fields_schema,
+        required_photos: input.required_photos,
+        default_measurements: input.default_measurements,
+        generates_plan: input.generates_plan ?? true,
+        generates_quote: input.generates_quote ?? true,
+      };
+      templates.push(targetTemplate);
+    }
+
+    writeLocal(LOCAL_STORAGE_KEYS.TYPES, types);
+    writeLocal(LOCAL_STORAGE_KEYS.TEMPLATES, templates);
+
+    return { type: targetType, template: targetTemplate };
+  },
+
+  deleteCustomType(typeId: string): boolean {
+    const types = this.getTypes();
+    const type = types.find((t) => t.id === typeId);
+    if (!type || type.is_system) return false;
+
+    const filteredTypes = types.filter((t) => t.id !== typeId);
+    const templates = this.getTemplates().filter((t) => t.id !== typeId && t.inspection_type_id !== typeId);
+
+    writeLocal(LOCAL_STORAGE_KEYS.TYPES, filteredTypes);
+    writeLocal(LOCAL_STORAGE_KEYS.TEMPLATES, templates);
+    return true;
+  },
+
+  duplicateCustomType(typeId: string): { type: InspectionType; template: InspectionTemplate } | null {
+    const allTypes = this.getTypes();
+    const source = allTypes.find((t) => t.id === typeId);
+    if (!source) return null;
+
+    const sourceTemplate = this.getTemplateForType(typeId);
+    const newName = `${source.name} (Personnalisé)`;
+
+    return this.saveCustomFormTemplate({
+      name: newName,
+      category: source.category,
+      description: source.description,
+      fields_schema: JSON.parse(JSON.stringify(sourceTemplate.fields_schema)),
+      required_photos: JSON.parse(JSON.stringify(sourceTemplate.required_photos)),
+      default_measurements: JSON.parse(JSON.stringify(sourceTemplate.default_measurements)),
+      generates_plan: sourceTemplate.generates_plan,
+      generates_quote: sourceTemplate.generates_quote,
+    });
+  },
+
+  generateSmartTemplate(input: Parameters<typeof generateSmartFormTemplate>[0]) {
+    return generateSmartFormTemplate(input);
   },
 
   // ── 2. Templates d'inspections ──
