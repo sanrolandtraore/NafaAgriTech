@@ -133,4 +133,62 @@ describe("Composant UI : NafaVocaleAssistant (Style WhatsApp Voice Note)", () =>
     const waButtons = screen.getAllByRole("link", { name: /WhatsApp/i });
     expect(waButtons.length).toBeGreaterThanOrEqual(1);
   });
+
+  it("affiche la bannière Voix Naturelle Sahélienne et le bouton de test audio", () => {
+    render(<NafaVocaleAssistant catalogItems={mockCatalogItems} />);
+
+    expect(screen.getByText(/Voix Naturelle Sahélienne :/i)).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /Tester la voix/i })).toBeInTheDocument();
+  });
+});
+
+describe("Moteur Phonétique & Prosodie Sahélienne (convertToSahelianPhonetics)", () => {
+  it("transcrit fidèlement le Mooré avec phonétique naturelle sans bégaiement", async () => {
+    const { convertToSahelianPhonetics, SAHELIAN_VOICE_CONFIGS } = await import("@/lib/sahelianVoiceSynthesizer");
+    const rawMoore = "Ne y beogo ! Mam yaa NAFA Vocale. Tʋm-y koɛɛga tɩ m sõng-y n paam toraaktɛɛr, koodo, engrais bɩ rũmsi.";
+    const phonetic = convertToSahelianPhonetics(rawMoore, "moore");
+
+    expect(phonetic).toContain("Né y béogo");
+    expect(phonetic).toContain("toraktère");
+    expect(phonetic).toContain("roumsi");
+    expect(phonetic).not.toContain("toraaktɛɛr");
+    expect(phonetic).not.toContain("ʋ");
+
+    const mooreConfig = SAHELIAN_VOICE_CONFIGS.moore;
+    expect(mooreConfig.rate).toBeCloseTo(0.90);
+    expect(mooreConfig.pitch).toBeCloseTo(1.04);
+  });
+
+  it("transcrit fidèlement le Dioula avec phonétique naturelle mandingue", async () => {
+    const { convertToSahelianPhonetics, SAHELIAN_VOICE_CONFIGS } = await import("@/lib/sahelianVoiceSynthesizer");
+    const rawDioula = "I ni sogoma ! N'tɔgɔ NAFA Vocale. I ka kuma ci n ma, n bɛna i dɛmɛ ka traktɛri, si, fari walima baganw sɔrɔ.";
+    const phonetic = convertToSahelianPhonetics(rawDioula, "dioula");
+
+    expect(phonetic).toContain("N'togo");
+    expect(phonetic).toContain("traktéri");
+    expect(phonetic).toContain("bagan-ou");
+    expect(phonetic).not.toContain("traktɛri");
+    expect(phonetic).not.toContain("ɛ");
+
+    const dioulaConfig = SAHELIAN_VOICE_CONFIGS.dioula;
+    expect(dioulaConfig.rate).toBeCloseTo(0.92);
+    expect(dioulaConfig.pitch).toBeCloseTo(0.98);
+  });
+
+  it("transcrit fidèlement le Fulfuldé avec phonétique naturelle peule", async () => {
+    const { convertToSahelianPhonetics, SAHELIAN_VOICE_CONFIGS } = await import("@/lib/sahelianVoiceSynthesizer");
+    const rawFulfulde = "Jam waali ! Miin woni NAFA Vocale. Nelam haala maa, mi wallete heɓde aawdi, lekki ngesa, traktɛɛr malla jawdi.";
+    const phonetic = convertToSahelianPhonetics(rawFulfulde, "fulfulde");
+
+    expect(phonetic).toContain("Djam wali");
+    expect(phonetic).toContain("Min woni");
+    expect(phonetic).toContain("traktère");
+    expect(phonetic).toContain("djawdi");
+    expect(phonetic).not.toContain("traktɛɛr");
+    expect(phonetic).not.toContain("ɗ");
+
+    const fulfuldeConfig = SAHELIAN_VOICE_CONFIGS.fulfulde;
+    expect(fulfuldeConfig.rate).toBeCloseTo(0.88);
+    expect(fulfuldeConfig.pitch).toBeCloseTo(1.02);
+  });
 });
