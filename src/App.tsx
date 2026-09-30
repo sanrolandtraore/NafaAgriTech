@@ -51,6 +51,7 @@ const AnimalReproductionPage = lazy(() => import("./pages/livestock/AnimalReprod
 const AnimalFeedingPage = lazy(() => import("./pages/livestock/AnimalFeedingPage"));
 const LivestockFinancePage = lazy(() => import("./pages/livestock/LivestockFinancePage"));
 const LivestockServicesPage = lazy(() => import("./pages/livestock/LivestockServicesPage"));
+const LivestockReportPage = lazy(() => import("./pages/livestock/LivestockReportPage"));
 const ServiceMarketplacePage = lazy(() => import("./pages/dashboard/ServiceMarketplacePage"));
 const ExpertCartographyPage = lazy(() => import("./pages/dashboard/ExpertCartographyPage"));
 const ScoutingPage = lazy(() => import("./pages/dashboard/ScoutingPage"));
@@ -154,6 +155,7 @@ const App = () => (
                   <Route path="livestock-finance" element={<Suspense fallback={<PageLoader />}><LivestockFinancePage /></Suspense>} />
                   <Route path="livestock-services" element={<Suspense fallback={<PageLoader />}><LivestockServicesPage /></Suspense>} />
                   <Route path="veterinary-services" element={<Suspense fallback={<PageLoader />}><LivestockServicesPage /></Suspense>} />
+                  <Route path="livestock-report" element={<Suspense fallback={<PageLoader />}><LivestockReportPage /></Suspense>} />
                 </Route>
                 <Route path="marketplace" element={<Suspense fallback={<PageLoader />}><ServiceMarketplacePage /></Suspense>} />
                 <Route path="expert-cartography" element={<Suspense fallback={<PageLoader />}><ExpertCartographyPage /></Suspense>} />

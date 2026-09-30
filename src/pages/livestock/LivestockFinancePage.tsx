@@ -1,4 +1,5 @@
 import { useState, useMemo } from "react";
+import { Link } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { useOfflineData, isValidUuid } from "@/hooks/useOfflineData";
 import { useDefaultLivestockFarm } from "@/hooks/useDefaultLivestockFarm";
@@ -12,7 +13,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
-import { Plus, Trash2, TrendingDown, TrendingUp, DollarSign, WifiOff, Wallet } from "lucide-react";
+import { Plus, Trash2, TrendingDown, TrendingUp, DollarSign, WifiOff, Wallet, FileText } from "lucide-react";
 import BackNavigationButton from "@/components/BackNavigationButton";
 
 export const expenseCategories = [
@@ -255,13 +256,24 @@ const LivestockFinancePage = () => {
           </div>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-wrap">
           {isOffline && (
             <Badge variant="outline" className="bg-amber-500/10 text-amber-700 border-amber-500/30 text-xs">
               <WifiOff className="h-3 w-3 mr-1" />
               Mode hors-ligne
             </Badge>
           )}
+
+          <Button
+            asChild
+            variant="outline"
+            className="h-10 text-xs font-bold gap-1.5"
+          >
+            <Link to="/dashboard/livestock-report">
+              <FileText className="h-4 w-4 text-primary" />
+              Rapport d'Activité
+            </Link>
+          </Button>
         </div>
       </div>
 

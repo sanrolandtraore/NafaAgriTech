@@ -75,6 +75,11 @@ const AnimalFeedingPage = () => {
     orderBy: "name",
   });
 
+  const { insertRow: insertExpense } = useOfflineData({
+    table: "livestock_expenses",
+    select: "*",
+  });
+
   const [openFeeding, setOpenFeeding] = useState(false);
   const [openStock, setOpenStock] = useState(false);
   const [autoDeductStock, setAutoDeductStock] = useState(true);
@@ -149,6 +154,25 @@ const AnimalFeedingPage = () => {
         }
       }
 
+      // Synchronisation immédiate dans la comptabilité pastorale
+      const feedCost = Number(feedForm.cost || 0);
+      if (feedCost > 0 && insertExpense) {
+        try {
+          await insertExpense({
+            farm_id: effectiveFarmId,
+            animal_id: feedForm.animal_id || null,
+            category: "alimentation",
+            description: `Distribution aliment : ${feedForm.feed_type} (${qty} kg)`,
+            amount: feedCost,
+            expense_date: feedForm.feeding_date,
+            notes: `Synchronisé automatiquement depuis la ration${feedForm.notes ? ` - ${feedForm.notes}` : ""}`,
+          });
+          toast.info(`Dépense (${feedCost.toLocaleString()} FCFA) synchronisée en comptabilité`);
+        } catch (_syncErr) {
+          // non-blocking
+        }
+      }
+
       toast.success("Distribution d'aliment enregistrée avec succès.");
       setOpenFeeding(false);
       setFeedForm({
@@ -185,6 +209,26 @@ const AnimalFeedingPage = () => {
     });
 
     if (result) {
+      // Synchronisation immédiate du coût d'achat en stock dans la comptabilité pastorale
+      const unitPrice = Number(stockForm.unit_price || 0);
+      const totalStockCost = qty * unitPrice;
+      if (totalStockCost > 0 && insertExpense) {
+        try {
+          await insertExpense({
+            farm_id: effectiveFarmId,
+            animal_id: null,
+            category: "alimentation",
+            description: `Achat stock aliment : ${stockForm.feed_name} (${qty} kg @ ${unitPrice.toLocaleString()} F/kg)`,
+            amount: totalStockCost,
+            expense_date: new Date().toISOString().split("T")[0],
+            notes: stockForm.supplier ? `Fournisseur : ${stockForm.supplier}` : "Approvisionnement stock magasin",
+          });
+          toast.info(`Achat de stock (${totalStockCost.toLocaleString()} FCFA) synchronisé en comptabilité`);
+        } catch (_syncErr) {
+          // non-blocking
+        }
+      }
+
       toast.success("Stock d'aliment ajouté au magasin avec succès.");
       setOpenStock(false);
       setStockForm({

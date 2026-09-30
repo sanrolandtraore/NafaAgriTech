@@ -73,6 +73,11 @@ const AnimalsPage = () => {
     select: "*",
   });
 
+  const { insertRow: insertExpense } = useOfflineData({
+    table: "livestock_expenses",
+    select: "*",
+  });
+
   const [openCreate, setOpenCreate] = useState(false);
   const [editingAnimal, setEditingAnimal] = useState<any | null>(null);
 
@@ -138,6 +143,23 @@ const AnimalsPage = () => {
     try {
       const result = await insertRow(payload);
       if (result) {
+        if (payload.acquisition_cost > 0 && insertExpense) {
+          try {
+            await insertExpense({
+              farm_id: effectiveFarmId,
+              animal_id: result?.id || null,
+              category: "autre",
+              description: `Achat cheptel : ${generatedName} (${form.species})`,
+              amount: payload.acquisition_cost,
+              expense_date: payload.acquisition_date,
+              notes: "Synchronisé automatiquement depuis l'enregistrement au cheptel",
+            });
+            toast.info(`Coût d'acquisition (${payload.acquisition_cost.toLocaleString()} FCFA) synchronisé en comptabilité`);
+          } catch (_syncErr) {
+            // non-blocking
+          }
+        }
+
         toast.success(form.is_group ? "Lot enregistré dans le cheptel avec succès." : "Animal enregistré dans le cheptel avec succès.");
         setOpenCreate(false);
         setForm({ ...emptyForm, acquisition_date: new Date().toISOString().split("T")[0] });
