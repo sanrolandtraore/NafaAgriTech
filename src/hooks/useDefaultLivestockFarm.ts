@@ -20,38 +20,37 @@ function generateFallbackUuid(): string {
 export function useDefaultLivestockFarm() {
   const { user } = useAuth();
 
-  const getInitialFarmId = (): string | null => {
-    if (!user) return null;
-    const storageKey = `nafa_livestock_farm_id_${user.id}`;
-    const cached = localStorage.getItem(storageKey);
-    if (cached) return cached;
-    // Pre-generate a valid UUID immediately to prevent any form blocking
-    const fallback = generateFallbackUuid();
-    localStorage.setItem(storageKey, fallback);
-    return fallback;
+  const getInitialFarmId = (): string => {
+    const userKey = user?.id || "guest_breeder";
+    const storageKey = `nafa_livestock_farm_id_${userKey}`;
+    try {
+      const cached = typeof localStorage !== 'undefined' ? localStorage.getItem(storageKey) : null;
+      if (cached && isValidUuid(cached)) return cached;
+      const fallback = (user?.id && isValidUuid(user.id)) ? user.id : generateFallbackUuid();
+      if (typeof localStorage !== 'undefined') localStorage.setItem(storageKey, fallback);
+      return fallback;
+    } catch (_e) {
+      return generateFallbackUuid();
+    }
   };
 
-  const [farmId, setFarmId] = useState<string | null>(getInitialFarmId);
+  const [farmId, setFarmId] = useState<string>(getInitialFarmId);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    if (!user) {
-      setFarmId(null);
-      return;
-    }
-
-    const storageKey = `nafa_livestock_farm_id_${user.id}`;
-    let cached = localStorage.getItem(storageKey);
-    if (!cached) {
-      cached = generateFallbackUuid();
-      localStorage.setItem(storageKey, cached);
+    const userKey = user?.id || "guest_breeder";
+    const storageKey = `nafa_livestock_farm_id_${userKey}`;
+    try {
+      let cached = localStorage.getItem(storageKey);
+      if (!cached || !isValidUuid(cached)) {
+        cached = (user?.id && isValidUuid(user.id)) ? user.id : generateFallbackUuid();
+        localStorage.setItem(storageKey, cached);
+      }
       setFarmId(cached);
-    } else if (!farmId) {
-      setFarmId(cached);
-    }
+    } catch (_e) {}
 
     // Only attempt remote sync if user.id is a valid UUID and we are online
-    if (!isValidUuid(user.id) || !navigator.onLine) {
+    if (!user || !isValidUuid(user.id) || !navigator.onLine) {
       return;
     }
 

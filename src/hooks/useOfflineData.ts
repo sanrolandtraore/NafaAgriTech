@@ -112,13 +112,53 @@ export function useOfflineData<T = any>({
     };
   }, []);
 
+  const resolveActiveSession = useCallback(async (): Promise<{ session: any; isRemote: boolean } | null> => {
+    try {
+      const { data } = await supabase.auth.getSession();
+      if (data?.session?.user) return { session: data.session, isRemote: true };
+    } catch (_e) {}
+
+    if (typeof localStorage !== 'undefined') {
+      try {
+        const raw = localStorage.getItem('nafa_session_v1');
+        if (raw) {
+          const s = JSON.parse(raw);
+          if (s?.userId) {
+            return {
+              session: { user: { id: s.userId, email: s.email, user_metadata: { full_name: s.fullName } } } as any,
+              isRemote: false,
+            };
+          }
+        }
+      } catch (_e) {}
+    }
+    return null;
+  }, []);
+
   const fetchData = useCallback(async () => {
-    setLoading(true);
+    // Populate immediately with cached data if available (stale-while-revalidate)
+    const cached = await getCachedData(table, cacheKey);
+    if (cached && cached.length > 0) {
+      setData(cached as T[]);
+      setLoading(false);
+    } else {
+      setLoading(true);
+    }
 
     const parsedFilter: { column: string; value: any }[] = JSON.parse(stableFilter);
 
     if (navigator.onLine) {
       try {
+        // If there is no remote Supabase session, avoid failing network requests
+        const sessionInfo = await resolveActiveSession();
+        if (!sessionInfo?.isRemote) {
+          if (cached) {
+            setData(cached as T[]);
+          }
+          setLoading(false);
+          return;
+        }
+
         let query = (supabase.from(table as any) as any).select(select);
         for (const f of parsedFilter) {
           query = query.eq(f.column, f.value);
@@ -128,36 +168,41 @@ export function useOfflineData<T = any>({
         const { data: result, error } = await query;
         if (error) throw error;
 
-        setData(result || []);
-        await cacheData(table, cacheKey, result || []);
+        // Preserve and merge locally created or pending items so they are never wiped
+        const currentCached = await getCachedData(table, cacheKey);
+        const localPending = (currentCached || []).filter(
+          (r: any) => r && (r._offline || (typeof r.id === 'string' && (r.id.startsWith('local-') || r.id.startsWith('offline-'))))
+        );
+        const remoteIds = new Set((result || []).map((r: any) => r.id));
+        const merged = [...localPending.filter((r: any) => !remoteIds.has(r.id)), ...(result || [])];
+
+        setData(merged);
+        await cacheData(table, cacheKey, merged);
       } catch (err: any) {
         if (isMissingTableError(err) || isInvalidUuidError(err)) {
           console.warn(`Table ou filtre "${table}" non résolu sur le serveur (${err.code || err.message}). Utilisation du cache local.`);
-          const cached = await getCachedData(table, cacheKey);
-          setData((cached as T[]) || []);
+          const fallbackCached = await getCachedData(table, cacheKey);
+          setData((fallbackCached as T[]) || []);
           setLoading(false);
           return;
         }
-        console.error('Fetch error, falling back to cache:', err);
-        const cached = await getCachedData(table, cacheKey);
-        if (cached) {
-          setData(cached as T[]);
-          toast.info('Données chargées depuis le cache local');
-        } else {
-          toast.error(err.message);
+        console.warn('Fetch error, falling back to cache:', err);
+        const fallbackCached = await getCachedData(table, cacheKey);
+        if (fallbackCached) {
+          setData(fallbackCached as T[]);
         }
       }
     } else {
-      const cached = await getCachedData(table, cacheKey);
-      if (cached) {
-        setData(cached as T[]);
+      const fallbackCached = await getCachedData(table, cacheKey);
+      if (fallbackCached) {
+        setData(fallbackCached as T[]);
       } else {
         toast.warning('Aucune donnée en cache pour le mode hors-ligne');
       }
     }
 
     setLoading(false);
-  }, [table, cacheKey, select, orderBy, ascending, stableFilter, limit]);
+  }, [table, cacheKey, select, orderBy, ascending, stableFilter, limit, resolveActiveSession]);
 
   useEffect(() => {
     fetchData();
@@ -176,26 +221,30 @@ export function useOfflineData<T = any>({
     await addToSyncQueue({ table, operation: 'insert', data: offlineRow });
     await applyOptimisticInsert(table, cacheKey, offlineRow);
     setData(prev => [offlineRow as T, ...prev]);
+    setLoading(false);
     toast.info(message);
     return offlineRow;
   }, [table, cacheKey]);
 
-  const ensureSession = useCallback(async () => {
-    const { data: { session } } = await supabase.auth.getSession();
-    if (!session?.user) {
-      toast.error('Session expirée ou indisponible. Reconnectez-vous avant de continuer.');
-      return null;
-    }
-    return session;
-  }, []);
-
   const insertRow = useCallback(async (row: any) => {
+    const fallbackLocalInsert = async () => {
+      const tempId = `local-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
+      const localRow = { ...row, id: tempId, created_at: new Date().toISOString() };
+      await applyOptimisticInsert(table, cacheKey, localRow);
+      setData(prev => [localRow as T, ...prev]);
+      setLoading(false);
+      return localRow;
+    };
+
     if (!navigator.onLine) {
       return queueOfflineInsert(row, 'Enregistré hors-ligne, sera synchronisé au retour de la connexion');
     }
 
-    const session = await ensureSession();
-    if (!session) return null;
+    const sessionInfo = await resolveActiveSession();
+    // If no remote Supabase session, save locally without blocking the user
+    if (!sessionInfo?.session?.user || !sessionInfo.isRemote) {
+      return fallbackLocalInsert();
+    }
 
     if (hasTempReference(row)) {
       return queueOfflineInsert(
@@ -204,93 +253,93 @@ export function useOfflineData<T = any>({
       );
     }
 
-    const { data: result, error } = await (supabase.from(table as any) as any).insert(row).select();
-    if (error) {
-      if (isMissingTableError(error) || isInvalidUuidError(error)) {
-        console.warn(`Table distante ou contrainte "${table}" (${error.code || error.message}). Enregistrement local.`);
-        const tempId = `local-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
-        const localRow = { ...row, id: tempId, created_at: new Date().toISOString() };
-        await applyOptimisticInsert(table, cacheKey, localRow);
-        setData(prev => [localRow as T, ...prev]);
-        toast.success('Enregistré dans le stockage local');
-        return localRow;
-      }
-      toast.error(error.message);
-      return null;
-    }
-    await fetchData();
-    return result?.[0] || null;
-  }, [table, cacheKey, ensureSession, fetchData, queueOfflineInsert]);
-
-  const updateRow = useCallback(async (id: string, updates: any) => {
-    if (navigator.onLine) {
-      const session = await ensureSession();
-      if (!session) return false;
-
-      if (isOfflineTempId(id) || hasTempReference(updates)) {
-        await addToSyncQueue({ table, operation: 'update', data: { id, ...updates } });
-        await applyOptimisticUpdate(table, cacheKey, id, updates);
-        setData(prev => prev.map((r: any) => r.id === id ? { ...r, ...updates, _offline: true } : r));
-        toast.info('Modification en attente de synchronisation');
-        return true;
-      }
-
-      const { error } = await (supabase.from(table as any) as any).update(updates).eq('id', id);
+    try {
+      const { data: result, error } = await (supabase.from(table as any) as any).insert(row).select();
       if (error) {
-        if (isMissingTableError(error) || isInvalidUuidError(error)) {
-          await applyOptimisticUpdate(table, cacheKey, id, updates);
-          setData(prev => prev.map((r: any) => r.id === id ? { ...r, ...updates } : r));
-          toast.success('Modification enregistrée localement');
-          return true;
-        }
-        toast.error(error.message);
-        return false;
+        console.warn(`Table distante ou contrainte "${table}" (${error.code || error.message}). Enregistrement local.`);
+        return fallbackLocalInsert();
       }
       await fetchData();
+      return result?.[0] || null;
+    } catch (err: any) {
+      console.warn(`Erreur réseau insertion "${table}". Enregistrement local:`, err);
+      return fallbackLocalInsert();
+    }
+  }, [table, cacheKey, resolveActiveSession, fetchData, queueOfflineInsert]);
+
+  const updateRow = useCallback(async (id: string, updates: any) => {
+    const fallbackLocalUpdate = async () => {
+      await applyOptimisticUpdate(table, cacheKey, id, updates);
+      setData(prev => prev.map((r: any) => r.id === id ? { ...r, ...updates } : r));
       return true;
-    } else {
+    };
+
+    if (!navigator.onLine) {
       await addToSyncQueue({ table, operation: 'update', data: { id, ...updates } });
       await applyOptimisticUpdate(table, cacheKey, id, updates);
       setData(prev => prev.map((r: any) => r.id === id ? { ...r, ...updates } : r));
       toast.info('Modification enregistrée hors-ligne');
       return true;
     }
-  }, [table, cacheKey, ensureSession, fetchData]);
 
-  const deleteRow = useCallback(async (id: string) => {
-    if (navigator.onLine) {
-      const session = await ensureSession();
-      if (!session) return false;
+    const sessionInfo = await resolveActiveSession();
+    if (!sessionInfo?.session?.user || !sessionInfo.isRemote || isOfflineTempId(id) || hasTempReference(updates)) {
+      await addToSyncQueue({ table, operation: 'update', data: { id, ...updates } });
+      await applyOptimisticUpdate(table, cacheKey, id, updates);
+      setData(prev => prev.map((r: any) => r.id === id ? { ...r, ...updates, _offline: true } : r));
+      return true;
+    }
 
-      if (isOfflineTempId(id)) {
-        await addToSyncQueue({ table, operation: 'delete', data: { id } });
-        await applyOptimisticDelete(table, cacheKey, id);
-        setData(prev => prev.filter((r: any) => r.id !== id));
-        toast.info('Suppression en attente de synchronisation');
-        return true;
-      }
-
-      const { error } = await (supabase.from(table as any) as any).delete().eq('id', id);
+    try {
+      const { error } = await (supabase.from(table as any) as any).update(updates).eq('id', id);
       if (error) {
-        if (isMissingTableError(error) || isInvalidUuidError(error)) {
-          await applyOptimisticDelete(table, cacheKey, id);
-          setData(prev => prev.filter((r: any) => r.id !== id));
-          toast.success('Suppression enregistrée localement');
-          return true;
-        }
-        toast.error(error.message);
-        return false;
+        console.warn(`Erreur update distante "${table}":`, error);
+        return fallbackLocalUpdate();
       }
       await fetchData();
       return true;
-    } else {
+    } catch (err) {
+      console.warn(`Exception update distante "${table}":`, err);
+      return fallbackLocalUpdate();
+    }
+  }, [table, cacheKey, resolveActiveSession, fetchData]);
+
+  const deleteRow = useCallback(async (id: string) => {
+    const fallbackLocalDelete = async () => {
+      await applyOptimisticDelete(table, cacheKey, id);
+      setData(prev => prev.filter((r: any) => r.id !== id));
+      return true;
+    };
+
+    if (!navigator.onLine) {
       await addToSyncQueue({ table, operation: 'delete', data: { id } });
       await applyOptimisticDelete(table, cacheKey, id);
       setData(prev => prev.filter((r: any) => r.id !== id));
       toast.info('Suppression enregistrée hors-ligne');
       return true;
     }
-  }, [table, cacheKey, ensureSession, fetchData]);
+
+    const sessionInfo = await resolveActiveSession();
+    if (!sessionInfo?.session?.user || !sessionInfo.isRemote || isOfflineTempId(id)) {
+      await addToSyncQueue({ table, operation: 'delete', data: { id } });
+      await applyOptimisticDelete(table, cacheKey, id);
+      setData(prev => prev.filter((r: any) => r.id !== id));
+      return true;
+    }
+
+    try {
+      const { error } = await (supabase.from(table as any) as any).delete().eq('id', id);
+      if (error) {
+        console.warn(`Erreur delete distante "${table}":`, error);
+        return fallbackLocalDelete();
+      }
+      await fetchData();
+      return true;
+    } catch (err) {
+      console.warn(`Exception delete distante "${table}":`, err);
+      return fallbackLocalDelete();
+    }
+  }, [table, cacheKey, resolveActiveSession, fetchData]);
 
   return { data, loading, isOffline, refetch: fetchData, insertRow, updateRow, deleteRow };
 }

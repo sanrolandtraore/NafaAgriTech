@@ -42,8 +42,18 @@ const DB_NAME = 'nafa-offline';
 const DB_VERSION = 3;
 
 async function getCurrentUserId(): Promise<string | null> {
-  const { data: { user } } = await supabase.auth.getUser();
-  return user?.id ?? null;
+  try {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (user?.id) return user.id;
+  } catch (_e) {}
+  try {
+    const raw = typeof localStorage !== 'undefined' ? localStorage.getItem('nafa_session_v1') : null;
+    if (raw) {
+      const s = JSON.parse(raw);
+      if (s?.userId) return s.userId;
+    }
+  } catch (_e) {}
+  return null;
 }
 
 function scopedCacheKey(userId: string | null, table: string, queryKey: string): string {
@@ -229,14 +239,15 @@ export async function clearOfflineSession(): Promise<void> {
 
 export async function applyOptimisticInsert(table: string, queryKey: string, newRow: any): Promise<void> {
   const cached = await getCachedData(table, queryKey);
-  if (cached) {
-    await cacheData(table, queryKey, [newRow, ...cached]);
+  const currentList = Array.isArray(cached) ? cached : [];
+  if (!currentList.some((r: any) => r.id === newRow.id)) {
+    await cacheData(table, queryKey, [newRow, ...currentList]);
   }
 }
 
 export async function applyOptimisticUpdate(table: string, queryKey: string, id: string, updates: any): Promise<void> {
   const cached = await getCachedData(table, queryKey);
-  if (cached) {
+  if (Array.isArray(cached)) {
     const updated = cached.map((row: any) => (row.id === id ? { ...row, ...updates } : row));
     await cacheData(table, queryKey, updated);
   }
@@ -244,7 +255,7 @@ export async function applyOptimisticUpdate(table: string, queryKey: string, id:
 
 export async function applyOptimisticDelete(table: string, queryKey: string, id: string): Promise<void> {
   const cached = await getCachedData(table, queryKey);
-  if (cached) {
+  if (Array.isArray(cached)) {
     await cacheData(table, queryKey, cached.filter((row: any) => row.id !== id));
   }
 }

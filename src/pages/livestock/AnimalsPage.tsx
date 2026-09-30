@@ -11,7 +11,7 @@ import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
 import { Plus, Trash2, Filter, WifiOff, Users, Edit3, Scale, ShieldAlert, Sparkles } from "lucide-react";
-import { useOfflineData } from "@/hooks/useOfflineData";
+import { useOfflineData, isValidUuid } from "@/hooks/useOfflineData";
 import { useDefaultLivestockFarm } from "@/hooks/useDefaultLivestockFarm";
 import BackNavigationButton from "@/components/BackNavigationButton";
 
@@ -99,7 +99,11 @@ const AnimalsPage = () => {
     setForm((f) => ({ ...f, species: v, breed: "", is_group: GROUP_SPECIES.has(v) }));
   };
 
-  const effectiveFarmId = farmId || (user ? `nafa_farm_${user.id}` : "default_farm");
+  const effectiveFarmId = (farmId && isValidUuid(farmId))
+    ? farmId
+    : (user && isValidUuid(user.id))
+    ? user.id
+    : "10000000-1000-4000-8000-100000000000";
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -108,30 +112,40 @@ const AnimalsPage = () => {
       return;
     }
 
+    const generatedName = form.is_group
+      ? (form.group_label?.trim() || `Lot ${speciesOptions.find((s) => s.value === form.species)?.label || form.species}`)
+      : (form.name?.trim() || `${speciesOptions.find((s) => s.value === form.species)?.label || form.species}${form.identification_number ? ` (#${form.identification_number})` : ""}`);
+
     const payload: any = {
       farm_id: effectiveFarmId,
       species: form.species,
       is_group: form.is_group,
-      group_label: form.is_group ? (form.group_label || null) : null,
+      group_label: form.is_group ? generatedName : null,
       group_size: form.is_group ? Number(form.group_size) : null,
       mortality_count: form.is_group ? (form.mortality_count ? Number(form.mortality_count) : 0) : 0,
-      name: form.is_group ? (form.group_label || null) : (form.name || null),
-      identification_number: form.identification_number || null,
+      name: generatedName,
+      identification_number: form.identification_number?.trim() || null,
       breed: form.breed || null,
       sex: form.is_group ? "inconnu" : form.sex,
       status: "actif",
       birth_date: form.birth_date || null,
-      acquisition_date: form.acquisition_date,
+      acquisition_date: form.acquisition_date || new Date().toISOString().split("T")[0],
       acquisition_cost: form.acquisition_cost ? Number(form.acquisition_cost) : 0,
       weight_kg: form.weight_kg ? Number(form.weight_kg) : null,
       notes: form.notes || null,
     };
 
-    const result = await insertRow(payload);
-    if (result) {
-      toast.success(form.is_group ? "Lot enregistré avec succès." : "Animal ajouté au registre avec succès.");
-      setOpenCreate(false);
-      setForm({ ...emptyForm, acquisition_date: new Date().toISOString().split("T")[0] });
+    try {
+      const result = await insertRow(payload);
+      if (result) {
+        toast.success(form.is_group ? "Lot enregistré dans le cheptel avec succès." : "Animal enregistré dans le cheptel avec succès.");
+        setOpenCreate(false);
+        setForm({ ...emptyForm, acquisition_date: new Date().toISOString().split("T")[0] });
+      } else {
+        toast.error("Impossible d'enregistrer. Veuillez vérifier les informations saisies.");
+      }
+    } catch (err: any) {
+      toast.error(`Erreur lors de l'enregistrement : ${err?.message || "Veuillez réessayer"}`);
     }
   };
 
