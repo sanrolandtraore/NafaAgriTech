@@ -144,21 +144,21 @@ export const NafaGeniusStudio: React.FC = () => {
 
   // Modèle Typique IRRIS (Irrigation & Pompage Solaire - CIRAD / IRRINN / Sahel)
   const defaultIrris = calculateIrrisModel({
-    cropKey: "tomate",
-    season: "saison_seche_chaude",
-    areaHa: 1.0,
     sourceType: "forage",
-    depthMeters: 45,
-    sourceDischargeM3h: 6.0,
-    distanceMeters: 50,
-    irrigationType: "goutte_a_goutte",
+    dynamicWaterDepthM: 45,
+    sourceFlowM3h: 6.0,
+    dischargeDistanceM: 50,
+    areaHa: 1.0,
+    cropKey: "tomate",
+    season: "seche_chaude",
+    method: "goutte_a_goutte",
     pumpingMode: "fil_du_soleil",
-    tankElevationM: 4,
+    tankHeightM: 4,
   });
 
   const [irrisResult, setIrrisResult] = useState<IrrisResult>(defaultIrris);
   const [surveyResult, setSurveyResult] = useState<GeodesicSurveyResult>(() =>
-    irrisToGeodesicSurvey(defaultIrris)
+    irrisToGeodesicSurvey(defaultIrris, PRESET_PARCELS.bama.location)
   );
 
   // Dimensionnement Irrigation FAO-56
@@ -180,10 +180,12 @@ export const NafaGeniusStudio: React.FC = () => {
   const [farmZoningPlan, setFarmZoningPlan] = useState<FarmZoningPlan | null>(null);
   const [engineeringQuote, setEngineeringQuote] = useState<EngineeringQuote | null>(() =>
     generateEngineeringQuote(
-      irrisToGeodesicSurvey(defaultIrris),
-      irrisToIrrigationDesignResult(defaultIrris),
-      null,
-      "Projet IRRIS - Tomate (1.0 ha)"
+      "Issa Ouédraogo",
+      "+226 75 77 48 52",
+      PRESET_PARCELS.bama.location,
+      "Dr. Oumarou Sawadogo (Ingénieur Rural)",
+      "Projet IRRIS - Tomate (1.0 ha)",
+      defaultIrris.billOfMaterials
     )
   );
   const [canvasSnapshotDataUrl, setCanvasSnapshotDataUrl] = useState<string | undefined>(undefined);
@@ -193,17 +195,25 @@ export const NafaGeniusStudio: React.FC = () => {
   const handleIrrisCalculated = (res: IrrisResult) => {
     setIrrisResult(res);
     const adaptedIrrigation = irrisToIrrigationDesignResult(res);
-    const adaptedSurvey = irrisToGeodesicSurvey(res);
+    const adaptedSurvey = irrisToGeodesicSurvey(res, farmLocation);
     setIrrigationResult(adaptedIrrigation);
     setSurveyResult(adaptedSurvey);
 
     const quote = generateEngineeringQuote(
-      adaptedSurvey,
-      adaptedIrrigation,
-      null,
-      `Projet IRRIS - ${res.inputs.cropKey} (${res.inputs.areaHa} ha)`
+      clientName,
+      clientPhone,
+      farmLocation,
+      profile?.full_name || "Dr. Oumarou Sawadogo (Ingénieur Rural)",
+      `Projet IRRIS - ${res.input.cropKey} (${res.input.areaHa} ha)`,
+      res.billOfMaterials
     );
     setEngineeringQuote(quote);
+
+    const unifiedSeason = res.input.season === "seche_froide"
+      ? "saison_seche_froide"
+      : res.input.season === "hivernage"
+        ? "hivernage"
+        : "saison_seche_chaude";
 
     const newUnified = generateUnifiedEngineeringProject({
       survey: adaptedSurvey,
@@ -211,11 +221,11 @@ export const NafaGeniusStudio: React.FC = () => {
       clientPhone,
       location: farmLocation,
       expertName: profile?.full_name || "Dr. Oumarou Sawadogo (Ingénieur Rural)",
-      cropKey: res.inputs.cropKey,
-      season: res.inputs.season,
+      cropKey: res.input.cropKey,
+      season: unifiedSeason,
       includePoultry: false,
-      boreholeDepthM: res.inputs.depthMeters,
-      waterTableDepthM: Math.round(res.inputs.depthMeters * 0.6),
+      boreholeDepthM: res.input.dynamicWaterDepthM,
+      waterTableDepthM: Math.round(res.input.dynamicWaterDepthM * 0.6),
     });
     setUnifiedProject(newUnified);
   };
