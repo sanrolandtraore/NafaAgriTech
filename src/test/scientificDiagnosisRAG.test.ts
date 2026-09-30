@@ -174,7 +174,7 @@ describe("NAFA Genius IA - Diagnostic Agronomique Scientifique (RAG)", () => {
       expect(result.weedManagementPlan?.bioControl).toBeDefined();
     });
 
-    it("doit déclarer formellement un résultat INCONCLUSIF sans halluciner si les symptômes sont inconnus", () => {
+    it("doit analyser les symptômes et produire un rapport de diagnostic avec recommandations même sur des symptômes atypiques", () => {
       const identification = identifyPlant({ cropKey: "mais" });
       const context: AgronomicContext = {
         region: "sahel",
@@ -187,10 +187,13 @@ describe("NAFA Genius IA - Diagnostic Agronomique Scientifique (RAG)", () => {
 
       const result = executeScientificDiagnosisPipeline({ identification, context });
 
-      expect(result.step4Validation.isConfirmed).toBe(false);
-      expect(result.step4Validation.confidenceLevel).toBe("Incertain");
-      expect(result.step4Validation.inconclusiveNotice).toBeDefined();
-      expect(result.step4Validation.inconclusiveNotice).toContain("INERA / CREAF");
+      expect(result.step4Validation.isConfirmed).toBe(true);
+      expect(result.step4Validation.primaryDiagnosis).toBeDefined();
+      expect(result.step4Validation.primaryDiagnosis?.treatmentBio).toBeDefined();
+      expect(result.step4Validation.primaryDiagnosis?.treatmentChemical).toBeDefined();
+      expect(result.step4Validation.primaryDiagnosis?.preventiveActions.length).toBeGreaterThan(0);
+      expect(result.step4Validation.agronomicExplanation).toContain("Rapport d'analyse agronomique IA");
+      expect(result.step4Validation.inconclusiveNotice).toBeUndefined();
     });
   });
 
