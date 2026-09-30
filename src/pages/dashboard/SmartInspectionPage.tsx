@@ -28,14 +28,19 @@ import {
   Check,
   CloudOff,
   Cloud,
+  Layers,
+  Copy,
+  Edit,
+  Play,
 } from "lucide-react";
 import { toast } from "sonner";
 import InspectionMissionSelector from "@/components/inspection/InspectionMissionSelector";
 import InspectionDynamicCollector from "@/components/inspection/InspectionDynamicCollector";
 import InspectionReportViewer from "@/components/inspection/InspectionReportViewer";
+import CustomFormGeneratorModal from "@/components/inspection/CustomFormGeneratorModal";
 
 export default function SmartInspectionPage() {
-  const [activeTab, setActiveTab] = useState<"new" | "history" | "sync">("new");
+  const [activeTab, setActiveTab] = useState<"new" | "history" | "sync" | "templates">("new");
   const [wizardStep, setWizardStep] = useState<1 | 2 | 3>(1); // 1: Choisir mission, 2: Collecte, 3: Rapport & Devis
 
   // Current working inspection state
@@ -47,13 +52,22 @@ export default function SmartInspectionPage() {
   const [inspections, setInspections] = useState<Inspection[]>(() =>
     nafaInspectionEngine.getInspections()
   );
+  const [customTypes, setCustomTypes] = useState<InspectionType[]>(() =>
+    nafaInspectionEngine.getCustomTypes()
+  );
   const [historySearch, setHistorySearch] = useState("");
   const [syncingAll, setSyncingAll] = useState(false);
+
+  // Custom Form Modal state
+  const [openGeneratorModal, setOpenGeneratorModal] = useState(false);
+  const [editingType, setEditingType] = useState<InspectionType | null>(null);
+  const [editingTemplate, setEditingTemplate] = useState<InspectionTemplate | null>(null);
 
   // Recharger les données quand le stockage local change
   useEffect(() => {
     const handleUpdate = () => {
       setInspections(nafaInspectionEngine.getInspections());
+      setCustomTypes(nafaInspectionEngine.getCustomTypes());
     };
     window.addEventListener("nafa-inspection-updated", handleUpdate);
     return () => window.removeEventListener("nafa-inspection-updated", handleUpdate);
@@ -183,10 +197,14 @@ export default function SmartInspectionPage() {
 
       {/* ── Navigation par Onglets ── */}
       <Tabs value={activeTab} onValueChange={(v: any) => setActiveTab(v)} className="space-y-6">
-        <TabsList className="bg-muted/60 p-1 border border-border">
+        <TabsList className="bg-muted/60 p-1 border border-border flex flex-wrap gap-1">
           <TabsTrigger value="new" className="text-xs font-semibold gap-1.5">
             <Sparkles className="h-3.5 w-3.5 text-primary" />
             Session d'Inspection
+          </TabsTrigger>
+          <TabsTrigger value="templates" className="text-xs font-semibold gap-1.5">
+            <Layers className="h-3.5 w-3.5 text-primary" />
+            Formulaires Personnalisés ({customTypes.length})
           </TabsTrigger>
           <TabsTrigger value="history" className="text-xs font-semibold gap-1.5">
             <FolderKanban className="h-3.5 w-3.5" />
@@ -478,7 +496,237 @@ export default function SmartInspectionPage() {
             </div>
           </Card>
         </TabsContent>
+
+        {/* ── ONGLET 4 : FORMULAIRES PERSONNALISÉS (CONCEPTEUR & GÉNÉRATEUR) ── */}
+        <TabsContent value="templates" className="space-y-6">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-5 rounded-2xl bg-card border border-border shadow-xs">
+            <div className="space-y-1">
+              <h2 className="text-lg font-heading font-extrabold flex items-center gap-2">
+                <Sparkles className="h-5 w-5 text-primary" />
+                <span>Formulaires d'Inspection Personnalisés</span>
+              </h2>
+              <p className="text-xs text-muted-foreground max-w-xl">
+                Générez des fiches de mission adaptées à vos cahiers des charges ou dupliquez les modèles agro-pastoraux existants. Entièrement disponible hors-ligne.
+              </p>
+            </div>
+
+            <Button
+              onClick={() => {
+                setEditingType(null);
+                setEditingTemplate(null);
+                setOpenGeneratorModal(true);
+              }}
+              className="gradient-primary text-primary-foreground text-xs font-bold gap-1.5 shadow-xs shrink-0"
+            >
+              <Plus className="h-4 w-4" />
+              <span>Générer un nouveau formulaire</span>
+            </Button>
+          </div>
+
+          {/* Grille des formulaires personnalisés créés par l'utilisateur */}
+          {customTypes.length === 0 ? (
+            <Card className="p-8 text-center rounded-2xl border-dashed border-2">
+              <div className="w-12 h-12 rounded-full bg-primary/10 text-primary flex items-center justify-center mx-auto mb-3">
+                <Layers className="h-6 w-6" />
+              </div>
+              <h3 className="font-heading font-bold text-base text-foreground">
+                Aucun formulaire personnalisé enregistré
+              </h3>
+              <p className="text-xs text-muted-foreground mt-1 max-w-md mx-auto">
+                Créez votre propre modèle de collecte terrain avec l'Assistant NAFA Genius ou partez de l'un des modèles agro-pastoraux recommandés ci-dessous.
+              </p>
+              <div className="pt-4">
+                <Button
+                  size="sm"
+                  onClick={() => {
+                    setEditingType(null);
+                    setEditingTemplate(null);
+                    setOpenGeneratorModal(true);
+                  }}
+                  className="gradient-primary text-primary-foreground text-xs font-bold gap-1.5 shadow-xs"
+                >
+                  <Sparkles className="h-3.5 w-3.5" />
+                  <span>Concevoir mon premier formulaire</span>
+                </Button>
+              </div>
+            </Card>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {customTypes.map((type) => {
+                const template = nafaInspectionEngine.getTemplateForType(type.id);
+                return (
+                  <Card key={type.id} className="border-primary/30 hover:border-primary transition-all bg-card flex flex-col justify-between shadow-xs">
+                    <CardHeader className="p-4 pb-2 space-y-2">
+                      <div className="flex items-center justify-between gap-2">
+                        <Badge variant="secondary" className="text-[10px] font-bold bg-primary/10 text-primary border-primary/20">
+                          Formulaire Personnalisé
+                        </Badge>
+                        <Badge variant="outline" className="text-[10px] uppercase font-semibold">
+                          {type.category}
+                        </Badge>
+                      </div>
+                      <CardTitle className="text-sm font-bold text-foreground">
+                        {type.name}
+                      </CardTitle>
+                      <p className="text-xs text-muted-foreground line-clamp-2">
+                        {type.description}
+                      </p>
+                    </CardHeader>
+
+                    <CardContent className="p-4 pt-2 space-y-3">
+                      <div className="grid grid-cols-3 gap-2 py-2 border-y border-border/60 text-center text-xs">
+                        <div className="bg-muted/30 p-1.5 rounded-lg">
+                          <span className="font-bold block text-foreground">{template.fields_schema.length}</span>
+                          <span className="text-[10px] text-muted-foreground">Paramètres</span>
+                        </div>
+                        <div className="bg-muted/30 p-1.5 rounded-lg">
+                          <span className="font-bold block text-foreground">{template.required_photos.length}</span>
+                          <span className="text-[10px] text-muted-foreground">Photos</span>
+                        </div>
+                        <div className="bg-muted/30 p-1.5 rounded-lg">
+                          <span className="font-bold block text-foreground">{template.default_measurements.length}</span>
+                          <span className="text-[10px] text-muted-foreground">Mesures</span>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground">
+                        {template.generates_plan && (
+                          <Badge variant="outline" className="text-[9px]">Plan 2D</Badge>
+                        )}
+                        {template.generates_quote && (
+                          <Badge variant="outline" className="text-[9px]">Devis estimatif</Badge>
+                        )}
+                      </div>
+
+                      <div className="flex items-center justify-between gap-1.5 pt-2">
+                        <Button
+                          size="sm"
+                          onClick={() => {
+                            handleSelectType(type);
+                            setActiveTab("new");
+                          }}
+                          className="gradient-primary text-primary-foreground text-xs font-bold gap-1 flex-1 shadow-xs"
+                        >
+                          <Play className="h-3 w-3" />
+                          <span>Démarrer</span>
+                        </Button>
+
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => {
+                            setEditingType(type);
+                            setEditingTemplate(template);
+                            setOpenGeneratorModal(true);
+                          }}
+                          className="h-8 px-2 text-xs"
+                          title="Modifier le modèle"
+                        >
+                          <Edit className="h-3.5 w-3.5" />
+                        </Button>
+
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => {
+                            const dup = nafaInspectionEngine.duplicateCustomType(type.id);
+                            if (dup) {
+                              setCustomTypes(nafaInspectionEngine.getCustomTypes());
+                              toast.success("Modèle dupliqué avec succès.");
+                            }
+                          }}
+                          className="h-8 px-2 text-xs"
+                          title="Dupliquer"
+                        >
+                          <Copy className="h-3.5 w-3.5" />
+                        </Button>
+
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => {
+                            if (!confirm(`Supprimer définitivement le modèle "${type.name}" ?`)) return;
+                            nafaInspectionEngine.deleteCustomType(type.id);
+                            setCustomTypes(nafaInspectionEngine.getCustomTypes());
+                            toast.success("Modèle supprimé.");
+                          }}
+                          className="h-8 px-2 text-xs text-muted-foreground hover:text-destructive"
+                          title="Supprimer"
+                        >
+                          <Trash2 className="h-3.5 w-3.5" />
+                        </Button>
+                      </div>
+                    </CardContent>
+                  </Card>
+                );
+              })}
+            </div>
+          )}
+
+          {/* Section modèles de départ recommandés à dupliquer */}
+          <div className="space-y-3 pt-4 border-t border-border">
+            <div className="space-y-0.5">
+              <h3 className="font-heading font-bold text-sm text-foreground">
+                Partir d'un modèle d'expertise préconfiguré
+              </h3>
+              <p className="text-xs text-muted-foreground">
+                Dupliquez et ajustez l'un de ces modèles standards certifiés selon les réalités de votre client.
+              </p>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+              {[
+                { id: "it-agri-goutte", name: "Goutte-à-goutte", cat: "agriculture" },
+                { id: "it-agri-forage", name: "Forage & Pompage", cat: "agriculture" },
+                { id: "it-elev-avicole", name: "Bâtiment Avicole", cat: "elevage" },
+                { id: "it-elev-bovine", name: "Stabulation Bovine", cat: "elevage" },
+              ].map((seed) => (
+                <div key={seed.id} className="p-3.5 rounded-xl border border-border bg-card flex flex-col justify-between gap-2.5">
+                  <div>
+                    <Badge variant="outline" className="text-[9px] uppercase tracking-wider mb-1">
+                      {seed.cat}
+                    </Badge>
+                    <h4 className="font-bold text-xs text-foreground">{seed.name}</h4>
+                  </div>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      const dup = nafaInspectionEngine.duplicateCustomType(seed.id);
+                      if (dup) {
+                        setCustomTypes(nafaInspectionEngine.getCustomTypes());
+                        setEditingType(dup.type);
+                        setEditingTemplate(dup.template);
+                        setOpenGeneratorModal(true);
+                        toast.success(`Modèle basé sur ${seed.name} créé et prêt à être personnalisé !`);
+                      }
+                    }}
+                    className="text-xs font-semibold gap-1 w-full"
+                  >
+                    <Copy className="h-3 w-3" />
+                    <span>Personnaliser</span>
+                  </Button>
+                </div>
+              ))}
+            </div>
+          </div>
+        </TabsContent>
       </Tabs>
+
+      {/* Modal du générateur de formulaire personnalisé */}
+      <CustomFormGeneratorModal
+        open={openGeneratorModal}
+        onOpenChange={setOpenGeneratorModal}
+        editType={editingType}
+        editTemplate={editingTemplate}
+        onSaved={(type, _tmpl, launchNow) => {
+          setCustomTypes(nafaInspectionEngine.getCustomTypes());
+          if (launchNow) {
+            handleSelectType(type);
+            setActiveTab("new");
+          }
+        }}
+      />
     </div>
   );
 }

@@ -417,7 +417,7 @@ export default function InspectionDynamicCollector({
                       <Label className="text-xs">
                         {schema.label} {schema.required && "*"}
                       </Label>
-                      {schema.key.startsWith("custom_") && (
+                      {(schema.key.startsWith("custom_") || schema.key.startsWith("fld_")) && (
                         <button
                           type="button"
                           onClick={() => handleRemoveField(schema.key, schema.label)}
@@ -467,7 +467,7 @@ export default function InspectionDynamicCollector({
                           nafaInspectionEngine.saveInspectionFields(inspection.id, next);
                         }}
                       />
-                      {schema.key.startsWith("custom_") && (
+                      {(schema.key.startsWith("custom_") || schema.key.startsWith("fld_")) && (
                         <button
                           type="button"
                           onClick={() => handleRemoveField(schema.key, schema.label)}
@@ -489,7 +489,7 @@ export default function InspectionDynamicCollector({
                       <Label className="text-xs">
                         {schema.label} {schema.required && "*"}
                       </Label>
-                      {schema.key.startsWith("custom_") && (
+                      {(schema.key.startsWith("custom_") || schema.key.startsWith("fld_")) && (
                         <button
                           type="button"
                           onClick={() => handleRemoveField(schema.key, schema.label)}
@@ -522,7 +522,7 @@ export default function InspectionDynamicCollector({
                     </Label>
                     <div className="flex items-center gap-1.5">
                       {schema.unit && <span className="text-[10px] text-muted-foreground font-mono font-bold">{schema.unit}</span>}
-                      {schema.key.startsWith("custom_") && (
+                      {(schema.key.startsWith("custom_") || schema.key.startsWith("fld_")) && (
                         <button
                           type="button"
                           onClick={() => handleRemoveField(schema.key, schema.label)}

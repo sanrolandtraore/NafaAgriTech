@@ -1,6 +1,7 @@
-﻿import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import {
   InspectionType,
+  InspectionTemplate,
   MissionCategory,
   nafaInspectionEngine,
 } from "@/lib/nafaSmartInspectionEngine";
@@ -29,32 +30,23 @@ import {
   Settings,
   Cpu,
   Share2,
+  Edit,
+  Copy,
+  Trash2,
+  FileCheck,
 } from "lucide-react";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { toast } from "sonner";
+import CustomFormGeneratorModal from "./CustomFormGeneratorModal";
 
 interface InspectionMissionSelectorProps {
   onSelectType: (type: InspectionType) => void;
   selectedTypeId?: string;
+  onOpenFormGenerator?: () => void;
 }
 
-const CATEGORIES: { id: MissionCategory | "all"; label: string; icon: typeof Sprout }[] = [
+const CATEGORIES: { id: MissionCategory | "all" | "custom"; label: string; icon: typeof Sprout }[] = [
   { id: "all", label: "Toutes les missions", icon: Layers },
+  { id: "custom", label: "Mes formulaires personnalisés", icon: Sparkles },
   { id: "agriculture", label: "Agriculture & Aménagement", icon: Sprout },
   { id: "elevage", label: "Élevage & Zootechnie", icon: Beef },
   { id: "machinisme", label: "Machinisme & Travaux", icon: Wrench },
@@ -88,20 +80,37 @@ const ICON_MAP: Record<string, typeof Sprout> = {
 export default function InspectionMissionSelector({
   onSelectType,
   selectedTypeId,
+  onOpenFormGenerator,
 }: InspectionMissionSelectorProps) {
   const [types, setTypes] = useState<InspectionType[]>(() => nafaInspectionEngine.getTypes());
-  const [selectedCat, setSelectedCat] = useState<MissionCategory | "all">("all");
+  const [selectedCat, setSelectedCat] = useState<MissionCategory | "all" | "custom">("all");
   const [search, setSearch] = useState("");
-  const [openNewTypeDialog, setOpenNewTypeDialog] = useState(false);
 
-  // Formulaire pour ajouter un nouveau type (extensibilité)
-  const [newTypeName, setNewTypeName] = useState("");
-  const [newTypeCat, setNewTypeCat] = useState<MissionCategory>("agriculture");
-  const [newTypeDesc, setNewTypeDesc] = useState("");
+  // Modal de création/génération de formulaire sur-mesure
+  const [openGeneratorModal, setOpenGeneratorModal] = useState(false);
+  const [editingType, setEditingType] = useState<InspectionType | null>(null);
+  const [editingTemplate, setEditingTemplate] = useState<InspectionTemplate | null>(null);
+
+  // Recharger types si mise à jour
+  useEffect(() => {
+    const handleUpdate = () => {
+      setTypes(nafaInspectionEngine.getTypes());
+    };
+    window.addEventListener("nafa-inspection-updated", handleUpdate);
+    return () => window.removeEventListener("nafa-inspection-updated", handleUpdate);
+  }, []);
+
+  const customCount = useMemo(() => types.filter((t) => !t.is_system).length, [types]);
 
   const filteredTypes = useMemo(() => {
     return types.filter((t) => {
-      const matchCat = selectedCat === "all" || t.category === selectedCat;
+      const matchCat =
+        selectedCat === "all"
+          ? true
+          : selectedCat === "custom"
+          ? !t.is_system
+          : t.category === selectedCat;
+
       const matchSearch =
         search === "" ||
         t.name.toLowerCase().includes(search.toLowerCase()) ||
@@ -111,30 +120,53 @@ export default function InspectionMissionSelector({
     });
   }, [types, selectedCat, search]);
 
-  const handleCreateCustomType = () => {
-    if (!newTypeName.trim()) {
-      toast.error("Veuillez saisir le nom de la nouvelle mission");
-      return;
+  const handleEditCustomType = (e: React.MouseEvent, type: InspectionType) => {
+    e.stopPropagation();
+    const template = nafaInspectionEngine.getTemplateForType(type.id);
+    setEditingType(type);
+    setEditingTemplate(template);
+    setOpenGeneratorModal(true);
+  };
+
+  const handleDuplicateType = (e: React.MouseEvent, type: InspectionType) => {
+    e.stopPropagation();
+    const duplicated = nafaInspectionEngine.duplicateCustomType(type.id);
+    if (duplicated) {
+      setTypes(nafaInspectionEngine.getTypes());
+      toast.success(`Formulaire "${duplicated.type.name}" dupliqué avec succès.`);
     }
-    const created = nafaInspectionEngine.registerCustomType({
-      name: newTypeName.trim(),
-      code: `CUSTOM_${newTypeName.trim().toUpperCase().replace(/[^A-Z0-9]/g, "_")}`,
-      category: newTypeCat,
-      description: newTypeDesc.trim() || "Type d'inspection personnalisé créé par l'expert.",
-      iconName: "Sparkles",
-      is_active: true,
-    });
+  };
+
+  const handleDeleteCustomType = (e: React.MouseEvent, type: InspectionType) => {
+    e.stopPropagation();
+    if (!confirm(`Supprimer définitivement le formulaire personnalisé "${type.name}" ?`)) return;
+    const ok = nafaInspectionEngine.deleteCustomType(type.id);
+    if (ok) {
+      setTypes(nafaInspectionEngine.getTypes());
+      toast.success("Formulaire personnalisé supprimé.");
+    }
+  };
+
+  const handleOpenNewGenerator = () => {
+    if (onOpenFormGenerator) {
+      onOpenFormGenerator();
+    } else {
+      setEditingType(null);
+      setEditingTemplate(null);
+      setOpenGeneratorModal(true);
+    }
+  };
+
+  const handleSavedForm = (type: InspectionType, _template: InspectionTemplate, launchNow?: boolean) => {
     setTypes(nafaInspectionEngine.getTypes());
-    setOpenNewTypeDialog(false);
-    setNewTypeName("");
-    setNewTypeDesc("");
-    toast.success(`Nouveau type "${created.name}" ajouté avec succès !`);
-    onSelectType(created);
+    if (launchNow) {
+      onSelectType(type);
+    }
   };
 
   return (
     <div className="space-y-6">
-      {/* Barre d'action supérieure avec recherche et ajout */}
+      {/* Barre d'action supérieure avec recherche et création */}
       <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -146,69 +178,15 @@ export default function InspectionMissionSelector({
           />
         </div>
 
-        {/* Modal d'extensibilité pour ajouter un nouveau type */}
-        <Dialog open={openNewTypeDialog} onOpenChange={setOpenNewTypeDialog}>
-          <DialogTrigger asChild>
-            <Button size="sm" variant="outline" className="text-xs font-semibold shrink-0 gap-1.5 border-dashed border-primary/40 hover:border-primary">
-              <Plus className="h-4 w-4 text-primary" />
-              <span>Nouveau type d'inspection</span>
-            </Button>
-          </DialogTrigger>
-          <DialogContent className="max-w-md">
-            <DialogHeader>
-              <DialogTitle className="text-base font-bold flex items-center gap-2">
-                <Sparkles className="h-4 w-4 text-primary" />
-                Ajouter un nouveau type de mission
-              </DialogTitle>
-            </DialogHeader>
-            <div className="space-y-4 pt-2">
-              <div>
-                <Label className="text-xs">Catégorie</Label>
-                <Select value={newTypeCat} onValueChange={(v: MissionCategory) => setNewTypeCat(v)}>
-                  <SelectTrigger className="text-xs mt-1">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="agriculture">Agriculture & Aménagement</SelectItem>
-                    <SelectItem value="elevage">Élevage & Zootechnie</SelectItem>
-                    <SelectItem value="machinisme">Machinisme & Travaux</SelectItem>
-                    <SelectItem value="autre">Autre service technique</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div>
-                <Label className="text-xs">Intitulé de la mission</Label>
-                <Input
-                  value={newTypeName}
-                  onChange={(e) => setNewTypeName(e.target.value)}
-                  placeholder="Ex: Inspection de station d'épuration agro..."
-                  className="text-xs mt-1"
-                />
-              </div>
-
-              <div>
-                <Label className="text-xs">Description & Objectif terrain</Label>
-                <Textarea
-                  value={newTypeDesc}
-                  onChange={(e) => setNewTypeDesc(e.target.value)}
-                  placeholder="Précisez les éléments clés à observer lors de cette mission..."
-                  className="text-xs mt-1"
-                  rows={3}
-                />
-              </div>
-
-              <div className="flex justify-end gap-2 pt-2 border-t">
-                <Button size="sm" variant="outline" onClick={() => setOpenNewTypeDialog(false)}>
-                  Annuler
-                </Button>
-                <Button size="sm" className="gradient-primary text-primary-foreground font-semibold" onClick={handleCreateCustomType}>
-                  Créer et générer le formulaire
-                </Button>
-              </div>
-            </div>
-          </DialogContent>
-        </Dialog>
+        {/* Bouton de génération de formulaire sur-mesure */}
+        <Button
+          size="sm"
+          onClick={handleOpenNewGenerator}
+          className="text-xs font-semibold shrink-0 gap-1.5 gradient-primary text-primary-foreground shadow-xs"
+        >
+          <Sparkles className="h-4 w-4" />
+          <span>Générer un formulaire personnalisé</span>
+        </Button>
       </div>
 
       {/* Filtres par catégories */}
@@ -216,6 +194,8 @@ export default function InspectionMissionSelector({
         {CATEGORIES.map((cat) => {
           const Icon = cat.icon;
           const isSelected = selectedCat === cat.id;
+          const count = cat.id === "custom" ? customCount : undefined;
+
           return (
             <button
               key={cat.id}
@@ -229,6 +209,11 @@ export default function InspectionMissionSelector({
             >
               <Icon className="h-3.5 w-3.5" />
               <span>{cat.label}</span>
+              {count !== undefined && count > 0 && (
+                <span className={`px-1.5 py-0.2 rounded-full text-[10px] ${isSelected ? "bg-white/20 text-white" : "bg-primary/10 text-primary"}`}>
+                  {count}
+                </span>
+              )}
             </button>
           );
         })}
@@ -239,14 +224,17 @@ export default function InspectionMissionSelector({
         {filteredTypes.map((type) => {
           const Icon = ICON_MAP[type.iconName] || Sprout;
           const isSelected = selectedTypeId === type.id;
+          const isCustom = !type.is_system;
 
           return (
             <Card
               key={type.id}
               onClick={() => onSelectType(type)}
-              className={`cursor-pointer transition-all duration-200 border hover:shadow-xs active:scale-[0.99] flex flex-col justify-between ${
+              className={`cursor-pointer transition-all duration-200 border hover:shadow-xs active:scale-[0.99] flex flex-col justify-between group ${
                 isSelected
                   ? "border-primary bg-primary/5 shadow-xs ring-1 ring-primary/40"
+                  : isCustom
+                  ? "border-primary/40 hover:border-primary bg-card/90"
                   : "border-border hover:border-primary/40 bg-card"
               }`}
             >
@@ -257,12 +245,22 @@ export default function InspectionMissionSelector({
                   }`}>
                     <Icon className="h-4 w-4" />
                   </div>
-                  <Badge
-                    variant="outline"
-                    className="text-[10px] font-semibold uppercase tracking-wider shrink-0 border-border"
-                  >
-                    {type.category}
-                  </Badge>
+                  <div className="flex items-center gap-1">
+                    {isCustom && (
+                      <Badge
+                        variant="secondary"
+                        className="text-[10px] font-bold bg-primary/10 text-primary border-primary/20 shrink-0"
+                      >
+                        Personnalisé
+                      </Badge>
+                    )}
+                    <Badge
+                      variant="outline"
+                      className="text-[10px] font-semibold uppercase tracking-wider shrink-0 border-border"
+                    >
+                      {type.category}
+                    </Badge>
+                  </div>
                 </div>
 
                 <div>
@@ -275,8 +273,44 @@ export default function InspectionMissionSelector({
                 </div>
 
                 <div className="pt-2 border-t border-border/50 flex items-center justify-between text-xs font-semibold text-primary">
-                  <span>Générer le formulaire</span>
-                  <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-1" />
+                  <span className="flex items-center gap-1">
+                    <span>Lancer la mission</span>
+                  </span>
+
+                  <div className="flex items-center gap-1">
+                    {isCustom && (
+                      <>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={(e) => handleEditCustomType(e, type)}
+                          className="h-7 px-1.5 text-muted-foreground hover:text-foreground"
+                          title="Modifier le modèle"
+                        >
+                          <Edit className="h-3.5 w-3.5" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={(e) => handleDeleteCustomType(e, type)}
+                          className="h-7 px-1.5 text-muted-foreground hover:text-destructive"
+                          title="Supprimer"
+                        >
+                          <Trash2 className="h-3.5 w-3.5" />
+                        </Button>
+                      </>
+                    )}
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={(e) => handleDuplicateType(e, type)}
+                      className="h-7 px-1.5 text-muted-foreground hover:text-primary"
+                      title="Dupliquer et personnaliser"
+                    >
+                      <Copy className="h-3.5 w-3.5" />
+                    </Button>
+                    <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-1 ml-1" />
+                  </div>
                 </div>
               </CardContent>
             </Card>
@@ -285,13 +319,39 @@ export default function InspectionMissionSelector({
       </div>
 
       {filteredTypes.length === 0 && (
-        <div className="p-8 text-center rounded-2xl bg-card border border-border space-y-2">
-          <p className="text-sm font-semibold text-foreground">Aucune mission trouvée pour "{search}"</p>
-          <p className="text-xs text-muted-foreground">
-            Utilisez le bouton "Nouveau type d'inspection" pour créer cette mission sur mesure.
-          </p>
+        <div className="p-8 text-center rounded-2xl bg-card border border-border space-y-3">
+          <div className="w-10 h-10 rounded-full bg-primary/10 text-primary flex items-center justify-center mx-auto">
+            <Sparkles className="h-5 w-5" />
+          </div>
+          <div>
+            <p className="text-sm font-semibold text-foreground">
+              {selectedCat === "custom"
+                ? "Vous n'avez pas encore créé de formulaire personnalisé"
+                : `Aucune mission trouvée pour "${search}"`}
+            </p>
+            <p className="text-xs text-muted-foreground mt-1 max-w-md mx-auto">
+              Utilisez le bouton "Générer un formulaire personnalisé" pour concevoir votre fiche sur-mesure ou dupliquez un modèle existant.
+            </p>
+          </div>
+          <Button
+            size="sm"
+            onClick={handleOpenNewGenerator}
+            className="gradient-primary text-primary-foreground text-xs font-bold gap-1.5 shadow-xs"
+          >
+            <Plus className="h-3.5 w-3.5" />
+            <span>Créer mon premier formulaire</span>
+          </Button>
         </div>
       )}
+
+      {/* Modal interactif du générateur de formulaire */}
+      <CustomFormGeneratorModal
+        open={openGeneratorModal}
+        onOpenChange={setOpenGeneratorModal}
+        editType={editingType}
+        editTemplate={editingTemplate}
+        onSaved={handleSavedForm}
+      />
     </div>
   );
 }
