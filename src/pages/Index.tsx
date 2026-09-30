@@ -40,8 +40,19 @@ import galleryDigital from "@/assets/gallery/digital-farming.jpg";
 import galleryIrrigation from "@/assets/gallery/irrigation.jpg";
 import galleryHarvest from "@/assets/gallery/harvest.jpg";
 import galleryFormation from "@/assets/gallery/formation.jpg";
+import galleryAgronomistTablet from "@/assets/gallery/agronomist-tablet.jpg";
+import galleryPartnerWarehouse from "@/assets/gallery/partner-warehouse.jpg";
+import galleryGpsSurveyor from "@/assets/gallery/gps-surveyor.jpg";
+import galleryPlantDiagnostic from "@/assets/gallery/plant-diagnostic.jpg";
+import galleryEngineeringQuote from "@/assets/gallery/engineering-quote.jpg";
+import galleryAerialParcels from "@/assets/gallery/aerial-parcels.jpg";
+import galleryTractorPlowing from "@/assets/gallery/tractor-plowing.jpg";
+import galleryFreshHarvest from "@/assets/gallery/fresh-harvest.jpg";
+import galleryVeterinaryCare from "@/assets/gallery/veterinary-care.jpg";
+import galleryAgriServices from "@/assets/gallery/agri-services.jpg";
+import galleryAgriFinance from "@/assets/gallery/agri-finance.jpg";
 
-// ── 1. Configuration des 4 Espaces Métiers ──
+// ── 1. Configuration des 4 Espaces Métiers (Images 100% Uniques) ──
 const SPACES_CONFIG = [
   {
     id: "experts",
@@ -56,7 +67,7 @@ const SPACES_CONFIG = [
     title: "Partenaires",
     path: "/dashboard/partenaire-abonnement",
     icon: Award,
-    image: galleryFormation,
+    image: galleryPartnerWarehouse,
     badge: "Fournisseurs & Banques",
   },
   {
@@ -72,29 +83,29 @@ const SPACES_CONFIG = [
     title: "Marketplace Intrants & Services",
     path: "/marketplace?cat=produits_agricoles&role=producteurs",
     icon: ShoppingBag,
-    image: galleryHarvest,
+    image: galleryFreshHarvest,
     badge: "Semences & Matériels",
   },
 ];
 
-// ── 2. Configuration des 6 Outils Intelligents avec Vraies Images Photographiques ──
+// ── 2. Configuration des 6 Outils Intelligents (Images 100% Uniques) ──
 const SMART_TOOLS = [
-  { id: "gps", word: "GPS", icon: MapPin, path: "/dashboard/scouting", image: galleryDigital },
+  { id: "gps", word: "GPS", icon: MapPin, path: "/dashboard/scouting", image: galleryGpsSurveyor },
   { id: "inspection", word: "Inspection", icon: ClipboardCheck, path: "/dashboard/smart-inspection", image: galleryFarmField },
-  { id: "diagnostic", word: "Diagnostic", icon: Cpu, path: "/dashboard/expert-diagnosis", image: galleryFormation },
+  { id: "diagnostic", word: "Diagnostic", icon: Cpu, path: "/dashboard/expert-diagnosis", image: galleryPlantDiagnostic },
   { id: "irrigation", word: "Irrigation", icon: Droplets, path: "/dashboard/genius", image: galleryIrrigation },
-  { id: "devis", word: "Devis", icon: FileText, path: "/dashboard/quote-requests", image: galleryHarvest },
-  { id: "cartographie", word: "Cartographie", icon: Layers, path: "/dashboard/expert-cartography", image: galleryLivestock },
+  { id: "devis", word: "Devis", icon: FileText, path: "/dashboard/quote-requests", image: galleryEngineeringQuote },
+  { id: "cartographie", word: "Cartographie", icon: Layers, path: "/dashboard/expert-cartography", image: galleryAerialParcels },
 ];
 
-// ── 3. Configuration des Catégories Marketplace Rapide (Accès Direct Placemarket) ──
+// ── 3. Configuration des Catégories Marketplace Rapide (Images 100% Uniques) ──
 const MARKET_CATEGORIES = [
-  { id: "machinisme", name: "Machinisme & Travaux", cat: "machinisme", path: "/marketplace?cat=machinisme&role=producteurs", icon: Tractor, image: galleryFarmField },
+  { id: "machinisme", name: "Machinisme & Travaux", cat: "machinisme", path: "/marketplace?cat=machinisme&role=producteurs", icon: Tractor, image: galleryTractorPlowing },
   { id: "agricole", name: "Produits Agricoles", cat: "produits_agricoles", path: "/marketplace?cat=produits_agricoles&role=producteurs", icon: Sprout, image: galleryHarvest },
-  { id: "elevage", name: "Produits d'Élevage", cat: "produits_elevage", path: "/marketplace?cat=produits_elevage&role=producteurs", icon: Beef, image: galleryLivestock },
-  { id: "services-agri", name: "Services Agricoles", cat: "services_agricoles", path: "/marketplace?cat=services_agricoles&role=producteurs", icon: Wrench, image: galleryFormation },
-  { id: "services-veto", name: "Services Vétérinaires", cat: "services_veterinaires", path: "/marketplace?cat=services_veterinaires&role=producteurs", icon: Stethoscope, image: galleryDigital },
-  { id: "finance", name: "Finance & Assurance", cat: "finance_assurance", path: "/marketplace?cat=finance_assurance&role=producteurs", icon: Landmark, image: galleryIrrigation },
+  { id: "elevage", name: "Produits d'Élevage", cat: "produits_elevage", path: "/marketplace?cat=produits_elevage&role=producteurs", icon: Beef, image: galleryVeterinaryCare },
+  { id: "services-agri", name: "Services Agricoles", cat: "services_agricoles", path: "/marketplace?cat=services_agricoles&role=producteurs", icon: Wrench, image: galleryAgriServices },
+  { id: "services-veto", name: "Services Vétérinaires", cat: "services_veterinaires", path: "/marketplace?cat=services_veterinaires&role=producteurs", icon: Stethoscope, image: galleryFormation },
+  { id: "finance", name: "Finance & Assurance", cat: "finance_assurance", path: "/marketplace?cat=finance_assurance&role=producteurs", icon: Landmark, image: galleryAgriFinance },
 ];
 
 const Index = () => {
@@ -141,12 +152,12 @@ const Index = () => {
       let img = galleryFormation;
       if (p.category === "fournisseur") {
         if (p.name.toLowerCase().includes("irrigation") || p.name.toLowerCase().includes("agrodia")) img = galleryIrrigation;
-        else if (p.name.toLowerCase().includes("semences") || p.name.toLowerCase().includes("tropicasem")) img = galleryHarvest;
-        else img = galleryFarmField;
+        else if (p.name.toLowerCase().includes("semences") || p.name.toLowerCase().includes("tropicasem")) img = galleryFreshHarvest;
+        else img = galleryPartnerWarehouse;
       } else if (p.category === "banque") {
-        img = galleryDigital;
+        img = galleryAgriFinance;
       } else if (p.category === "assurance") {
-        img = galleryLivestock;
+        img = galleryAgriServices;
       }
 
       return {
@@ -165,11 +176,11 @@ const Index = () => {
       ══════════════════════════════════════════════════════ */}
       <section className="relative h-screen min-h-[640px] w-full flex flex-col justify-between overflow-hidden">
         {/* Visuel Réel Plein Écran (Agronome sur le terrain avec tablette / drone) */}
-        <div className="absolute inset-0 z-0">
+        <div className="absolute inset-0 z-0 overflow-hidden">
           <img
-            src={galleryDigital}
+            src={galleryAgronomistTablet}
             alt="Agronome terrain NAFA-AGRITECH"
-            className="w-full h-full object-cover object-center scale-105 animate-in fade-in zoom-in-95 duration-1000"
+            className="w-full h-full object-cover object-center scale-105 animate-in fade-in zoom-in-95 duration-1000 transition-transform duration-1000 ease-out"
           />
           {/* Overlay Noir Charbon Dégradé pour Lisibilité Supérieure */}
           <div className="absolute inset-0 bg-gradient-to-b from-[#111827]/75 via-[#111827]/40 to-[#111827]/90" />
@@ -296,34 +307,36 @@ const Index = () => {
                 role="button"
                 tabIndex={0}
                 onKeyDown={(e) => e.key === "Enter" && navigate(space.path)}
-                className="group relative h-80 sm:h-96 rounded-[24px] overflow-hidden bg-[#111827] shadow-sm hover:shadow-2xl transition-all duration-300 hover:-translate-y-1.5 cursor-pointer flex flex-col justify-between p-6 border border-border/50"
+                className="group relative h-80 sm:h-96 rounded-[24px] overflow-hidden bg-[#111827] shadow-sm hover:shadow-2xl transition-all duration-500 hover:-translate-y-2 cursor-pointer flex flex-col justify-between p-6 border border-border/50"
               >
-                {/* Photo de fond représentative */}
+                {/* Photo de fond représentative avec zoom subtil */}
                 <img
                   src={space.image}
                   alt={space.title}
                   loading="lazy"
-                  className="absolute inset-0 w-full h-full object-cover object-center group-hover:scale-110 transition-transform duration-700"
+                  className="absolute inset-0 w-full h-full object-cover object-center group-hover:scale-110 group-hover:rotate-[0.5deg] transition-transform duration-700 ease-out"
                 />
+                {/* Effet shimmer lumineux balayant au survol */}
+                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000 pointer-events-none" />
                 {/* Gradient de Contraste Premium */}
                 <div className="absolute inset-0 bg-gradient-to-t from-[#111827] via-[#111827]/40 to-transparent" />
 
-                {/* Badge Supérieur */}
+                {/* Badge Supérieur Flottant */}
                 <div className="relative z-10 flex justify-between items-start">
-                  <Badge className="bg-white/90 text-[#111827] hover:bg-white text-[11px] font-bold px-3 py-1 rounded-full backdrop-blur-md shadow-xs">
+                  <Badge className="bg-white/95 text-[#111827] hover:bg-white text-[11px] font-bold px-3 py-1 rounded-full backdrop-blur-md shadow-sm animate-float-slow">
                     {space.badge}
                   </Badge>
-                  <div className="w-10 h-10 rounded-full bg-white/20 backdrop-blur-md text-white flex items-center justify-center group-hover:bg-[#F97316] transition-colors">
+                  <div className="w-10 h-10 rounded-full bg-white/20 backdrop-blur-md text-white flex items-center justify-center group-hover:bg-[#F97316] group-hover:scale-110 group-hover:rotate-6 transition-all duration-300 shadow-sm">
                     <Icon className="h-5 w-5" />
                   </div>
                 </div>
 
-                {/* Titre & Call to Action */}
+                {/* Titre & Call to Action avec transition fluide */}
                 <div className="relative z-10 space-y-3">
-                  <h3 className="text-xl sm:text-2xl font-heading font-extrabold text-white leading-snug drop-shadow-sm">
+                  <h3 className="text-xl sm:text-2xl font-heading font-extrabold text-white leading-snug drop-shadow-sm group-hover:text-white transition-colors">
                     {space.title}
                   </h3>
-                  <div className="inline-flex items-center gap-1.5 text-xs font-bold text-[#F97316] group-hover:translate-x-1 transition-transform">
+                  <div className="inline-flex items-center gap-1.5 text-xs font-bold text-[#F97316] group-hover:translate-x-2 transition-transform duration-300">
                     <span>Ouvrir l'espace</span>
                     <ChevronRight className="h-4 w-4" />
                   </div>
@@ -407,24 +420,26 @@ const Index = () => {
                   role="button"
                   tabIndex={0}
                   onKeyDown={(e) => e.key === "Enter" && navigate(tool.path)}
-                  className="group relative h-48 sm:h-56 rounded-[24px] overflow-hidden bg-[#111827] shadow-sm hover:shadow-2xl transition-all duration-500 hover:-translate-y-1.5 cursor-pointer flex flex-col justify-end p-4 border border-border/60 active:scale-95"
+                  className="group relative h-48 sm:h-56 rounded-[24px] overflow-hidden bg-[#111827] shadow-sm hover:shadow-2xl transition-all duration-500 hover:-translate-y-2 cursor-pointer flex flex-col justify-end p-4 border border-border/60 active:scale-95"
                 >
                   {/* Vraie image photographique haute fidélité */}
                   <img
                     src={tool.image}
                     alt={tool.word}
                     loading="lazy"
-                    className="absolute inset-0 w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 brightness-90 group-hover:brightness-100"
+                    className="absolute inset-0 w-full h-full object-cover group-hover:scale-115 group-hover:rotate-1 transition-transform duration-700 ease-out brightness-90 group-hover:brightness-105"
                   />
+                  {/* Effet shimmer lumineux balayant au survol */}
+                  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/15 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000 pointer-events-none" />
                   {/* Dégradé pour lisibilité parfaite */}
                   <div className="absolute inset-0 bg-gradient-to-t from-[#111827] via-[#111827]/50 to-transparent" />
 
                   {/* Badge & Titre avec vrai contraste */}
                   <div className="relative z-10 space-y-2">
-                    <div className="w-9 h-9 rounded-xl bg-white/20 backdrop-blur-md text-white flex items-center justify-center group-hover:bg-[#F97316] transition-colors shadow-xs">
+                    <div className="w-9 h-9 rounded-xl bg-white/20 backdrop-blur-md text-white flex items-center justify-center group-hover:bg-[#F97316] group-hover:scale-110 group-hover:rotate-6 transition-all duration-300 shadow-xs">
                       <Icon className="h-4 w-4" />
                     </div>
-                    <span className="font-heading font-extrabold text-sm sm:text-base text-white block group-hover:text-[#F97316] transition-colors drop-shadow-sm">
+                    <span className="font-heading font-extrabold text-sm sm:text-base text-white block group-hover:text-[#F97316] group-hover:translate-x-0.5 transition-all drop-shadow-sm">
                       {tool.word}
                     </span>
                   </div>
@@ -484,21 +499,23 @@ const Index = () => {
                 role="button"
                 tabIndex={0}
                 onKeyDown={(e) => e.key === "Enter" && navigate(targetPath)}
-                className="group relative h-48 sm:h-56 rounded-[24px] overflow-hidden bg-[#111827] shadow-sm hover:shadow-xl transition-all duration-300 hover:-translate-y-1 cursor-pointer flex flex-col justify-end p-4 border border-border/50"
+                className="group relative h-48 sm:h-56 rounded-[24px] overflow-hidden bg-[#111827] shadow-sm hover:shadow-2xl transition-all duration-500 hover:-translate-y-2 cursor-pointer flex flex-col justify-end p-4 border border-border/50 active:scale-95"
               >
                 <img
                   src={cat.image}
                   alt={cat.name}
                   loading="lazy"
-                  className="absolute inset-0 w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                  className="absolute inset-0 w-full h-full object-cover group-hover:scale-115 group-hover:rotate-1 transition-transform duration-700 ease-out brightness-90 group-hover:brightness-105"
                 />
+                {/* Effet shimmer lumineux balayant au survol */}
+                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/15 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000 pointer-events-none" />
                 <div className="absolute inset-0 bg-gradient-to-t from-[#111827] via-[#111827]/40 to-transparent" />
                 
                 <div className="relative z-10 space-y-1.5">
-                  <div className="w-8 h-8 rounded-lg bg-white/20 backdrop-blur-md text-white flex items-center justify-center group-hover:bg-[#F97316] transition-colors">
+                  <div className="w-8 h-8 rounded-lg bg-white/20 backdrop-blur-md text-white flex items-center justify-center group-hover:bg-[#F97316] group-hover:scale-110 group-hover:rotate-6 transition-all duration-300 shadow-xs">
                     <Icon className="h-4 w-4" />
                   </div>
-                  <h4 className="font-heading font-bold text-xs sm:text-sm text-white line-clamp-2 leading-tight">
+                  <h4 className="font-heading font-bold text-xs sm:text-sm text-white line-clamp-2 leading-tight group-hover:text-white transition-colors">
                     {cat.name}
                   </h4>
                 </div>
@@ -534,7 +551,7 @@ const Index = () => {
               {partnerDistanceMap.map((partner) => (
                 <div
                   key={partner.id}
-                  className="rounded-[24px] overflow-hidden bg-card border border-border/80 hover:border-[#F97316]/50 shadow-sm hover:shadow-lg transition-all duration-300 flex flex-col justify-between group"
+                  className="rounded-[24px] overflow-hidden bg-card border border-border/80 hover:border-[#F97316]/50 shadow-sm hover:shadow-2xl transition-all duration-500 hover:-translate-y-2 flex flex-col justify-between group"
                 >
                   {/* Photo */}
                   <div className="relative h-36 sm:h-44 overflow-hidden bg-muted">
@@ -542,10 +559,12 @@ const Index = () => {
                       src={partner.photo}
                       alt={partner.name}
                       loading="lazy"
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                      className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 ease-out"
                     />
+                    {/* Effet shimmer lumineux */}
+                    <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000 pointer-events-none" />
                     {partner.is_verified && (
-                      <div className="absolute top-3 right-3 bg-white/90 text-emerald-700 px-2 py-0.5 rounded-full text-[10px] font-bold flex items-center gap-1 backdrop-blur-md shadow-xs">
+                      <div className="absolute top-3 right-3 bg-white/90 text-emerald-700 px-2 py-0.5 rounded-full text-[10px] font-bold flex items-center gap-1 backdrop-blur-md shadow-xs animate-float-slow">
                         <ShieldCheck className="h-3 w-3 text-emerald-600" />
                         <span>Agréé</span>
                       </div>
