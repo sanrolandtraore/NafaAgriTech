@@ -57,6 +57,7 @@ const ExpertCartographyPage = lazy(() => import("./pages/dashboard/ExpertCartogr
 const ScoutingPage = lazy(() => import("./pages/dashboard/ScoutingPage"));
 const SmartInspectionPage = lazy(() => import("./pages/dashboard/SmartInspectionPage"));
 const UserProfilePage = lazy(() => import("./pages/dashboard/UserProfilePage"));
+const PublicExplorerPage = lazy(() => import("./pages/PublicExplorerPage"));
 const ExpertToolboxPage = lazy(() => import("./pages/dashboard/expert/ExpertToolboxPage"));
 const ExpertDiagnosisPage = lazy(() => import("./pages/dashboard/expert/ExpertDiagnosisPage"));
 const ExpertCalculatorPage = lazy(() => import("./pages/dashboard/expert/ExpertCalculatorPage"));
@@ -121,6 +122,8 @@ const App = () => (
               <Route path="/partenaire/:partnerId" element={<Suspense fallback={<PageLoader />}><PartnerStorefrontPage /></Suspense>} />
               <Route path="/partners/:partnerId" element={<Suspense fallback={<PageLoader />}><PartnerStorefrontPage /></Suspense>} />
               <Route path="/marketplace" element={<AuthProvider><Suspense fallback={<PageLoader />}><ServiceMarketplacePage /></Suspense></AuthProvider>} />
+              <Route path="/explorer" element={<AuthProvider><Suspense fallback={<PageLoader />}><PublicExplorerPage /></Suspense></AuthProvider>} />
+              <Route path="/fiches-techniques" element={<AuthProvider><Suspense fallback={<PageLoader />}><CropLibraryPage /></Suspense></AuthProvider>} />
               <Route element={<AuthProvider><><OfflineIndicator /><Outlet /></></AuthProvider>}>
                 <Route path="/auth" element={<Suspense fallback={<PageLoader />}><Auth /></Suspense>} />
                 <Route path="/dashboard" element={<ProtectedRoute><DashboardLayout /></ProtectedRoute>}>

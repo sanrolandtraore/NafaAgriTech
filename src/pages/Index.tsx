@@ -32,6 +32,7 @@ import {
   ShoppingBag
 } from "lucide-react";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { useAuth } from "@/contexts/AuthContext";
 import { partnerStorage, PartnerEntry } from "@/lib/partnerStorage";
 import Footer from "@/components/Footer";
 import logo from "@/assets/logo.png";
@@ -98,12 +99,12 @@ const SPACES_CONFIG = [
 
 // ── 2. Configuration des 6 Outils Intelligents (Images 100% Uniques) ──
 const SMART_TOOLS = [
-  { id: "gps", word: "GPS", icon: MapPin, realIcon: "gps", path: "/dashboard/scouting", image: galleryGpsSurveyor },
-  { id: "inspection", word: "Inspection", icon: ClipboardCheck, realIcon: "diagnostic", path: "/dashboard/smart-inspection", image: galleryFarmField },
-  { id: "diagnostic", word: "Diagnostic", icon: Cpu, realIcon: "diagnostic", path: "/dashboard/expert-diagnosis", image: galleryPlantDiagnostic },
-  { id: "irrigation", word: "Irrigation", icon: Droplets, realIcon: "irrigation", path: "/dashboard/genius", image: galleryIrrigation },
-  { id: "devis", word: "Devis", icon: FileText, realIcon: "quote", path: "/dashboard/quote-requests", image: galleryEngineeringQuote },
-  { id: "cartographie", word: "Cartographie", icon: Layers, realIcon: "cartography", path: "/dashboard/expert-cartography", image: galleryAerialParcels },
+  { id: "gps", word: "GPS", icon: MapPin, realIcon: "gps", path: "/dashboard/scouting", explorerTab: "gps", image: galleryGpsSurveyor },
+  { id: "inspection", word: "Inspection", icon: ClipboardCheck, realIcon: "diagnostic", path: "/dashboard/smart-inspection", explorerTab: "calculator", image: galleryFarmField },
+  { id: "diagnostic", word: "Diagnostic", icon: Cpu, realIcon: "diagnostic", path: "/dashboard/expert-diagnosis", explorerTab: "fiches", image: galleryPlantDiagnostic },
+  { id: "irrigation", word: "Irrigation", icon: Droplets, realIcon: "irrigation", path: "/dashboard/genius", explorerTab: "irrigation", image: galleryIrrigation },
+  { id: "devis", word: "Devis", icon: FileText, realIcon: "quote", path: "/dashboard/quote-requests", explorerTab: "calculator", image: galleryEngineeringQuote },
+  { id: "cartographie", word: "Cartographie", icon: Layers, realIcon: "cartography", path: "/dashboard/expert-cartography", explorerTab: "gps", image: galleryAerialParcels },
 ];
 
 // ── 3. Configuration des Catégories Marketplace Rapide (Images 100% Uniques) ──
@@ -118,6 +119,7 @@ const MARKET_CATEGORIES = [
 
 const Index = () => {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [partners, setPartners] = useState<PartnerEntry[]>(() => {
     try {
       return partnerStorage.getEntriesSync();
@@ -218,6 +220,15 @@ const Index = () => {
             <Button
               variant="outline"
               size="sm"
+              onClick={() => navigate("/explorer")}
+              className="rounded-[24px] bg-white/10 hover:bg-white/20 text-white border-white/20 backdrop-blur-md text-[11px] sm:text-xs font-semibold px-2.5 sm:px-4 flex items-center gap-1.5 transition-transform active:scale-95"
+            >
+              <Compass className="h-3.5 w-3.5 text-emerald-400" />
+              <span>Explorer</span>
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
               onClick={() => navigate("/auth?mode=login")}
               className="rounded-[24px] bg-white/10 hover:bg-white/20 text-white border-white/20 backdrop-blur-md text-[11px] sm:text-xs font-semibold px-2.5 sm:px-4"
             >
@@ -243,30 +254,24 @@ const Index = () => {
             <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
               <Button
                 size="lg"
-                onClick={() => navigate("/marketplace?role=producteurs")}
+                onClick={() => navigate("/explorer")}
                 className="w-full sm:w-auto bg-emerald-600 hover:bg-emerald-700 text-white font-heading font-extrabold text-base sm:text-lg px-8 sm:px-10 py-6 sm:py-7 rounded-[24px] shadow-2xl shadow-emerald-500/30 hover:scale-105 active:scale-95 transition-all duration-300 flex items-center justify-center gap-3"
               >
-                <Store className="h-5 w-5" />
-                <span>Marketplace Vitrine</span>
+                <Compass className="h-5 w-5" />
+                <span>Explorer NAFA-AGRITECH</span>
                 <ArrowRight className="h-5 w-5" />
               </Button>
               <Button
                 size="lg"
-                onClick={() => navigate("/dashboard/smart-inspection")}
+                onClick={() => navigate("/auth?mode=register")}
                 className="w-full sm:w-auto bg-[#F97316] hover:bg-[#ea580c] text-white font-heading font-extrabold text-base sm:text-lg px-7 sm:px-9 py-6 sm:py-7 rounded-[24px] shadow-2xl shadow-orange-500/30 hover:scale-105 active:scale-95 transition-all duration-300 flex items-center justify-center gap-2"
               >
-                <span>Commencer une mission</span>
+                <User className="h-5 w-5" />
+                <span>Créer mon compte gratuitement</span>
               </Button>
             </div>
-            <p className="text-xs text-white/80 font-medium">
-              Nouveau sur NAFA ?{" "}
-              <button
-                type="button"
-                onClick={() => navigate("/auth?mode=register")}
-                className="underline font-bold text-[#F97316] hover:text-white transition-colors"
-              >
-                S'inscrire
-              </button>
+            <p className="text-xs sm:text-sm text-white/90 font-medium max-w-xl mx-auto drop-shadow-sm">
+              Découvrez nos simulateurs et technologies en accès libre • Créez votre compte pour sauvegarder vos exploitations, parcelles et projets.
             </p>
           </div>
         </div>
@@ -305,15 +310,20 @@ const Index = () => {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
           {SPACES_CONFIG.map((space) => {
             const Icon = space.icon;
+            const targetPath = (space.id === "experts" && !user)
+              ? "/explorer?tab=calculator"
+              : (space.id === "partenaires" && !user)
+              ? "/marketplace?cat=finance_assurance&role=producteurs"
+              : space.path;
             return (
               <div
                 key={space.id}
-                onClick={() => navigate(space.path)}
-                onMouseEnter={() => prefetchRoute(space.path)}
-                onTouchStart={() => prefetchRoute(space.path)}
+                onClick={() => navigate(targetPath)}
+                onMouseEnter={() => prefetchRoute(targetPath)}
+                onTouchStart={() => prefetchRoute(targetPath)}
                 role="button"
                 tabIndex={0}
-                onKeyDown={(e) => e.key === "Enter" && navigate(space.path)}
+                onKeyDown={(e) => e.key === "Enter" && navigate(targetPath)}
                 className="group relative h-80 sm:h-96 rounded-[24px] overflow-hidden bg-[#111827] shadow-sm hover:shadow-2xl transition-all duration-500 hover:-translate-y-2 cursor-pointer flex flex-col justify-between p-6 border border-border/50"
               >
                 {/* Photo de fond représentative avec zoom subtil */}
@@ -423,15 +433,16 @@ const Index = () => {
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4 sm:gap-6">
             {SMART_TOOLS.map((tool) => {
               const Icon = tool.icon;
+              const targetPath = user ? tool.path : `/explorer?tab=${tool.explorerTab || "calculator"}`;
               return (
                 <div
                   key={tool.id}
-                  onClick={() => navigate(tool.path)}
-                  onMouseEnter={() => prefetchRoute(tool.path)}
-                  onTouchStart={() => prefetchRoute(tool.path)}
+                  onClick={() => navigate(targetPath)}
+                  onMouseEnter={() => prefetchRoute(targetPath)}
+                  onTouchStart={() => prefetchRoute(targetPath)}
                   role="button"
                   tabIndex={0}
-                  onKeyDown={(e) => e.key === "Enter" && navigate(tool.path)}
+                  onKeyDown={(e) => e.key === "Enter" && navigate(targetPath)}
                   className="group relative h-48 sm:h-56 rounded-[24px] overflow-hidden bg-[#111827] shadow-sm hover:shadow-2xl transition-all duration-500 hover:-translate-y-2 cursor-pointer flex flex-col justify-end p-4 border border-border/60 active:scale-95"
                 >
                   {/* Vraie image photographique haute fidélité */}
@@ -467,7 +478,7 @@ const Index = () => {
           <div className="flex justify-center pt-2">
             <Button
               size="lg"
-              onClick={() => navigate("/dashboard/field-designer")}
+              onClick={() => navigate(user ? "/dashboard/field-designer" : "/explorer?tab=calculator")}
               className="rounded-full bg-[#111827] dark:bg-white text-white dark:text-[#111827] hover:bg-[#F97316] dark:hover:bg-[#F97316] hover:text-white dark:hover:text-white font-bold text-xs sm:text-sm px-6 py-5 shadow-md flex items-center gap-2 transition-all active:scale-95"
             >
               <Compass className="h-4 w-4 text-[#F97316]" />
