@@ -47,7 +47,7 @@ describe("Architecture & Séparation Stricte des Rôles : Agriculteur vs Agronom
     expect(paths).toContain("/dashboard/parcels");
     expect(paths).toContain("/dashboard/scouting");
     expect(paths).toContain("/dashboard/inspections");
-    expect(paths).toContain("/dashboard/genius");
+    expect(paths).toContain("/dashboard/field-designer");
     expect(paths).toContain("/dashboard/expert-diagnosis");
     expect(paths).toContain("/dashboard/expert-prescriptions");
     expect(paths).toContain("/dashboard/expert-calculator");

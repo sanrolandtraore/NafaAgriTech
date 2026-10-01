@@ -40,9 +40,9 @@ describe("Accès à la Marketplace Vitrine depuis la page d'accueil", () => {
       </BrowserRouter>
     );
 
-    // 1. Boutons d'accès direct (Header & Hero)
+    // 1. Bouton d'accès direct Hero (retiré de la headbar pour épurer la navigation)
     const vitrineBtns = screen.getAllByRole("button", { name: /Marketplace Vitrine/i });
-    expect(vitrineBtns.length).toBeGreaterThanOrEqual(2);
+    expect(vitrineBtns.length).toBeGreaterThanOrEqual(1);
     fireEvent.click(vitrineBtns[0]);
     expect(mockNavigate).toHaveBeenCalledWith("/marketplace?role=producteurs");
 

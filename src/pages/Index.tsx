@@ -217,15 +217,6 @@ const Index = () => {
           </Link>
 
           <div className="flex items-center gap-1.5 sm:gap-2.5">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => navigate("/marketplace?role=producteurs")}
-              className="rounded-[24px] bg-emerald-600/30 hover:bg-emerald-600/50 text-white border-emerald-400/40 backdrop-blur-md text-[11px] sm:text-xs font-bold px-2.5 sm:px-4 flex items-center gap-1.5"
-            >
-              <Store className="h-3.5 w-3.5 text-emerald-300" />
-              <span className="hidden sm:inline">Marketplace</span> Vitrine
-            </Button>
             <ThemeToggle />
             <Button
               variant="outline"
