@@ -103,7 +103,7 @@ const SPACES_CONFIG = [
 const SMART_TOOLS = [
   { id: "gps", word: "GPS", icon: MapPin, realIcon: "gps", path: "/dashboard/scouting", image: galleryGpsSurveyor },
   { id: "inspection", word: "Inspection", icon: ClipboardCheck, realIcon: "diagnostic", path: "/dashboard/smart-inspection", image: galleryFarmField },
-  { id: "diagnostic", word: "Diagnostic", icon: Cpu, realIcon: "plantnet", path: "/dashboard/expert-diagnosis", image: galleryPlantDiagnostic },
+  { id: "diagnostic", word: "Diagnostic", icon: Cpu, realIcon: "diagnostic", path: "/dashboard/expert-diagnosis", image: galleryPlantDiagnostic },
   { id: "irrigation", word: "Irrigation", icon: Droplets, realIcon: "irrigation", path: "/dashboard/genius", image: galleryIrrigation },
   { id: "devis", word: "Devis", icon: FileText, realIcon: "quote", path: "/dashboard/quote-requests", image: galleryEngineeringQuote },
   { id: "cartographie", word: "Cartographie", icon: Layers, realIcon: "cartography", path: "/dashboard/expert-cartography", image: galleryAerialParcels },

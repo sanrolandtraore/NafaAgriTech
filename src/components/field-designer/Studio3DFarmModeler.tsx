@@ -713,7 +713,7 @@ export function Studio3DFarmModeler() {
     rendererRef.current.render(sceneRef.current, cameraRef.current);
     const dataUrl = rendererRef.current.domElement.toDataURL("image/png");
     const link = document.createElement("a");
-    link.download = `plan-ferme-3d-fincabout-${Date.now()}.png`;
+    link.download = `plan-ferme-3d-nafa-${Date.now()}.png`;
     link.href = dataUrl;
     link.click();
     toast.success("Rendu 3D haute définition exporté avec succès !");
@@ -746,7 +746,7 @@ export function Studio3DFarmModeler() {
         <div className="space-y-1">
           <div className="inline-flex items-center gap-2 px-3 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 text-xs font-bold">
             <Sparkles className="h-3.5 w-3.5" />
-            <span>Studio de Modélisation 3D • Inspiré Fincabout</span>
+            <span>Studio de Modélisation 3D • NAFA Field Designer</span>
           </div>
           <h2 className="text-xl sm:text-2xl font-heading font-black flex items-center gap-2.5">
             <Box className="h-6 w-6 text-[#F97316]" />

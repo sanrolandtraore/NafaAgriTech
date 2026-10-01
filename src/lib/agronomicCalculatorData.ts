@@ -1,6 +1,6 @@
 /**
- * Base de Données Agronomique pour Calculateur de Campagne (Inspiré de Fincabout & INERA/Sahel)
- * Données réelles calibrées pour l'Afrique de l'Ouest et les normes sahéliennes.
+ * Base de Données Agronomique pour Calculateur de Campagne NAFA Genius
+ * Données réelles calibrées pour l'Afrique de l'Ouest et les normes sahéliennes (INERA / Sahel / FAO).
  */
 
 export interface PhytoTreatment {
