@@ -30,11 +30,13 @@ export const Footer: React.FC = () => {
           ══════════════════════════════════════════ */}
           <div className="space-y-4">
             <Link to="/" className="inline-flex items-center gap-3 group">
-              <img
-                src={logo}
-                alt="NAFA-AGRITECH"
-                className="h-9 w-auto object-contain drop-shadow transition-transform group-hover:scale-105"
-              />
+              <div className="h-10 w-10 sm:h-11 sm:w-11 rounded-2xl overflow-hidden bg-white shadow-xs border border-white/20 p-1 flex items-center justify-center shrink-0 transition-transform group-hover:scale-105">
+                <img
+                  src={logo}
+                  alt="NAFA-AGRITECH"
+                  className="h-full w-full object-contain rounded-xl"
+                />
+              </div>
               <span className="font-heading font-extrabold text-white text-xl tracking-tight">
                 NAFA <span className="text-[#F97316]">- AGRITECH</span>
               </span>

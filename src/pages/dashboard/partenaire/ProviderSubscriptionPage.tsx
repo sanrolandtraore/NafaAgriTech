@@ -373,7 +373,7 @@ export default function ProviderSubscriptionPage() {
               key={plan.id}
               className={`relative flex flex-col justify-between rounded-2xl transition-all duration-200 ${
                 plan.popular
-                  ? "border-2 border-primary shadow-lg scale-[1.02] bg-card"
+                  ? "border-2 border-primary shadow-lg md:scale-[1.02] bg-card"
                   : "border border-border hover:border-primary/50"
               }`}
             >
