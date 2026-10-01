@@ -140,7 +140,7 @@ export default function ServicesPage() {
           <div>
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 text-xs font-bold mb-1 border border-emerald-500/20">
               <ShieldCheck className="h-3.5 w-3.5 text-emerald-600" />
-              <span>NAFA FIELD DESIGNER — Suite d'Ingénierie & d'Intervention Terrain</span>
+              <span>Suite d'Ingénierie & d'Intervention Terrain</span>
             </div>
 
             <h1 className="text-2xl sm:text-3xl font-heading font-black text-foreground flex items-center gap-2.5">

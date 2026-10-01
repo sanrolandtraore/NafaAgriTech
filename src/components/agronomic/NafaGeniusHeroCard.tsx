@@ -88,16 +88,7 @@ export const NafaGeniusHeroCard: React.FC<NafaGeniusHeroCardProps> = ({
           <div>
             <h2 className="text-2xl sm:text-3xl font-heading font-black tracking-tight flex items-center gap-2.5 flex-wrap">
               <span>NAFA FIELD DESIGNER</span>
-              <span className="text-xs px-2.5 py-0.5 rounded-full bg-emerald-500 text-white font-black tracking-wide">
-                (NAFA Genius Pro)
-              </span>
             </h2>
-            <p className="text-xs font-bold text-[#F97316] mt-0.5">
-              Remplace et surclasse NAFA Genius Pro • Le logiciel de conception et d’intervention terrain pour agronomes africains
-            </p>
-            <p className="text-sm sm:text-base font-medium text-white/90 mt-1">
-              Votre copilote d'ingénierie agricole certifié Sahel.
-            </p>
           </div>
 
           <p className="text-xs sm:text-sm text-gray-300 leading-relaxed">
