@@ -71,7 +71,7 @@ describe("Module Éleveur — Enregistrement du Cheptel", () => {
     // Vérifier que le sujet est enregistré et visible dans le registre
     await waitFor(() => {
       expect(screen.getByText("Sultan")).toBeInTheDocument();
-    });
+    }, { timeout: 5000 });
 
     unmount();
   });

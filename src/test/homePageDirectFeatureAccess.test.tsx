@@ -5,7 +5,7 @@ import Index from "@/pages/Index";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { AuthProvider } from "@/contexts/AuthContext";
 
-describe("Accès direct aux fonctionnalités à partir de la page d'accueil", () => {
+describe("Obligation de créer un compte pour utiliser les fonctionnalités", () => {
   beforeEach(() => {
     window.scrollTo = () => {};
     localStorage.clear();
@@ -30,7 +30,7 @@ describe("Accès direct aux fonctionnalités à partir de la page d'accueil", ()
     expect(screen.getByText("Cartographie")).toBeInTheDocument();
   });
 
-  it("permet à un visiteur non connecté d'accéder aux fonctionnalités sans blocage vers /auth (Mode Découverte Terrain)", async () => {
+  it("exige qu'un utilisateur crée d'abord un compte en le redirigeant vers /auth?mode=register pour utiliser les fonctionnalités", async () => {
     render(
       <MemoryRouter initialEntries={["/dashboard/smart-inspection"]}>
         <AuthProvider>
@@ -43,21 +43,22 @@ describe("Accès direct aux fonctionnalités à partir de la page d'accueil", ()
                 </ProtectedRoute>
               }
             />
-            <Route path="/auth" element={<div>Page Connexion</div>} />
+            <Route
+              path="/auth"
+              element={<div data-testid="auth-page">Création de compte requise / Connexion</div>}
+            />
           </Routes>
         </AuthProvider>
       </MemoryRouter>
     );
 
-    // Vérifie que l'utilisateur accède au contenu de la fonctionnalité
-    const content = await screen.findByTestId("feature-content", {}, { timeout: 10000 });
-    expect(content).toBeInTheDocument();
-
-    // Vérifie la présence du bandeau Mode Découverte Terrain
-    expect(screen.getByText(/Mode Découverte/i)).toBeInTheDocument();
+    // Vérifie que l'utilisateur non connecté est redirigé vers la page d'authentification pour créer son compte
+    const authPage = await screen.findByTestId("auth-page", {}, { timeout: 10000 });
+    expect(authPage).toBeInTheDocument();
+    expect(screen.queryByTestId("feature-content")).not.toBeInTheDocument();
   });
 
-  it("ouvre les services agronomiques directement en mode découverte pour un visiteur", async () => {
+  it("bloque l'accès aux services agronomiques tant que l'utilisateur n'a pas créé de compte ou ne s'est pas connecté", async () => {
     render(
       <MemoryRouter initialEntries={["/dashboard/services"]}>
         <AuthProvider>
@@ -70,14 +71,17 @@ describe("Accès direct aux fonctionnalités à partir de la page d'accueil", ()
                 </ProtectedRoute>
               }
             />
-            <Route path="/auth" element={<div>Page Connexion</div>} />
+            <Route
+              path="/auth"
+              element={<div data-testid="auth-page">Création de compte requise / Connexion</div>}
+            />
           </Routes>
         </AuthProvider>
       </MemoryRouter>
     );
 
-    const content = await screen.findByTestId("agronomic-services-content", {}, { timeout: 10000 });
-    expect(content).toBeInTheDocument();
-    expect(screen.getByText(/Mode Découverte/i)).toBeInTheDocument();
+    const authPage = await screen.findByTestId("auth-page", {}, { timeout: 10000 });
+    expect(authPage).toBeInTheDocument();
+    expect(screen.queryByTestId("agronomic-services-content")).not.toBeInTheDocument();
   });
 });

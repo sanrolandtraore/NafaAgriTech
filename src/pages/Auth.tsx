@@ -44,11 +44,14 @@ export default function Auth() {
   const { user, signInWithPhoneOtp, verifyPhoneOtp, signIn, signUp, signInOffline } = useAuth();
 
   // Redirection immédiate si déjà connecté
+  const redirectParam = searchParams.get("redirect");
+  const redirectTarget = redirectParam ? decodeURIComponent(redirectParam) : "/dashboard";
+
   useEffect(() => {
     if (user) {
-      navigate("/dashboard", { replace: true });
+      navigate(redirectTarget, { replace: true });
     }
-  }, [user, navigate]);
+  }, [user, navigate, redirectTarget]);
 
   // Mode principal : "whatsapp" (par défaut, ultra simple) ou "classic" (fallback mot de passe)
   const initialMode = searchParams.get("mode") === "register" || searchParams.get("mode") === "signup" ? "register" : "login";
@@ -172,7 +175,7 @@ export default function Auth() {
         toast.success("Connexion réussie !", {
           description: "Bon retour sur NAFA - AGRITECH !",
         });
-        navigate("/dashboard");
+        navigate(redirectTarget);
       }
     } catch (err: any) {
       toast.error("Erreur de vérification : " + (err?.message || "Erreur inconnue"));
@@ -218,7 +221,7 @@ export default function Auth() {
         toast.success("Bienvenue sur NAFA - AGRITECH !", {
           description: `Connecté en tant que ${waRole === "partenaire" ? PARTNER_PROFILES[waPartnerType]?.title || "Partenaire" : waRole}.`,
         });
-        navigate("/dashboard");
+        navigate(redirectTarget);
       }
     } catch (err: any) {
       toast.error("Erreur : " + (err?.message || "Erreur inconnue"));
@@ -271,7 +274,7 @@ export default function Auth() {
         else {
           VelocitySentinel.reset("auth_classic_" + authId);
           toast.success("Connexion hors-ligne réussie !");
-          navigate("/dashboard");
+          navigate(redirectTarget);
         }
         setLoading(false);
         return;
@@ -283,7 +286,7 @@ export default function Auth() {
       } else {
         VelocitySentinel.reset("auth_classic_" + authId);
         toast.success("Connexion réussie !");
-        navigate("/dashboard");
+        navigate(redirectTarget);
       }
     } else if (classicMode === "register") {
       if (!classicFullName.trim()) {
@@ -351,6 +354,21 @@ export default function Auth() {
           </CardHeader>
 
           <CardContent className="space-y-5 px-4 sm:px-6 pb-6">
+            {/* Bannière explicative d'obligation de création de compte */}
+            {redirectParam && (
+              <div className="p-3.5 rounded-2xl bg-gradient-to-r from-amber-500/15 via-orange-500/10 to-amber-500/15 border border-amber-500/40 text-amber-900 dark:text-amber-200 text-xs font-semibold flex items-center gap-2.5 shadow-xs">
+                <div className="w-8 h-8 rounded-xl bg-[#F97316]/20 text-[#F97316] flex items-center justify-center shrink-0">
+                  <Lock className="h-4 w-4" />
+                </div>
+                <div className="min-w-0">
+                  <p className="font-bold text-foreground">Création de compte requise</p>
+                  <p className="text-[11px] text-muted-foreground leading-relaxed">
+                    Pour utiliser les fonctionnalités et outils NAFA-AGRITECH, vous devez d'abord créer un compte gratuit ou vous connecter.
+                  </p>
+                </div>
+              </div>
+            )}
+
             {/* Onglets Principaux : Connexion / S'inscrire */}
             <div className="grid grid-cols-2 gap-1 p-1 rounded-xl bg-muted border border-border">
               <button
