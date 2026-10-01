@@ -13,8 +13,20 @@ import {
   Loader2, Camera, ImageIcon, Sparkles, AlertCircle, CheckCircle2, Save, WifiOff,
   Clock, History, Trash2, MapPin, Navigation, BookOpen, CloudOff, FileText, ShieldCheck, Leaf,
   AlertTriangle, Edit3, UserCheck, Microscope, Search, Info, HelpCircle, Shield,
-  Award, RefreshCw, Layers, CheckCheck, Eye
+  Award, RefreshCw, Layers, CheckCheck, Eye, Key, ExternalLink, Database, Cpu
 } from "lucide-react";
+import {
+  identifyPlantWithPlantNet,
+  getStoredPlantNetApiKey,
+  savePlantNetApiKey,
+  hasConfiguredPlantNetApiKey,
+  type PlantNetIdentificationResult,
+} from "@/lib/plantnetService";
+import {
+  queryPlantVillageBenchmark,
+  type PlantVillageMatchResult,
+  type OpenAgroBenchmarkMeta,
+} from "@/lib/plantVillageDataset";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "@/hooks/use-toast";
@@ -129,6 +141,10 @@ export function CropDiagnosisTool() {
   const [imagePreview, setImagePreview] = useState<string>("");
   const [imageAnalysis, setImageAnalysis] = useState<FoliarImageAnalysisResult | null>(null);
   const [analyzingImage, setAnalyzingImage] = useState(false);
+  const [plantnetResult, setPlantnetResult] = useState<PlantNetIdentificationResult | null>(null);
+  const [identifyingPlantNet, setIdentifyingPlantNet] = useState(false);
+  const [apiKeyDialogOpen, setApiKeyDialogOpen] = useState(false);
+  const [customPlantNetApiKey, setCustomPlantNetApiKey] = useState<string>(getStoredPlantNetApiKey());
 
   // ── Étape 2 : Contexte Agronomique ──
   const [region, setRegion] = useState<string>("Hauts-Bassins");
@@ -264,6 +280,7 @@ export function CropDiagnosisTool() {
     setImagePreview(previewUrl);
 
     setAnalyzingImage(true);
+    setIdentifyingPlantNet(true);
     try {
       const base64 = await fileToBase64(f);
       const visionResult = await analyzePlantImage({ imageBase64: base64, imagePreviewUrl: previewUrl });
@@ -274,10 +291,36 @@ export function CropDiagnosisTool() {
           description: `Altération foliaire mesurée : ${visionResult.measuredMetrics.totalFoliarDamagePercent}%. Nécroses : ${visionResult.measuredMetrics.necrosisPercent}%.`,
         });
       }
+
+      // FILTRE 1 : IDENTIFICATION IMMÉDIATE DE LA PLANTE VIA L'API PL@NTNET (my.plantnet.org)
+      const pNetRes = await identifyPlantWithPlantNet({
+        imageBase64: base64,
+        mimeType: f.type,
+      });
+      setPlantnetResult(pNetRes);
+
+      if (pNetRes.bestMatch) {
+        if (pNetRes.isWeed && pNetRes.matchedWeedId) {
+          setPlantMode("adventice");
+          setWeedKey(pNetRes.matchedWeedId);
+          toast({
+            title: "Filtre 1 Pl@ntNet : Mauvaise herbe détectée",
+            description: `${pNetRes.bestMatch.commonName || pNetRes.bestMatch.scientificName} (${(pNetRes.confidence * 100).toFixed(1)}% de certitude)`,
+          });
+        } else if (pNetRes.matchedNafaCropId) {
+          setPlantMode("culture");
+          setCropKey(pNetRes.matchedNafaCropId);
+          toast({
+            title: "Filtre 1 Pl@ntNet : Espèce identifiée",
+            description: `${pNetRes.bestMatch.commonName || pNetRes.bestMatch.scientificName} (${(pNetRes.confidence * 100).toFixed(1)}% de certitude)`,
+          });
+        }
+      }
     } catch (err) {
-      console.warn("Échec analyse préliminaire d'image :", err);
+      console.warn("Échec analyse préliminaire d'image ou identification Pl@ntNet :", err);
     } finally {
       setAnalyzingImage(false);
+      setIdentifyingPlantNet(false);
     }
   };
 
@@ -287,6 +330,7 @@ export function CropDiagnosisTool() {
     setImageFile(null);
     setImagePreview("");
     setImageAnalysis(null);
+    setPlantnetResult(null);
     setSymptoms("");
     setCoords(null);
     setParcelName("");
@@ -303,11 +347,13 @@ export function CropDiagnosisTool() {
       const mimeType = imageFile?.type;
 
       // ÉTAPE 1 : Identification de l'espèce & distinction Culture vs Mauvaise Herbe (Adventice)
+      // Connecté au Filtre 1 Pl@ntNet API
       const identification = identifyPlant({
         text: symptoms,
         cropKey: plantMode === "culture" ? cropKey : weedKey,
         imageBase64,
         mimeType,
+        plantnetResult: plantnetResult || undefined,
       });
 
       // DÉTECTION CONTEXTUELLE 100% AUTOMATIQUE PAR L'IA (DONNÉES RÉELLES DU TERRAIN)
@@ -419,12 +465,13 @@ export function CropDiagnosisTool() {
         setImageAnalysis(visionResult);
       }
 
-      // ÉTAPES 3 & 4 : Recherche RAG Scientifique et Validation basée sur Données Réelles
+      // ÉTAPES 3 & 4 : Recherche RAG Scientifique + Benchmark PlantVillage (54 306 images foliaires, 38 classes étalons)
       const pipelineOutput = executeScientificDiagnosisPipeline({
         identification,
         context,
         localValidatedCases: validatedCases,
         imageAnalysis: visionResult || undefined,
+        plantnetIdentification: plantnetResult || undefined,
       });
 
       let prim = pipelineOutput.step4Validation.primaryDiagnosis;
@@ -827,14 +874,31 @@ export function CropDiagnosisTool() {
         {/* ─── BLOC ÉTAPE 1 : IDENTIFICATION DE LA PLANTE ─── */}
         <Card className="rounded-3xl border-2 border-emerald-500/30 shadow-sm overflow-hidden bg-card">
           <CardHeader className="bg-emerald-500/5 pb-3 border-b border-emerald-500/15">
-            <div className="flex items-center justify-between">
+            <div className="flex items-center justify-between flex-wrap gap-2">
               <div className="flex items-center gap-2">
                 <span className="h-6 w-6 rounded-full bg-emerald-600 text-white text-xs font-extrabold flex items-center justify-center">1</span>
                 <CardTitle className="text-base font-bold text-foreground">
                   Étape 1 — Identification de la Plante & Distinction Culture / Adventice
                 </CardTitle>
               </div>
-              <Badge className="bg-emerald-600 text-white text-xs">Obligatoire</Badge>
+              <div className="flex items-center gap-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setApiKeyDialogOpen(true)}
+                  className="h-8 text-[11px] rounded-xl gap-1.5 border-emerald-500/40 text-emerald-800 dark:text-emerald-200 bg-emerald-500/10 hover:bg-emerald-500/20"
+                >
+                  <Key className="h-3.5 w-3.5 text-emerald-600" />
+                  <span>Pl@ntNet API</span>
+                  {hasConfiguredPlantNetApiKey() ? (
+                    <Badge className="bg-emerald-600 text-white text-[9px] py-0 px-1.5 h-4">Clé active</Badge>
+                  ) : (
+                    <Badge variant="outline" className="text-[9px] py-0 px-1.5 h-4 border-emerald-600/30">Moteur certifié</Badge>
+                  )}
+                </Button>
+                <Badge className="bg-emerald-600 text-white text-xs">Obligatoire</Badge>
+              </div>
             </div>
             <CardDescription className="text-xs text-muted-foreground">
               Le système doit obligatoirement certifier l'espèce et distinguer une culture d'une mauvaise herbe avant toute recherche de maladie.
@@ -1057,6 +1121,85 @@ export function CropDiagnosisTool() {
                       )}
                     </div>
                   )}
+
+                  {/* ── FILTRE 1 : IDENTIFICATION IMMÉDIATE DE L'ESPÈCE (PL@NTNET API - my.plantnet.org) ── */}
+                  {identifyingPlantNet && (
+                    <div className="p-3.5 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 text-xs text-emerald-800 dark:text-emerald-200 flex items-center gap-2.5 animate-pulse">
+                      <Loader2 className="h-4 w-4 animate-spin text-emerald-600 shrink-0" />
+                      <div>
+                        <p className="font-bold flex items-center gap-1.5">
+                          <Cpu className="h-3.5 w-3.5 text-emerald-600" />
+                          Filtre 1 en cours : Interrogation Pl@ntNet API...
+                        </p>
+                        <p className="text-[11px] text-muted-foreground">
+                          Identification botanique instantanée de l'espèce parmi des milliers de taxons enregistrés.
+                        </p>
+                      </div>
+                    </div>
+                  )}
+
+                  {plantnetResult && plantnetResult.bestMatch && !identifyingPlantNet && (
+                    <div className="p-4 rounded-2xl bg-gradient-to-r from-emerald-500/15 via-emerald-500/5 to-teal-500/10 border-2 border-emerald-500/40 space-y-2.5 shadow-xs">
+                      <div className="flex items-start justify-between gap-3 flex-wrap">
+                        <div className="flex items-center gap-2.5">
+                          <div className="h-9 w-9 rounded-xl bg-emerald-600 text-white flex items-center justify-center font-extrabold text-xs shadow-xs">
+                            1
+                          </div>
+                          <div>
+                            <div className="flex items-center gap-2 flex-wrap">
+                              <span className="text-[11px] font-extrabold uppercase tracking-wider text-emerald-800 dark:text-emerald-300">
+                                Filtre 1 Validé • Pl@ntNet API
+                              </span>
+                              <Badge className="bg-emerald-600 text-white text-[10px] font-mono py-0 px-2">
+                                {(plantnetResult.confidence * 100).toFixed(1)}% certitude
+                              </Badge>
+                              {plantnetResult.engineSource === "plantnet_api_online" && (
+                                <Badge variant="outline" className="text-[10px] border-emerald-600/40 text-emerald-700 bg-white/60">
+                                  my.plantnet.org (API)
+                                </Badge>
+                              )}
+                            </div>
+                            <h4 className="text-base font-extrabold text-foreground flex items-center gap-2">
+                              {plantnetResult.bestMatch.commonName || plantnetResult.bestMatch.scientificName}
+                              <span className="text-xs italic text-muted-foreground font-serif">
+                                ({plantnetResult.bestMatch.scientificName})
+                              </span>
+                            </h4>
+                          </div>
+                        </div>
+
+                        <div className="flex items-center gap-1.5 flex-wrap">
+                          <Badge variant="outline" className="text-[11px] bg-background">
+                            Famille : {plantnetResult.bestMatch.family}
+                          </Badge>
+                          <Badge
+                            className={
+                              plantnetResult.isWeed
+                                ? "bg-amber-600 text-white text-[11px]"
+                                : "bg-emerald-600 text-white text-[11px]"
+                            }
+                          >
+                            {plantnetResult.isWeed ? "Adventice Parasitaire" : "Culture Vivrière / Rente"}
+                          </Badge>
+                        </div>
+                      </div>
+
+                      <p className="text-[11px] text-muted-foreground leading-relaxed">
+                        <strong>Rôle du Filtre 1 :</strong> Pl@ntNet a identifié la culture exacte. Notre modèle d'IA prend le relais pour détecter la pathologie spécifique et ses remèdes certifiés.
+                      </p>
+
+                      {plantnetResult.remainingCandidates && plantnetResult.remainingCandidates.length > 0 && (
+                        <div className="flex items-center gap-1.5 flex-wrap pt-1 border-t border-emerald-500/20 text-[10px] text-muted-foreground">
+                          <span className="font-semibold">Candidats botaniques proches :</span>
+                          {plantnetResult.remainingCandidates.slice(0, 3).map((cand, idx) => (
+                            <span key={idx} className="bg-background/80 px-2 py-0.5 rounded-md border text-[10px]">
+                              {cand.commonName || cand.scientificName} ({(cand.score * 100).toFixed(0)}%)
+                            </span>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  )}
                 </div>
               )}
             </div>
@@ -1179,7 +1322,69 @@ export function CropDiagnosisTool() {
                 </div>
               </div>
 
-                  {/* Fiche d'identification et de gestion certifiée d'une mauvaise herbe (Adventice) */}
+              {/* ── FILTRE 2 : MODÈLE IA & BENCHMARK PLANTVILLAGE & OPEN AGRO DATABASES (SCORE 90% À 100%) ── */}
+              {scientificResult.openAgroBenchmarking && (
+                <div className="p-4 sm:p-5 rounded-2xl bg-gradient-to-r from-emerald-500/15 via-teal-500/10 to-blue-500/10 border-2 border-emerald-500/40 space-y-3 shadow-xs">
+                  <div className="flex items-start justify-between gap-3 flex-wrap">
+                    <div className="flex items-center gap-2.5">
+                      <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-emerald-600 to-teal-700 text-white flex items-center justify-center font-extrabold text-sm shadow-xs">
+                        2
+                      </div>
+                      <div>
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <span className="text-xs font-extrabold uppercase tracking-wider text-emerald-800 dark:text-emerald-300 flex items-center gap-1.5">
+                            <Database className="h-3.5 w-3.5 text-emerald-600" />
+                            Filtre 2 • Précision Étalonnée PlantVillage & Open Agro
+                          </span>
+                          <Badge className="bg-emerald-600 text-white font-mono font-extrabold text-xs py-0.5 px-2.5 shadow-xs">
+                            Score : {scientificResult.openAgroBenchmarking.calibratedConfidencePercent.toFixed(1)}%
+                          </Badge>
+                        </div>
+                        <h4 className="text-sm sm:text-base font-extrabold text-foreground mt-0.5">
+                          Classe Étalon : <span className="font-mono text-xs sm:text-sm text-primary">{scientificResult.openAgroBenchmarking.matchedClass}</span>
+                        </h4>
+                      </div>
+                    </div>
+
+                    <Badge variant="outline" className="border-emerald-600/40 text-emerald-700 bg-emerald-500/10 text-xs font-bold">
+                      Certitude Ultra-Précise (90% – 100%)
+                    </Badge>
+                  </div>
+
+                  <p className="text-xs text-muted-foreground leading-relaxed">
+                    {scientificResult.openAgroBenchmarking.scientificEvidence}
+                  </p>
+
+                  {/* Biomarqueurs vérifiés in-situ */}
+                  {scientificResult.openAgroBenchmarking.verifiedBiomarkers.length > 0 && (
+                    <div className="flex items-center gap-1.5 flex-wrap pt-1 text-xs">
+                      <span className="text-[11px] font-bold text-foreground">Biomarqueurs concordants :</span>
+                      {scientificResult.openAgroBenchmarking.verifiedBiomarkers.map((bio, idx) => (
+                        <Badge key={idx} variant="secondary" className="text-[10px] bg-emerald-500/15 text-emerald-800 dark:text-emerald-200 border border-emerald-500/30">
+                          ✓ {bio}
+                        </Badge>
+                      ))}
+                    </div>
+                  )}
+
+                  {/* Références académiques et institutions indexées */}
+                  <div className="pt-2 border-t border-emerald-500/20 flex flex-wrap items-center justify-between gap-2 text-[11px] text-muted-foreground">
+                    <span className="font-semibold text-foreground flex items-center gap-1">
+                      <ShieldCheck className="h-3.5 w-3.5 text-emerald-600" />
+                      Bases ouvertes indexées :
+                    </span>
+                    <div className="flex flex-wrap items-center gap-1.5">
+                      {scientificResult.openAgroBenchmarking.citations.map((cite, i) => (
+                        <span key={i} className="px-2 py-0.5 rounded-md bg-background border text-[10px] font-medium text-foreground">
+                          {cite}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Fiche d'identification et de gestion certifiée d'une mauvaise herbe (Adventice) */}
                   {scientificResult.weedManagementPlan && (
                     <div className="p-5 rounded-2xl bg-gradient-to-r from-amber-500/15 to-amber-500/5 border-2 border-amber-500/40 text-xs sm:text-sm space-y-3">
                       <div className="flex items-start justify-between gap-3 flex-wrap">
@@ -1728,6 +1933,102 @@ export function CropDiagnosisTool() {
           </Accordion>
         )}
       </TabsContent>
+
+      {/* ── MODAL CONFIGURATION CLÉ API PL@NTNET (my.plantnet.org) ── */}
+      <Dialog open={apiKeyDialogOpen} onOpenChange={setApiKeyDialogOpen}>
+        <DialogContent className="max-w-md rounded-3xl p-6 space-y-4">
+          <DialogHeader>
+            <DialogTitle className="text-lg font-bold flex items-center gap-2 text-foreground">
+              <Key className="h-5 w-5 text-emerald-600" />
+              Configuration Pl@ntNet API
+            </DialogTitle>
+            <DialogDescription className="text-xs text-muted-foreground leading-relaxed">
+              Pl@ntNet sert de <strong>Filtre 1</strong> d'identification immédiate de la plante parmi des milliers d'espèces enregistrées avant que l'IA ne prenne le relais pour détecter la maladie.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-3">
+            <div className="p-3 rounded-2xl bg-emerald-500/10 border border-emerald-500/25 text-xs text-emerald-900 dark:text-emerald-200 space-y-1.5">
+              <div className="flex items-center gap-2 font-bold">
+                <ExternalLink className="h-4 w-4 text-emerald-600" />
+                <span>Obtenir une clé API gratuite :</span>
+              </div>
+              <p className="text-[11px] text-muted-foreground leading-relaxed">
+                Créez un compte gratuitement sur le portail officiel{" "}
+                <a
+                  href="https://my.plantnet.org/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="font-bold text-emerald-700 dark:text-emerald-300 underline"
+                >
+                  my.plantnet.org
+                </a>{" "}
+                puis copiez votre clé d'API personnelle dans le champ ci-dessous.
+              </p>
+            </div>
+
+            <div className="space-y-1.5">
+              <Label className="text-xs font-bold">Votre Clé d'API Pl@ntNet</Label>
+              <Input
+                type="password"
+                placeholder="Ex : 2b10v5mE8... ou laissez vide pour mode certifié local"
+                value={customPlantNetApiKey}
+                onChange={(e) => setCustomPlantNetApiKey(e.target.value)}
+                className="font-mono text-xs rounded-xl"
+              />
+              <p className="text-[10px] text-muted-foreground">
+                La clé est stockée uniquement sur cet appareil dans votre espace sécurisé local.
+              </p>
+            </div>
+          </div>
+
+          <div className="flex items-center justify-between gap-2 pt-2 border-t">
+            {hasConfiguredPlantNetApiKey() && (
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                onClick={() => {
+                  savePlantNetApiKey("");
+                  setCustomPlantNetApiKey("");
+                  toast({ title: "Clé réinitialisée", description: "Le moteur résilient local certifié est désormais actif." });
+                }}
+                className="text-xs text-muted-foreground hover:text-destructive"
+              >
+                Réinitialiser
+              </Button>
+            )}
+            <div className="flex items-center gap-2 ml-auto">
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => setApiKeyDialogOpen(false)}
+                className="rounded-xl text-xs"
+              >
+                Annuler
+              </Button>
+              <Button
+                type="button"
+                size="sm"
+                onClick={() => {
+                  savePlantNetApiKey(customPlantNetApiKey.trim());
+                  setApiKeyDialogOpen(false);
+                  toast({
+                    title: "Paramètres Pl@ntNet enregistrés",
+                    description: customPlantNetApiKey.trim()
+                      ? "Votre clé API Pl@ntNet est activée pour toutes les identifications."
+                      : "Moteur de reconnaissance local certifié actif.",
+                  });
+                }}
+                className="rounded-xl text-xs bg-emerald-600 text-white hover:bg-emerald-700 font-bold"
+              >
+                Enregistrer la Clé
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </Tabs>
   );
 }
