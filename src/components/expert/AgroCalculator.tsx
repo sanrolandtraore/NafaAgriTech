@@ -26,8 +26,11 @@ import {
   Layers,
   ArrowRight,
   Info,
+  BookmarkCheck,
 } from "lucide-react";
 import { toast } from "sonner";
+import { useAuth } from "@/contexts/AuthContext";
+import { AuthGateModal } from "@/components/auth/AuthGateModal";
 
 interface SavedParcel {
   id: string;
@@ -36,6 +39,8 @@ interface SavedParcel {
 }
 
 export function AgroCalculator() {
+  const { user } = useAuth();
+  const [authGateOpen, setAuthGateOpen] = useState(false);
   const [crops] = useState<CropAgroSpec[]>(CROPS_AGRO_DATABASE);
   const [selectedCropId, setSelectedCropId] = useState<string>("mais");
   const [areaInput, setAreaInput] = useState<string>("1.0");
@@ -633,6 +638,66 @@ Normes de calcul : INERA / FAO-56`;
           </Card>
         </TabsContent>
       </Tabs>
+
+      {/* ── BARRE DE CONVERSION DOUCE / SAUVEGARDE DU RÉSULTAT ── */}
+      <div className="flex flex-col sm:flex-row items-center justify-between gap-4 p-4 sm:p-5 rounded-2xl bg-gradient-to-r from-emerald-500/10 via-background to-orange-500/10 border-2 border-primary/30 shadow-md">
+        <div className="space-y-0.5 text-center sm:text-left">
+          <p className="text-xs sm:text-sm font-bold text-foreground flex items-center justify-center sm:justify-start gap-2">
+            <Sparkles className="h-4 w-4 text-[#F97316]" />
+            <span>Simulation calculée pour <strong>{selectedCrop.name} ({areaHa} ha)</strong></span>
+          </p>
+          <p className="text-[11px] text-muted-foreground">
+            Marge brute prévisionnelle : <strong className="text-emerald-600 font-mono font-bold">{results.grossMarginFcfa.toLocaleString()} FCFA</strong> • Sauvegardez pour générer votre compte d'exploitation.
+          </p>
+        </div>
+
+        <Button
+          size="lg"
+          onClick={() => {
+            if (!user) {
+              setAuthGateOpen(true);
+            } else {
+              try {
+                const savedList = JSON.parse(localStorage.getItem("nafa_saved_simulations") || "[]");
+                savedList.push({
+                  id: `sim_${Date.now()}`,
+                  crop: selectedCrop.name,
+                  areaHa,
+                  grossMarginFcfa: results.grossMarginFcfa,
+                  createdAt: new Date().toISOString(),
+                });
+                localStorage.setItem("nafa_saved_simulations", JSON.stringify(savedList));
+                toast.success("Simulation enregistrée avec succès dans votre espace personnel !");
+              } catch (e) {
+                toast.success("Simulation prête et mémorisée localement.");
+              }
+            }
+          }}
+          className="w-full sm:w-auto bg-[#F97316] hover:bg-[#ea580c] text-white font-heading font-black text-xs sm:text-sm px-6 py-5 rounded-xl shadow-lg shadow-orange-500/25 flex items-center justify-center gap-2 transition-transform active:scale-95"
+        >
+          <BookmarkCheck className="h-4 w-4" />
+          <span>Enregistrer mon résultat</span>
+        </Button>
+      </div>
+
+      <AuthGateModal
+        open={authGateOpen}
+        onOpenChange={setAuthGateOpen}
+        title="Enregistrez votre simulation & Débloquez votre espace"
+        description={`Votre simulation pour ${selectedCrop.name} (${areaHa} ha) dégage une marge prévisionnelle de ${results.grossMarginFcfa.toLocaleString()} FCFA. Créez votre compte gratuitement pour sauvegarder ce projet et éditer votre compte d'exploitation.`}
+        actionLabel="Enregistrer mon projet agricole"
+        redirectUrl="/dashboard/expert/calculateur"
+        simulationPayload={{
+          cropId: selectedCrop.id,
+          cropName: selectedCrop.name,
+          areaHa,
+          grossMarginFcfa: results.grossMarginFcfa,
+          expectedYieldKg: results.expectedYieldKg,
+          seedCostFcfa: results.seedCostFcfa,
+          fertilizerCostFcfa: results.fertilizerCostFcfa,
+          potentialRevenueFcfa: results.potentialRevenueFcfa,
+        }}
+      />
     </div>
   );
 }

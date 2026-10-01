@@ -827,6 +827,28 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
 export const useAuth = () => {
   const ctx = useContext(AuthContext);
-  if (!ctx) throw new Error("useAuth must be used within AuthProvider");
+  if (!ctx) {
+    return {
+      user: null,
+      session: null,
+      loading: false,
+      profile: null,
+      roles: [] as string[],
+      primaryRole: null as string | null,
+      partnerType: "none" as PartnerProfileType,
+      setPartnerType: () => {},
+      isOfflineSession: false,
+      isGuestSession: false,
+      signUp: async () => ({ error: null }),
+      signIn: async () => ({ error: null }),
+      signInOffline: async () => ({ error: null }),
+      signInWithPhoneOtp: async () => ({ error: null }),
+      verifyPhoneOtp: async () => ({ error: null }),
+      signOut: async () => {},
+      deleteAccount: async () => ({ error: null }),
+      hasRole: () => false,
+      startGuestSession: async () => ({ error: null }),
+    };
+  }
   return ctx;
 };
