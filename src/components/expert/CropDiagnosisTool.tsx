@@ -9,6 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import { cn } from "@/lib/utils";
 import {
   Loader2, Camera, ImageIcon, Sparkles, AlertCircle, CheckCircle2, Save, WifiOff,
   Clock, History, Trash2, MapPin, Navigation, BookOpen, CloudOff, FileText, ShieldCheck, Leaf,
