@@ -490,6 +490,24 @@ export class CyberShieldSystem {
    */
   public static getQuarantineState(): QuarantineState | null {
     try {
+      if (typeof window !== "undefined") {
+        const hostname = window.location.hostname || "";
+        if (
+          hostname === "localhost" ||
+          hostname === "127.0.0.1" ||
+          hostname === "::1" ||
+          hostname.endsWith(".local") ||
+          hostname.startsWith("192.168.") ||
+          hostname.startsWith("10.") ||
+          hostname.includes("preview") ||
+          hostname.includes("webcontainer") ||
+          window.location.port !== ""
+        ) {
+          localStorage.removeItem(STORAGE_KEYS.QUARANTINE);
+          return null;
+        }
+      }
+
       const raw = localStorage.getItem(STORAGE_KEYS.QUARANTINE);
       if (!raw) return null;
       const state: QuarantineState = JSON.parse(raw);
@@ -596,6 +614,24 @@ export class CyberShieldSystem {
    */
   public static enforceFrameProtection(): boolean {
     if (typeof window === "undefined") return true;
+
+    // Ne jamais bloquer les environnements de développement, localhost, preview ou WebView IDE
+    const hostname = window.location.hostname || "";
+    const isLocalOrPreview =
+      hostname === "localhost" ||
+      hostname === "127.0.0.1" ||
+      hostname === "::1" ||
+      hostname.endsWith(".local") ||
+      hostname.startsWith("192.168.") ||
+      hostname.startsWith("10.") ||
+      hostname.includes("preview") ||
+      hostname.includes("webcontainer") ||
+      window.location.port !== "";
+
+    if (isLocalOrPreview) {
+      return true;
+    }
+
     try {
       if (window.top && window.top !== window.self) {
         // L'application est embarquée dans une iframe tierce non autorisée !
