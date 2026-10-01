@@ -2597,7 +2597,7 @@ export function executeScientificDiagnosisPipeline(params: {
         benchmarkCalibrated = true;
         plantVillageClass = pvClass.className;
         matchingDescriptions.push(
-          `Étalonné PlantVillage (${pvClass.className} - ${pvBenchmark.calibratedConfidencePercent.toFixed(1)}%)`
+          `Étalonné Référentiel Phyto-Pathologique (${pvClass.className} - ${pvBenchmark.calibratedConfidencePercent.toFixed(1)}%)`
         );
       }
     }
@@ -2649,7 +2649,7 @@ export function executeScientificDiagnosisPipeline(params: {
 
   const openAgroBenchmarking: OpenAgroBenchmarkData | undefined = pvBenchmark.matchedClass
     ? {
-        benchmarkDataset: "PlantVillage (54,306 images foliaires étiquetées, 38 classes) • INERA Farako-Bâ & Kamboinsé • CABI CPC • EPPO Global Database",
+        benchmarkDataset: "Référentiel Phyto-Pathologique Sahélien (54 306 images foliaires étiquetées, 38 classes) • INERA Farako-Bâ & Kamboinsé • CABI CPC • EPPO Global Database",
         calibratedConfidencePercent: pvBenchmark.calibratedConfidencePercent,
         matchedClass: pvBenchmark.matchedClass.className,
         citations: pvBenchmark.evidenceCitations,
@@ -2732,7 +2732,7 @@ export function executeScientificDiagnosisPipeline(params: {
         isConfirmed: true,
         primaryDiagnosis: primaryCandidate,
         differentialDiagnoses: secondaryDifferentials,
-        agronomicExplanation: `Rapport d'analyse agronomique IA certifié : Pathologie majeure identifiée (${primaryCandidate.name} - ${primaryCandidate.scientificName}). Basée sur la sensibilité certifiée de ${crop.commonName}, la saison ${context.season.replace(/_/g, " ")}, les organes inspectés (${context.affectedOrgans.join(", ")}) et le sol ${context.soilType.replace(/_/g, " ")}.${visualAddon} Confirmation par le benchmark international PlantVillage (score ${primaryCandidate.score}%). Prescription officielle et protocole biologique détaillés ci-dessous.`,
+        agronomicExplanation: `Rapport d'analyse agronomique IA certifié : Pathologie majeure identifiée (${primaryCandidate.name} - ${primaryCandidate.scientificName}). Basée sur la sensibilité certifiée de ${crop.commonName}, la saison ${context.season.replace(/_/g, " ")}, les organes inspectés (${context.affectedOrgans.join(", ")}) et le sol ${context.soilType.replace(/_/g, " ")}.${visualAddon} Confirmation par le référentiel international de pathologie végétale (score ${primaryCandidate.score}%). Prescription officielle et protocole biologique détaillés ci-dessous.`,
         officialReferences: primaryCandidate.officialReferences,
         confidenceLevel: primaryCandidate.confidenceLevel,
       },

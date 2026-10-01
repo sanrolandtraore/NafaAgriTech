@@ -97,9 +97,9 @@ export function generateAutoCadDxf(data: CadProjectExportData): string {
   defineLayer("0", 7); // Blanc
   defineLayer("CADASTRE_LIMITES", 2); // 2 = Jaune
   defineLayer("MNT_TOPOGRAPHIE", 30); // 30 = Orange terre
-  defineLayer("NETAFIM_ADDUCTION_PEHD", 4); // 4 = Cyan
-  defineLayer("NETAFIM_DISTRIBUTION", 140); // 140 = Bleu clair
-  defineLayer("NETAFIM_DRIP_RAMPES", 3); // 3 = Vert
+  defineLayer("HYDRAULIQUE_ADDUCTION_PEHD", 4); // 4 = Cyan
+  defineLayer("HYDRAULIQUE_DISTRIBUTION", 140); // 140 = Bleu clair
+  defineLayer("HYDRAULIQUE_DRIP_RAMPES", 3); // 3 = Vert
   defineLayer("OUVRAGES_EQUIPEMENTS", 1); // 1 = Rouge
   defineLayer("COTATIONS_DIMENSIONS", 5); // 5 = Bleu royal
   defineLayer("CARTOUCHE_ISO", 7); // 7 = Blanc/Noir
@@ -161,14 +161,14 @@ export function generateAutoCadDxf(data: CadProjectExportData): string {
     }
   }
 
-  // C. Canalisations Hydrauliques Netafim
+  // C. Canalisations Hydrauliques
   for (const pipe of data.pipes) {
     const layer =
       pipe.type === "principale"
-        ? "NETAFIM_ADDUCTION_PEHD"
+        ? "HYDRAULIQUE_ADDUCTION_PEHD"
         : pipe.type === "secondaire"
-        ? "NETAFIM_DISTRIBUTION"
-        : "NETAFIM_DRIP_RAMPES";
+        ? "HYDRAULIQUE_DISTRIBUTION"
+        : "HYDRAULIQUE_DRIP_RAMPES";
 
     add(0, "LINE");
     add(8, layer);
@@ -282,7 +282,7 @@ export function generateQgisGeoJson(data: CadProjectExportData): string {
     });
   });
 
-  // C. Réseau Hydraulique Netafim (Canalisations LineString)
+  // C. Réseau Hydraulique (Canalisations LineString)
   for (const pipe of data.pipes) {
     features.push({
       type: "Feature",
@@ -294,7 +294,7 @@ export function generateQgisGeoJson(data: CadProjectExportData): string {
         ],
       },
       properties: {
-        layer: "Reseau_Netafim_Canalisations",
+        layer: "Reseau_Hydraulique_Canalisations",
         id_troncon: pipe.id,
         materiau: pipe.material,
         diametre_nominal_mm: pipe.diameterMm,
@@ -303,7 +303,7 @@ export function generateQgisGeoJson(data: CadProjectExportData): string {
         debit_m3h: pipe.flowM3h || 6.5,
         vitesse_ms: pipe.velocityMs || 1.35,
         perte_charge_m: pipe.headLossM || 1.2,
-        reference_netafim: pipe.netafimRef || "NETAFIM-PIPE-HDPE-PE100",
+        reference_materiel: pipe.netafimRef || "PIPE-HDPE-PE100",
       },
     });
   }
@@ -321,7 +321,7 @@ export function generateQgisGeoJson(data: CadProjectExportData): string {
         id_equipement: eq.id,
         nom: eq.name,
         categorie: eq.category,
-        reference_netafim: eq.netafimRef || "NETAFIM-EQUIP-STD",
+        reference_materiel: eq.netafimRef || "EQUIP-STD",
         altitude_m: eq.z,
       },
     });
@@ -341,11 +341,11 @@ export function generateQgisGeoJson(data: CadProjectExportData): string {
 }
 
 /**
- * 3. NOMENCLATURE TECHNIQUE NETAFIM (BOM - Bill of Materials) AU FORMAT CSV
+ * 3. NOMENCLATURE TECHNIQUE MATÉRIELS (BOM - Bill of Materials) AU FORMAT CSV
  */
 export function generateNetafimBomCsv(data: CadProjectExportData): string {
   const rows: string[] = [
-    "Référence Netafim;Désignation Matériel;Catégorie;Diamètre/Spécification;Quantité;Unité;Prix Unit. (FCFA);Prix Total (FCFA);Fournisseur Agréé",
+    "Référence Matériel;Désignation Matériel;Catégorie;Diamètre/Spécification;Quantité;Unité;Prix Unit. (FCFA);Prix Total (FCFA);Fournisseur Agréé",
   ];
 
   // Regroupement des tuyaux par diamètre
@@ -361,13 +361,13 @@ export function generateNetafimBomCsv(data: CadProjectExportData): string {
         len: 0,
         mat: pipe.material,
         pn: pipe.nominalPressure,
-        ref: pipe.netafimRef || `NETAFIM-${pipe.material}-DN${pipe.diameterMm}`,
+        ref: pipe.netafimRef || `MAT-${pipe.material}-DN${pipe.diameterMm}`,
       };
     }
     pipeGroups[key].len += lengthM;
   }
 
-  // Tarifs indicatifs mercuriale Burkina Faso Netafim
+  // Tarifs indicatifs mercuriale Burkina Faso
   const getUnitPrice = (key: string): number => {
     if (key.includes("90")) return 3200;
     if (key.includes("75")) return 2600;
@@ -388,17 +388,17 @@ export function generateNetafimBomCsv(data: CadProjectExportData): string {
     );
   });
 
-  // Équipements de tête Netafim
+  // Équipements de tête de réseau
   const equipmentSpecs: Record<string, { desc: string; price: number; ref: string }> = {
     station_filtration: {
       desc: "Batterie filtration à disques manuelle SpinKlin 120 mesh / 130 microns",
       price: 485000,
-      ref: "NETAFIM-SPINKLIN-2D",
+      ref: "MAT-SPINKLIN-2D",
     },
     fertigation: {
       desc: "Kit injecteur Venturi de fertilisation proportionnelle 3/4\" avec débitmètre",
       price: 135000,
-      ref: "NETAFIM-VENTURI-KIT-75",
+      ref: "MAT-VENTURI-KIT-75",
     },
     pompe_solaire: {
       desc: "Pompe immergée solaire à rotor hélicoïdal avec onduleur MPPT intégré",
@@ -413,7 +413,7 @@ export function generateNetafimBomCsv(data: CadProjectExportData): string {
     vanne_secteur: {
       desc: "Vanne papillon / vanne à boule PVC pression Ø50 PN10 avec manomètre",
       price: 32000,
-      ref: "NETAFIM-BALL-VALVE-50",
+      ref: "MAT-BALL-VALVE-50",
     },
     serre: {
       desc: "Serre tunnel maraîchère tropicalisée 8x30m (240 m²) avec filet anti-insectes",
@@ -431,7 +431,7 @@ export function generateNetafimBomCsv(data: CadProjectExportData): string {
     const spec = equipmentSpecs[eq.category] || {
       desc: eq.name,
       price: 50000,
-      ref: eq.netafimRef || "NETAFIM-CUSTOM-PART",
+      ref: eq.netafimRef || "MAT-CUSTOM-PART",
     };
     rows.push(
       `${spec.ref};${spec.desc};Ouvrage d'ingénierie;${eq.category.toUpperCase()};1;unité;${spec.price};${spec.price};FASO SOLAIRE / SODIMEX`
@@ -440,3 +440,7 @@ export function generateNetafimBomCsv(data: CadProjectExportData): string {
 
   return "\uFEFF" + rows.join("\n");
 }
+
+export const generateNafaBomCsv = generateNetafimBomCsv;
+export const generateNafaCadDxf = generateAutoCadDxf;
+export const generateNafaGisGeoJson = generateQgisGeoJson;

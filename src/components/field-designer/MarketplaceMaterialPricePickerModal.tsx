@@ -123,7 +123,7 @@ export const MarketplaceMaterialPricePickerModal: React.FC<MarketplaceMaterialPr
             </DialogTitle>
           </div>
           <DialogDescription className="text-xs text-emerald-100/80">
-            Sélectionnez les matériaux certifiés aux tarifs réels du marché burkinabè (CIMBURKINA, Ciments du Faso, Faso Métal, Netafim, SOPLAST, Apex Solar).
+            Sélectionnez les matériaux certifiés aux tarifs réels du marché burkinabè (CIMBURKINA, Ciments du Faso, Faso Métal, Agrisahel, SOPLAST, Apex Solar).
           </DialogDescription>
           {targetLineDesignation && (
             <div className="mt-2.5 inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-amber-500/20 text-amber-300 text-xs font-semibold border border-amber-500/30">

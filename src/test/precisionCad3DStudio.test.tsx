@@ -157,7 +157,7 @@ describe("Moteur d'Export et Modélisation CAO / SIG / IRRICAD / Netafim", () =>
       expect(dxfContent).toContain("2\nLAYER");
       expect(dxfContent).toContain("CADASTRE_LIMITES");
       expect(dxfContent).toContain("MNT_TOPOGRAPHIE");
-      expect(dxfContent).toContain("NETAFIM_ADDUCTION_PEHD");
+      expect(dxfContent).toContain("HYDRAULIQUE_ADDUCTION_PEHD");
       expect(dxfContent).toContain("CARTOUCHE_ISO");
 
       // Entités graphiques (Lignes et Textes)
@@ -206,8 +206,8 @@ describe("Moteur d'Export et Modélisation CAO / SIG / IRRICAD / Netafim", () =>
     });
   });
 
-  describe("3. Nomenclature & Devis Netafim (BOM CSV)", () => {
-    it("génère un fichier CSV UTF-8 avec références cataloguées Netafim et calcul FCFA", () => {
+  describe("3. Nomenclature & Devis Matériaux (BOM CSV)", () => {
+    it("génère un fichier CSV UTF-8 avec références cataloguées certifiées et calcul FCFA", () => {
       const bomCsv = generateNetafimBomCsv(sampleProjectData);
       expect(bomCsv).toBeDefined();
 
@@ -215,10 +215,10 @@ describe("Moteur d'Export et Modélisation CAO / SIG / IRRICAD / Netafim", () =>
       expect(bomCsv.startsWith("\uFEFF")).toBe(true);
 
       // Colonnes officielles
-      expect(bomCsv).toContain("Référence Netafim;Désignation Matériel");
+      expect(bomCsv).toContain("Référence Matériel;Désignation Matériel");
 
-      // Références Netafim de référence
-      expect(bomCsv).toContain("NETAFIM-SPINKLIN-2D");
+      // Références de référence
+      expect(bomCsv).toContain("MAT-SPINKLIN-2D");
       expect(bomCsv).toContain("NAFA-TOWER-10M3-H6");
       expect(bomCsv).toContain("PEHD-PN10-DN63");
     });
@@ -230,33 +230,33 @@ describe("Moteur d'Export et Modélisation CAO / SIG / IRRICAD / Netafim", () =>
 
       // Titre et badges
       expect(screen.getByText(/Studio de Modélisation 2D\/3D & CAO d'Irrigation Ultra-Précise/i)).toBeInTheDocument();
-      expect(screen.getByText(/AutoCAD R12\/2000/i)).toBeInTheDocument();
-      expect(screen.getByText(/QGIS SIG UTM30N/i)).toBeInTheDocument();
-      expect(screen.getByText(/IRRICAD Hydraulic Solver/i)).toBeInTheDocument();
-      expect(screen.getByText(/Netafim Precision Drip/i)).toBeInTheDocument();
+      expect(screen.getByText(/Standard CAO DXF R12/i)).toBeInTheDocument();
+      expect(screen.getByText(/SIG Géodésique UTM30N/i)).toBeInTheDocument();
+      expect(screen.getByText(/Solveur Hydraulique NAFA/i)).toBeInTheDocument();
+      expect(screen.getByText(/Micro-Irrigation Certifiée/i)).toBeInTheDocument();
 
       // Vérification des 4 onglets
       expect(screen.getByRole("tab", { name: /1. Plan 2D d'Ingénierie/i })).toBeInTheDocument();
       expect(screen.getByRole("tab", { name: /2. Maquette 3D Interactive/i })).toBeInTheDocument();
-      expect(screen.getByRole("tab", { name: /3. Analyse Hydraulique IRRICAD/i })).toBeInTheDocument();
-      expect(screen.getByRole("tab", { name: /4. Nomenclature & Devis Netafim/i })).toBeInTheDocument();
+      expect(screen.getByRole("tab", { name: /3. Analyse Hydraulique & Réseau/i })).toBeInTheDocument();
+      expect(screen.getByRole("tab", { name: /4. Nomenclature & Devis Matériaux/i })).toBeInTheDocument();
     });
 
     it("affiche la Maquette 3D Interactive avec les modes de rendu", () => {
       renderWithProviders(<PrecisionCad3DStudio initialPresetId="bama" initialTab="maquette3d" />);
 
       expect(screen.getByText(/Vues Caméra :/i)).toBeInTheDocument();
-      expect(screen.getByText(/Haut \(QGIS\)/i)).toBeInTheDocument();
-      expect(screen.getByText(/Iso NE \(AutoCAD\)/i)).toBeInTheDocument();
+      expect(screen.getByText(/Haut \(SIG\)/i)).toBeInTheDocument();
+      expect(screen.getByText(/Iso NE \(CAO\)/i)).toBeInTheDocument();
 
       // Boutons de rendu
-      expect(screen.getByText(/Ombré CAD/i)).toBeInTheDocument();
-      expect(screen.getByText(/Filaire AutoCAD/i)).toBeInTheDocument();
-      expect(screen.getByText(/IRRICAD Heatmap/i)).toBeInTheDocument();
+      expect(screen.getByText(/Ombré CAO/i)).toBeInTheDocument();
+      expect(screen.getByText(/Filaire CAO/i)).toBeInTheDocument();
+      expect(screen.getByText(/Heatmap Hydraulique/i)).toBeInTheDocument();
       expect(screen.getByText(/MNT Relief/i)).toBeInTheDocument();
     });
 
-    it("calcule avec rigueur les paramètres hydrauliques IRRICAD dans l'onglet dédié", () => {
+    it("calcule avec rigueur les paramètres hydrauliques dans l'onglet dédié", () => {
       renderWithProviders(<PrecisionCad3DStudio initialPresetId="bama" initialTab="irricad" />);
 
       expect(screen.getByText(/Débit de secteur/i)).toBeInTheDocument();
@@ -266,12 +266,12 @@ describe("Moteur d'Export et Modélisation CAO / SIG / IRRICAD / Netafim", () =>
       expect(screen.getByText(/Hazen-Williams/i)).toBeInTheDocument();
     });
 
-    it("affiche le catalogue officiel Netafim et son bordereau chiffré", () => {
+    it("affiche le catalogue officiel des matériaux et son bordereau chiffré", () => {
       renderWithProviders(<PrecisionCad3DStudio initialPresetId="bama" initialTab="nomenclature" />);
 
-      expect(screen.getByText(/Nomenclature Officielle & Chiffrage Netafim/i)).toBeInTheDocument();
-      expect(screen.getByText(/NETAFIM-PE100-DN63/i)).toBeInTheDocument();
-      expect(screen.getByText(/NETAFIM-DRIPNET-16/i)).toBeInTheDocument();
+      expect(screen.getByText(/Nomenclature Officielle & Chiffrage Matériaux/i)).toBeInTheDocument();
+      expect(screen.getByText(/PEHD-PN10-DN63/i)).toBeInTheDocument();
+      expect(screen.getByText(/DRIP-PC-16/i)).toBeInTheDocument();
     });
 
     it("permet de changer de parcelle modèle (Koubri 3.2 ha) et actualise les calculs", async () => {

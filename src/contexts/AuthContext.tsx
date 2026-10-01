@@ -346,7 +346,15 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       }
     );
 
+    // Watchdog de sécurité résilient : débloque immédiatement l'application en max 1200ms
+    const sessionWatchdog = setTimeout(() => {
+      if (isMounted) {
+        setLoading(false);
+      }
+    }, 1200);
+
     supabase.auth.getSession().then(async ({ data: { session } }) => {
+      clearTimeout(sessionWatchdog);
       if (!isMounted) return;
       if (session?.user) {
         setSession(session);
@@ -377,6 +385,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         if (isMounted) setLoading(false);
       }
     }).catch(async () => {
+      clearTimeout(sessionWatchdog);
       if (!isMounted) return;
       if (!explicitSignOutRef.current) {
         await tryOfflineRestore(true);
@@ -413,6 +422,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
     return () => {
       isMounted = false;
+      clearTimeout(sessionWatchdog);
       subscription.unsubscribe();
       window.removeEventListener('online', handleOnline);
       window.removeEventListener("nafa-partner-type-updated", handlePartnerTypeEvent);

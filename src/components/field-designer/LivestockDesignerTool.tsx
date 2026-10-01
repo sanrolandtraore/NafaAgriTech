@@ -14,8 +14,10 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Home, Save, Sliders, CheckCircle2, Wrench, ShieldCheck, Box } from "lucide-react";
+import { Home, Save, Sliders, CheckCircle2, Wrench, ShieldCheck, Box, ShoppingBag, Tag, Sparkles } from "lucide-react";
 import { toast } from "sonner";
+import { MarketplaceMaterialPricePickerModal } from "./MarketplaceMaterialPricePickerModal";
+import { QuoteItem } from "@/types/fieldDesigner";
 
 interface LivestockDesignerToolProps {
   onSaveBuilding: (bld: FarmBuilding) => void;
@@ -73,7 +75,58 @@ export const LivestockDesignerTool: React.FC<LivestockDesignerToolProps> = ({
     updatedAt: new Date().toISOString(),
   };
 
+  // État des prix personnalisés Marketplace Burkina Faso
+  const [customPrices, setCustomPrices] = useState<Record<string, number>>({});
+  const [pickerModalOpen, setPickerModalOpen] = useState(false);
+  const [targetLineId, setTargetLineId] = useState<string | null>(null);
+  const [targetLineDesignation, setTargetLineDesignation] = useState<string | null>(null);
+
   const boq = generateBuildingBillOfQuantities(tempBuilding);
+
+  // Articles avec prix appliqués depuis le marketplace
+  const computedItems: QuoteItem[] = React.useMemo(() => {
+    return boq.items.map((it, idx) => {
+      const lineKey = it.id || `line_${idx}`;
+      const customP = customPrices[lineKey];
+      if (customP !== undefined) {
+        return {
+          ...it,
+          id: lineKey,
+          unitPriceFCFA: customP,
+          totalFCFA: Math.round(it.quantity * customP),
+        };
+      }
+      return {
+        ...it,
+        id: lineKey,
+      };
+    });
+  }, [boq.items, customPrices]);
+
+  const totalMaterialsFCFA = React.useMemo(() => {
+    return computedItems.reduce((acc, it) => acc + it.totalFCFA, 0);
+  }, [computedItems]);
+
+  const totalGeneralFCFA = totalMaterialsFCFA + boq.laborCostFCFA + boq.transportCostFCFA;
+
+  const handleApplyMarketplacePrice = (
+    lineId: string,
+    newPriceFCFA: number,
+    _designation?: string,
+    _unit?: string
+  ) => {
+    setCustomPrices((prev) => ({
+      ...prev,
+      [lineId]: newPriceFCFA,
+    }));
+    toast.success(`Prix réel appliqué : ${newPriceFCFA.toLocaleString("fr-FR")} FCFA`);
+  };
+
+  const handleOpenPickerForLine = (lineId: string, designation: string) => {
+    setTargetLineId(lineId);
+    setTargetLineDesignation(designation);
+    setPickerModalOpen(true);
+  };
 
   const handleApplyPreset = (type: BuildingType, sub: string, cap: number) => {
     setBuildingType(type);
@@ -95,7 +148,7 @@ export const LivestockDesignerTool: React.FC<LivestockDesignerToolProps> = ({
       id: `bld_${Date.now()}_${Math.random().toString(36).substr(2, 6)}`,
     };
     onSaveBuilding(finalBuilding);
-    toast.success(`Bâtiment « ${finalBuilding.name} » enregistré avec ses métrés.`);
+    toast.success(`Bâtiment « ${finalBuilding.name} » enregistré avec ses métrés et prix réels.`);
   };
 
   return (
@@ -258,23 +311,56 @@ export const LivestockDesignerTool: React.FC<LivestockDesignerToolProps> = ({
 
           {/* ── MÉTRÉS AUTOMATIQUES & MATÉRIAUX ESTIMÉS ── */}
           <div className="space-y-3">
-            <span className="font-bold text-xs uppercase tracking-wider block text-primary">
-              Métrés & Estimation des Matériaux (Prix Réels Burkina Faso)
-            </span>
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+              <span className="font-bold text-xs uppercase tracking-wider block text-primary">
+                Métrés &amp; Estimation des Matériaux (Prix Réels Burkina Faso)
+              </span>
+              <Button
+                type="button"
+                size="sm"
+                variant="outline"
+                onClick={() => {
+                  setTargetLineId(null);
+                  setTargetLineDesignation(null);
+                  setPickerModalOpen(true);
+                }}
+                className="h-8 text-xs font-semibold gap-1.5 border-emerald-500/40 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-500/10 rounded-xl"
+              >
+                <ShoppingBag className="h-3.5 w-3.5 text-emerald-600" />
+                <span>Sélectionner Prix Réels Marketplace (BF)</span>
+              </Button>
+            </div>
 
             <div className="rounded-2xl border overflow-hidden">
               <div className="bg-muted/60 p-2.5 text-xs font-bold grid grid-cols-12 gap-2">
-                <span className="col-span-6">Désignation du matériau</span>
-                <span className="col-span-2 text-center">Unité</span>
-                <span className="col-span-2 text-right">Quantité</span>
+                <span className="col-span-5">Désignation du matériau</span>
+                <span className="col-span-1 text-center">Unité</span>
+                <span className="col-span-1 text-center">Qté</span>
+                <span className="col-span-3 text-right">P.U. Marketplace</span>
                 <span className="col-span-2 text-right">Montant (F)</span>
               </div>
-              <div className="divide-y divide-border/60 max-h-56 overflow-y-auto bg-card text-xs">
-                {boq.items.map((item, idx) => (
-                  <div key={idx} className="p-2.5 grid grid-cols-12 gap-2 items-center">
-                    <span className="col-span-6 font-medium truncate">{item.designation}</span>
-                    <span className="col-span-2 text-center text-muted-foreground">{item.unit}</span>
-                    <span className="col-span-2 text-right font-mono font-bold">{item.quantity}</span>
+              <div className="divide-y divide-border/60 max-h-64 overflow-y-auto bg-card text-xs">
+                {computedItems.map((item, idx) => (
+                  <div key={item.id || idx} className="p-2.5 grid grid-cols-12 gap-2 items-center hover:bg-muted/20">
+                    <span className="col-span-5 font-medium truncate">{item.designation}</span>
+                    <span className="col-span-1 text-center text-muted-foreground">{item.unit}</span>
+                    <span className="col-span-1 text-center font-mono font-bold">{item.quantity}</span>
+                    <div className="col-span-3 flex items-center justify-end gap-1.5">
+                      <span className="font-mono text-muted-foreground text-[11px]">
+                        {item.unitPriceFCFA.toLocaleString("fr-FR")} F
+                      </span>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleOpenPickerForLine(item.id, item.designation)}
+                        className="h-6 px-1.5 text-[10px] font-semibold gap-1 text-emerald-700 dark:text-emerald-400 hover:bg-emerald-500/10 shrink-0"
+                        title="Choisir le prix réel certifié sur le Marketplace"
+                      >
+                        <Tag className="h-3 w-3" />
+                        Prix Réel
+                      </Button>
+                    </div>
                     <span className="col-span-2 text-right font-mono font-bold text-primary">
                       {item.totalFCFA.toLocaleString("fr-FR")} F
                     </span>
@@ -282,9 +368,9 @@ export const LivestockDesignerTool: React.FC<LivestockDesignerToolProps> = ({
                 ))}
               </div>
               <div className="bg-primary/10 p-3 flex items-center justify-between text-xs font-bold border-t">
-                <span>Total Estimé Matériaux & Pose :</span>
+                <span>Total Estimé Matériaux &amp; Pose :</span>
                 <span className="text-sm font-mono font-black text-primary">
-                  {boq.totalGeneralFCFA.toLocaleString("fr-FR")} FCFA
+                  {totalGeneralFCFA.toLocaleString("fr-FR")} FCFA
                 </span>
               </div>
             </div>
@@ -295,8 +381,24 @@ export const LivestockDesignerTool: React.FC<LivestockDesignerToolProps> = ({
             className="w-full h-13 rounded-2xl font-black text-sm bg-amber-600 hover:bg-amber-700 text-white gap-2"
           >
             <Save className="h-5 w-5" />
-            Enregistrer ce Bâtiment & ses Métrés
+            Enregistrer ce Bâtiment &amp; ses Métrés
           </Button>
+
+          {/* Modale de Sélection des Prix Réels Marketplace */}
+          <MarketplaceMaterialPricePickerModal
+            open={pickerModalOpen}
+            onOpenChange={setPickerModalOpen}
+            targetLineId={targetLineId}
+            targetLineDesignation={targetLineDesignation}
+            onAddItem={(newItem) => {
+              setCustomPrices((prev) => ({
+                ...prev,
+                [newItem.id]: newItem.unitPriceFCFA,
+              }));
+              toast.success(`Matériau « ${newItem.designation} » appliqué au projet !`);
+            }}
+            onApplyPriceToLine={handleApplyMarketplacePrice}
+          />
         </CardContent>
       </Card>
     </div>
