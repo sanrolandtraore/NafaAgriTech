@@ -89,7 +89,7 @@ describe("Exigence Métier : Séparation des rôles Agriculteur vs Agronome & Co
     expect(paths).toContain("/dashboard/parcels");
     expect(paths).toContain("/dashboard/scouting");
     expect(paths).toContain("/dashboard/inspections");
-    expect(paths).toContain("/dashboard/genius");
+    expect(paths).toContain("/dashboard/field-designer");
     expect(paths).toContain("/dashboard/expert-diagnosis");
     expect(paths).toContain("/dashboard/expert-prescriptions");
     expect(paths).toContain("/dashboard/expert-calculator");
