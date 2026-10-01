@@ -191,8 +191,6 @@ export default function PartenaireDashboard() {
     const defaultCat =
       partnerType === "fournisseur_intrants"
         ? "intrants"
-        : partnerType === "machinisme_travaux"
-        ? "materiel"
         : partnerType === "sante_animale"
         ? "veterinaire"
         : partnerType === "banque_microfinance"

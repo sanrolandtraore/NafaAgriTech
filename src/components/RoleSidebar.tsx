@@ -41,11 +41,12 @@ export const eleveurNav: NavItem[] = [
   { to: "/dashboard/settings", labelKey: "Paramètres", icon: Settings },
 ];
 
-/** 1. Profil Partenaire : Fournisseur d'Intrants & Semences */
+/** 1. Profil Partenaire : Fournisseur d'Intrants, Matériel & Équipements */
 export const fournisseurNav: NavItem[] = [
   { to: "/dashboard", labelKey: "Tableau de bord", icon: LayoutDashboard },
   { to: "/dashboard/partner-space", labelKey: "Mon Espace Partenaire (Offres & Devis)", icon: Building2, section: "Visibilité & Gestion" },
   { to: "/dashboard/partenaire-mes-offres", labelKey: "Mes offres & Ventes", icon: Store, section: "Vente & Intrants" },
+  { to: "/dashboard/marketplace?cat=machinisme", labelKey: "Matériel & Intrants (Vente & Location)", icon: Tractor, section: "Vente & Intrants" },
   { to: "/dashboard/quote-requests", labelKey: "Demandes de devis", icon: FileText, section: "Vente & Intrants" },
   { to: "/dashboard/provider-clients", labelKey: "Portefeuille Clients", icon: Users, section: "Vente & Intrants" },
   { to: "/dashboard/revenus", labelKey: "Chiffre d'affaires & Recettes", icon: Wallet, section: "Vente & Intrants" },
@@ -55,20 +56,8 @@ export const fournisseurNav: NavItem[] = [
   { to: "/dashboard/settings", labelKey: "Paramètres", icon: Settings, section: "Visibilité & Gestion" },
 ];
 
-/** 2. Profil Partenaire : Machinisme & Travaux Agricoles (Prestations & Chantiers) */
-export const machinismeNav: NavItem[] = [
-  { to: "/dashboard", labelKey: "Tableau de bord", icon: LayoutDashboard },
-  { to: "/dashboard/partner-space", labelKey: "Mon Espace Partenaire (Offres & Devis)", icon: Building2, section: "Visibilité & Gestion" },
-  { to: "/dashboard/marketplace?cat=machinisme", labelKey: "Matériel & Intrants (Vente & Location)", icon: Tractor, section: "Flotte & Chantiers" },
-  { to: "/dashboard/missions", labelKey: "Missions & Travaux", icon: Briefcase, section: "Flotte & Chantiers" },
-  { to: "/dashboard/interventions", labelKey: "Interventions terrain", icon: ClipboardList, section: "Flotte & Chantiers" },
-  { to: "/dashboard/quote-requests", labelKey: "Demandes de devis", icon: FileText, section: "Flotte & Chantiers" },
-  { to: "/dashboard/provider-clients", labelKey: "Portefeuille Clients", icon: Users, section: "Flotte & Chantiers" },
-  { to: "/dashboard/revenus", labelKey: "Chiffre d'affaires & Recettes", icon: Wallet, section: "Flotte & Chantiers" },
-  { to: "/dashboard/partenaire-kyc", labelKey: "Vérification KYC & Certification", icon: BadgeCheck, section: "Visibilité & Gestion" },
-  { to: "/dashboard/partenaire-abonnement", labelKey: "Abonnement partenaire", icon: Sparkles, section: "Visibilité & Gestion" },
-  { to: "/dashboard/settings", labelKey: "Paramètres", icon: Settings, section: "Visibilité & Gestion" },
-];
+/** Alias de rétrocompatibilité : le module Machinisme & Travaux est consolidé dans Intrants & Matériel */
+export const machinismeNav: NavItem[] = fournisseurNav;
 
 /** 3. Profil Cabinet d'Agronomie & Conseil Technique (Suite complète des outils techniques) */
 export const agronomeNav: NavItem[] = [
@@ -183,7 +172,6 @@ export const roleIcons: Record<string, React.ElementType> = {
 
 export const partnerTypeIcons: Record<PartnerProfileType, React.ElementType> = {
   fournisseur_intrants: FlaskConical,
-  machinisme_travaux: Tractor,
   expert_agronome: Microscope,
   elevage_veterinaire: Beef,
   institution_agri: Landmark,
@@ -285,8 +273,7 @@ export function getNavForRole(role: string | null, partnerType?: string | null):
     case "partenaire":
       if (partnerType === "expert_agronome") return { main: agronomeNav };
       if (partnerType === "elevage_veterinaire") return { main: veterinaireNav };
-      if (partnerType === "fournisseur_intrants") return { main: fournisseurNav };
-      if (partnerType === "machinisme_travaux") return { main: machinismeNav };
+      if (partnerType === "fournisseur_intrants" || partnerType === "machinisme_travaux") return { main: fournisseurNav };
       if (partnerType === "institution_agri") return { main: institutionNav };
       return { main: partenaireNav };
     case "formation":
@@ -295,8 +282,7 @@ export function getNavForRole(role: string | null, partnerType?: string | null):
     default:
       if (partnerType === "expert_agronome") return { main: agronomeNav };
       if (partnerType === "elevage_veterinaire") return { main: veterinaireNav };
-      if (partnerType === "fournisseur_intrants") return { main: fournisseurNav };
-      if (partnerType === "machinisme_travaux") return { main: machinismeNav };
+      if (partnerType === "fournisseur_intrants" || partnerType === "machinisme_travaux") return { main: fournisseurNav };
       if (partnerType === "institution_agri") return { main: institutionNav };
       return { main: partenaireNav };
   }
