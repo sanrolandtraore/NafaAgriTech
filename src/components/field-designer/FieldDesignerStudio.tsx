@@ -642,7 +642,13 @@ export const FieldDesignerStudio: React.FC = () => {
 
         {/* ── 6B. MODÉLISATION 3D D'AMÉNAGEMENT DE FERME (NAFA 3D STUDIO) ── */}
         <TabsContent value="modeler3d">
-          <Studio3DFarmModeler />
+          <Studio3DFarmModeler
+            activeFarm={activeFarm}
+            fields={fields}
+            irrigationProjects={irrigationProjects}
+            cropPlans={cropPlans}
+            buildings={buildings}
+          />
         </TabsContent>
 
         {/* ── 7. RAPPORTS D'INTERVENTION ── */}
