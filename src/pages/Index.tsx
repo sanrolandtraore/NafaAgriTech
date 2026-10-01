@@ -52,11 +52,8 @@ import galleryFreshHarvest from "@/assets/gallery/fresh-harvest.jpg";
 import galleryVeterinaryCare from "@/assets/gallery/veterinary-care.jpg";
 import galleryAgriServices from "@/assets/gallery/agri-services.jpg";
 import galleryAgriFinance from "@/assets/gallery/agri-finance.jpg";
-import videoIrrigation from "@/assets/gallery/irrigation-video.mp4";
-import videoHarvest from "@/assets/gallery/harvest-video.mp4";
-import videoLivestock from "@/assets/gallery/livestock-video.mp4";
+
 import { RealModuleIcon } from "@/components/ui/RealModuleIcon";
-import { InteractiveDynamicVisual, Hotspot } from "@/components/ui/InteractiveDynamicVisual";
 import { prefetchRoute } from "@/lib/routePrefetcher";
 
 // ── 1. Configuration des 4 Espaces Métiers (Images 100% Uniques) ──
@@ -481,69 +478,6 @@ const Index = () => {
         </div>
       </section>
 
-      {/* ══════════════════════════════════════════════════════
-          VISUELS DYNAMIQUES & INTERACTIFS DES MODULES
-      ══════════════════════════════════════════════════════ */}
-      <section className="py-14 sm:py-20 max-w-7xl mx-auto px-4 sm:px-6 space-y-8">
-        <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
-          <div className="space-y-2">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#F97316]/10 border border-[#F97316]/30 text-[#F97316] text-xs font-bold">
-              <Sparkles className="h-3.5 w-3.5" />
-              <span>Visuels dynamiques interactifs • Modules en action</span>
-            </div>
-            <h2 className="text-2xl sm:text-4xl font-heading font-extrabold text-foreground tracking-tight">
-              L'agriculture moderne en action interactive
-            </h2>
-            <p className="text-xs sm:text-sm text-muted-foreground font-medium max-w-2xl">
-              Survolez et cliquez sur les points d'intérêt pour inspecter les technologies réelles de chaque module : hydraulique solaire, santé animale, mécanisation et diagnostic végétal.
-            </p>
-          </div>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {/* Module 1 : Irrigation & Pompage Solaire */}
-          <InteractiveDynamicVisual
-            imageSrc={galleryIrrigation}
-            videoSrc={videoIrrigation}
-            alt="Irrigation & Pompage Solaire"
-            title="Module Irrigation & Hydraulique"
-            subtitle="Dimensionnement réseau goutte-à-goutte et pompage solaire photovoltaïque."
-            badgeText="Hydraulique certifiée"
-            hotspots={[
-              { id: "hs-pump", x: 65, y: 35, label: "Pompe solaire", value: "3000 W • Débit 12 m³/h", badge: "Solaire 48V" },
-              { id: "hs-drip", x: 30, y: 70, label: "Goutte-à-goutte", value: "Pression 2.2 bar • Auto-régulant", badge: "Économie d'eau 60%" },
-            ]}
-          />
-
-          {/* Module 2 : Élevage & Santé Animale */}
-          <InteractiveDynamicVisual
-            imageSrc={galleryLivestock}
-            videoSrc={videoLivestock}
-            alt="Élevage & Santé Animale"
-            title="Module Cheptel & Zootechnie"
-            subtitle="Suivi biométrique, rationnement alimentaire et interventions vétérinaires."
-            badgeText="Santé animale certifiée"
-            hotspots={[
-              { id: "hs-cow", x: 45, y: 40, label: "Géniteur sélectionné", value: "Zébu Azawak • Poids 480 kg", badge: "Vaccin à jour" },
-              { id: "hs-feed", x: 75, y: 75, label: "Ration alimentaire", value: "Fourrage enrichi • Tourteau de coton", badge: "Gain 850g/j" },
-            ]}
-          />
-
-          {/* Module 3 : Machinisme & Récolte */}
-          <InteractiveDynamicVisual
-            imageSrc={galleryHarvest}
-            videoSrc={videoHarvest}
-            alt="Machinisme & Récolte"
-            title="Module Machinisme & Récoltes"
-            subtitle="Planification des travaux du sol, moissons mécanisées et stockage sécurisé."
-            badgeText="Mécanisation Sahel"
-            hotspots={[
-              { id: "hs-yield", x: 40, y: 55, label: "Rendement parcellaire", value: "Maïs hybride • 4.2 T / ha", badge: "Humidité 13%" },
-              { id: "hs-tractor", x: 80, y: 35, label: "Tracteur & Batteuse", value: "Disponibilité temps réel", badge: "Location locale" },
-            ]}
-          />
-        </div>
-      </section>
 
       {/* ══════════════════════════════════════════════════════
           4. QUATRIÈME ÉCRAN — MARKETPLACE RAPIDE (Aperçu des Catégories)
