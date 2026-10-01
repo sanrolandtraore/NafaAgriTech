@@ -42,6 +42,7 @@ import { FieldQuotesTool } from "./FieldQuotesTool";
 import { NafaAiCopilot } from "./NafaAiCopilot";
 import { NewFarmModal } from "./NewFarmModal";
 import { CropDiagnosisTool } from "@/components/expert/CropDiagnosisTool";
+import { Studio3DFarmModeler } from "./Studio3DFarmModeler";
 
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -66,6 +67,7 @@ import {
   Wifi,
   WifiOff,
   Microscope,
+  Box,
 } from "lucide-react";
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
@@ -209,6 +211,8 @@ export const FieldDesignerStudio: React.FC = () => {
         setActiveTab("batiment");
       } else if (["copilot", "ia"].includes(lower)) {
         setActiveTab("copilot");
+      } else if (["modeler3d", "3d", "amenagement3d", "fincabout", "modelisation3d"].includes(lower)) {
+        setActiveTab("modeler3d");
       }
     }
   }, [searchParams]);
@@ -364,7 +368,7 @@ export const FieldDesignerStudio: React.FC = () => {
 
       {/* ── NAVIGATION PAR ONGLETS MÉTIER ── */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-        <TabsList className="grid grid-cols-2 sm:grid-cols-5 lg:grid-cols-10 h-auto p-1.5 gap-1 rounded-2xl bg-muted/70">
+        <TabsList className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-11 h-auto p-1.5 gap-1 rounded-2xl bg-muted/70">
           <TabsTrigger value="dashboard" className="h-10 text-xs font-bold rounded-xl flex items-center justify-center gap-1">
             <Compass className="h-3.5 w-3.5" />
             <span>Mon Terrain</span>
@@ -388,6 +392,10 @@ export const FieldDesignerStudio: React.FC = () => {
           <TabsTrigger value="builder" className="h-10 text-xs font-bold rounded-xl flex items-center justify-center gap-1">
             <Layers className="h-3.5 w-3.5" />
             <span>Carte 2D</span>
+          </TabsTrigger>
+          <TabsTrigger value="modeler3d" className="h-10 text-xs font-bold rounded-xl flex items-center justify-center gap-1" aria-label="Modélisation 3D">
+            <Box className="h-3.5 w-3.5" />
+            <span>Modèle 3D</span>
           </TabsTrigger>
           <TabsTrigger value="interventions" className="h-10 text-xs font-bold rounded-xl flex items-center justify-center gap-1">
             <FileText className="h-3.5 w-3.5" />
@@ -630,6 +638,11 @@ export const FieldDesignerStudio: React.FC = () => {
             onDeleteBuilding={handleDeleteBuilding}
             farmName={activeFarm.name}
           />
+        </TabsContent>
+
+        {/* ── 6B. MODÉLISATION 3D D'AMÉNAGEMENT DE FERME (FINCABOUT STYLE) ── */}
+        <TabsContent value="modeler3d">
+          <Studio3DFarmModeler />
         </TabsContent>
 
         {/* ── 7. RAPPORTS D'INTERVENTION ── */}

@@ -52,7 +52,7 @@ describe("Suite Professionnelle « NAFA FIELD DESIGNER »", () => {
     it("charge uniquement les outils officiels de NAFA Field Designer sans données fictives", () => {
       const allTools = agronomicToolkitStorage.getAllTools();
       // Les 40 anciens outils par domaine sont retirés, il ne reste que les outils officiels de NAFA Field Designer
-      expect(allTools.length).toBe(12);
+      expect(allTools.length).toBe(13);
 
       const allTitles = allTools.map((t) => t.title);
       expect(allTitles).toContain("Mesure GPS & Arpentage de Parcelle");
@@ -61,6 +61,7 @@ describe("Suite Professionnelle « NAFA FIELD DESIGNER »", () => {
       expect(allTitles).toContain("Concepteur d'Irrigation — Réseaux & Pompage");
       expect(allTitles).toContain("Livestock Designer — Bâtiments d'Élevage");
       expect(allTitles).toContain("Farm Builder — Concepteur de Ferme 2D");
+      expect(allTitles).toContain("Modélisation & Aménagement 3D de Ferme");
       expect(allTitles).toContain("Calculateur de Devis Officiels FCFA");
       expect(allTitles).toContain("Diagnostic des Cultures & Ravageurs");
       expect(allTitles).toContain("Rapports de Visite & Diagnostic Terrain");

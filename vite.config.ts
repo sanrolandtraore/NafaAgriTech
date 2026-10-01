@@ -136,6 +136,9 @@ export default defineConfig(({ mode }) => ({
             if (id.includes("jspdf") || id.includes("jspdf-autotable")) {
               return "vendor-pdf";
             }
+            if (id.includes("three")) {
+              return "vendor-three";
+            }
             if (id.includes("recharts") || id.includes("d3-")) {
               return "vendor-charts";
             }
