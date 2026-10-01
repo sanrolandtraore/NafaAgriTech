@@ -10,8 +10,9 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
+import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "sonner";
-import { User, Save, Globe, Trash2 } from "lucide-react";
+import { User, Save, Globe, Trash2, Loader2 } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 
 const AFRICAN_COUNTRIES = [
@@ -77,7 +78,8 @@ const UserProfilePage = () => {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
-  const [deleteConfirm, setDeleteConfirm] = useState("");
+  const [confirm1, setConfirm1] = useState(false);
+  const [confirm2, setConfirm2] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [form, setForm] = useState({
     full_name: "",
@@ -86,8 +88,8 @@ const UserProfilePage = () => {
   });
 
   const handleDeleteAccount = async () => {
-    if (deleteConfirm !== "SUPPRIMER") {
-      toast.error("Veuillez saisir SUPPRIMER pour confirmer.");
+    if (!confirm1 || !confirm2) {
+      toast.error("Veuillez valider les deux confirmations pour continuer.");
       return;
     }
     setDeleting(true);
@@ -288,7 +290,16 @@ const UserProfilePage = () => {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <Dialog open={deleteOpen} onOpenChange={setDeleteOpen}>
+          <Dialog
+            open={deleteOpen}
+            onOpenChange={(open) => {
+              setDeleteOpen(open);
+              if (!open) {
+                setConfirm1(false);
+                setConfirm2(false);
+              }
+            }}
+          >
             <DialogTrigger asChild>
               <Button variant="destructive" size="sm" className="font-semibold text-xs rounded-xl">
                 <Trash2 className="h-4 w-4 mr-2" /> Supprimer mon compte
@@ -299,34 +310,55 @@ const UserProfilePage = () => {
                 <DialogTitle className="text-destructive flex items-center gap-2">
                   <Trash2 className="h-5 w-5" /> Confirmer la suppression définitive
                 </DialogTitle>
-                <DialogDescription className="text-xs space-y-2 pt-2 text-foreground/80">
-                  <p>
-                    Cette action est <strong>définitive et irréversible</strong>. Votre compte, vos données et vos sessions seront supprimés de cet appareil et de nos serveurs.
-                  </p>
-                  <p className="text-muted-foreground">
-                    Pour valider, tapez <strong>SUPPRIMER</strong> ci-dessous :
-                  </p>
+                <DialogDescription className="text-xs pt-1 text-foreground/80">
+                  Cette action est <strong>définitive et irréversible</strong>. Votre compte, vos données et vos sessions seront supprimés de cet appareil et de nos serveurs.
                 </DialogDescription>
               </DialogHeader>
-              <div className="py-2">
-                <Input
-                  value={deleteConfirm}
-                  onChange={(e) => setDeleteConfirm(e.target.value)}
-                  placeholder="Tapez SUPPRIMER"
-                  className="font-mono text-center tracking-widest uppercase text-sm"
-                />
+
+              <div className="space-y-3 py-2">
+                <label className="flex items-start gap-3 p-3 rounded-xl border border-destructive/20 bg-destructive/5 hover:bg-destructive/10 cursor-pointer transition-colors">
+                  <Checkbox
+                    checked={confirm1}
+                    onCheckedChange={(checked) => setConfirm1(Boolean(checked))}
+                    className="mt-0.5 data-[state=checked]:bg-destructive data-[state=checked]:border-destructive"
+                  />
+                  <div className="text-xs">
+                    <span className="font-bold text-destructive">1ère confirmation :</span>
+                    <p className="text-muted-foreground mt-0.5">Je confirme vouloir supprimer mon compte NAFA-AGRITECH.</p>
+                  </div>
+                </label>
+
+                <label className="flex items-start gap-3 p-3 rounded-xl border border-destructive/20 bg-destructive/5 hover:bg-destructive/10 cursor-pointer transition-colors">
+                  <Checkbox
+                    checked={confirm2}
+                    onCheckedChange={(checked) => setConfirm2(Boolean(checked))}
+                    className="mt-0.5 data-[state=checked]:bg-destructive data-[state=checked]:border-destructive"
+                  />
+                  <div className="text-xs">
+                    <span className="font-bold text-destructive">2ème confirmation :</span>
+                    <p className="text-muted-foreground mt-0.5">Je comprends que toutes mes données seront définitivement et irrémédiablement effacées.</p>
+                  </div>
+                </label>
               </div>
+
               <DialogFooter className="gap-2 sm:gap-0">
-                <Button variant="outline" size="sm" onClick={() => setDeleteOpen(false)}>
+                <Button variant="outline" size="sm" onClick={() => setDeleteOpen(false)} disabled={deleting}>
                   Annuler
                 </Button>
                 <Button
                   variant="destructive"
                   size="sm"
                   onClick={handleDeleteAccount}
-                  disabled={deleting || deleteConfirm !== "SUPPRIMER"}
+                  disabled={deleting || !confirm1 || !confirm2}
                 >
-                  {deleting ? "Suppression en cours..." : "Confirmer la suppression"}
+                  {deleting ? (
+                    <>
+                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                      Suppression en cours...
+                    </>
+                  ) : (
+                    "Valider la suppression définitive"
+                  )}
                 </Button>
               </DialogFooter>
             </DialogContent>
