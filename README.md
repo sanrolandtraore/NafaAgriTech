@@ -156,7 +156,7 @@ Construire une plateforme SaaS de gestion agricole full-stack prête pour utilis
 
 ‎MODULE 3— Location d’Actifs Agricoles
 
-‎Inspiré de WeFarmUp mais adapté localement.
+‎Plateforme native de réservation et mutualisation d'équipements agricoles et pastoraux.
 
 ‎Entités
 

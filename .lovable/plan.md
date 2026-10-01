@@ -1,6 +1,6 @@
 ## Objectif
 
-Enrichir le module Expert Agronome avec une "boîte à outils" professionnelle inspirée de MesParcelles (registre parcellaire, traçabilité, conseils, planification), adaptée au contexte ouest-africain et intégrée à l'existant (Cartographie GPS, Scouting, Planification NPK/irrigation/phyto déjà présents).
+Enrichir le module Expert Agronome avec une "boîte à outils" professionnelle propriétaire (registre parcellaire, traçabilité, conseils, planification), adaptée au contexte ouest-africain et intégrée à l'existant (Cartographie GPS, Scouting, Planification NPK/irrigation/phyto déjà présents).
 
 ## Constat de l'existant
 

@@ -24,7 +24,6 @@ export type ModuleIconType =
   | "irrigation"
   | "water"
   | "diagnostic"
-  | "plantnet"
   | "finance"
   | "assurance"
   | "banking"
@@ -52,7 +51,6 @@ const ICON_MAP: Record<string, string> = {
   irrigation: irrigationImg,
   water: irrigationImg,
   diagnostic: diagnosticImg,
-  plantnet: diagnosticImg,
   finance: financeImg,
   assurance: financeImg,
   banking: financeImg,

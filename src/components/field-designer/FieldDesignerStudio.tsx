@@ -211,7 +211,7 @@ export const FieldDesignerStudio: React.FC = () => {
         setActiveTab("batiment");
       } else if (["copilot", "ia"].includes(lower)) {
         setActiveTab("copilot");
-      } else if (["modeler3d", "3d", "amenagement3d", "fincabout", "modelisation3d"].includes(lower)) {
+      } else if (["modeler3d", "3d", "amenagement3d", "nafa3d", "modelisation3d"].includes(lower)) {
         setActiveTab("modeler3d");
       }
     }
@@ -640,7 +640,7 @@ export const FieldDesignerStudio: React.FC = () => {
           />
         </TabsContent>
 
-        {/* ── 6B. MODÉLISATION 3D D'AMÉNAGEMENT DE FERME (FINCABOUT STYLE) ── */}
+        {/* ── 6B. MODÉLISATION 3D D'AMÉNAGEMENT DE FERME (NAFA 3D STUDIO) ── */}
         <TabsContent value="modeler3d">
           <Studio3DFarmModeler />
         </TabsContent>

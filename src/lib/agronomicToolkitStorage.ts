@@ -275,12 +275,12 @@ export const AGRONOMIC_TOOLS_CATALOG: AgronomicToolItem[] = [
     title: "Modélisation & Aménagement 3D de Ferme",
     category: "ingenierie",
     categoryLabel: "Bâtiments & Modélisation",
-    description: "Conception 3D interactive inspirée de Fincabout : parcelles de cultures, réseau d'irrigation, château d'eau, champ solaire, bâtiments d'élevage et export HD.",
+    description: "Conception 3D interactive de ferme : parcelles de cultures, réseau d'irrigation, château d'eau, champ solaire, bâtiments d'élevage et export HD.",
     route: "/dashboard/field-designer?tab=modeler3d",
     iconName: "Box",
     isOffline: true,
-    badges: ["3D Réaliste", "Fincabout", "Hors ligne"],
-    keywords: ["modélisation 3d", "aménagement 3d", "fincabout", "3d", "ferme 3d", "irrigation 3d", "bâtiment 3d", "rendu réaliste", "plan 3d"],
+    badges: ["3D Réaliste", "NAFA Studio 3D", "Hors ligne"],
+    keywords: ["modélisation 3d", "aménagement 3d", "nafa 3d", "3d", "ferme 3d", "irrigation 3d", "bâtiment 3d", "rendu réaliste", "plan 3d"],
     contextualAi: {
       roleDescription: "Architecte modélisateur 3D d'aménagements agricoles et pastoraux modernes.",
       suggestedActions: [

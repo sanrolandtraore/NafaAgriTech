@@ -1,6 +1,6 @@
 /**
  * NAFA-AGRITECH : Moteur d'Exportation Vectorielle & SIG de Haute Précision
- * Inspiré d'AutoCAD (DXF R12/2000), QGIS (GeoJSON WGS84/UTM) et Netafim (BOM Hydraulique)
+ * Standard universel DXF (R12/2000), SIG GeoJSON (WGS84/UTM) et Bordereaux Hydrauliques
  */
 
 export interface CadExportPoint {

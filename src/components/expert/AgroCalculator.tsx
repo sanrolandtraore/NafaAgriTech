@@ -96,7 +96,7 @@ export function AgroCalculator() {
   }, [selectedCrop, areaHa, seedsPerHole, rowSpacingCm, plantSpacingCm]);
 
   const handleExportSummary = () => {
-    const summary = `FICHE TECHNIQUE AGRONOMIQUE — NAFA-AGRITECH (Inspiré Fincabout)
+    const summary = `FICHE TECHNIQUE AGRONOMIQUE — NAFA-AGRITECH
 Culture : ${selectedCrop.name} (${selectedCrop.scientificName})
 Superficie : ${results.areaHa} ha (${results.areaM2.toLocaleString()} m²)
 Densité : ${results.plantDensity.toLocaleString()} poquets (${(results.plantDensity / (results.areaM2 || 1)).toFixed(1)} plants/m²)
@@ -118,7 +118,7 @@ Normes de calcul : INERA / FAO-56`;
         <div className="space-y-1.5">
           <div className="inline-flex items-center gap-2 px-3 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 text-xs font-bold">
             <Sparkles className="h-3.5 w-3.5" />
-            <span>Moteur d'Ingénierie & Planification de Campagne • Style Fincabout</span>
+            <span>Moteur d'Ingénierie & Planification de Campagne • NAFA Genius</span>
           </div>
           <h2 className="text-xl sm:text-2xl font-heading font-black flex items-center gap-2.5">
             <Calculator className="h-6 w-6 text-[#F97316]" />
@@ -244,7 +244,7 @@ Normes de calcul : INERA / FAO-56`;
         </Card>
       </div>
 
-      {/* ── TABS MULTI-FONCTIONS STYLE FINCABOUT ── */}
+      {/* ── TABS MULTI-FONCTIONS NAFA GENIUS ── */}
       <Tabs defaultValue="seeds" className="space-y-4">
         <TabsList className="w-full grid grid-cols-2 sm:grid-cols-4 h-auto p-1.5 rounded-[22px] bg-muted/60 border border-border">
           <TabsTrigger value="seeds" className="rounded-xl py-2.5 text-xs font-bold gap-2">
