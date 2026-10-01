@@ -1,4 +1,4 @@
-﻿/**
+/**
  * Définition et gestion des profils de partenaires spécialisés NAFA - AGRITECH
  * Chaque partenaire choisit son profil de spécialisation et ses types de produits/services.
  * Les comptes partenaires ne sont PAS unifiés en bloc générique mais adaptés à leur corps de métier.
@@ -6,7 +6,6 @@
 
 export type PartnerProfileType =
   | "fournisseur_intrants"
-  | "machinisme_travaux"
   | "expert_agronome"
   | "elevage_veterinaire"
   | "institution_agri"
@@ -31,13 +30,13 @@ export interface PartnerProfileMeta {
 export const PARTNER_PROFILES: Record<PartnerProfileType, PartnerProfileMeta> = {
   fournisseur_intrants: {
     id: "fournisseur_intrants",
-    title: "Fournisseur d'Intrants & Semences",
-    shortLabel: "Intrants & Semences",
-    badge: "Fournisseur d'Intrants Agréé",
+    title: "Fournisseur d'Intrants, Matériel & Équipements",
+    shortLabel: "Intrants & Matériel",
+    badge: "Fournisseur d'Intrants & Matériel Agréé",
     iconName: "FlaskConical",
     category: "intrants",
-    tagline: "Vente d'engrais NPK/Urée, semences certifiées, bio-fertilisants et produits phytosanitaires homologués CSP",
-    description: "Boutiques et distributeurs d'engrais minéraux et organiques, semenciers agréés, produits phytosanitaires homologués au Sahel et petit outillage de traitement.",
+    tagline: "Vente d'engrais NPK/Urée, semences certifiées, matériel agricole (motoculteurs, tracteurs, pièces) et produits phytosanitaires homologués CSP",
+    description: "Boutiques et distributeurs d'engrais minéraux et organiques, semenciers agréés, vente et location de matériel agricole et outillage de traitement.",
     defaultProducts: [
       "Engrais NPK 15-15-15 (sacs 50 kg)",
       "Urée 46% granulée",
@@ -46,42 +45,18 @@ export const PARTNER_PROFILES: Record<PartnerProfileType, PartnerProfileMeta> = 
       "Semences certifiées de riz de bas-fond",
       "Produits phytosanitaires homologués CSP",
       "Pulvérisateurs à dos et équipements de protection (EPI)",
+      "Motoculteurs & petit matériel agricole",
+      "Pièces de rechange et disques de charrue",
     ],
     defaultServices: [
       "Vente d'intrants en gros et demi-gros",
-      "Livraison d'engrais sur exploitation",
+      "Livraison d'engrais et matériel sur exploitation",
       "Conseil de dosage et d'épandage au comptoir",
+      "Location et mise à disposition de matériel agricole",
     ],
-    suggestedTags: ["NPK", "Urée", "Semences certifiées", "Engrais bio", "Traitement phyto", "Pulvérisateurs"],
-    dashboardTitle: "Espace Fournisseur d'Intrants & Semences",
-    dashboardSubtitle: "Gérez votre catalogue de fertilisants et semences, traitez les commandes et servez vos clients producteurs.",
-  },
-
-  machinisme_travaux: {
-    id: "machinisme_travaux",
-    title: "Machinisme Agricole & Loueur de Matériel",
-    shortLabel: "Machinisme & Travaux",
-    badge: "Opérateur de Machinisme Agréé",
-    iconName: "Tractor",
-    category: "materiel",
-    tagline: "Location de tracteurs, motoculteurs, batteuses et prestations de chantiers agricoles mécanisés",
-    description: "Propriétaires et exploitants de matériel agricole lourd, loueurs de tracteurs avec chauffeur, batteuses, moissonneuses et entrepreneurs de travaux du sol.",
-    defaultProducts: [
-      "Pièces de rechange et disques de charrue",
-      "Carburant & lubrifiants agricoles",
-      "Bâches et sacs de récolte",
-    ],
-    defaultServices: [
-      "Labour mécanisé au tracteur (forfait hectare)",
-      "Semis mécanique de précision",
-      "Prestation de moisson et battage mécanique",
-      "Pulvérisation tractée ou motorisée",
-      "Transport de récoltes et logistique champ-magasin",
-      "Location de tracteurs avec chauffeur qualifié",
-    ],
-    suggestedTags: ["Tracteur 75CV", "Labour", "Batteuse", "Semoir", "Location avec chauffeur", "Chantiers"],
-    dashboardTitle: "Espace Machinisme & Travaux Agricoles",
-    dashboardSubtitle: "Suivez votre flotte d'engins, planifiez les chantiers de labour/récolte et gérez vos réservations.",
+    suggestedTags: ["NPK", "Urée", "Semences certifiées", "Matériel agricole", "Engrais bio", "Traitement phyto", "Pulvérisateurs"],
+    dashboardTitle: "Espace Fournisseur d'Intrants, Matériel & Équipements",
+    dashboardSubtitle: "Gérez votre catalogue d'intrants, fertilisants, semences et matériel agricole, traitez les commandes et servez vos clients producteurs.",
   },
 
   expert_agronome: {

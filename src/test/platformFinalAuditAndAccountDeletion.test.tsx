@@ -92,7 +92,7 @@ describe("Audit Final — Isolation Stricte des Modules & Cloisonnement", () => 
     expect(getNavForRole("expert").main).toBe(agronomeNav);
     expect(getNavForRole("partenaire", "elevage_veterinaire").main).toBe(veterinaireNav);
     expect(getNavForRole("partenaire", "fournisseur_intrants").main).toBe(fournisseurNav);
-    expect(getNavForRole("partenaire", "machinisme_travaux").main).toBe(machinismeNav);
+    expect(getNavForRole("partenaire", "machinisme_travaux").main).toBe(fournisseurNav);
     expect(getNavForRole("partenaire", "institution_agri").main).toBe(institutionNav);
     expect(getNavForRole("partenaire").main).toBe(partenaireNav);
   });
