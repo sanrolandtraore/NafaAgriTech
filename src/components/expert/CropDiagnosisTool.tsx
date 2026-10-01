@@ -23,12 +23,19 @@ import {
   type OptimizedImageResult,
 } from "@/lib/imageOptimization";
 import {
+  identifyPlantWithNafaEngine,
   identifyPlantWithPlantNet,
-  getStoredPlantNetApiKey,
-  savePlantNetApiKey,
-  hasConfiguredPlantNetApiKey,
   type PlantNetIdentificationResult,
-} from "@/lib/plantnetService";
+  type NafaPlantIdentificationResult,
+} from "@/lib/nafaPlantIdentifier";
+import {
+  NAFA_BOTANICAL_CATALOG,
+  getNafaBotanicalDatabaseStats,
+} from "@/lib/nafaBotanicalDatabase";
+import {
+  nafaFieldObservationsStorage,
+  type NafaFieldObservation,
+} from "@/lib/nafaFieldObservations";
 import {
   queryPlantVillageBenchmark,
   type PlantVillageMatchResult,
@@ -320,33 +327,33 @@ export function CropDiagnosisTool() {
         console.warn("Échec analyse vision :", visionErr);
       }
 
-      // 2. FILTRE 1 : IDENTIFICATION IMMÉDIATE DE LA PLANTE VIA L'API PL@NTNET
+      // 2. FILTRE 1 : IDENTIFICATION IMMÉDIATE DE LA PLANTE VIA LA BASE PROPRIÉTAIRE NAFA VISION
       try {
-        const pNetRes = await identifyPlantWithPlantNet({
+        const nafaRes = await identifyPlantWithNafaEngine({
           imageBase64: optimized.base64,
-          mimeType: optimized.mimeType,
+          hints: symptoms || cropKey || "",
         });
-        setPlantnetResult(pNetRes);
+        setPlantnetResult(nafaRes);
 
-        if (pNetRes.bestMatch) {
-          if (pNetRes.isWeed && pNetRes.matchedWeedId) {
+        if (nafaRes.bestMatch) {
+          if (nafaRes.isWeed && nafaRes.matchedWeedId) {
             setPlantMode("adventice");
-            setWeedKey(pNetRes.matchedWeedId);
+            setWeedKey(nafaRes.matchedWeedId);
             toast({
-              title: "Filtre 1 Pl@ntNet : Mauvaise herbe détectée",
-              description: `${pNetRes.bestMatch.commonName || pNetRes.bestMatch.scientificName} (${(pNetRes.confidence * 100).toFixed(1)}% de certitude)`,
+              title: "Base NAFA Vision : Mauvaise herbe détectée",
+              description: `${nafaRes.bestMatch.commonName || nafaRes.bestMatch.scientificName} (${(nafaRes.confidence * 100).toFixed(1)}% de certitude)`,
             });
-          } else if (pNetRes.matchedNafaCropId) {
+          } else if (nafaRes.matchedNafaCropId) {
             setPlantMode("culture");
-            setCropKey(pNetRes.matchedNafaCropId);
+            setCropKey(nafaRes.matchedNafaCropId);
             toast({
-              title: "Filtre 1 Pl@ntNet : Espèce identifiée",
-              description: `${pNetRes.bestMatch.commonName || pNetRes.bestMatch.scientificName} (${(pNetRes.confidence * 100).toFixed(1)}% de certitude)`,
+              title: "Base NAFA Vision : Espèce certifiée",
+              description: `${nafaRes.bestMatch.commonName || nafaRes.bestMatch.scientificName} (${(nafaRes.confidence * 100).toFixed(1)}% de certitude)`,
             });
           }
         }
-      } catch (pNetErr) {
-        console.warn("Échec Pl@ntNet :", pNetErr);
+      } catch (nafaErr) {
+        console.warn("Échec identification NAFA Vision :", nafaErr);
       }
 
       toast({
@@ -1032,13 +1039,9 @@ export function CropDiagnosisTool() {
                   onClick={() => setApiKeyDialogOpen(true)}
                   className="h-8 text-[11px] rounded-xl gap-1.5 border-emerald-500/40 text-emerald-800 dark:text-emerald-200 bg-emerald-500/10 hover:bg-emerald-500/20"
                 >
-                  <Key className="h-3.5 w-3.5 text-emerald-600" />
-                  <span>Vision Botanique NAFA</span>
-                  {hasConfiguredPlantNetApiKey() ? (
-                    <Badge className="bg-emerald-600 text-white text-[9px] py-0 px-1.5 h-4">Clé active</Badge>
-                  ) : (
-                    <Badge variant="outline" className="text-[9px] py-0 px-1.5 h-4 border-emerald-600/30">Moteur certifié</Badge>
-                  )}
+                  <Database className="h-3.5 w-3.5 text-emerald-600" />
+                  <span>Base Botanique NAFA</span>
+                  <Badge className="bg-emerald-600 text-white text-[9px] py-0 px-1.5 h-4">Propriétaire Ouverte</Badge>
                 </Button>
                 <Badge className="bg-emerald-600 text-white text-xs">Obligatoire</Badge>
               </div>
@@ -1422,16 +1425,14 @@ export function CropDiagnosisTool() {
                           <div>
                             <div className="flex items-center gap-2 flex-wrap">
                               <span className="text-[11px] font-extrabold uppercase tracking-wider text-emerald-800 dark:text-emerald-300">
-                                Filtre 1 Validé • Vision Botanique NAFA
+                                Filtre 1 Validé • Base Botanique Propriétaire NAFA Vision
                               </span>
                               <Badge className="bg-emerald-600 text-white text-[10px] font-mono py-0 px-2">
                                 {(plantnetResult.confidence * 100).toFixed(1)}% certitude
                               </Badge>
-                              {plantnetResult.engineSource === "plantnet_api_online" && (
-                                <Badge variant="outline" className="text-[10px] border-emerald-600/40 text-emerald-700 bg-white/60">
-                                  Moteur Botanique Spécialisé NAFA
-                                </Badge>
-                              )}
+                              <Badge variant="outline" className="text-[10px] border-emerald-600/40 text-emerald-700 bg-white/60">
+                                100% Autonome • Open Data
+                              </Badge>
                             </div>
                             <h4 className="text-base font-extrabold text-foreground flex items-center gap-2">
                               {plantnetResult.bestMatch.commonName || plantnetResult.bestMatch.scientificName}
@@ -1459,7 +1460,7 @@ export function CropDiagnosisTool() {
                       </div>
 
                       <p className="text-[11px] text-muted-foreground leading-relaxed">
-                        <strong>Rôle du Filtre 1 :</strong> Pl@ntNet a identifié la culture exacte. Notre modèle d'IA prend le relais pour détecter la pathologie spécifique et ses remèdes certifiés.
+                        <strong>Certification Botanique :</strong> Identification souveraine par la Base Botanique Propriétaire NAFA-AGRITECH (Open Data FAO EcoCrop, INERA, CIRAD, GBIF). Le diagnostic pathologique RAG et le benchmark PlantVillage prennent ensuite le relais.
                       </p>
 
                       {plantnetResult.remainingCandidates && plantnetResult.remainingCandidates.length > 0 && (
@@ -2205,89 +2206,90 @@ export function CropDiagnosisTool() {
         )}
       </TabsContent>
 
-      {/* ── MODAL CONFIGURATION SERVICE VISION BOTANIQUE NAFA ── */}
+      {/* ── MODAL BASE BOTANIQUE PROPRIÉTAIRE NAFA-AGRITECH ── */}
       <Dialog open={apiKeyDialogOpen} onOpenChange={setApiKeyDialogOpen}>
-        <DialogContent className="max-w-md rounded-3xl p-6 space-y-4">
+        <DialogContent className="max-w-lg rounded-3xl p-6 space-y-4">
           <DialogHeader>
-            <DialogTitle className="text-lg font-bold flex items-center gap-2 text-foreground">
-              <Key className="h-5 w-5 text-emerald-600" />
-              Configuration du Moteur Vision Botanique NAFA
-            </DialogTitle>
+            <div className="flex items-center gap-2">
+              <div className="h-8 w-8 rounded-xl bg-emerald-600 text-white flex items-center justify-center">
+                <Database className="h-4 w-4" />
+              </div>
+              <DialogTitle className="text-lg font-bold text-foreground">
+                Base Botanique Propriétaire NAFA-AGRITECH
+              </DialogTitle>
+            </div>
             <DialogDescription className="text-xs text-muted-foreground leading-relaxed">
-              Le moteur sert de <strong>Filtre 1</strong> d'identification immédiate de la plante parmi des milliers d'espèces enregistrées avant que l'analyse pathologique ne prenne le relais pour détecter la maladie.
+              Système autonome d'identification et de diagnostic des plantes, <strong>100% indépendant de toute API tierce propriétaire</strong> et fondé sur les référentiels scientifiques ouverts.
             </DialogDescription>
           </DialogHeader>
 
           <div className="space-y-3">
+            {/* Métriques de la base NAFA */}
+            <div className="grid grid-cols-3 gap-2">
+              <div className="p-2.5 rounded-xl bg-muted/40 border text-center space-y-0.5">
+                <span className="text-[10px] text-muted-foreground block font-bold">Taxons Sahéliens</span>
+                <span className="text-base font-black text-foreground font-mono">
+                  {NAFA_BOTANICAL_CATALOG.length}
+                </span>
+                <span className="text-[9px] text-emerald-600 block font-semibold">Cultures &amp; Adventices</span>
+              </div>
+              <div className="p-2.5 rounded-xl bg-muted/40 border text-center space-y-0.5">
+                <span className="text-[10px] text-muted-foreground block font-bold">Familles Végétales</span>
+                <span className="text-base font-black text-foreground font-mono">
+                  {Array.from(new Set(NAFA_BOTANICAL_CATALOG.map((s) => s.family))).length}
+                </span>
+                <span className="text-[9px] text-muted-foreground block">Botanique certifiée</span>
+              </div>
+              <div className="p-2.5 rounded-xl bg-muted/40 border text-center space-y-0.5">
+                <span className="text-[10px] text-muted-foreground block font-bold">Observations Terrain</span>
+                <span className="text-base font-black text-foreground font-mono">
+                  {nafaFieldObservationsStorage.getAll().length}
+                </span>
+                <span className="text-[9px] text-emerald-600 block font-semibold">Validées au Burkina</span>
+              </div>
+            </div>
+
+            {/* Sources Scientifiques Ouvertes & Légales */}
             <div className="p-3 rounded-2xl bg-emerald-500/10 border border-emerald-500/25 text-xs text-emerald-900 dark:text-emerald-200 space-y-1.5">
-              <div className="flex items-center gap-2 font-bold">
-                <CheckCircle2 className="h-4 w-4 text-emerald-600" />
-                <span>Moteur Haute Résolution &amp; Reconnaissance Locale :</span>
+              <div className="flex items-center gap-1.5 font-bold">
+                <ShieldCheck className="h-4 w-4 text-emerald-600 shrink-0" />
+                <span>Données Ouvertes &amp; Référentiels Scientifiques Légaux :</span>
               </div>
               <p className="text-[11px] text-muted-foreground leading-relaxed">
-                Le moteur fonctionne de manière 100% autonome hors ligne. Si vous disposez d'une clé de service connectée, vous pouvez la renseigner ci-dessous pour étendre la reconnaissance mondiale.
+                Le modèle NAFA s'appuie exclusivement sur des bases de données ouvertes (Open Data) :
+                <strong> INERA Farako-Bâ &amp; Kamboinsé</strong>, <strong>FAO EcoCrop</strong>, <strong>CIRAD</strong>, <strong>GBIF Open Flora</strong>, <strong>EPPO Global Database</strong> et <strong>PlantVillage Open Access</strong>.
               </p>
             </div>
 
-            <div className="space-y-1.5">
-              <Label className="text-xs font-bold">Clé d'accès service botanique (Optionnel)</Label>
-              <Input
-                type="password"
-                placeholder="Laissez vide pour le mode autonome certifié local"
-                value={customPlantNetApiKey}
-                onChange={(e) => setCustomPlantNetApiKey(e.target.value)}
-                className="font-mono text-xs rounded-xl"
-              />
-              <p className="text-[10px] text-muted-foreground">
-                La clé est stockée uniquement sur cet appareil dans votre espace sécurisé local.
-              </p>
+            {/* Observations terrain récentes */}
+            <div className="space-y-1.5 pt-1">
+              <span className="text-xs font-bold text-foreground block">
+                Dernières observations terrain certifiées (Apprentissage continu) :
+              </span>
+              <div className="space-y-1.5 max-h-36 overflow-y-auto pr-1">
+                {nafaFieldObservationsStorage.getAll().slice(0, 3).map((obs) => (
+                  <div key={obs.id} className="p-2 rounded-xl bg-card border text-[11px] space-y-0.5">
+                    <div className="flex items-center justify-between font-bold">
+                      <span className="text-foreground">{obs.commonName} — <em>{obs.scientificName}</em></span>
+                      <Badge variant="outline" className="text-[9px] h-4 py-0 text-emerald-600">{obs.gps?.locality || "Burkina Faso"}</Badge>
+                    </div>
+                    <p className="text-muted-foreground text-[10px] truncate">{obs.confirmedDiagnosis}</p>
+                    <p className="text-[9px] text-muted-foreground">Expert : {obs.expertName}</p>
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
 
-          <div className="flex items-center justify-between gap-2 pt-2 border-t">
-            {hasConfiguredPlantNetApiKey() && (
-              <Button
-                type="button"
-                variant="ghost"
-                size="sm"
-                onClick={() => {
-                  savePlantNetApiKey("");
-                  setCustomPlantNetApiKey("");
-                  toast({ title: "Clé réinitialisée", description: "Le moteur résilient local certifié est désormais actif." });
-                }}
-                className="text-xs text-muted-foreground hover:text-destructive"
-              >
-                Réinitialiser
-              </Button>
-            )}
-            <div className="flex items-center gap-2 ml-auto">
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={() => setApiKeyDialogOpen(false)}
-                className="rounded-xl text-xs"
-              >
-                Annuler
-              </Button>
-              <Button
-                type="button"
-                size="sm"
-                onClick={() => {
-                  savePlantNetApiKey(customPlantNetApiKey.trim());
-                  setApiKeyDialogOpen(false);
-                  toast({
-                    title: "Paramètres enregistrés",
-                    description: customPlantNetApiKey.trim()
-                      ? "Clé de service botanique activée."
-                      : "Moteur de reconnaissance local certifié actif.",
-                  });
-                }}
-                className="rounded-xl text-xs bg-emerald-600 text-white hover:bg-emerald-700 font-bold"
-              >
-                Enregistrer la Clé
-              </Button>
-            </div>
+          <div className="flex items-center justify-end pt-2 border-t">
+            <Button
+              type="button"
+              size="sm"
+              onClick={() => setApiKeyDialogOpen(false)}
+              className="rounded-xl text-xs bg-emerald-600 text-white hover:bg-emerald-700 font-bold px-4"
+            >
+              Fermer
+            </Button>
           </div>
         </DialogContent>
       </Dialog>
