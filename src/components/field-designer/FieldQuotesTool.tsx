@@ -1,13 +1,16 @@
 /**
- * NAFA FIELD DESIGNER — MODULE DEVIS & CHIFVRAGE OFFICIEL (FCFA)
+ * NAFA FIELD DESIGNER — MODULE DEVIS & CHIRFRAGE OFFICIEL (FCFA)
  * Génération, personnalisation ligne par ligne et export PDF haute fidélité.
  * Basé sur les prix réels certifiés au Burkina Faso (matériaux, main-d'œuvre, transport).
+ * Intégré directement au Marketplace des fournitures et intrants agricoles.
  */
 
 import React, { useState, useEffect } from "react";
 import { EngineeringQuoteDoc, QuoteItem, Farm, FarmBuilding, IrrigationProject } from "@/types/fieldDesigner";
 import { generateBuildingBillOfQuantities, generateIrrigationBillOfQuantities } from "@/lib/fieldMaterialsEstimator";
 import { exportQuotePdf } from "@/lib/fieldDesignerPdfExport";
+import { materialsStorage } from "@/lib/fieldDesignerPrices";
+import { MarketplaceMaterialPricePickerModal } from "./MarketplaceMaterialPricePickerModal";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -20,10 +23,12 @@ import {
   Trash2,
   Save,
   CheckCircle2,
-  Printer,
-  FileSpreadsheet,
+  ShoppingBag,
+  Tag,
   Building,
-  Droplets,
+  RefreshCw,
+  MapPin,
+  Sparkles,
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -52,6 +57,11 @@ export const FieldQuotesTool: React.FC<FieldQuotesToolProps> = ({
   const [laborCost, setLaborCost] = useState<number>(150000);
   const [transportCost, setTransportCost] = useState<number>(45000);
   const [contingenciesCost, setContingenciesCost] = useState<number>(0);
+
+  // Gestion du sélecteur de prix réels Marketplace
+  const [marketplaceModalOpen, setMarketplaceModalOpen] = useState(false);
+  const [targetLineId, setTargetLineId] = useState<string | null>(null);
+  const [targetLineDesignation, setTargetLineDesignation] = useState<string | null>(null);
 
   // Initialisation à partir des bâtiments et réseaux existants
   useEffect(() => {
@@ -115,6 +125,80 @@ export const FieldQuotesTool: React.FC<FieldQuotesToolProps> = ({
     setItems((prev) => [...prev, newItem]);
   };
 
+  // Ajout depuis le Marketplace
+  const handleAddItemFromMarketplace = (item: QuoteItem) => {
+    setItems((prev) => [...prev, item]);
+  };
+
+  // Application du prix Marketplace à une ligne existante
+  const handleApplyPriceToLine = (lineId: string, newUnitPriceFCFA: number, designation?: string, unit?: string) => {
+    setItems((prev) =>
+      prev.map((it) => {
+        if (it.id === lineId) {
+          const updated = {
+            ...it,
+            unitPriceFCFA: newUnitPriceFCFA,
+            totalFCFA: Math.round(it.quantity * newUnitPriceFCFA),
+          };
+          if (designation) updated.designation = designation;
+          if (unit) updated.unit = unit;
+          return updated;
+        }
+        return it;
+      })
+    );
+  };
+
+  const openMarketplaceForLine = (lineId: string, designation: string) => {
+    setTargetLineId(lineId);
+    setTargetLineDesignation(designation);
+    setMarketplaceModalOpen(true);
+  };
+
+  const openMarketplaceToAdd = () => {
+    setTargetLineId(null);
+    setTargetLineDesignation(null);
+    setMarketplaceModalOpen(true);
+  };
+
+  // Mise à jour groupée avec la mercuriale officielle
+  const handleApplyRegionalMercuriale = (regionName: string) => {
+    const allPrices = materialsStorage.getAll();
+    let updatedCount = 0;
+
+    setItems((prev) =>
+      prev.map((it) => {
+        const found = allPrices.find((p) => {
+          const pName = p.designation.toLowerCase();
+          const itName = it.designation.toLowerCase();
+          return (
+            (itName.includes("ciment") && p.code.includes("CIM")) ||
+            (itName.includes("parpaing") && p.code.includes("AGG")) ||
+            (itName.includes("fer") && p.code.includes("FER")) ||
+            (itName.includes("pehd") && p.code.includes("PEHD")) ||
+            (itName.includes("goutte") && p.code.includes("GOUTTE")) ||
+            (itName.includes("sable") && p.code.includes("SABLE")) ||
+            (itName.includes("gravier") && p.code.includes("GRAVIER")) ||
+            pName.includes(itName) ||
+            itName.includes(pName)
+          );
+        });
+
+        if (found) {
+          updatedCount++;
+          return {
+            ...it,
+            unitPriceFCFA: found.defaultUnitPriceFCFA,
+            totalFCFA: Math.round(it.quantity * found.defaultUnitPriceFCFA),
+          };
+        }
+        return it;
+      })
+    );
+
+    toast.success(`Mercuriale ${regionName} appliquée sur ${updatedCount} poste(s) du devis !`);
+  };
+
   const handleSave = () => {
     const doc: EngineeringQuoteDoc = {
       id: `quote_${Date.now()}_${Math.random().toString(36).substr(2, 6)}`,
@@ -170,22 +254,74 @@ export const FieldQuotesTool: React.FC<FieldQuotesToolProps> = ({
             <div>
               <h2 className="text-xl sm:text-2xl font-black flex items-center gap-2">
                 <Wallet className="h-6 w-6 text-primary" />
-                Générateur de Devis Officiel (FCFA)
+                Métrés &amp; Estimation des Matériaux (FCFA)
               </h2>
               <p className="text-xs text-muted-foreground mt-0.5">
-                Chiffrage transparent basé sur la mercuriale des prix réels du Burkina Faso.
+                Chiffrage transparent certifié basé sur la mercuriale des prix réels du Burkina Faso et le Marketplace.
               </p>
             </div>
+            <div className="flex flex-wrap items-center gap-2">
+              <Button
+                size="sm"
+                onClick={openMarketplaceToAdd}
+                className="h-9 text-xs font-bold rounded-xl gap-1.5 gradient-primary text-primary-foreground shadow-xs"
+              >
+                <ShoppingBag className="h-4 w-4" />
+                Choisir depuis le Marketplace
+              </Button>
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={addNewItem}
+                className="h-9 text-xs font-bold rounded-xl gap-1"
+              >
+                <Plus className="h-4 w-4" /> Ajouter manuellement
+              </Button>
+            </div>
+          </div>
+
+          {/* Bandeau d'actions rapides : Mercuriale Régionale & Intégration Marketplace */}
+          <div className="flex flex-wrap items-center justify-between gap-2 p-3 rounded-2xl bg-emerald-500/10 border border-emerald-500/25">
             <div className="flex items-center gap-2">
-              <Button size="sm" variant="outline" onClick={addNewItem} className="h-9 text-xs font-bold rounded-xl gap-1">
-                <Plus className="h-4 w-4" /> Ajouter une ligne
+              <Sparkles className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
+              <span className="text-xs font-semibold text-emerald-950 dark:text-emerald-200">
+                Mercuriale des Prix Réels Burkina Faso :
+              </span>
+            </div>
+            <div className="flex flex-wrap items-center gap-1.5">
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => handleApplyRegionalMercuriale("Centre / Ouagadougou")}
+                className="h-7 text-[11px] font-semibold bg-background hover:bg-emerald-500/10 gap-1 rounded-lg"
+              >
+                <MapPin className="h-3 w-3 text-primary" />
+                Ouagadougou
+              </Button>
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => handleApplyRegionalMercuriale("Hauts-Bassins / Bobo")}
+                className="h-7 text-[11px] font-semibold bg-background hover:bg-emerald-500/10 gap-1 rounded-lg"
+              >
+                <MapPin className="h-3 w-3 text-primary" />
+                Bobo-Dioulasso
+              </Button>
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => handleApplyRegionalMercuriale("Nationale")}
+                className="h-7 text-[11px] font-semibold bg-background hover:bg-emerald-500/10 gap-1 rounded-lg"
+              >
+                <RefreshCw className="h-3 w-3 text-primary" />
+                Actualiser tous les prix
               </Button>
             </div>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
             <div>
-              <Label className="text-xs font-bold">Titre du Devis</Label>
+              <Label className="text-xs font-bold">Titre du Devis / Métré</Label>
               <Input
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
@@ -193,7 +329,7 @@ export const FieldQuotesTool: React.FC<FieldQuotesToolProps> = ({
               />
             </div>
             <div>
-              <Label className="text-xs font-bold">Nom du Client / Producteur</Label>
+              <Label className="text-xs font-bold">Nom du Client / Exploitant</Label>
               <Input
                 value={clientName}
                 onChange={(e) => setClientName(e.target.value)}
@@ -213,25 +349,33 @@ export const FieldQuotesTool: React.FC<FieldQuotesToolProps> = ({
           {/* ── TABLEAU ÉDITABLE DES ARTICLES ── */}
           <div className="rounded-2xl border overflow-hidden">
             <div className="bg-muted/70 p-2.5 text-xs font-bold grid grid-cols-12 gap-2 text-foreground">
-              <span className="col-span-5">Désignation & Fourniture</span>
-              <span className="col-span-2 text-center">Unité</span>
+              <span className="col-span-5">Désignation &amp; Fourniture</span>
+              <span className="col-span-1 text-center">Unité</span>
               <span className="col-span-1 text-center">Qté</span>
-              <span className="col-span-2 text-right">P.U. (FCFA)</span>
+              <span className="col-span-3 text-right">P.U. &amp; Marketplace</span>
               <span className="col-span-2 text-right">Total (FCFA)</span>
             </div>
 
-            <div className="divide-y divide-border/60 max-h-72 overflow-y-auto bg-card text-xs">
+            <div className="divide-y divide-border/60 max-h-80 overflow-y-auto bg-card text-xs">
               {items.length === 0 ? (
-                <div className="p-6 text-center text-muted-foreground text-xs">
-                  Aucun élément chiffré pour le moment. Concevez un bâtiment ou une irrigation, ou cliquez sur « Ajouter une ligne ».
+                <div className="p-8 text-center text-muted-foreground text-xs space-y-2">
+                  <ShoppingBag className="h-8 w-8 mx-auto opacity-40 text-primary" />
+                  <p className="font-semibold text-foreground">Aucun article dans ce métré</p>
+                  <p className="text-[11px]">
+                    Sélectionnez des matériaux certifiés sur le marketplace ou ajoutez une ligne personnalisée.
+                  </p>
+                  <Button size="sm" onClick={openMarketplaceToAdd} className="text-xs gap-1.5 gradient-primary text-primary-foreground">
+                    <ShoppingBag className="h-3.5 w-3.5" />
+                    Parcourir les prix du Marketplace
+                  </Button>
                 </div>
               ) : (
                 items.map((item) => (
                   <div key={item.id} className="p-2.5 grid grid-cols-12 gap-2 items-center hover:bg-muted/20">
-                    <div className="col-span-5 flex items-center gap-1.5">
+                    <div className="col-span-5 flex items-center gap-1.5 min-w-0">
                       <button
                         onClick={() => deleteItem(item.id)}
-                        className="text-muted-foreground hover:text-destructive p-0.5"
+                        className="text-muted-foreground hover:text-destructive p-0.5 shrink-0"
                         title="Supprimer la ligne"
                       >
                         <Trash2 className="h-3.5 w-3.5" />
@@ -239,12 +383,14 @@ export const FieldQuotesTool: React.FC<FieldQuotesToolProps> = ({
                       <Input
                         value={item.designation}
                         onChange={(e) => updateItem(item.id, "designation", e.target.value)}
-                        className="h-8 text-xs font-medium border-0 shadow-none p-1"
+                        className="h-8 text-xs font-medium border-0 shadow-none p-1 truncate"
                       />
                     </div>
-                    <span className="col-span-2 text-center text-muted-foreground text-[11px]">
+
+                    <span className="col-span-1 text-center text-muted-foreground text-[11px] truncate">
                       {item.unit}
                     </span>
+
                     <div className="col-span-1">
                       <Input
                         type="number"
@@ -253,14 +399,27 @@ export const FieldQuotesTool: React.FC<FieldQuotesToolProps> = ({
                         className="h-8 text-xs font-mono text-center border-0 shadow-none p-1 font-bold"
                       />
                     </div>
-                    <div className="col-span-2">
+
+                    <div className="col-span-3 flex items-center justify-end gap-1">
                       <Input
                         type="number"
                         value={item.unitPriceFCFA}
                         onChange={(e) => updateItem(item.id, "unitPriceFCFA", parseInt(e.target.value) || 0)}
-                        className="h-8 text-xs font-mono text-right border-0 shadow-none p-1"
+                        className="h-8 w-24 text-xs font-mono text-right border-0 shadow-none p-1"
                       />
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => openMarketplaceForLine(item.id, item.designation)}
+                        className="h-7 px-1.5 text-[10px] font-semibold gap-1 text-emerald-700 dark:text-emerald-400 hover:bg-emerald-500/10 shrink-0"
+                        title="Choisir et appliquer le prix réel du Marketplace"
+                      >
+                        <Tag className="h-3 w-3" />
+                        Prix Réel
+                      </Button>
                     </div>
+
                     <span className="col-span-2 text-right font-mono font-bold text-foreground">
                       {item.totalFCFA.toLocaleString("fr-FR")} F
                     </span>
@@ -272,7 +431,7 @@ export const FieldQuotesTool: React.FC<FieldQuotesToolProps> = ({
             {/* ── TOTAUX & POSTES COMPLÉMENTAIRES ── */}
             <div className="bg-muted/40 p-4 border-t space-y-2 text-xs">
               <div className="flex justify-between items-center text-muted-foreground">
-                <span>Sous-total Fournitures & Matériaux :</span>
+                <span>Sous-total Fournitures &amp; Matériaux :</span>
                 <span className="font-mono font-bold text-foreground">
                   {subtotalMaterials.toLocaleString("fr-FR")} FCFA
                 </span>
@@ -289,7 +448,7 @@ export const FieldQuotesTool: React.FC<FieldQuotesToolProps> = ({
                   />
                 </div>
                 <div>
-                  <Label className="text-[11px] font-bold">Logistique & Transport livraison (FCFA)</Label>
+                  <Label className="text-[11px] font-bold">Logistique &amp; Transport livraison (FCFA)</Label>
                   <Input
                     type="number"
                     value={transportCost}
@@ -329,6 +488,16 @@ export const FieldQuotesTool: React.FC<FieldQuotesToolProps> = ({
           </div>
         </CardContent>
       </Card>
+
+      {/* Modal du Marketplace Matériaux Burkina Faso */}
+      <MarketplaceMaterialPricePickerModal
+        open={marketplaceModalOpen}
+        onOpenChange={setMarketplaceModalOpen}
+        onAddItem={handleAddItemFromMarketplace}
+        onApplyPriceToLine={handleApplyPriceToLine}
+        targetLineId={targetLineId}
+        targetLineDesignation={targetLineDesignation}
+      />
     </div>
   );
 };
