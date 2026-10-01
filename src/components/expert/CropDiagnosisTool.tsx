@@ -13,8 +13,14 @@ import {
   Loader2, Camera, ImageIcon, Sparkles, AlertCircle, CheckCircle2, Save, WifiOff,
   Clock, History, Trash2, MapPin, Navigation, BookOpen, CloudOff, FileText, ShieldCheck, Leaf,
   AlertTriangle, Edit3, UserCheck, Microscope, Search, Info, HelpCircle, Shield,
-  Award, RefreshCw, Layers, CheckCheck, Eye, Key, ExternalLink, Database, Cpu
+  Award, RefreshCw, Layers, CheckCheck, Eye, Key, ExternalLink, Database, Cpu,
+  UploadCloud, FileImage, Check
 } from "lucide-react";
+import {
+  optimizeAndCompressImage,
+  createSyntheticSampleImage,
+  type OptimizedImageResult,
+} from "@/lib/imageOptimization";
 import {
   identifyPlantWithPlantNet,
   getStoredPlantNetApiKey,
@@ -139,6 +145,8 @@ export function CropDiagnosisTool() {
   const [symptoms, setSymptoms] = useState("");
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string>("");
+  const [imageMeta, setImageMeta] = useState<{ originalSize: number; compressedSize: number } | null>(null);
+  const [isDraggingOver, setIsDraggingOver] = useState(false);
   const [imageAnalysis, setImageAnalysis] = useState<FoliarImageAnalysisResult | null>(null);
   const [analyzingImage, setAnalyzingImage] = useState(false);
   const [plantnetResult, setPlantnetResult] = useState<PlantNetIdentificationResult | null>(null);
@@ -271,69 +279,203 @@ export function CropDiagnosisTool() {
 
   const onFile = async (f: File | null) => {
     if (!f) return;
-    if (f.size > 8 * 1024 * 1024) {
-      toast({ title: "Image trop volumineuse", description: "Le fichier ne doit pas dépasser 8 Mo.", variant: "destructive" });
-      return;
-    }
-    setImageFile(f);
-    const previewUrl = URL.createObjectURL(f);
-    setImagePreview(previewUrl);
+
+    // Réinitialiser la valeur des inputs pour permettre de re-sélectionner le même fichier
+    if (cameraRef.current) cameraRef.current.value = "";
+    if (galleryRef.current) galleryRef.current.value = "";
 
     setAnalyzingImage(true);
     setIdentifyingPlantNet(true);
+
     try {
-      const base64 = await fileToBase64(f);
-      const visionResult = await analyzePlantImage({ imageBase64: base64, imagePreviewUrl: previewUrl });
-      setImageAnalysis(visionResult);
-      if (visionResult.detectedVisualLesions.length > 0) {
-        toast({
-          title: "Cliché analysé par vision IA",
-          description: `Altération foliaire mesurée : ${visionResult.measuredMetrics.totalFoliarDamagePercent}%. Nécroses : ${visionResult.measuredMetrics.necrosisPercent}%.`,
-        });
-      }
-
-      // FILTRE 1 : IDENTIFICATION IMMÉDIATE DE LA PLANTE VIA L'API PL@NTNET (my.plantnet.org)
-      const pNetRes = await identifyPlantWithPlantNet({
-        imageBase64: base64,
-        mimeType: f.type,
+      // Compression & Normalisation automatique côté client (supporte n'importe quelle photo jusqu'à 30 Mo)
+      const optimized = await optimizeAndCompressImage(f, {
+        maxWidth: 1600,
+        maxHeight: 1600,
+        quality: 0.85,
       });
-      setPlantnetResult(pNetRes);
 
-      if (pNetRes.bestMatch) {
-        if (pNetRes.isWeed && pNetRes.matchedWeedId) {
-          setPlantMode("adventice");
-          setWeedKey(pNetRes.matchedWeedId);
+      setImageFile(optimized.file);
+      setImagePreview(optimized.previewUrl);
+      setImageMeta({
+        originalSize: optimized.originalSize,
+        compressedSize: optimized.compressedSize,
+      });
+
+      // 1. Analyse biométrique foliaire par vision numérique
+      try {
+        const visionResult = await analyzePlantImage({
+          imageBase64: optimized.base64,
+          imagePreviewUrl: optimized.previewUrl,
+        });
+        setImageAnalysis(visionResult);
+        if (visionResult.detectedVisualLesions.length > 0) {
           toast({
-            title: "Filtre 1 Pl@ntNet : Mauvaise herbe détectée",
-            description: `${pNetRes.bestMatch.commonName || pNetRes.bestMatch.scientificName} (${(pNetRes.confidence * 100).toFixed(1)}% de certitude)`,
-          });
-        } else if (pNetRes.matchedNafaCropId) {
-          setPlantMode("culture");
-          setCropKey(pNetRes.matchedNafaCropId);
-          toast({
-            title: "Filtre 1 Pl@ntNet : Espèce identifiée",
-            description: `${pNetRes.bestMatch.commonName || pNetRes.bestMatch.scientificName} (${(pNetRes.confidence * 100).toFixed(1)}% de certitude)`,
+            title: "Cliché analysé par vision IA",
+            description: `Altération foliaire mesurée : ${visionResult.measuredMetrics.totalFoliarDamagePercent}%. Nécroses : ${visionResult.measuredMetrics.necrosisPercent}%.`,
           });
         }
+      } catch (visionErr) {
+        console.warn("Échec analyse vision :", visionErr);
       }
-    } catch (err) {
-      console.warn("Échec analyse préliminaire d'image ou identification Pl@ntNet :", err);
+
+      // 2. FILTRE 1 : IDENTIFICATION IMMÉDIATE DE LA PLANTE VIA L'API PL@NTNET
+      try {
+        const pNetRes = await identifyPlantWithPlantNet({
+          imageBase64: optimized.base64,
+          mimeType: optimized.mimeType,
+        });
+        setPlantnetResult(pNetRes);
+
+        if (pNetRes.bestMatch) {
+          if (pNetRes.isWeed && pNetRes.matchedWeedId) {
+            setPlantMode("adventice");
+            setWeedKey(pNetRes.matchedWeedId);
+            toast({
+              title: "Filtre 1 Pl@ntNet : Mauvaise herbe détectée",
+              description: `${pNetRes.bestMatch.commonName || pNetRes.bestMatch.scientificName} (${(pNetRes.confidence * 100).toFixed(1)}% de certitude)`,
+            });
+          } else if (pNetRes.matchedNafaCropId) {
+            setPlantMode("culture");
+            setCropKey(pNetRes.matchedNafaCropId);
+            toast({
+              title: "Filtre 1 Pl@ntNet : Espèce identifiée",
+              description: `${pNetRes.bestMatch.commonName || pNetRes.bestMatch.scientificName} (${(pNetRes.confidence * 100).toFixed(1)}% de certitude)`,
+            });
+          }
+        }
+      } catch (pNetErr) {
+        console.warn("Échec Pl@ntNet :", pNetErr);
+      }
+
+      toast({
+        title: "Photo chargée avec succès",
+        description: `Image optimisée à ${(optimized.compressedSize / 1024).toFixed(0)} Ko pour un diagnostic rapide.`,
+      });
+    } catch (err: any) {
+      console.warn("Erreur chargement optimisé, fallback direct :", err);
+      // Fallback direct sur le fichier brut pour ne jamais bloquer l'utilisateur
+      try {
+        const previewUrl = URL.createObjectURL(f);
+        setImageFile(f);
+        setImagePreview(previewUrl);
+        setImageMeta({ originalSize: f.size, compressedSize: f.size });
+        toast({
+          title: "Photo chargée en mode direct",
+          description: "Le cliché est prêt pour l'analyse phytosanitaire.",
+        });
+      } catch (fallbackErr) {
+        toast({
+          title: "Erreur lors du chargement de l'image",
+          description: err?.message || "Le format de l'image n'a pas pu être lu.",
+          variant: "destructive",
+        });
+      }
     } finally {
       setAnalyzingImage(false);
       setIdentifyingPlantNet(false);
     }
   };
 
+  // Chargement rapide d'un échantillon synthétique représentatif
+  const handleLoadSample = async (sampleType: "tomate" | "mais" | "oignon") => {
+    let sampleTitle = "Feuille de Tomate (Mildiou)";
+    let pColor = "#2e7d32";
+    let sColor = "#388e3c";
+    let spots = [
+      { x: 260, y: 220, r: 35, color: "#5d4037" },
+      { x: 380, y: 320, r: 45, color: "#795548" },
+      { x: 300, y: 400, r: 25, color: "#fbc02d" },
+    ];
+
+    if (sampleType === "mais") {
+      sampleTitle = "Feuille de Maïs (Chenille Légionnaire)";
+      spots = [
+        { x: 320, y: 250, r: 20, color: "#3e2723" },
+        { x: 330, y: 340, r: 25, color: "#4e342e" },
+        { x: 310, y: 440, r: 30, color: "#d7ccc8" },
+      ];
+      setPlantMode("culture");
+      setCropKey("mais");
+      setSymptoms("Perforations en fenêtres et déjections de chenille légionnaire sur jeunes feuilles");
+    } else if (sampleType === "oignon") {
+      sampleTitle = "Tige d'Oignon (Pourriture Basale)";
+      spots = [
+        { x: 320, y: 480, r: 50, color: "#3e2723" },
+        { x: 320, y: 380, r: 30, color: "#f57f17" },
+      ];
+      setPlantMode("culture");
+      setCropKey("oignon");
+      setSymptoms("Jaunissement des pointes et pourriture brun foncé à la base du bulbe");
+    } else {
+      setPlantMode("culture");
+      setCropKey("tomate");
+      setSymptoms("Taches brunes huileuses sur le limbe et duvet blanchâtre sous les feuilles");
+    }
+
+    try {
+      const sampleFile = await createSyntheticSampleImage(sampleTitle, pColor, sColor, spots);
+      await onFile(sampleFile);
+    } catch (e) {
+      console.error("Erreur création échantillon :", e);
+    }
+  };
+
+  // Drag and Drop
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDraggingOver(true);
+  };
+
+  const handleDragLeave = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDraggingOver(false);
+  };
+
+  const handleDrop = async (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDraggingOver(false);
+    const files = e.dataTransfer.files;
+    if (files && files.length > 0) {
+      await onFile(files[0]);
+    }
+  };
+
+  // Écouteur pour coller une image du presse-papier (Ctrl+V)
+  useEffect(() => {
+    const handlePaste = (e: ClipboardEvent) => {
+      const items = e.clipboardData?.items;
+      if (!items) return;
+      for (let i = 0; i < items.length; i++) {
+        if (items[i].type.indexOf("image") !== -1) {
+          const file = items[i].getAsFile();
+          if (file) {
+            onFile(file);
+            break;
+          }
+        }
+      }
+    };
+    window.addEventListener("paste", handlePaste);
+    return () => window.removeEventListener("paste", handlePaste);
+  }, []);
+
   const resetForm = () => {
     setResult(null);
     setScientificResult(null);
     setImageFile(null);
     setImagePreview("");
+    setImageMeta(null);
     setImageAnalysis(null);
     setPlantnetResult(null);
     setSymptoms("");
     setCoords(null);
     setParcelName("");
+    if (cameraRef.current) cameraRef.current.value = "";
+    if (galleryRef.current) galleryRef.current.value = "";
   };
 
   // ── PIPELINE SCIENTIFIQUE DE DIAGNOSTIC OBLIGATOIRE (4 ÉTAPES) ──
@@ -1019,45 +1161,176 @@ export function CropDiagnosisTool() {
               </div>
             )}
 
-            {/* Prise de photos avec consigne scientifique */}
-            <div className="space-y-2">
+            {/* Zone de chargement et prise de photo hautement résiliente */}
+            <div className="space-y-3">
               <div className="flex items-center justify-between">
-                <Label className="font-bold text-xs">Photographies de l'échantillon (Obligatoire)</Label>
-                <span className="text-[11px] text-muted-foreground">Angles recommandés : feuille nette, collet, fleur</span>
-              </div>
-              <input ref={cameraRef} type="file" accept="image/*" capture="environment" className="hidden" onChange={(e) => onFile(e.target.files?.[0] ?? null)} />
-              <input ref={galleryRef} type="file" accept="image/*" className="hidden" onChange={(e) => onFile(e.target.files?.[0] ?? null)} />
-              
-              <div className="grid grid-cols-2 gap-3">
-                <Button type="button" variant="outline" className="h-11 rounded-xl font-semibold gap-2" onClick={() => cameraRef.current?.click()}>
-                  <Camera className="h-4 w-4 text-emerald-600" /> Photo appareil
-                </Button>
-                <Button type="button" variant="outline" className="h-11 rounded-xl font-semibold gap-2" onClick={() => galleryRef.current?.click()}>
-                  <ImageIcon className="h-4 w-4" /> Galerie d'images
-                </Button>
+                <Label className="font-bold text-xs flex items-center gap-1.5">
+                  <Camera className="h-4 w-4 text-[#F97316]" />
+                  <span>Photographie de l'échantillon foliaire (Recommandée)</span>
+                </Label>
+                <span className="text-[11px] text-muted-foreground">Formats acceptés : JPG, PNG, WEBP (jusqu'à 30 Mo)</span>
               </div>
 
-              {imagePreview && (
-                <div className="space-y-3">
-                  <div className="relative mt-2 rounded-2xl overflow-hidden border max-h-60 flex justify-center bg-muted/20">
-                    <img src={imagePreview} alt="Échantillon de plante" className="object-contain max-h-60 rounded-2xl" />
+              {/* Inputs fichiers invisibles avec accept universel */}
+              <input
+                ref={cameraRef}
+                type="file"
+                accept="image/png,image/jpeg,image/webp,image/jpg,image/*"
+                className="hidden"
+                onChange={(e) => {
+                  const f = e.target.files?.[0] ?? null;
+                  e.target.value = "";
+                  onFile(f);
+                }}
+              />
+              <input
+                ref={galleryRef}
+                type="file"
+                accept="image/png,image/jpeg,image/webp,image/jpg,image/*"
+                className="hidden"
+                onChange={(e) => {
+                  const f = e.target.files?.[0] ?? null;
+                  e.target.value = "";
+                  onFile(f);
+                }}
+              />
+
+              {/* Zone principale : Aperçu ou Glisser-Déposer */}
+              {!imagePreview ? (
+                <div
+                  onDragOver={handleDragOver}
+                  onDragLeave={handleDragLeave}
+                  onDrop={handleDrop}
+                  className={cn(
+                    "border-2 border-dashed rounded-[20px] p-5 sm:p-6 text-center transition-all flex flex-col items-center justify-center gap-3 cursor-pointer",
+                    isDraggingOver
+                      ? "border-[#F97316] bg-orange-500/10 scale-[1.01]"
+                      : "border-border/80 bg-muted/20 hover:border-emerald-500/50 hover:bg-muted/30"
+                  )}
+                  onClick={() => galleryRef.current?.click()}
+                >
+                  <div className="w-12 h-12 rounded-2xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center">
+                    <UploadCloud className="h-6 w-6" />
+                  </div>
+                  <div className="space-y-1">
+                    <p className="text-xs sm:text-sm font-bold text-foreground">
+                      Glissez votre photo ici ou cliquez pour parcourir
+                    </p>
+                    <p className="text-[11px] text-muted-foreground">
+                      Compression automatique haute performance sans perte de détails
+                    </p>
+                  </div>
+
+                  <div className="flex flex-wrap items-center justify-center gap-2 pt-1" onClick={(e) => e.stopPropagation()}>
                     <Button
                       type="button"
-                      variant="destructive"
+                      variant="outline"
                       size="sm"
-                      onClick={() => { setImageFile(null); setImagePreview(""); setImageAnalysis(null); }}
-                      className="absolute top-2 right-2 h-7 px-2.5 text-xs rounded-lg"
+                      className="rounded-xl text-xs font-semibold gap-1.5 h-9"
+                      onClick={() => galleryRef.current?.click()}
                     >
-                      Supprimer
+                      <ImageIcon className="h-4 w-4 text-emerald-600" />
+                      <span>Parcourir mes photos</span>
                     </Button>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      className="rounded-xl text-xs font-semibold gap-1.5 h-9"
+                      onClick={() => cameraRef.current?.click()}
+                    >
+                      <Camera className="h-4 w-4 text-[#F97316]" />
+                      <span>Prendre une photo</span>
+                    </Button>
+                  </div>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  <div className="relative rounded-[20px] overflow-hidden border border-border/80 max-h-72 flex justify-center bg-slate-950/20 p-2 shadow-xs">
+                    <img
+                      src={imagePreview}
+                      alt="Échantillon végétal chargé"
+                      className="object-contain max-h-64 rounded-xl shadow-md"
+                    />
+
+                    {/* Badge d'optimisation */}
+                    {imageMeta && (
+                      <div className="absolute bottom-4 left-4 px-2.5 py-1 rounded-full bg-slate-900/80 backdrop-blur-md border border-white/20 text-white text-[10px] font-semibold flex items-center gap-1.5">
+                        <CheckCircle2 className="h-3 w-3 text-emerald-400" />
+                        <span>Optimisée ({(imageMeta.compressedSize / 1024).toFixed(0)} Ko)</span>
+                      </div>
+                    )}
+
+                    {/* Actions sur l'image */}
+                    <div className="absolute top-4 right-4 flex items-center gap-2">
+                      <Button
+                        type="button"
+                        variant="secondary"
+                        size="sm"
+                        onClick={() => galleryRef.current?.click()}
+                        className="h-8 px-2.5 text-xs font-bold rounded-xl shadow-md bg-white/90 dark:bg-card/90 hover:bg-white"
+                      >
+                        Changer
+                      </Button>
+                      <Button
+                        type="button"
+                        variant="destructive"
+                        size="sm"
+                        onClick={() => {
+                          setImageFile(null);
+                          setImagePreview("");
+                          setImageMeta(null);
+                          setImageAnalysis(null);
+                          setPlantnetResult(null);
+                        }}
+                        className="h-8 px-2.5 text-xs font-bold rounded-xl shadow-md"
+                      >
+                        <Trash2 className="h-3.5 w-3.5 mr-1" />
+                        Supprimer
+                      </Button>
+                    </div>
                   </div>
 
                   {analyzingImage && (
-                    <div className="flex items-center gap-2 p-3 rounded-xl bg-primary/5 border border-primary/20 text-xs text-primary animate-pulse">
-                      <Loader2 className="h-4 w-4 animate-spin shrink-0" />
-                      <span>Analyse biométrique du cliché réel par vision numérique en cours...</span>
+                    <div className="flex items-center gap-2.5 p-3 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 text-xs text-emerald-800 dark:text-emerald-300 font-semibold animate-pulse">
+                      <Loader2 className="h-4 w-4 animate-spin shrink-0 text-[#F97316]" />
+                      <span>Analyse biométrique foliaire et détection visuelle des lésions en cours...</span>
                     </div>
                   )}
+                </div>
+              )}
+
+              {/* Suggestions d'échantillons en 1 clic pour tester immédiatement */}
+              <div className="p-3 rounded-2xl bg-muted/30 border border-border/60 flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
+                <div className="flex items-center gap-2">
+                  <Sparkles className="h-4 w-4 text-[#F97316] shrink-0" />
+                  <span className="text-xs font-bold text-foreground">Échantillons de test prêts à l'emploi :</span>
+                </div>
+                <div className="flex flex-wrap items-center gap-1.5">
+                  <button
+                    type="button"
+                    onClick={() => handleLoadSample("tomate")}
+                    className="px-2.5 py-1 rounded-xl bg-background border border-border/80 hover:border-emerald-500 text-[11px] font-semibold transition-all hover:text-emerald-700"
+                  >
+                    🍅 Tomate (Mildiou)
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleLoadSample("mais")}
+                    className="px-2.5 py-1 rounded-xl bg-background border border-border/80 hover:border-emerald-500 text-[11px] font-semibold transition-all hover:text-emerald-700"
+                  >
+                    🌽 Maïs (Chenille)
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleLoadSample("oignon")}
+                    className="px-2.5 py-1 rounded-xl bg-background border border-border/80 hover:border-emerald-500 text-[11px] font-semibold transition-all hover:text-emerald-700"
+                  >
+                    🧅 Oignon (Pourriture)
+                  </button>
+                </div>
+              </div>
+            </div>
 
                   {imageAnalysis && imageAnalysis.hasImage && (
                     <div className="p-3.5 rounded-2xl bg-card border border-border/80 shadow-xs space-y-2.5">
@@ -1200,9 +1473,6 @@ export function CropDiagnosisTool() {
                       )}
                     </div>
                   )}
-                </div>
-              )}
-            </div>
 
             {/* Description des symptômes observés (directement accessible) */}
             <div className="space-y-1.5 pt-1">
