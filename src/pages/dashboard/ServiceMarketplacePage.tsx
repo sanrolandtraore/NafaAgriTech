@@ -26,6 +26,9 @@ import { partnerStorage, PartnerOffer } from "@/lib/partnerStorage";
 import MechEstimatorCard from "@/components/mechanization/MechanizationEstimatorCard";
 import MechBookingModal from "@/components/mechanization/MechanizationBookingModal";
 import MechUssdSimulator from "@/components/mechanization/MechanizationUssdSimulator";
+import { isPartnerSubscriptionActive } from "@/lib/providerSubscription";
+import BurkinaPaymentModal from "@/components/payment/BurkinaPaymentModal";
+import { PaymentTransaction } from "@/lib/burkinaPaymentAggregator";
 
 // ─── Les 8 Catégories Réglementaires Obligatoires ───
 export const MARKETPLACE_CATEGORIES = [
@@ -126,7 +129,7 @@ type MarketOrder = {
 };
 
 export const ServiceMarketplacePage = () => {
-  const { user, primaryRole, partnerType } = useAuth();
+  const { user, profile, primaryRole, partnerType } = useAuth();
   const [searchParams] = useSearchParams();
   const urlCat = searchParams.get("cat") || searchParams.get("category");
   const urlRole = searchParams.get("role") || searchParams.get("target");
@@ -199,6 +202,10 @@ export const ServiceMarketplacePage = () => {
   const [orderDays, setOrderDays] = useState("1");
   const [withOperator, setWithOperator] = useState(true);
 
+  // État Agrégateur de Paiement Burkina Faso (Orange Money, Moov, Wave, Carte)
+  const [paymentModalOpen, setPaymentModalOpen] = useState(false);
+  const [pendingPaymentItem, setPendingPaymentItem] = useState<{ item: PublicMarketItem; amount: number } | null>(null);
+
   // ─── Les 6 Filtres Obligatoires ───
   const [search, setSearch] = useState("");
   const [catFilter, setCatFilter] = useState(() => normalizeCatParam(urlCat));
@@ -259,8 +266,17 @@ export const ServiceMarketplacePage = () => {
         return { city: foundCity, region: foundRegion };
       };
 
+      // Filtrage strict : seules les offres de partenaires ayant un abonnement actif sont visibles pour le public
+      const activeOffers = partnerOffers.filter((offer) => {
+        if (offer.is_active === false) return false;
+        // Si le partenaire connecté consulte ses propres offres, il les voit toujours en aperçu
+        if (user && offer.owner_id === user.id) return true;
+        // Pour les autres utilisateurs (agriculteurs, éleveurs, visiteurs), vérification de l'abonnement partenaire
+        return isPartnerSubscriptionActive(offer.owner_id);
+      });
+
       // Construction de la liste publique propre avec zéro fuite de données privées
-      const formattedItems: PublicMarketItem[] = partnerOffers.map((offer, index) => {
+      const formattedItems: PublicMarketItem[] = activeOffers.map((offer, index) => {
         const loc = normalizeLocation(offer.location_name);
         const rawPrice = parseInt((offer.price_indication || "").replace(/\D/g, ""), 10) || (25000 + (index * 15000));
         return {
@@ -427,6 +443,55 @@ export const ServiceMarketplacePage = () => {
       toast.success("Commande mémorisée sur votre appareil.");
       setShowOrderDialog(false);
     }
+  };
+
+  const handleInitiatePayment = () => {
+    if (!selectedItem) return;
+    setPendingPaymentItem({ item: selectedItem, amount: selectedItem.price });
+    setPaymentModalOpen(true);
+  };
+
+  const handlePaymentSuccess = async (tx: PaymentTransaction) => {
+    if (!pendingPaymentItem) return;
+    const { item } = pendingPaymentItem;
+
+    const finalClientNotes = [
+      orderMode === "location" ? `[Location ${orderDays} jour(s) - ${withOperator ? "Avec chauffeur" : "Sans chauffeur"}]` : "[Achat direct]",
+      `Paiement Séquestre : ${tx.provider} (Réf : ${tx.operatorReference})`,
+      orderNotes.trim() ? `Note : ${orderNotes.trim()}` : "",
+    ].filter(Boolean).join(" | ");
+
+    if (user) {
+      await supabase.from("marketplace_orders").insert({
+        service_id: item.id,
+        client_id: user.id,
+        provider_id: item.provider_id,
+        amount: item.price,
+        client_notes: finalClientNotes,
+        status: "en_attente",
+        escrow_status: "bloque",
+      }).catch(() => {});
+    }
+
+    const localOrder: MarketOrder = {
+      id: `ord-${tx.operatorReference}`,
+      service_id: item.id,
+      client_id: user?.id || "client-local",
+      provider_id: item.provider_id,
+      amount: item.price,
+      status: "en_attente",
+      escrow_status: "bloque",
+      client_notes: finalClientNotes,
+      created_at: new Date().toISOString(),
+      item_title: item.title,
+    };
+    setMyOrders((prev) => [localOrder, ...prev]);
+
+    toast.success(`Commande validée et paiement consigné sous séquestre NAFA via ${tx.provider} !`);
+    setShowOrderDialog(false);
+    setOrderNotes("");
+    setSelectedItem(null);
+    setPendingPaymentItem(null);
   };
 
   const resetFilters = () => {
@@ -1156,12 +1221,17 @@ export const ServiceMarketplacePage = () => {
                 <span>Votre paiement reste consigné sur le compte séquestre NAFA - AGRITECH jusqu'à confirmation de la livraison ou de la réalisation de la prestation sur le terrain.</span>
               </div>
 
-              <div className="flex justify-end gap-2 pt-2">
+              <div className="flex flex-col sm:flex-row justify-end gap-2 pt-2">
                 <Button variant="outline" size="sm" className="h-10 px-4 text-xs rounded-xl" onClick={() => setShowOrderDialog(false)}>
                   Annuler
                 </Button>
-                <Button size="sm" className="bg-emerald-600 hover:bg-emerald-700 text-white h-10 px-4 text-xs rounded-xl font-medium" onClick={handlePlaceOrder}>
-                  {getItemActionType(selectedItem.category).dialogButton}
+                <Button
+                  size="sm"
+                  className="bg-emerald-600 hover:bg-emerald-700 text-white h-10 px-4 text-xs rounded-xl font-bold flex items-center justify-center gap-1.5 shadow-sm"
+                  onClick={handleInitiatePayment}
+                >
+                  <Shield className="h-4 w-4" />
+                  Payer sous séquestre (Orange / Moov / Wave / Carte)
                 </Button>
               </div>
             </div>
@@ -1179,6 +1249,24 @@ export const ServiceMarketplacePage = () => {
           setMechModalOpen(false);
         }}
       />
+
+      {/* ─── GUICHET DE PAIEMENT AGRÉGATEUR BURKINA FASO (SÉQUESTRE SÉCURISÉ NAFA) ─── */}
+      {pendingPaymentItem && (
+        <BurkinaPaymentModal
+          open={paymentModalOpen}
+          onOpenChange={setPaymentModalOpen}
+          title={`Séquestre Garanti : ${pendingPaymentItem.item.title}`}
+          description={`Commande auprès de ${pendingPaymentItem.item.partner_name}. Vos fonds sont protégés jusqu'à validation de la prestation.`}
+          amount={pendingPaymentItem.amount}
+          context="marketplace_order"
+          beneficiaryType="partner"
+          partnerId={pendingPaymentItem.item.provider_id}
+          partnerName={pendingPaymentItem.item.partner_name}
+          defaultPayerPhone={user?.phone || profile?.phone || "+226 "}
+          defaultPayerName={profile?.full_name || user?.user_metadata?.full_name || ""}
+          onSuccess={handlePaymentSuccess}
+        />
+      )}
     </div>
   );
 };

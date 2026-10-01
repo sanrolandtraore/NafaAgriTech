@@ -57,7 +57,7 @@ import {
   Award,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { getStoredProviderSubscription } from "@/lib/providerSubscription";
+import { getStoredProviderSubscription, isSubscriptionActive } from "@/lib/providerSubscription";
 import {
   partnerStorage,
   PartnerOffer,
@@ -355,6 +355,7 @@ export default function PartenaireDashboard() {
   const activeMissionsCount = missions.filter(
     (m) => m.status === "planifiee" || m.status === "en_cours"
   ).length;
+  const isSubActive = isSubscriptionActive(sub);
 
   return (
     <div className="p-3 sm:p-5 md:p-6 max-w-5xl mx-auto space-y-6 animate-fade-in pb-16">
@@ -533,6 +534,36 @@ export default function PartenaireDashboard() {
         </div>
       )}
 
+      {/* ── BANNIÈRE ABONNEMENT OBLIGATOIRE MARKETPLACE ── */}
+      {!isSubActive && (
+        <div className="p-4 rounded-2xl bg-amber-500/10 border-2 border-amber-500/30 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-xs">
+          <div className="flex items-center gap-3">
+            <div className="p-2.5 rounded-xl bg-amber-600 text-white shrink-0">
+              <Sparkles className="h-5 w-5" />
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <span className="font-bold text-sm text-foreground">
+                  Abonnement requis pour visibilité sur le Marketplace
+                </span>
+                <Badge variant="destructive" className="text-[10px] px-2 py-0.5 font-bold">
+                  Offres masquées au public
+                </Badge>
+              </div>
+              <p className="text-xs text-muted-foreground mt-0.5">
+                Vos produits et services sont enregistrés mais <strong>ne sont pas visibles des acheteurs</strong> sur NAFA-AGRITECH. Activez un abonnement partenaire (Orange Money, Moov, Wave) pour diffuser vos offres et recevoir des commandes directes.
+              </p>
+            </div>
+          </div>
+          <Button asChild size="sm" className="gradient-primary text-primary-foreground font-bold text-xs shrink-0 rounded-xl">
+            <Link to="/dashboard/partenaire-abonnement">
+              <Sparkles className="h-3.5 w-3.5 mr-1" />
+              Activer mon abonnement
+            </Link>
+          </Button>
+        </div>
+      )}
+
       {/* ── 2. BLOCS STATS ESSENTIELLES (3 CARTES CLAIRES) ── */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3.5">
         <div
@@ -682,11 +713,22 @@ export default function PartenaireDashboard() {
                     >
                       {offer.category.replace("_", " ")}
                     </Badge>
-                    {offer.videos && offer.videos.length > 0 && (
-                      <Badge className="absolute top-2.5 right-2.5 bg-emerald-600/90 text-white border-none text-[10px] font-bold flex items-center gap-1 shadow-xs">
-                        <Video className="h-3 w-3" /> Vidéo
-                      </Badge>
-                    )}
+                    <div className="absolute top-2.5 right-2.5 flex items-center gap-1">
+                      {isSubActive ? (
+                        <Badge className="bg-emerald-600/95 text-white border-none text-[10px] font-bold flex items-center gap-1 shadow-xs">
+                          <CheckCircle2 className="h-3 w-3" /> En ligne
+                        </Badge>
+                      ) : (
+                        <Badge variant="destructive" className="border-none text-[10px] font-bold flex items-center gap-1 shadow-xs">
+                          <Clock className="h-3 w-3" /> Masqué
+                        </Badge>
+                      )}
+                      {offer.videos && offer.videos.length > 0 && (
+                        <Badge className="bg-emerald-600/90 text-white border-none text-[10px] font-bold flex items-center gap-1 shadow-xs">
+                          <Video className="h-3 w-3" /> Vidéo
+                        </Badge>
+                      )}
+                    </div>
                   </div>
 
                   <div className="p-4 flex-1 flex flex-col justify-between space-y-3">
