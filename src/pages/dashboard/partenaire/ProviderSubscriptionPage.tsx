@@ -33,6 +33,8 @@ import {
   getSubscriptionDaysRemaining,
 } from "@/lib/providerSubscription";
 import { useAuth } from "@/contexts/AuthContext";
+import BurkinaPaymentModal from "@/components/payment/BurkinaPaymentModal";
+import { PaymentTransaction, BurkinaPaymentProvider } from "@/lib/burkinaPaymentAggregator";
 
 export default function ProviderSubscriptionPage() {
   const { user, profile } = useAuth();
@@ -55,6 +57,7 @@ export default function ProviderSubscriptionPage() {
   const [paymentMethod, setPaymentMethod] = useState<"orange_money" | "moov_money" | "wave" | "virement">("orange_money");
   const [transactionRef, setTransactionRef] = useState("");
   const [processing, setProcessing] = useState(false);
+  const [aggregatorModalOpen, setAggregatorModalOpen] = useState(false);
 
   useEffect(() => {
     // If metadata has subscription data, synchronize
@@ -82,6 +85,72 @@ export default function ProviderSubscriptionPage() {
     setPhone(existingPhone || profile?.phone || user?.phone || "+226 ");
     setTransactionRef("");
     setSubscribeModalOpen(true);
+  };
+
+  const handleLaunchAggregatorPayment = () => {
+    if (!selectedPlan) return;
+    if (!companyName.trim()) {
+      toast.error("Veuillez renseigner le nom de votre entreprise");
+      return;
+    }
+    if (!phone.trim() || phone.trim() === "+226") {
+      toast.error("Veuillez renseigner un numéro de téléphone de contact");
+      return;
+    }
+    setSubscribeModalOpen(false);
+    setAggregatorModalOpen(true);
+  };
+
+  const handleAggregatorPaymentSuccess = async (tx: PaymentTransaction) => {
+    if (!selectedPlan) return;
+    const now = new Date();
+    const isCurrentlyActive = isSubscriptionActive(sub);
+    const currentEnd = sub.endDate ? new Date(sub.endDate) : now;
+    const baseDate = (isCurrentlyActive && sub.tier === selectedPlan.id && currentEnd > now) ? currentEnd : now;
+    const durationDays = billingCycle === "annual" ? 365 : 30;
+    const endDate = new Date(baseDate.getTime() + durationDays * 24 * 60 * 60 * 1000);
+
+    const updated: ProviderSubscription = {
+      tier: selectedPlan.id,
+      activityType,
+      companyName,
+      phone,
+      email: profile?.email || user?.email || sub.email,
+      location: sub.location || "Burkina Faso",
+      serviceArea: sub.location || "Burkina Faso",
+      contactPhone: phone,
+      contactEmail: profile?.email || user?.email || sub.email,
+      startDate: now.toISOString().split("T")[0],
+      endDate: endDate.toISOString().split("T")[0],
+      isActive: true,
+      paymentMethod: tx.provider as any,
+      paymentReference: tx.operatorReference,
+      toolsUnlocked: [
+        "diagnostic_ia",
+        "ordonnances_pdf",
+        "scouting_gps",
+        "location_materiel",
+        "calculatrice_agro",
+        "cartographie_gps",
+        "carnet_clients",
+        "marketplace_offres",
+      ],
+    };
+
+    saveProviderSubscription(updated, user?.id);
+    setSub(updated);
+
+    if (user?.id) {
+      await supabase.auth.updateUser({
+        data: {
+          provider_subscription: updated,
+          company_name: companyName,
+        }
+      }).catch(err => console.warn("Supabase auth updateUser metadata sync bypassed:", err));
+    }
+
+    setAggregatorModalOpen(false);
+    toast.success(`Abonnement ${selectedPlan.title} activé avec succès via ${tx.provider} ! Vos offres sont désormais visibles sur le Marketplace national.`);
   };
 
   const handleConfirmSubscription = async () => {
@@ -494,18 +563,55 @@ export default function ProviderSubscriptionPage() {
             )}
           </div>
 
-          <DialogFooter>
+          <DialogFooter className="flex-col sm:flex-row gap-2">
             <Button variant="outline" onClick={() => setSubscribeModalOpen(false)}>Annuler</Button>
-            <Button
-              onClick={handleConfirmSubscription}
-              disabled={processing}
-              className="gradient-primary text-primary-foreground"
-            >
-              {processing ? "Activation en cours..." : "Confirmer et activer l'accès"}
-            </Button>
+            {selectedPlan?.id === "free" ? (
+              <Button
+                onClick={handleConfirmSubscription}
+                disabled={processing}
+                className="gradient-primary text-primary-foreground font-bold"
+              >
+                {processing ? "Activation..." : "Activer l'accès gratuit"}
+              </Button>
+            ) : (
+              <>
+                <Button
+                  variant="secondary"
+                  onClick={handleConfirmSubscription}
+                  disabled={processing}
+                  className="text-xs"
+                >
+                  {processing ? "Traitement..." : "Déclarer virement / chèque"}
+                </Button>
+                <Button
+                  onClick={handleLaunchAggregatorPayment}
+                  disabled={processing}
+                  className="gradient-primary text-primary-foreground font-bold flex items-center gap-2"
+                >
+                  <Sparkles className="h-4 w-4" />
+                  Payer via Orange / Moov / Wave
+                </Button>
+              </>
+            )}
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Burkina Faso Payment Aggregator Modal */}
+      {selectedPlan && (
+        <BurkinaPaymentModal
+          open={aggregatorModalOpen}
+          onOpenChange={setAggregatorModalOpen}
+          title={`Abonnement ${selectedPlan.title} (${billingCycle === "annual" ? "1 An" : "1 Mois"})`}
+          description={`Paiement sécurisé et activation immédiate de la formule ${selectedPlan.title} pour "${companyName || "Mon Entreprise"}".`}
+          amount={billingCycle === "annual" ? selectedPlan.annualPriceFCFA : selectedPlan.monthlyPriceFCFA}
+          context="subscription"
+          beneficiaryType="nafa_agritech"
+          defaultPayerName={companyName}
+          defaultPayerPhone={phone}
+          onSuccess={handleAggregatorPaymentSuccess}
+        />
+      )}
     </div>
   );
 }

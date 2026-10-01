@@ -128,6 +128,15 @@ export const SUBSCRIPTION_PLANS: SubscriptionPlan[] = [
 
 const LOCAL_STORAGE_KEY = "nafa_provider_subscription";
 
+export const CERTIFIED_DEFAULT_PARTNERS = [
+  "pe-fourn-1", "pe-fourn-2", "pe-fourn-3", "pe-fourn-4",
+  "pe-assur-1", "pe-assur-2", "pe-assur-3",
+  "pe-bank-1", "pe-bank-2", "pe-bank-3",
+  "pe-prog-1", "pe-prog-2", "pe-prog-3",
+  "prov-1", "prov-2", "prov-3", "prov-4", "prov-5",
+  "partner-sncitec", "partner-1"
+];
+
 export function isSubscriptionActive(sub?: ProviderSubscription | null): boolean {
   if (!sub || !sub.isActive) return false;
   if (!sub.endDate) return false;
@@ -144,6 +153,41 @@ export function getSubscriptionDaysRemaining(sub?: ProviderSubscription | null):
   return Math.max(0, Math.ceil(diff / (1000 * 60 * 60 * 24)));
 }
 
+/**
+ * Vérifie si un partenaire spécifique possède un abonnement payant actif lui permettant d'afficher ses offres sur la Marketplace.
+ */
+export function isPartnerSubscriptionActive(partnerId?: string | null): boolean {
+  if (!partnerId) return false;
+  // Les partenaires institutionnels et officiels certifiés pré-intégrés ont un abonnement permanent garanti
+  if (CERTIFIED_DEFAULT_PARTNERS.some((id) => partnerId.startsWith(id) || partnerId.includes(id))) {
+    return true;
+  }
+
+  // Vérifier la souscription stockée pour ce partenaire
+  try {
+    const userRaw = localStorage.getItem(`${LOCAL_STORAGE_KEY}_${partnerId}`);
+    if (userRaw) {
+      const sub = JSON.parse(userRaw) as ProviderSubscription;
+      return isSubscriptionActive(sub) && sub.tier !== "free";
+    }
+    const mapRaw = localStorage.getItem("nafa_partner_subscriptions_map");
+    if (mapRaw) {
+      const map = JSON.parse(mapRaw);
+      if (map[partnerId]) {
+        return isSubscriptionActive(map[partnerId]) && map[partnerId].tier !== "free";
+      }
+    }
+    const globalRaw = localStorage.getItem(LOCAL_STORAGE_KEY);
+    if (globalRaw) {
+      const sub = JSON.parse(globalRaw) as ProviderSubscription;
+      return isSubscriptionActive(sub) && sub.tier !== "free";
+    }
+  } catch {
+    // Ignorer
+  }
+  return false;
+}
+
 export function getStoredProviderSubscription(userId?: string): ProviderSubscription {
   try {
     if (userId) {
@@ -152,34 +196,29 @@ export function getStoredProviderSubscription(userId?: string): ProviderSubscrip
     }
     const raw = localStorage.getItem(LOCAL_STORAGE_KEY);
     if (raw) {
-      const parsed = JSON.parse(raw);
-      return parsed;
+      return JSON.parse(raw);
     }
   } catch (e) {
     console.error("Failed to parse provider subscription", e);
   }
 
+  // Par défaut, un compte partenaire démarre en statut Découverte non activé
+  // Il doit souscrire via Orange Money, Moov, Wave ou Carte pour publier sur la Marketplace
   return {
-    tier: "pro_prestataire",
-    activityType: "polyvalent",
+    tier: "free",
+    activityType: "services_agronomiques",
     companyName: "Mon Entreprise Partenaire",
     phone: "+226 ",
     email: "partenaire@nafa-agritech.com",
     location: "Burkina Faso",
     startDate: new Date().toISOString().split("T")[0],
-    endDate: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString().split("T")[0],
-    isActive: true,
+    endDate: "",
+    isActive: false,
     paymentMethod: "orange_money",
-    paymentReference: "OM-88492048",
+    paymentReference: undefined,
     toolsUnlocked: [
-      "diagnostic_ia",
-      "ordonnances_pdf",
-      "scouting_gps",
-      "location_materiel",
-      "calculatrice_agro",
-      "cartographie_gps",
-      "carnet_clients",
-      "marketplace_offres",
+      "marketplace_visiteur",
+      "fiches_techniques_base",
     ],
   };
 }
@@ -189,6 +228,10 @@ export function saveProviderSubscription(sub: ProviderSubscription, userId?: str
     localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(sub));
     if (userId) {
       localStorage.setItem(`${LOCAL_STORAGE_KEY}_${userId}`, JSON.stringify(sub));
+      const mapRaw = localStorage.getItem("nafa_partner_subscriptions_map");
+      const map = mapRaw ? JSON.parse(mapRaw) : {};
+      map[userId] = sub;
+      localStorage.setItem("nafa_partner_subscriptions_map", JSON.stringify(map));
     }
     window.dispatchEvent(new CustomEvent("nafa-subscription-updated", { detail: sub }));
   } catch (e) {
