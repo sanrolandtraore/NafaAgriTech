@@ -12,6 +12,7 @@ import { Switch } from "@/components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "sonner";
@@ -54,7 +55,8 @@ const SettingsPage = ({ roleLabel, roleSpecificTab, roleSpecificTabLabel }: Sett
   const [savingPassword, setSavingPassword] = useState(false);
   const [savingPrefs, setSavingPrefs] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
-  const [deleteConfirm, setDeleteConfirm] = useState("");
+  const [deleteConfirm1, setDeleteConfirm1] = useState(false);
+  const [deleteConfirm2, setDeleteConfirm2] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [showOld, setShowOld] = useState(false);
@@ -259,7 +261,10 @@ const SettingsPage = ({ roleLabel, roleSpecificTab, roleSpecificTabLabel }: Sett
 
 
   const handleDeleteAccount = async () => {
-    if (deleteConfirm !== "SUPPRIMER") { toast.error("Tapez SUPPRIMER pour confirmer"); return; }
+    if (!deleteConfirm1 || !deleteConfirm2) {
+      toast.error("Veuillez valider les deux confirmations.");
+      return;
+    }
     setDeleting(true);
     try {
       const res = await deleteAccount();
@@ -474,27 +479,63 @@ const SettingsPage = ({ roleLabel, roleSpecificTab, roleSpecificTabLabel }: Sett
               <p className="text-sm text-muted-foreground">
                 La suppression de votre compte est irréversible. Toutes vos données seront définitivement effacées.
               </p>
-              <Dialog open={deleteOpen} onOpenChange={setDeleteOpen}>
+              <Dialog
+                open={deleteOpen}
+                onOpenChange={(open) => {
+                  setDeleteOpen(open);
+                  if (!open) {
+                    setDeleteConfirm1(false);
+                    setDeleteConfirm2(false);
+                  }
+                }}
+              >
                 <DialogTrigger asChild>
                   <Button variant="destructive"><Trash2 className="h-4 w-4 mr-2" />Supprimer mon compte</Button>
                 </DialogTrigger>
                 <DialogContent>
                   <DialogHeader>
-                    <DialogTitle className="text-destructive">Supprimer définitivement le compte ?</DialogTitle>
+                    <DialogTitle className="text-destructive flex items-center gap-2">
+                      <Trash2 className="h-5 w-5" /> Supprimer définitivement le compte ?
+                    </DialogTitle>
                   </DialogHeader>
                   <div className="space-y-4">
                     <p className="text-sm text-muted-foreground">
-                      Cette action est <strong>irréversible</strong>. Toutes vos exploitations, données d'élevage, historiques et fichiers seront supprimés.
+                      Cette action est <strong>irréversible</strong>. Toutes vos exploitations, données d'élevage, historiques et fichiers seront définitivement purgés.
                     </p>
-                    <div>
-                      <Label>Tapez <strong>SUPPRIMER</strong> pour confirmer</Label>
-                      <Input value={deleteConfirm} onChange={e => setDeleteConfirm(e.target.value)} placeholder="SUPPRIMER" />
+                    <div className="space-y-3 py-1">
+                      <label className="flex items-start gap-3 p-3 rounded-xl border border-destructive/20 bg-destructive/5 hover:bg-destructive/10 cursor-pointer transition-colors">
+                        <Checkbox
+                          checked={deleteConfirm1}
+                          onCheckedChange={(checked) => setDeleteConfirm1(Boolean(checked))}
+                          className="mt-0.5 data-[state=checked]:bg-destructive data-[state=checked]:border-destructive"
+                        />
+                        <div className="text-xs">
+                          <span className="font-bold text-destructive">1ère confirmation :</span>
+                          <p className="text-muted-foreground mt-0.5">Je confirme vouloir supprimer mon compte NAFA-AGRITECH.</p>
+                        </div>
+                      </label>
+
+                      <label className="flex items-start gap-3 p-3 rounded-xl border border-destructive/20 bg-destructive/5 hover:bg-destructive/10 cursor-pointer transition-colors">
+                        <Checkbox
+                          checked={deleteConfirm2}
+                          onCheckedChange={(checked) => setDeleteConfirm2(Boolean(checked))}
+                          className="mt-0.5 data-[state=checked]:bg-destructive data-[state=checked]:border-destructive"
+                        />
+                        <div className="text-xs">
+                          <span className="font-bold text-destructive">2ème confirmation :</span>
+                          <p className="text-muted-foreground mt-0.5">Je comprends que toutes mes données seront définitivement et irrémédiablement effacées.</p>
+                        </div>
+                      </label>
                     </div>
                   </div>
-                  <DialogFooter>
+                  <DialogFooter className="gap-2 sm:gap-0">
                     <Button variant="outline" onClick={() => setDeleteOpen(false)} disabled={deleting}>Annuler</Button>
-                    <Button variant="destructive" onClick={handleDeleteAccount} disabled={deleteConfirm !== "SUPPRIMER" || deleting}>
-                      {deleting ? <><Loader2 className="h-4 w-4 mr-2 animate-spin" />Suppression...</> : "Confirmer la suppression"}
+                    <Button
+                      variant="destructive"
+                      onClick={handleDeleteAccount}
+                      disabled={!deleteConfirm1 || !deleteConfirm2 || deleting}
+                    >
+                      {deleting ? <><Loader2 className="h-4 w-4 mr-2 animate-spin" />Suppression...</> : "Valider la suppression définitive"}
                     </Button>
                   </DialogFooter>
                 </DialogContent>
