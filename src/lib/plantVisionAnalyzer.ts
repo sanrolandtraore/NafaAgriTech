@@ -314,3 +314,34 @@ function fallbackImageAnalysis(w: number, h: number, rawData: string): FoliarIma
     visualDiagnosisRationale: `Analyse visuelle informatisée de l'échantillon (${w}x${h}px) : Surface foliaire atteinte = ${totalFoliarDamagePercent}%. Tissu nécrosé mesuré = ${necrosisPercent}%, chlorose = ${chlorosisPercent}%, tissu vert sain = ${healthyTissuePercent}%. Lésions observables : ${lesions.join(", ")}.`,
   };
 }
+
+/**
+ * Analyse une image foliaire sous forme de Blob, File ou chaîne Base64
+ */
+export async function analyzeFoliarImage(
+  image: Blob | File | string
+): Promise<FoliarImageAnalysisResult> {
+  if (typeof image === "string") {
+    return analyzePlantImage({ imageBase64: image });
+  }
+  return new Promise((resolve) => {
+    try {
+      if (typeof FileReader !== "undefined") {
+        const reader = new FileReader();
+        reader.onloadend = () => {
+          const base64 = reader.result as string;
+          analyzePlantImage({ imageBase64: base64 }).then(resolve);
+        };
+        reader.onerror = () => {
+          resolve(fallbackImageAnalysis(640, 480, ""));
+        };
+        reader.readAsDataURL(image);
+      } else {
+        resolve(fallbackImageAnalysis(640, 480, ""));
+      }
+    } catch {
+      resolve(fallbackImageAnalysis(640, 480, ""));
+    }
+  });
+}
+

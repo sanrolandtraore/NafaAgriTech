@@ -23,9 +23,10 @@ import { supabase } from "@/integrations/supabase/client";
 import type { FoliarImageAnalysisResult } from "./plantVisionAnalyzer";
 import {
   identifyPlantWithPlantNet,
+  identifyPlantWithNafaEngine,
   type PlantNetIdentificationResult,
-  type PlantNetMatch,
-} from "./plantnetService";
+  type NafaPlantIdentificationResult,
+} from "./nafaPlantIdentifier";
 import {
   queryPlantVillageBenchmark,
   type PlantVillageMatchResult,
