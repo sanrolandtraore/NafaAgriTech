@@ -146,12 +146,12 @@ export const PrecisionCad3DStudio: React.FC<PrecisionCad3DStudioProps> = ({
     const originY = b[0].y;
     const originZ = b[0].z || currentPreset.elevationBase;
 
-    // Station de tête Netafim (implantée près de la borne B4 / forage)
+    // Station de tête d'irrigation (implantée près de la borne B4 / forage)
     const headStation: CadExportEquipment = {
       id: "eq-tete-forage",
-      name: "Tête de réseau Netafim SpinKlin & Pompage Solaire",
+      name: "Tête de réseau Filtration & Pompage Solaire",
       category: "station_filtration",
-      netafimRef: "NETAFIM-SPINKLIN-2D-120M",
+      netafimRef: "FILTRE-DISQUE-2D-120M",
       x: b[3].x + 12,
       y: b[3].y - 8,
       z: (b[3].z || originZ) + 0.5,
@@ -172,7 +172,7 @@ export const PrecisionCad3DStudio: React.FC<PrecisionCad3DStudioProps> = ({
       id: "eq-champ-solaire",
       name: "Champ Solaire 3.2 kWc (8x400Wc orienté 15° Sud)",
       category: "pompe_solaire",
-      netafimRef: "LORENTZ-SOLAR-3200WP",
+      netafimRef: "SOLAR-3200WP",
       x: b[3].x + 22,
       y: b[3].y - 15,
       z: (b[3].z || originZ) + 1.8,
@@ -191,12 +191,12 @@ export const PrecisionCad3DStudio: React.FC<PrecisionCad3DStudioProps> = ({
       heightM: 3.8,
     };
 
-    // Vannes de régulation de secteur Netafim
+    // Vannes de régulation de secteur
     const sectorValve1: CadExportEquipment = {
       id: "eq-vanne-secteur-1",
-      name: "Vanne de secteur Netafim Ø50 (Secteur 1 - Tomate)",
+      name: "Vanne de secteur Ø50 (Secteur 1 - Tomate)",
       category: "vanne_secteur",
-      netafimRef: "NETAFIM-VALVE-50-PN10",
+      netafimRef: "VALVE-50-PN10",
       x: b[0].x + 35,
       y: b[0].y + 65,
       z: originZ,
@@ -204,15 +204,15 @@ export const PrecisionCad3DStudio: React.FC<PrecisionCad3DStudioProps> = ({
 
     const sectorValve2: CadExportEquipment = {
       id: "eq-vanne-secteur-2",
-      name: "Vanne de secteur Netafim Ø50 (Secteur 2 - Oignon)",
+      name: "Vanne de secteur Ø50 (Secteur 2 - Oignon)",
       category: "vanne_secteur",
-      netafimRef: "NETAFIM-VALVE-50-PN10",
+      netafimRef: "VALVE-50-PN10",
       x: b[1].x - 45,
       y: b[1].y + 65,
       z: originZ,
     };
 
-    // Tuyauterie principale PEHD Ø63 PN10 Netafim
+    // Tuyauterie principale PEHD Ø63 PN10
     const mainPipes: CadExportPipe[] = [
       {
         id: "pipe-refoulement-chateau",
@@ -225,7 +225,7 @@ export const PrecisionCad3DStudio: React.FC<PrecisionCad3DStudioProps> = ({
         flowM3h: 8.5,
         velocityMs: 1.25,
         headLossM: 0.85,
-        netafimRef: "NETAFIM-PE100-DN63-PN10",
+        netafimRef: "PEHD-PN10-DN63",
       },
       {
         id: "pipe-maitresse-adduction",
@@ -238,7 +238,7 @@ export const PrecisionCad3DStudio: React.FC<PrecisionCad3DStudioProps> = ({
         flowM3h: 7.8,
         velocityMs: 1.15,
         headLossM: 1.1,
-        netafimRef: "NETAFIM-PE100-DN63-PN10",
+        netafimRef: "PEHD-PN10-DN63",
       },
       {
         id: "pipe-liaison-vannes",
@@ -251,11 +251,11 @@ export const PrecisionCad3DStudio: React.FC<PrecisionCad3DStudioProps> = ({
         flowM3h: 4.2,
         velocityMs: 1.05,
         headLossM: 0.95,
-        netafimRef: "NETAFIM-PE100-DN50-PN6",
+        netafimRef: "PEHD-PN6-DN50",
       },
     ];
 
-    // Rampes de goutte-à-goutte Netafim DripNet PC 16mm espacées de 40cm
+    // Rampes de goutte-à-goutte haute précision 16mm espacées de 40cm
     const dripPipes: CadExportPipe[] = [];
     const numRampes = 12;
     for (let i = 0; i < numRampes; i++) {
@@ -271,7 +271,7 @@ export const PrecisionCad3DStudio: React.FC<PrecisionCad3DStudioProps> = ({
         flowM3h: 0.35,
         velocityMs: 0.8,
         headLossM: 0.3,
-        netafimRef: "NETAFIM-DRIPNET-PC-16-1.6L-0.4M",
+        netafimRef: "DRIP-PC-16-1.6L-0.4M",
       });
     }
 
@@ -346,7 +346,7 @@ export const PrecisionCad3DStudio: React.FC<PrecisionCad3DStudioProps> = ({
       py: yM * scaleFactor + offsetY,
     });
 
-    // A. Grille d'accrochage AutoCAD (Snap Grid 10m x 10m)
+    // A. Grille d'accrochage CAO (Snap Grid 10m x 10m)
     ctx.strokeStyle = "#e2e8f0";
     ctx.lineWidth = 0.7;
     const gridStepM = 10;
@@ -367,7 +367,7 @@ export const PrecisionCad3DStudio: React.FC<PrecisionCad3DStudioProps> = ({
       ctx.stroke();
     }
 
-    // B. Calque MNT / Topographie (Courbes de niveau QGIS avec altimétrie)
+    // B. Calque MNT / Topographie (Courbes de niveau SIG avec altimétrie)
     if (layers.topographie && projectExportData.contourLines) {
       ctx.strokeStyle = "#ea580c";
       ctx.lineWidth = 1.0;
@@ -385,7 +385,7 @@ export const PrecisionCad3DStudio: React.FC<PrecisionCad3DStudioProps> = ({
         }
         ctx.stroke();
 
-        // Étiquette altimétrique QGIS (+311.5 m NGF)
+        // Étiquette altimétrique SIG (+311.5 m NGF)
         const mid = toScreen(contour.points[1].x, contour.points[1].y);
         ctx.fillStyle = "#c2410c";
         ctx.font = "bold 9px 'Courier New', monospace";
@@ -432,7 +432,7 @@ export const PrecisionCad3DStudio: React.FC<PrecisionCad3DStudioProps> = ({
       });
     }
 
-    // D. Calques Hydrauliques Netafim (Adduction, Distribution, Rampes Goutte-à-Goutte)
+    // D. Calques Hydrauliques (Adduction, Distribution, Rampes Goutte-à-Goutte)
     for (const pipe of projectExportData.pipes) {
       if (pipe.type === "principale" && !layers.adduction) continue;
       if (pipe.type === "secondaire" && !layers.distribution) continue;
@@ -451,7 +451,7 @@ export const PrecisionCad3DStudio: React.FC<PrecisionCad3DStudioProps> = ({
         strokeColor = "#0284c7"; // Bleu cyan
         lineWidth = 2.5;
       } else if (pipe.type === "rampe") {
-        strokeColor = "#16a34a"; // Vert Netafim
+        strokeColor = "#16a34a"; // Vert Micro-Irrigation
         lineWidth = 1.0;
       }
 
@@ -476,7 +476,7 @@ export const PrecisionCad3DStudio: React.FC<PrecisionCad3DStudioProps> = ({
         ctx.closePath();
         ctx.fill();
 
-        // Étiquette technique AutoCAD (Diamètre Ø & PN)
+        // Étiquette technique CAO (Diamètre Ø & PN)
         if (layers.cotations) {
           ctx.fillStyle = "#0369a1";
           ctx.font = "bold 9px Inter, sans-serif";
@@ -523,7 +523,7 @@ export const PrecisionCad3DStudio: React.FC<PrecisionCad3DStudioProps> = ({
       }
     }
 
-    // F. Calque Cotations Linéaires AutoCAD (Cotes de distance)
+    // F. Calque Cotations Linéaires CAO (Cotes de distance)
     if (layers.cotations) {
       ctx.strokeStyle = "#2563eb";
       ctx.lineWidth = 1;
@@ -679,7 +679,7 @@ export const PrecisionCad3DStudio: React.FC<PrecisionCad3DStudioProps> = ({
 
     // Fond ciel d'ingénierie
     if (renderMode3d === "wireframe") {
-      ctx.fillStyle = "#0f172a"; // Fond noir/bleu nuit AutoCAD classique
+      ctx.fillStyle = "#0f172a"; // Fond noir technique classique
       ctx.fillRect(0, 0, width, height);
     } else {
       const grad = ctx.createLinearGradient(0, 0, 0, height);
@@ -747,7 +747,7 @@ export const PrecisionCad3DStudio: React.FC<PrecisionCad3DStudioProps> = ({
       ctx.stroke();
     }
 
-    // 2. Ouvrage 3D : Château d'eau métallique surélevé Netafim H=6m
+    // 2. Ouvrage 3D : Château d'eau métallique surélevé H=6m
     const towX = -60;
     const towY = 40;
     const towBaseZ = 0;
@@ -886,10 +886,10 @@ export const PrecisionCad3DStudio: React.FC<PrecisionCad3DStudioProps> = ({
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = `NAFA_AUTOCAD_${currentPreset.id.toUpperCase()}_PLAN_TECHNIQUE.dxf`;
+    a.download = `NAFA_CAO_${currentPreset.id.toUpperCase()}_PLAN_TECHNIQUE.dxf`;
     a.click();
     URL.revokeObjectURL(url);
-    toast.success("Plan vectoriel AutoCAD (.dxf) généré et téléchargé avec succès !");
+    toast.success("Plan vectoriel CAO (.dxf) généré et téléchargé avec succès !");
   };
 
   const handleDownloadGeoJson = () => {
@@ -898,10 +898,10 @@ export const PrecisionCad3DStudio: React.FC<PrecisionCad3DStudioProps> = ({
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = `NAFA_QGIS_${currentPreset.id.toUpperCase()}_SIG_WGS84.geojson`;
+    a.download = `NAFA_SIG_${currentPreset.id.toUpperCase()}_WGS84.geojson`;
     a.click();
     URL.revokeObjectURL(url);
-    toast.success("Couche spatiale QGIS (.geojson) générée et téléchargée !");
+    toast.success("Couche spatiale SIG (.geojson) générée et téléchargée !");
   };
 
   const handleDownloadBomCsv = () => {
@@ -910,10 +910,10 @@ export const PrecisionCad3DStudio: React.FC<PrecisionCad3DStudioProps> = ({
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = `NAFA_NETAFIM_${currentPreset.id.toUpperCase()}_NOMENCLATURE_BOM.csv`;
+    a.download = `NAFA_DEVIS_${currentPreset.id.toUpperCase()}_NOMENCLATURE_BOM.csv`;
     a.click();
     URL.revokeObjectURL(url);
-    toast.success("Nomenclature technique Netafim (.csv) téléchargée !");
+    toast.success("Nomenclature technique et devis (.csv) téléchargé !");
   };
 
   // Vues caméra prédéfinies d'ingénierie
@@ -942,16 +942,16 @@ export const PrecisionCad3DStudio: React.FC<PrecisionCad3DStudioProps> = ({
           <div className="space-y-1">
             <div className="flex items-center gap-2 flex-wrap">
               <Badge className="bg-[#111827] text-white text-[10px] font-black uppercase tracking-wider gap-1">
-                <Cpu className="h-3 w-3 text-emerald-400" /> AutoCAD R12/2000
+                <Cpu className="h-3 w-3 text-emerald-400" /> Standard CAO DXF R12
               </Badge>
               <Badge className="bg-emerald-600 text-white text-[10px] font-black uppercase tracking-wider gap-1">
-                <Compass className="h-3 w-3" /> QGIS SIG UTM30N
+                <Compass className="h-3 w-3" /> SIG Géodésique UTM30N
               </Badge>
               <Badge className="bg-sky-600 text-white text-[10px] font-black uppercase tracking-wider gap-1">
-                <Droplets className="h-3 w-3" /> IRRICAD Hydraulic Solver
+                <Droplets className="h-3 w-3" /> Solveur Hydraulique NAFA
               </Badge>
               <Badge className="bg-amber-600 text-white text-[10px] font-black uppercase tracking-wider gap-1">
-                <ShieldCheck className="h-3 w-3" /> Netafim Precision Drip
+                <ShieldCheck className="h-3 w-3" /> Micro-Irrigation Certifiée
               </Badge>
             </div>
             <CardTitle className="text-xl sm:text-2xl font-heading font-black text-foreground flex items-center gap-2 mt-1">
@@ -959,7 +959,7 @@ export const PrecisionCad3DStudio: React.FC<PrecisionCad3DStudioProps> = ({
               Studio de Modélisation 2D/3D & CAO d'Irrigation Ultra-Précise
             </CardTitle>
             <CardDescription className="text-xs sm:text-sm text-muted-foreground">
-              Moteur d'ingénierie conforme aux standards Autodesk AutoCAD, QGIS WGS84, IRRICAD et Netafim pour le génie rural ouest-africain.
+              Moteur d'ingénierie conforme aux normes internationales de CAO vectorielle, SIG WGS84, modélisation hydraulique et micro-irrigation pour le génie rural ouest-africain.
             </CardDescription>
           </div>
 
@@ -970,30 +970,30 @@ export const PrecisionCad3DStudio: React.FC<PrecisionCad3DStudioProps> = ({
               variant="outline"
               onClick={handleDownloadDxf}
               className="text-xs font-bold rounded-xl gap-1.5 h-9 bg-background shadow-xs hover:border-sky-500 hover:text-sky-600"
-              title="Exporter au format DXF pour AutoCAD / Civil 3D"
+              title="Exporter au format DXF Standard"
             >
               <Download className="h-3.5 w-3.5 text-sky-600" />
-              <span>AutoCAD .DXF</span>
+              <span>CAO .DXF</span>
             </Button>
             <Button
               size="sm"
               variant="outline"
               onClick={handleDownloadGeoJson}
               className="text-xs font-bold rounded-xl gap-1.5 h-9 bg-background shadow-xs hover:border-emerald-500 hover:text-emerald-600"
-              title="Exporter la couche géoréférencée pour QGIS"
+              title="Exporter la couche spatiale SIG au format GeoJSON"
             >
               <Compass className="h-3.5 w-3.5 text-emerald-600" />
-              <span>QGIS .GeoJSON</span>
+              <span>SIG .GeoJSON</span>
             </Button>
             <Button
               size="sm"
               variant="outline"
               onClick={handleDownloadBomCsv}
               className="text-xs font-bold rounded-xl gap-1.5 h-9 bg-background shadow-xs hover:border-amber-500 hover:text-amber-600"
-              title="Exporter le devis et la nomenclature Netafim"
+              title="Exporter le bordereau technique et devis"
             >
               <FileSpreadsheet className="h-3.5 w-3.5 text-amber-600" />
-              <span>Netafim .CSV</span>
+              <span>Bordereau .CSV</span>
             </Button>
           </div>
         </div>
@@ -1039,7 +1039,7 @@ export const PrecisionCad3DStudio: React.FC<PrecisionCad3DStudioProps> = ({
                 className="gap-2 text-xs font-bold data-[state=active]:border-b-2 data-[state=active]:border-[#F97316] rounded-none px-4 h-12"
               >
                 <PencilRuler className="h-4 w-4 text-[#F97316]" />
-                1. Plan 2D d'Ingénierie (AutoCAD / QGIS)
+                1. Plan 2D d'Ingénierie (CAO / SIG)
               </TabsTrigger>
               <TabsTrigger
                 value="maquette3d"
@@ -1053,34 +1053,34 @@ export const PrecisionCad3DStudio: React.FC<PrecisionCad3DStudioProps> = ({
                 className="gap-2 text-xs font-bold data-[state=active]:border-b-2 data-[state=active]:border-[#F97316] rounded-none px-4 h-12"
               >
                 <Droplets className="h-4 w-4 text-emerald-600" />
-                3. Analyse Hydraulique IRRICAD
+                3. Analyse Hydraulique & Réseau
               </TabsTrigger>
               <TabsTrigger
                 value="nomenclature"
                 className="gap-2 text-xs font-bold data-[state=active]:border-b-2 data-[state=active]:border-[#F97316] rounded-none px-4 h-12"
               >
                 <Table className="h-4 w-4 text-amber-600" />
-                4. Nomenclature & Devis Netafim
+                4. Nomenclature & Devis Matériaux
               </TabsTrigger>
             </TabsList>
           </div>
 
           {/* ══════════════════════════════════════════════════════
-              VUE 1 : PLAN 2D D'INGÉNIERIE (AutoCAD / QGIS)
+              VUE 1 : PLAN 2D D'INGÉNIERIE (CAO / SIG)
           ══════════════════════════════════════════════════════ */}
           <TabsContent value="cad2d" className="m-0 p-4 space-y-4">
-            {/* Barre d'outils et gestionnaire de Calques AutoCAD */}
+            {/* Barre d'outils et gestionnaire de Calques CAO */}
             <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3 p-3 bg-muted/40 rounded-2xl border border-border/60 text-xs">
               <div className="flex items-center gap-1.5 flex-wrap">
                 <span className="font-extrabold text-foreground flex items-center gap-1 mr-2">
-                  <Layers className="h-3.5 w-3.5 text-primary" /> Calques AutoCAD :
+                  <Layers className="h-3.5 w-3.5 text-primary" /> Calques CAO :
                 </span>
                 {[
                   { key: "cadastre" as const, label: "Cadastre", color: "#16a34a" },
                   { key: "topographie" as const, label: "Topographie MNT", color: "#ea580c" },
                   { key: "adduction" as const, label: "Adduction PEHD", color: "#0369a1" },
                   { key: "distribution" as const, label: "Distribution", color: "#0284c7" },
-                  { key: "rampesGoutteurs" as const, label: "Rampes Netafim", color: "#22c55e" },
+                  { key: "rampesGoutteurs" as const, label: "Rampes Micro-Irrigation", color: "#22c55e" },
                   { key: "ouvrages" as const, label: "Ouvrages 3D", color: "#ef4444" },
                   { key: "cotations" as const, label: "Cotations", color: "#2563eb" },
                   { key: "cartouche" as const, label: "Cartouche ISO", color: "#0f172a" },
@@ -1174,7 +1174,7 @@ export const PrecisionCad3DStudio: React.FC<PrecisionCad3DStudioProps> = ({
                 className="w-full h-full block"
               />
 
-              {/* Réticule dynamique AutoCAD en bas à gauche */}
+              {/* Réticule dynamique CAO en bas à gauche */}
               {cursorPos2d && (
                 <div className="absolute bottom-3 left-3 px-3 py-1.5 rounded-xl bg-slate-900/90 text-white font-mono text-[11px] shadow-md border border-slate-700 pointer-events-none flex items-center gap-3">
                   <span>X: {cursorPos2d.xM}m</span>
@@ -1197,10 +1197,10 @@ export const PrecisionCad3DStudio: React.FC<PrecisionCad3DStudioProps> = ({
                   <Box className="h-3.5 w-3.5 text-blue-600" /> Vues Caméra :
                 </span>
                 <Button size="sm" variant="outline" className="h-7 text-xs rounded-xl" onClick={() => setEngineeringView("top")}>
-                  Haut (QGIS)
+                  Haut (SIG)
                 </Button>
                 <Button size="sm" variant="outline" className="h-7 text-xs rounded-xl" onClick={() => setEngineeringView("iso_ne")}>
-                  Iso NE (AutoCAD)
+                  Iso NE (CAO)
                 </Button>
                 <Button size="sm" variant="outline" className="h-7 text-xs rounded-xl" onClick={() => setEngineeringView("iso_sw")}>
                   Iso SW
@@ -1214,9 +1214,9 @@ export const PrecisionCad3DStudio: React.FC<PrecisionCad3DStudioProps> = ({
               <div className="flex items-center gap-2 flex-wrap">
                 <span className="font-extrabold text-foreground">Mode Rendu :</span>
                 {[
-                  { id: "shaded" as const, label: "Ombré CAD" },
-                  { id: "wireframe" as const, label: "Filaire AutoCAD" },
-                  { id: "hydraulic" as const, label: "IRRICAD Heatmap" },
+                  { id: "shaded" as const, label: "Ombré CAO" },
+                  { id: "wireframe" as const, label: "Filaire CAO" },
+                  { id: "hydraulic" as const, label: "Heatmap Hydraulique" },
                   { id: "topography" as const, label: "MNT Relief" },
                 ].map((m) => (
                   <button
@@ -1308,7 +1308,7 @@ export const PrecisionCad3DStudio: React.FC<PrecisionCad3DStudioProps> = ({
               {/* Sonde d'inspection 3D interactive */}
               <div className="absolute bottom-4 left-4 p-3 rounded-2xl bg-slate-900/95 border border-slate-700 text-white font-mono text-xs shadow-lg space-y-1">
                 <p className="text-emerald-400 font-bold flex items-center gap-1.5">
-                  <CheckCircle2 className="h-3.5 w-3.5" /> Inspection 3D Netafim Active
+                  <CheckCircle2 className="h-3.5 w-3.5" /> Inspection 3D Réseau Active
                 </p>
                 <p className="text-[11px] text-slate-300">
                   Réservoir Tour H=6m · Pompe Solaire 3.2 kWc · Conduite Ø63 PN10 PEHD
@@ -1318,7 +1318,7 @@ export const PrecisionCad3DStudio: React.FC<PrecisionCad3DStudioProps> = ({
           </TabsContent>
 
           {/* ══════════════════════════════════════════════════════
-              VUE 3 : CALCULS HYDRAULIQUES IRRICAD
+              VUE 3 : CALCULS HYDRAULIQUES & RÉSEAU
           ══════════════════════════════════════════════════════ */}
           <TabsContent value="irricad" className="m-0 p-6 space-y-6">
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
@@ -1336,7 +1336,7 @@ export const PrecisionCad3DStudio: React.FC<PrecisionCad3DStudioProps> = ({
                 <CardContent className="p-4 space-y-1">
                   <p className="text-xs text-muted-foreground font-semibold">Vitesse d'écoulement ($V$)</p>
                   <p className="text-2xl font-black text-emerald-600">1.25 m/s</p>
-                  <p className="text-[11px] text-muted-foreground">Plage optimale Netafim : 1.0 à 1.8 m/s</p>
+                  <p className="text-[11px] text-muted-foreground">Plage optimale certifiée : 1.0 à 1.8 m/s</p>
                 </CardContent>
               </Card>
 
@@ -1352,17 +1352,17 @@ export const PrecisionCad3DStudio: React.FC<PrecisionCad3DStudioProps> = ({
                 <CardContent className="p-4 space-y-1">
                   <p className="text-xs text-muted-foreground font-semibold">Uniformité d'émission (EU)</p>
                   <p className="text-2xl font-black text-emerald-600">94.8% <span className="text-sm font-normal text-muted-foreground">(CU: 96.5%)</span></p>
-                  <p className="text-[11px] text-emerald-600 font-bold">Certification DripNet PC Netafim</p>
+                  <p className="text-[11px] text-emerald-600 font-bold">Certification Goutteurs Haute Précision</p>
                 </CardContent>
               </Card>
             </div>
 
-            {/* Tableau des Shifts / Secteurs d'arrosage IRRICAD */}
+            {/* Tableau des Shifts / Secteurs d'arrosage */}
             <div className="rounded-2xl border border-border/80 overflow-hidden">
               <div className="bg-muted/40 p-4 border-b border-border/80">
                 <h4 className="font-heading font-black text-sm text-foreground flex items-center gap-2">
                   <Droplets className="h-4 w-4 text-[#F97316]" />
-                  Programme de Rotation par Vannes & Blocs d'Irrigation (Shifts IRRICAD)
+                  Programme de Rotation par Vannes & Blocs d'Irrigation (Secteurs Réseau)
                 </h4>
               </div>
               <div className="overflow-x-auto">
@@ -1374,7 +1374,7 @@ export const PrecisionCad3DStudio: React.FC<PrecisionCad3DStudioProps> = ({
                       <th className="p-3">Débit (m³/h)</th>
                       <th className="p-3">Pression Requise (bar)</th>
                       <th className="p-3">Durée / Tour</th>
-                      <th className="p-3">Régulation Netafim</th>
+                      <th className="p-3">Régulation Débit</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-border/60">
@@ -1384,7 +1384,7 @@ export const PrecisionCad3DStudio: React.FC<PrecisionCad3DStudioProps> = ({
                       <td className="p-3 font-mono font-semibold">4.2 m³/h</td>
                       <td className="p-3 font-mono text-emerald-600 font-bold">1.8 bar</td>
                       <td className="p-3">1h 45min (Matin)</td>
-                      <td className="p-3">Vanne Ø50 + Goutteurs DripNet 1.6L/h</td>
+                      <td className="p-3">Vanne Ø50 + Goutteurs Auto-régulants 1.6L/h</td>
                     </tr>
                     <tr>
                       <td className="p-3 font-bold text-foreground">Secteur 2 (Bloc Sud)</td>
@@ -1392,7 +1392,7 @@ export const PrecisionCad3DStudio: React.FC<PrecisionCad3DStudioProps> = ({
                       <td className="p-3 font-mono font-semibold">4.3 m³/h</td>
                       <td className="p-3 font-mono text-emerald-600 font-bold">1.8 bar</td>
                       <td className="p-3">1h 45min (Soir)</td>
-                      <td className="p-3">Vanne Ø50 + Goutteurs DripNet 1.6L/h</td>
+                      <td className="p-3">Vanne Ø50 + Goutteurs Auto-régulants 1.6L/h</td>
                     </tr>
                   </tbody>
                 </table>
@@ -1401,14 +1401,14 @@ export const PrecisionCad3DStudio: React.FC<PrecisionCad3DStudioProps> = ({
           </TabsContent>
 
           {/* ══════════════════════════════════════════════════════
-              VUE 4 : NOMENCLATURE & DEVIS NETAFIM (BOM)
+              VUE 4 : NOMENCLATURE & DEVIS MATÉRIAUX (BOM)
           ══════════════════════════════════════════════════════ */}
           <TabsContent value="nomenclature" className="m-0 p-6 space-y-6">
             <div className="flex items-center justify-between gap-4 flex-wrap">
               <div>
                 <h4 className="font-heading font-black text-base text-foreground flex items-center gap-2">
                   <FileSpreadsheet className="h-5 w-5 text-amber-600" />
-                  Nomenclature Officielle & Chiffrage Netafim (Mercuriale Burkina Faso)
+                  Nomenclature Officielle & Chiffrage Matériaux (Mercuriale Burkina Faso)
                 </h4>
                 <p className="text-xs text-muted-foreground mt-0.5">
                   Quantités calculées au mètre linéaire près d'après le tracé CAO 2D/3D.
@@ -1424,7 +1424,7 @@ export const PrecisionCad3DStudio: React.FC<PrecisionCad3DStudioProps> = ({
                 <table className="w-full text-xs text-left">
                   <thead className="bg-muted/40 text-muted-foreground border-b font-bold">
                     <tr>
-                      <th className="p-3">Réf. Netafim</th>
+                      <th className="p-3">Réf. Matériel</th>
                       <th className="p-3">Désignation</th>
                       <th className="p-3">Spécification</th>
                       <th className="p-3 text-right">Quantité</th>
@@ -1434,7 +1434,7 @@ export const PrecisionCad3DStudio: React.FC<PrecisionCad3DStudioProps> = ({
                   </thead>
                   <tbody className="divide-y divide-border/60">
                     <tr>
-                      <td className="p-3 font-mono font-bold text-sky-700">NETAFIM-PE100-DN63</td>
+                      <td className="p-3 font-mono font-bold text-sky-700">PEHD-PN10-DN63</td>
                       <td className="p-3 font-medium">Tuyau PEHD PN10 Haute Densité</td>
                       <td className="p-3 text-muted-foreground">Ø63 mm - Rouleau 100m</td>
                       <td className="p-3 text-right font-mono font-semibold">160 m</td>
@@ -1442,7 +1442,7 @@ export const PrecisionCad3DStudio: React.FC<PrecisionCad3DStudioProps> = ({
                       <td className="p-3 text-right font-mono font-bold text-foreground">312 000</td>
                     </tr>
                     <tr>
-                      <td className="p-3 font-mono font-bold text-sky-700">NETAFIM-PE100-DN50</td>
+                      <td className="p-3 font-mono font-bold text-sky-700">PEHD-PN6-DN50</td>
                       <td className="p-3 font-medium">Tuyau PEHD PN6 Distribution</td>
                       <td className="p-3 text-muted-foreground">Ø50 mm - Barres / Couronnes</td>
                       <td className="p-3 text-right font-mono font-semibold">120 m</td>
@@ -1450,7 +1450,7 @@ export const PrecisionCad3DStudio: React.FC<PrecisionCad3DStudioProps> = ({
                       <td className="p-3 text-right font-mono font-bold text-foreground">174 000</td>
                     </tr>
                     <tr>
-                      <td className="p-3 font-mono font-bold text-emerald-700">NETAFIM-DRIPNET-16</td>
+                      <td className="p-3 font-mono font-bold text-emerald-700">DRIP-PC-16</td>
                       <td className="p-3 font-medium">Rampes Goutte-à-Goutte Auto-régulant</td>
                       <td className="p-3 text-muted-foreground">16mm - 1.6 L/h - Esp. 40cm</td>
                       <td className="p-3 text-right font-mono font-semibold">4 800 m</td>
@@ -1458,7 +1458,7 @@ export const PrecisionCad3DStudio: React.FC<PrecisionCad3DStudioProps> = ({
                       <td className="p-3 text-right font-mono font-bold text-foreground">864 000</td>
                     </tr>
                     <tr>
-                      <td className="p-3 font-mono font-bold text-amber-700">NETAFIM-SPINKLIN-2D</td>
+                      <td className="p-3 font-mono font-bold text-amber-700">FILTRE-DISQUE-2D</td>
                       <td className="p-3 font-medium">Station de filtration à disques manuelle</td>
                       <td className="p-3 text-muted-foreground">2" Double corps 130 microns</td>
                       <td className="p-3 text-right font-mono font-semibold">1 unité</td>
@@ -1466,7 +1466,7 @@ export const PrecisionCad3DStudio: React.FC<PrecisionCad3DStudioProps> = ({
                       <td className="p-3 text-right font-mono font-bold text-foreground">485 000</td>
                     </tr>
                     <tr>
-                      <td className="p-3 font-mono font-bold text-amber-700">NETAFIM-VENTURI-75</td>
+                      <td className="p-3 font-mono font-bold text-amber-700">VENTURI-KIT-75</td>
                       <td className="p-3 font-medium">Kit d'injection fertigation Venturi</td>
                       <td className="p-3 text-muted-foreground">3/4" avec vanne de dosage</td>
                       <td className="p-3 text-right font-mono font-semibold">1 unité</td>
@@ -1493,7 +1493,7 @@ export const PrecisionCad3DStudio: React.FC<PrecisionCad3DStudioProps> = ({
                   <tfoot className="bg-muted/40 border-t font-bold text-sm">
                     <tr>
                       <td colSpan={5} className="p-3 text-right font-extrabold text-foreground">
-                        TOTAL ESTIMATIF MATÉRIEL & FOURNITURES NETAFIM HT :
+                        TOTAL ESTIMATIF MATÉRIEL & FOURNITURES HT :
                       </td>
                       <td className="p-3 text-right font-mono text-base font-black text-emerald-600">
                         6 270 000 FCFA

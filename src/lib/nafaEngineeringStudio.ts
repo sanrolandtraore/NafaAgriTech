@@ -433,7 +433,7 @@ export const PARTNER_EQUIPMENT_CATALOG: Record<string, { designation: string; ca
         supplierId: "agrodia_bf",
         supplierName: "AGRODIA BURKINA",
         unitPriceFcfa: 110,
-        brand: "Rivulis / Netafim DripLine",
+        brand: "DripLine PC Haute Précision",
         model: "T-Tape TSX 515 / Hydro PC 1.6 L/h",
         warrantyMonths: 24,
         availability: "en_stock",

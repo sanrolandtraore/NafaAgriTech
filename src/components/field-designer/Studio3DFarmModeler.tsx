@@ -221,6 +221,7 @@ function checkWebGLSupport(): boolean {
 
 export function Studio3DFarmModeler() {
   const mountRef = useRef<HTMLDivElement>(null);
+  const container2dRef = useRef<HTMLDivElement>(null);
   const canvas2dRef = useRef<HTMLCanvasElement>(null);
 
   // Éléments du plan 3D
@@ -544,10 +545,13 @@ export function Studio3DFarmModeler() {
         preserveDrawingBuffer: true,
         powerPreference: "high-performance",
       });
-      renderer.setSize(width, height);
-      renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+      renderer.setSize(width, height, false);
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
       renderer.shadowMap.enabled = true;
       renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+      renderer.domElement.style.width = "100%";
+      renderer.domElement.style.height = "100%";
+      renderer.domElement.style.display = "block";
       rendererRef.current = renderer;
 
       container.innerHTML = "";
@@ -616,7 +620,11 @@ export function Studio3DFarmModeler() {
           if (w > 0 && h > 0 && cameraRef.current && rendererRef.current) {
             cameraRef.current.aspect = w / h;
             cameraRef.current.updateProjectionMatrix();
-            rendererRef.current.setSize(w, h);
+            rendererRef.current.setSize(w, h, false);
+            if (rendererRef.current.domElement) {
+              rendererRef.current.domElement.style.width = "100%";
+              rendererRef.current.domElement.style.height = "100%";
+            }
           }
         }
       });
@@ -883,18 +891,34 @@ export function Studio3DFarmModeler() {
       }
     };
 
-    render();
-
-    // Redimensionnement du canvas 2D
-    const container = mountRef.current;
-    if (container) {
-      canvas.width = container.clientWidth || 800;
-      canvas.height = container.clientHeight || 550;
+    // Redimensionnement haute fidélité (DPR scaling) et ResizeObserver
+    const updateCanvasDimensions = () => {
+      const container = container2dRef.current;
+      if (!container || !canvas) return;
+      const w = Math.round(container.clientWidth) || 800;
+      const h = Math.round(container.clientHeight) || 520;
+      const dpr = Math.min(window.devicePixelRatio || 1, 2);
+      if (canvas.width !== Math.round(w * dpr) || canvas.height !== Math.round(h * dpr)) {
+        canvas.width = Math.round(w * dpr);
+        canvas.height = Math.round(h * dpr);
+        canvas.style.width = `${w}px`;
+        canvas.style.height = `${h}px`;
+      }
       render();
+    };
+
+    updateCanvasDimensions();
+
+    const resizeObserver = new ResizeObserver(() => {
+      updateCanvasDimensions();
+    });
+    if (container2dRef.current) {
+      resizeObserver.observe(container2dRef.current);
     }
 
     return () => {
       if (animId) cancelAnimationFrame(animId);
+      resizeObserver.disconnect();
     };
   }, [renderMode, elements, selectedId, lightingMode, isRotating, canvas2dOffset, canvas2dZoom]);
 
@@ -1217,7 +1241,7 @@ export function Studio3DFarmModeler() {
           {/* Moteur Fallback 2.5D Isométrique Universel */}
           {renderMode === "isometric2d" && (
             <div
-              ref={mountRef}
+              ref={container2dRef}
               onMouseDown={(e) => handlePointerDown(e.clientX, e.clientY)}
               onMouseMove={(e) => handlePointerMove(e.clientX, e.clientY)}
               onMouseUp={handlePointerUp}

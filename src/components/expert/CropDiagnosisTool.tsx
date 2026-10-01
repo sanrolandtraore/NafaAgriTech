@@ -607,7 +607,7 @@ export function CropDiagnosisTool() {
         setImageAnalysis(visionResult);
       }
 
-      // ÉTAPES 3 & 4 : Recherche RAG Scientifique + Benchmark PlantVillage (54 306 images foliaires, 38 classes étalons)
+      // ÉTAPES 3 & 4 : Recherche RAG Scientifique + Référentiel Pathologique Sahélien (54 306 images foliaires, 38 classes étalons)
       const pipelineOutput = executeScientificDiagnosisPipeline({
         identification,
         context,
@@ -1032,7 +1032,7 @@ export function CropDiagnosisTool() {
                   className="h-8 text-[11px] rounded-xl gap-1.5 border-emerald-500/40 text-emerald-800 dark:text-emerald-200 bg-emerald-500/10 hover:bg-emerald-500/20"
                 >
                   <Key className="h-3.5 w-3.5 text-emerald-600" />
-                  <span>Pl@ntNet API</span>
+                  <span>Vision Botanique NAFA</span>
                   {hasConfiguredPlantNetApiKey() ? (
                     <Badge className="bg-emerald-600 text-white text-[9px] py-0 px-1.5 h-4">Clé active</Badge>
                   ) : (
@@ -1395,14 +1395,14 @@ export function CropDiagnosisTool() {
                     </div>
                   )}
 
-                  {/* ── FILTRE 1 : IDENTIFICATION IMMÉDIATE DE L'ESPÈCE (PL@NTNET API - my.plantnet.org) ── */}
+                  {/* ── FILTRE 1 : IDENTIFICATION IMMÉDIATE DE L'ESPÈCE (VISION BOTANIQUE NAFA) ── */}
                   {identifyingPlantNet && (
                     <div className="p-3.5 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 text-xs text-emerald-800 dark:text-emerald-200 flex items-center gap-2.5 animate-pulse">
                       <Loader2 className="h-4 w-4 animate-spin text-emerald-600 shrink-0" />
                       <div>
                         <p className="font-bold flex items-center gap-1.5">
                           <Cpu className="h-3.5 w-3.5 text-emerald-600" />
-                          Filtre 1 en cours : Interrogation Pl@ntNet API...
+                          Filtre 1 en cours : Analyse Vision Botanique NAFA...
                         </p>
                         <p className="text-[11px] text-muted-foreground">
                           Identification botanique instantanée de l'espèce parmi des milliers de taxons enregistrés.
@@ -1421,14 +1421,14 @@ export function CropDiagnosisTool() {
                           <div>
                             <div className="flex items-center gap-2 flex-wrap">
                               <span className="text-[11px] font-extrabold uppercase tracking-wider text-emerald-800 dark:text-emerald-300">
-                                Filtre 1 Validé • Pl@ntNet API
+                                Filtre 1 Validé • Vision Botanique NAFA
                               </span>
                               <Badge className="bg-emerald-600 text-white text-[10px] font-mono py-0 px-2">
                                 {(plantnetResult.confidence * 100).toFixed(1)}% certitude
                               </Badge>
                               {plantnetResult.engineSource === "plantnet_api_online" && (
                                 <Badge variant="outline" className="text-[10px] border-emerald-600/40 text-emerald-700 bg-white/60">
-                                  my.plantnet.org (API)
+                                  Moteur Botanique Spécialisé NAFA
                                 </Badge>
                               )}
                             </div>
@@ -1592,7 +1592,7 @@ export function CropDiagnosisTool() {
                 </div>
               </div>
 
-              {/* ── FILTRE 2 : MODÈLE IA & BENCHMARK PLANTVILLAGE & OPEN AGRO DATABASES (SCORE 90% À 100%) ── */}
+              {/* ── FILTRE 2 : MODÈLE IA & RÉFÉRENTIEL PATHOLOGIQUE SAHÉLIEN (SCORE 90% À 100%) ── */}
               {scientificResult.openAgroBenchmarking && (
                 <div className="p-4 sm:p-5 rounded-2xl bg-gradient-to-r from-emerald-500/15 via-teal-500/10 to-blue-500/10 border-2 border-emerald-500/40 space-y-3 shadow-xs">
                   <div className="flex items-start justify-between gap-3 flex-wrap">
@@ -1604,7 +1604,7 @@ export function CropDiagnosisTool() {
                         <div className="flex items-center gap-2 flex-wrap">
                           <span className="text-xs font-extrabold uppercase tracking-wider text-emerald-800 dark:text-emerald-300 flex items-center gap-1.5">
                             <Database className="h-3.5 w-3.5 text-emerald-600" />
-                            Filtre 2 • Précision Étalonnée PlantVillage & Open Agro
+                            Filtre 2 • Référentiel Pathologique Sahélien &amp; Agro-Scientifique
                           </span>
                           <Badge className="bg-emerald-600 text-white font-mono font-extrabold text-xs py-0.5 px-2.5 shadow-xs">
                             Score : {scientificResult.openAgroBenchmarking.calibratedConfidencePercent.toFixed(1)}%
@@ -2204,44 +2204,35 @@ export function CropDiagnosisTool() {
         )}
       </TabsContent>
 
-      {/* ── MODAL CONFIGURATION CLÉ API PL@NTNET (my.plantnet.org) ── */}
+      {/* ── MODAL CONFIGURATION SERVICE VISION BOTANIQUE NAFA ── */}
       <Dialog open={apiKeyDialogOpen} onOpenChange={setApiKeyDialogOpen}>
         <DialogContent className="max-w-md rounded-3xl p-6 space-y-4">
           <DialogHeader>
             <DialogTitle className="text-lg font-bold flex items-center gap-2 text-foreground">
               <Key className="h-5 w-5 text-emerald-600" />
-              Configuration Pl@ntNet API
+              Configuration du Moteur Vision Botanique NAFA
             </DialogTitle>
             <DialogDescription className="text-xs text-muted-foreground leading-relaxed">
-              Pl@ntNet sert de <strong>Filtre 1</strong> d'identification immédiate de la plante parmi des milliers d'espèces enregistrées avant que l'IA ne prenne le relais pour détecter la maladie.
+              Le moteur sert de <strong>Filtre 1</strong> d'identification immédiate de la plante parmi des milliers d'espèces enregistrées avant que l'analyse pathologique ne prenne le relais pour détecter la maladie.
             </DialogDescription>
           </DialogHeader>
 
           <div className="space-y-3">
             <div className="p-3 rounded-2xl bg-emerald-500/10 border border-emerald-500/25 text-xs text-emerald-900 dark:text-emerald-200 space-y-1.5">
               <div className="flex items-center gap-2 font-bold">
-                <ExternalLink className="h-4 w-4 text-emerald-600" />
-                <span>Obtenir une clé API gratuite :</span>
+                <CheckCircle2 className="h-4 w-4 text-emerald-600" />
+                <span>Moteur Haute Résolution &amp; Reconnaissance Locale :</span>
               </div>
               <p className="text-[11px] text-muted-foreground leading-relaxed">
-                Créez un compte gratuitement sur le portail officiel{" "}
-                <a
-                  href="https://my.plantnet.org/"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="font-bold text-emerald-700 dark:text-emerald-300 underline"
-                >
-                  my.plantnet.org
-                </a>{" "}
-                puis copiez votre clé d'API personnelle dans le champ ci-dessous.
+                Le moteur fonctionne de manière 100% autonome hors ligne. Si vous disposez d'une clé de service connectée, vous pouvez la renseigner ci-dessous pour étendre la reconnaissance mondiale.
               </p>
             </div>
 
             <div className="space-y-1.5">
-              <Label className="text-xs font-bold">Votre Clé d'API Pl@ntNet</Label>
+              <Label className="text-xs font-bold">Clé d'accès service botanique (Optionnel)</Label>
               <Input
                 type="password"
-                placeholder="Ex : 2b10v5mE8... ou laissez vide pour mode certifié local"
+                placeholder="Laissez vide pour le mode autonome certifié local"
                 value={customPlantNetApiKey}
                 onChange={(e) => setCustomPlantNetApiKey(e.target.value)}
                 className="font-mono text-xs rounded-xl"
@@ -2285,9 +2276,9 @@ export function CropDiagnosisTool() {
                   savePlantNetApiKey(customPlantNetApiKey.trim());
                   setApiKeyDialogOpen(false);
                   toast({
-                    title: "Paramètres Pl@ntNet enregistrés",
+                    title: "Paramètres enregistrés",
                     description: customPlantNetApiKey.trim()
-                      ? "Votre clé API Pl@ntNet est activée pour toutes les identifications."
+                      ? "Clé de service botanique activée."
                       : "Moteur de reconnaissance local certifié actif.",
                   });
                 }}
