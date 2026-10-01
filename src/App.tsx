@@ -87,11 +87,7 @@ const InstitutionFinanceDashboard = lazy(() => import("./pages/dashboard/partena
 const PartnerMarketingPage = lazy(() => import("./pages/dashboard/partenaire/PartnerMarketingPage"));
 const PartnerDemandesPage = lazy(() => import("./pages/dashboard/partenaire/PartnerDemandesPage"));
 
-const PageLoader = () => (
-  <div className="flex items-center justify-center h-48">
-    <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
-  </div>
-);
+import PageLoader from "@/components/PageLoader";
 
 const queryClient = new QueryClient({
   defaultOptions: {

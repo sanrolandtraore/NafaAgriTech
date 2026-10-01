@@ -4,6 +4,8 @@ import { AgronomicToolItem, agronomicToolkitStorage } from "@/lib/agronomicToolk
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { RealModuleIcon, ModuleIconType } from "@/components/ui/RealModuleIcon";
+import { prefetchRoute } from "@/lib/routePrefetcher";
 import {
   Star,
   ArrowRight,
@@ -120,9 +122,22 @@ export const AgronomicToolCard: React.FC<AgronomicToolCardProps> = ({
     onOpenContextualAi(tool);
   };
 
+  const getToolRealIconType = (): ModuleIconType => {
+    if (tool.id.includes("survey") || tool.id.includes("gps") || tool.id.includes("map")) return "gps";
+    if (tool.id.includes("irrigation")) return "irrigation";
+    if (tool.id.includes("livestock")) return "livestock";
+    if (tool.id.includes("diagnosis") || tool.id.includes("inspection")) return "diagnostic";
+    if (tool.id.includes("quote") || tool.id.includes("cost") || tool.id.includes("materials")) return "quote";
+    if (tool.id.includes("crop") || tool.id.includes("library")) return "crops";
+    if (tool.id.includes("machinisme") || tool.id.includes("tractor")) return "tractor";
+    return "crops";
+  };
+
   return (
     <Card
       onClick={() => handleOpenTool()}
+      onMouseEnter={() => prefetchRoute(tool.route)}
+      onTouchStart={() => prefetchRoute(tool.route)}
       className={`group relative overflow-hidden rounded-[24px] border border-border/80 bg-card hover:bg-card/95 hover:border-[#F97316]/50 shadow-xs hover:shadow-lg transition-all duration-300 cursor-pointer flex flex-col justify-between p-3.5 sm:p-5 select-none ${
         compact ? "min-h-[160px]" : "min-h-[190px] sm:min-h-[210px]"
       }`}
@@ -130,11 +145,13 @@ export const AgronomicToolCard: React.FC<AgronomicToolCardProps> = ({
       {/* ── Top Bar: Icon + Star + Offline Badge ── */}
       <div>
         <div className="flex items-start justify-between gap-2 mb-3">
-          {/* Main Visual Icon Container */}
+          {/* Main Visual Real Icon Container */}
           <div className="relative">
-            <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-[18px] bg-primary/10 text-primary flex items-center justify-center group-hover:scale-110 group-hover:bg-[#F97316] group-hover:text-white transition-all duration-300 shadow-xs">
-              <IconComponent className="h-5 w-5 sm:h-6 sm:w-6 shrink-0" />
-            </div>
+            <RealModuleIcon
+              type={getToolRealIconType()}
+              size="md"
+              className="group-hover:scale-110 group-hover:rotate-2 transition-transform shadow-xs"
+            />
             {tool.badges.includes("IA") && (
               <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-[#F97316] text-white text-[9px] font-black shadow-xs">
                 A

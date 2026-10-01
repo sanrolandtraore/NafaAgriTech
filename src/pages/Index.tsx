@@ -52,6 +52,12 @@ import galleryFreshHarvest from "@/assets/gallery/fresh-harvest.jpg";
 import galleryVeterinaryCare from "@/assets/gallery/veterinary-care.jpg";
 import galleryAgriServices from "@/assets/gallery/agri-services.jpg";
 import galleryAgriFinance from "@/assets/gallery/agri-finance.jpg";
+import videoIrrigation from "@/assets/gallery/irrigation-video.mp4";
+import videoHarvest from "@/assets/gallery/harvest-video.mp4";
+import videoLivestock from "@/assets/gallery/livestock-video.mp4";
+import { RealModuleIcon } from "@/components/ui/RealModuleIcon";
+import { InteractiveDynamicVisual, Hotspot } from "@/components/ui/InteractiveDynamicVisual";
+import { prefetchRoute } from "@/lib/routePrefetcher";
 
 // ── 1. Configuration des 4 Espaces Métiers (Images 100% Uniques) ──
 const SPACES_CONFIG = [
@@ -60,6 +66,7 @@ const SPACES_CONFIG = [
     title: "Agronomes & Vétérinaires",
     path: "/dashboard/field-designer",
     icon: Compass,
+    realIcon: "field-designer",
     image: galleryDigital,
     badge: "NAFA FIELD DESIGNER",
   },
@@ -68,6 +75,7 @@ const SPACES_CONFIG = [
     title: "Partenaires",
     path: "/dashboard/partenaire-abonnement",
     icon: Award,
+    realIcon: "finance",
     image: galleryPartnerWarehouse,
     badge: "Fournisseurs & Banques",
   },
@@ -76,6 +84,7 @@ const SPACES_CONFIG = [
     title: "Agriculteurs & Éleveurs",
     path: "/marketplace?role=producteurs",
     icon: Store,
+    realIcon: "livestock",
     image: galleryLivestock,
     badge: "Marketplace Vitrine",
   },
@@ -84,6 +93,7 @@ const SPACES_CONFIG = [
     title: "Marketplace Intrants & Services",
     path: "/marketplace?cat=produits_agricoles&role=producteurs",
     icon: ShoppingBag,
+    realIcon: "marketplace",
     image: galleryFreshHarvest,
     badge: "Semences & Matériels",
   },
@@ -91,22 +101,22 @@ const SPACES_CONFIG = [
 
 // ── 2. Configuration des 6 Outils Intelligents (Images 100% Uniques) ──
 const SMART_TOOLS = [
-  { id: "gps", word: "GPS", icon: MapPin, path: "/dashboard/scouting", image: galleryGpsSurveyor },
-  { id: "inspection", word: "Inspection", icon: ClipboardCheck, path: "/dashboard/smart-inspection", image: galleryFarmField },
-  { id: "diagnostic", word: "Diagnostic", icon: Cpu, path: "/dashboard/expert-diagnosis", image: galleryPlantDiagnostic },
-  { id: "irrigation", word: "Irrigation", icon: Droplets, path: "/dashboard/genius", image: galleryIrrigation },
-  { id: "devis", word: "Devis", icon: FileText, path: "/dashboard/quote-requests", image: galleryEngineeringQuote },
-  { id: "cartographie", word: "Cartographie", icon: Layers, path: "/dashboard/expert-cartography", image: galleryAerialParcels },
+  { id: "gps", word: "GPS", icon: MapPin, realIcon: "gps", path: "/dashboard/scouting", image: galleryGpsSurveyor },
+  { id: "inspection", word: "Inspection", icon: ClipboardCheck, realIcon: "diagnostic", path: "/dashboard/smart-inspection", image: galleryFarmField },
+  { id: "diagnostic", word: "Diagnostic", icon: Cpu, realIcon: "plantnet", path: "/dashboard/expert-diagnosis", image: galleryPlantDiagnostic },
+  { id: "irrigation", word: "Irrigation", icon: Droplets, realIcon: "irrigation", path: "/dashboard/genius", image: galleryIrrigation },
+  { id: "devis", word: "Devis", icon: FileText, realIcon: "quote", path: "/dashboard/quote-requests", image: galleryEngineeringQuote },
+  { id: "cartographie", word: "Cartographie", icon: Layers, realIcon: "cartography", path: "/dashboard/expert-cartography", image: galleryAerialParcels },
 ];
 
 // ── 3. Configuration des Catégories Marketplace Rapide (Images 100% Uniques) ──
 const MARKET_CATEGORIES = [
-  { id: "machinisme", name: "Machinisme & Travaux", cat: "machinisme", path: "/marketplace?cat=machinisme&role=producteurs", icon: Tractor, image: galleryTractorPlowing },
-  { id: "agricole", name: "Produits Agricoles", cat: "produits_agricoles", path: "/marketplace?cat=produits_agricoles&role=producteurs", icon: Sprout, image: galleryHarvest },
-  { id: "elevage", name: "Produits d'Élevage", cat: "produits_elevage", path: "/marketplace?cat=produits_elevage&role=producteurs", icon: Beef, image: galleryVeterinaryCare },
-  { id: "services-agri", name: "Services Agricoles", cat: "services_agricoles", path: "/marketplace?cat=services_agricoles&role=producteurs", icon: Wrench, image: galleryAgriServices },
-  { id: "services-veto", name: "Services Vétérinaires", cat: "services_veterinaires", path: "/marketplace?cat=services_veterinaires&role=producteurs", icon: Stethoscope, image: galleryFormation },
-  { id: "finance", name: "Finance & Assurance", cat: "finance_assurance", path: "/marketplace?cat=finance_assurance&role=producteurs", icon: Landmark, image: galleryAgriFinance },
+  { id: "machinisme", name: "Machinisme & Travaux", cat: "machinisme", path: "/marketplace?cat=machinisme&role=producteurs", icon: Tractor, realIcon: "tractor", image: galleryTractorPlowing },
+  { id: "agricole", name: "Produits Agricoles", cat: "produits_agricoles", path: "/marketplace?cat=produits_agricoles&role=producteurs", icon: Sprout, realIcon: "crops", image: galleryHarvest },
+  { id: "elevage", name: "Produits d'Élevage", cat: "produits_elevage", path: "/marketplace?cat=produits_elevage&role=producteurs", icon: Beef, realIcon: "livestock", image: galleryVeterinaryCare },
+  { id: "services-agri", name: "Services Agricoles", cat: "services_agricoles", path: "/marketplace?cat=services_agricoles&role=producteurs", icon: Wrench, realIcon: "field-designer", image: galleryAgriServices },
+  { id: "services-veto", name: "Services Vétérinaires", cat: "services_veterinaires", path: "/marketplace?cat=services_veterinaires&role=producteurs", icon: Stethoscope, realIcon: "veterinary", image: galleryFormation },
+  { id: "finance", name: "Finance & Assurance", cat: "finance_assurance", path: "/marketplace?cat=finance_assurance&role=producteurs", icon: Landmark, realIcon: "finance", image: galleryAgriFinance },
 ];
 
 const Index = () => {
@@ -311,6 +321,8 @@ const Index = () => {
               <div
                 key={space.id}
                 onClick={() => navigate(space.path)}
+                onMouseEnter={() => prefetchRoute(space.path)}
+                onTouchStart={() => prefetchRoute(space.path)}
                 role="button"
                 tabIndex={0}
                 onKeyDown={(e) => e.key === "Enter" && navigate(space.path)}
@@ -321,6 +333,7 @@ const Index = () => {
                   src={space.image}
                   alt={space.title}
                   loading="lazy"
+                  decoding="async"
                   className="absolute inset-0 w-full h-full object-cover object-center group-hover:scale-110 group-hover:rotate-[0.5deg] transition-transform duration-700 ease-out"
                 />
                 {/* Effet shimmer lumineux balayant au survol */}
@@ -328,14 +341,16 @@ const Index = () => {
                 {/* Gradient de Contraste Premium */}
                 <div className="absolute inset-0 bg-gradient-to-t from-[#111827] via-[#111827]/40 to-transparent" />
 
-                {/* Badge Supérieur Flottant */}
+                {/* Badge Supérieur Flottant avec vraie icône réelle */}
                 <div className="relative z-10 flex justify-between items-start">
                   <Badge className="bg-white/95 text-[#111827] hover:bg-white text-[11px] font-bold px-3 py-1 rounded-full backdrop-blur-md shadow-sm animate-float-slow">
                     {space.badge}
                   </Badge>
-                  <div className="w-10 h-10 rounded-full bg-white/20 backdrop-blur-md text-white flex items-center justify-center group-hover:bg-[#F97316] group-hover:scale-110 group-hover:rotate-6 transition-all duration-300 shadow-sm">
-                    <Icon className="h-5 w-5" />
-                  </div>
+                  <RealModuleIcon
+                    type={(space as any).realIcon || "crops"}
+                    size="md"
+                    className="shadow-md border-2 border-white/40 group-hover:scale-110 group-hover:rotate-3 transition-transform"
+                  />
                 </div>
 
                 {/* Titre & Call to Action avec transition fluide */}
@@ -424,6 +439,8 @@ const Index = () => {
                 <div
                   key={tool.id}
                   onClick={() => navigate(tool.path)}
+                  onMouseEnter={() => prefetchRoute(tool.path)}
+                  onTouchStart={() => prefetchRoute(tool.path)}
                   role="button"
                   tabIndex={0}
                   onKeyDown={(e) => e.key === "Enter" && navigate(tool.path)}
@@ -434,6 +451,7 @@ const Index = () => {
                     src={tool.image}
                     alt={tool.word}
                     loading="lazy"
+                    decoding="async"
                     className="absolute inset-0 w-full h-full object-cover group-hover:scale-115 group-hover:rotate-1 transition-transform duration-700 ease-out brightness-90 group-hover:brightness-105"
                   />
                   {/* Effet shimmer lumineux balayant au survol */}
@@ -443,9 +461,11 @@ const Index = () => {
 
                   {/* Badge & Titre avec vrai contraste */}
                   <div className="relative z-10 space-y-2">
-                    <div className="w-9 h-9 rounded-xl bg-white/20 backdrop-blur-md text-white flex items-center justify-center group-hover:bg-[#F97316] group-hover:scale-110 group-hover:rotate-6 transition-all duration-300 shadow-xs">
-                      <Icon className="h-4 w-4" />
-                    </div>
+                    <RealModuleIcon
+                      type={(tool as any).realIcon || "crops"}
+                      size="sm"
+                      className="shadow-sm border border-white/30 group-hover:scale-110 group-hover:rotate-6 transition-all duration-300"
+                    />
                     <span className="font-heading font-extrabold text-sm sm:text-base text-white block group-hover:text-[#F97316] group-hover:translate-x-0.5 transition-all drop-shadow-sm">
                       {tool.word}
                     </span>
@@ -467,6 +487,70 @@ const Index = () => {
               <ArrowRight className="h-4 w-4 ml-1" />
             </Button>
           </div>
+        </div>
+      </section>
+
+      {/* ══════════════════════════════════════════════════════
+          VISUELS DYNAMIQUES & INTERACTIFS DES MODULES
+      ══════════════════════════════════════════════════════ */}
+      <section className="py-14 sm:py-20 max-w-7xl mx-auto px-4 sm:px-6 space-y-8">
+        <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
+          <div className="space-y-2">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#F97316]/10 border border-[#F97316]/30 text-[#F97316] text-xs font-bold">
+              <Sparkles className="h-3.5 w-3.5" />
+              <span>Visuels dynamiques interactifs • Modules en action</span>
+            </div>
+            <h2 className="text-2xl sm:text-4xl font-heading font-extrabold text-foreground tracking-tight">
+              L'agriculture moderne en action interactive
+            </h2>
+            <p className="text-xs sm:text-sm text-muted-foreground font-medium max-w-2xl">
+              Survolez et cliquez sur les points d'intérêt pour inspecter les technologies réelles de chaque module : hydraulique solaire, santé animale, mécanisation et diagnostic végétal.
+            </p>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {/* Module 1 : Irrigation & Pompage Solaire */}
+          <InteractiveDynamicVisual
+            imageSrc={galleryIrrigation}
+            videoSrc={videoIrrigation}
+            alt="Irrigation & Pompage Solaire"
+            title="Module Irrigation & Hydraulique"
+            subtitle="Dimensionnement réseau goutte-à-goutte et pompage solaire photovoltaïque."
+            badgeText="Hydraulique certifiée"
+            hotspots={[
+              { id: "hs-pump", x: 65, y: 35, label: "Pompe solaire", value: "3000 W • Débit 12 m³/h", badge: "Solaire 48V" },
+              { id: "hs-drip", x: 30, y: 70, label: "Goutte-à-goutte", value: "Pression 2.2 bar • Auto-régulant", badge: "Économie d'eau 60%" },
+            ]}
+          />
+
+          {/* Module 2 : Élevage & Santé Animale */}
+          <InteractiveDynamicVisual
+            imageSrc={galleryLivestock}
+            videoSrc={videoLivestock}
+            alt="Élevage & Santé Animale"
+            title="Module Cheptel & Zootechnie"
+            subtitle="Suivi biométrique, rationnement alimentaire et interventions vétérinaires."
+            badgeText="Santé animale certifiée"
+            hotspots={[
+              { id: "hs-cow", x: 45, y: 40, label: "Géniteur sélectionné", value: "Zébu Azawak • Poids 480 kg", badge: "Vaccin à jour" },
+              { id: "hs-feed", x: 75, y: 75, label: "Ration alimentaire", value: "Fourrage enrichi • Tourteau de coton", badge: "Gain 850g/j" },
+            ]}
+          />
+
+          {/* Module 3 : Machinisme & Récolte */}
+          <InteractiveDynamicVisual
+            imageSrc={galleryHarvest}
+            videoSrc={videoHarvest}
+            alt="Machinisme & Récolte"
+            title="Module Machinisme & Récoltes"
+            subtitle="Planification des travaux du sol, moissons mécanisées et stockage sécurisé."
+            badgeText="Mécanisation Sahel"
+            hotspots={[
+              { id: "hs-yield", x: 40, y: 55, label: "Rendement parcellaire", value: "Maïs hybride • 4.2 T / ha", badge: "Humidité 13%" },
+              { id: "hs-tractor", x: 80, y: 35, label: "Tracteur & Batteuse", value: "Disponibilité temps réel", badge: "Location locale" },
+            ]}
+          />
         </div>
       </section>
 
@@ -503,6 +587,8 @@ const Index = () => {
               <div
                 key={cat.id}
                 onClick={() => navigate(targetPath)}
+                onMouseEnter={() => prefetchRoute(targetPath)}
+                onTouchStart={() => prefetchRoute(targetPath)}
                 role="button"
                 tabIndex={0}
                 onKeyDown={(e) => e.key === "Enter" && navigate(targetPath)}
@@ -512,6 +598,7 @@ const Index = () => {
                   src={cat.image}
                   alt={cat.name}
                   loading="lazy"
+                  decoding="async"
                   className="absolute inset-0 w-full h-full object-cover group-hover:scale-115 group-hover:rotate-1 transition-transform duration-700 ease-out brightness-90 group-hover:brightness-105"
                 />
                 {/* Effet shimmer lumineux balayant au survol */}
@@ -519,9 +606,11 @@ const Index = () => {
                 <div className="absolute inset-0 bg-gradient-to-t from-[#111827] via-[#111827]/40 to-transparent" />
                 
                 <div className="relative z-10 space-y-1.5">
-                  <div className="w-8 h-8 rounded-lg bg-white/20 backdrop-blur-md text-white flex items-center justify-center group-hover:bg-[#F97316] group-hover:scale-110 group-hover:rotate-6 transition-all duration-300 shadow-xs">
-                    <Icon className="h-4 w-4" />
-                  </div>
+                  <RealModuleIcon
+                    type={(cat as any).realIcon || "crops"}
+                    size="sm"
+                    className="shadow-sm border border-white/30 group-hover:scale-110 group-hover:rotate-6 transition-all duration-300"
+                  />
                   <h4 className="font-heading font-bold text-xs sm:text-sm text-white line-clamp-2 leading-tight group-hover:text-white transition-colors">
                     {cat.name}
                   </h4>

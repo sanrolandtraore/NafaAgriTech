@@ -14,6 +14,8 @@ import {
 import { Button } from "@/components/ui/button";
 import { useTranslation } from "react-i18next";
 import { PartnerProfileType, PARTNER_PROFILES } from "@/lib/partnerProfiles";
+import { RealModuleIcon } from "@/components/ui/RealModuleIcon";
+import { prefetchRoute } from "@/lib/routePrefetcher";
 
 export type NavItem = {
   to: string;
@@ -344,6 +346,18 @@ export const SidebarNavContent = ({ onNavigate }: SidebarContentProps) => {
 
           const displayLabel = getNavLabel(item, t);
 
+          const iconType =
+            to.includes("parcels") || to.includes("crop") ? "crops"
+            : to.includes("animal") || to.includes("livestock") ? (to.includes("health") || to.includes("services") ? "veterinary" : "livestock")
+            : to.includes("field-designer") || to.includes("cartography") || to.includes("scouting") || to.includes("services") ? "gps"
+            : to.includes("inspections") || to.includes("diagnosis") ? "diagnostic"
+            : to.includes("banque") || to.includes("assurance") || to.includes("programme") || to.includes("finance") || to.includes("abonnement") || to.includes("kyc") || to.includes("revenus") ? "finance"
+            : to.includes("marketplace") || to.includes("offres") || to.includes("clients") ? "marketplace"
+            : to.includes("education") ? "education"
+            : to.includes("calculator") || to.includes("devis") || to.includes("quote") || to.includes("identite") || to.includes("report") ? "quote"
+            : to.includes("fournisseur") || to.includes("machinisme") ? "tractor"
+            : null;
+
           return (
             <div key={to} className="space-y-1">
               {isFirstOfSection && (
@@ -354,14 +368,24 @@ export const SidebarNavContent = ({ onNavigate }: SidebarContentProps) => {
               <Link
                 to={to}
                 onClick={onNavigate}
+                onMouseEnter={() => prefetchRoute(to)}
+                onTouchStart={() => prefetchRoute(to)}
                 className={cn(
-                  "flex items-center gap-3.5 rounded-xl px-4 py-3 text-sm font-semibold transition-all duration-200",
+                  "flex items-center gap-3 rounded-xl px-3.5 py-2.5 text-sm font-semibold transition-all duration-200 group",
                   isActive
-                    ? "bg-sidebar-accent text-sidebar-primary shadow-sm font-bold border-l-4 border-sidebar-primary"
+                    ? "bg-sidebar-accent text-sidebar-primary shadow-xs font-bold border-l-4 border-sidebar-primary"
                     : "text-sidebar-foreground/80 hover:bg-sidebar-accent/70 hover:text-sidebar-foreground"
                 )}
               >
-                <Icon className={cn("h-5 w-5 shrink-0", isActive ? "text-sidebar-primary" : "text-sidebar-foreground/70")} />
+                {iconType ? (
+                  <RealModuleIcon
+                    type={iconType}
+                    size="sm"
+                    className="shrink-0 group-hover:scale-110 group-hover:rotate-2 transition-transform shadow-xs"
+                  />
+                ) : (
+                  <Icon className={cn("h-5 w-5 shrink-0", isActive ? "text-sidebar-primary" : "text-sidebar-foreground/70")} />
+                )}
                 <span className="leading-snug">{displayLabel}</span>
               </Link>
             </div>
