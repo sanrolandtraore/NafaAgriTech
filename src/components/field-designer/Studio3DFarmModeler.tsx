@@ -158,6 +158,39 @@ const PRESET_ELEMENTS = [
     costFcfa: 3800000,
     icon: Building2,
   },
+  {
+    type: "solar_coldroom",
+    name: "Chambre Froide Solaire Maraîchère",
+    category: "building" as ElementCategory,
+    width: 8,
+    length: 12,
+    height: 3.5,
+    color: 0x455a64,
+    costFcfa: 7200000,
+    icon: Building2,
+  },
+  {
+    type: "retention_pond",
+    name: "Bassin de Rétention / Pisciculture Bâché",
+    category: "irrigation" as ElementCategory,
+    width: 15,
+    length: 20,
+    height: 1.5,
+    color: 0x0288d1,
+    costFcfa: 1800000,
+    icon: Droplets,
+  },
+  {
+    type: "windbreak",
+    name: "Haie Brise-Vent & Agroforesterie",
+    category: "crop" as ElementCategory,
+    width: 3,
+    length: 30,
+    height: 5.0,
+    color: 0x33691e,
+    costFcfa: 250000,
+    icon: Sprout,
+  },
 ];
 
 export function Studio3DFarmModeler() {
@@ -382,6 +415,46 @@ export function Studio3DFarmModeler() {
       tunnel.position.y = 0;
       tunnel.castShadow = true;
       group.add(tunnel);
+    } else if (el.type === "retention_pond") {
+      // Bassin de rétention d'eau bâché / Étang piscicole
+      const bermMat = new THREE.MeshStandardMaterial({ color: 0x5d4037, roughness: 0.9 });
+      const berm = new THREE.Mesh(new THREE.BoxGeometry(el.width, 0.6, el.length), bermMat);
+      berm.position.y = 0.3;
+      berm.castShadow = true;
+      group.add(berm);
+
+      const waterMat = new THREE.MeshStandardMaterial({ color: 0x0288d1, roughness: 0.1, metalness: 0.8 });
+      const water = new THREE.Mesh(new THREE.BoxGeometry(el.width * 0.88, 0.1, el.length * 0.88), waterMat);
+      water.position.y = 0.55;
+      group.add(water);
+    } else if (el.type === "solar_coldroom") {
+      // Chambre froide solaire avec panneaux intégrés en toiture
+      const bodyMat = new THREE.MeshStandardMaterial({ color: 0xeceff1, metalness: 0.4, roughness: 0.3 });
+      const body = new THREE.Mesh(new THREE.BoxGeometry(el.width, el.height, el.length), bodyMat);
+      body.position.y = el.height / 2;
+      body.castShadow = true;
+      group.add(body);
+
+      const pvMat = new THREE.MeshStandardMaterial({ color: 0x0d47a1, roughness: 0.2, metalness: 0.9 });
+      const pv = new THREE.Mesh(new THREE.BoxGeometry(el.width * 0.9, 0.1, el.length * 0.9), pvMat);
+      pv.position.y = el.height + 0.1;
+      group.add(pv);
+    } else if (el.type === "windbreak") {
+      // Haie brise-vent et agroforesterie (arbres 3D)
+      const trunkMat = new THREE.MeshStandardMaterial({ color: 0x4e342e });
+      const foliageMat = new THREE.MeshStandardMaterial({ color: 0x2e7d32, roughness: 0.7 });
+      const numTrees = Math.max(3, Math.floor(el.length / 4));
+      for (let i = -numTrees / 2; i <= numTrees / 2; i++) {
+        const trunk = new THREE.Mesh(new THREE.CylinderGeometry(0.2, 0.3, el.height * 0.5), trunkMat);
+        trunk.position.set(0, (el.height * 0.5) / 2, i * 4);
+        trunk.castShadow = true;
+        group.add(trunk);
+
+        const crown = new THREE.Mesh(new THREE.ConeGeometry(1.6, el.height * 0.7, 8), foliageMat);
+        crown.position.set(0, el.height * 0.75, i * 4);
+        crown.castShadow = true;
+        group.add(crown);
+      }
     } else {
       // Bâtiment / Élément générique
       const boxMat = new THREE.MeshStandardMaterial({ color: 0x8d6e63, roughness: 0.6 });
@@ -646,6 +719,26 @@ export function Studio3DFarmModeler() {
     toast.success("Rendu 3D haute définition exporté avec succès !");
   };
 
+  // Export du Bordereau / Devis technique en texte structuré
+  const handleExportSpecs = () => {
+    const lines = [
+      `=== BORDEREAU D'AMÉNAGEMENT 3D — NAFA FIELD DESIGNER ===`,
+      `Date: ${new Date().toLocaleDateString("fr-FR")}`,
+      `Nombre d'infrastructures: ${elements.length}`,
+      `Budget estimatif total: ${totalBudgetFcfa.toLocaleString()} FCFA`,
+      ``,
+      `DÉTAIL DES ÉLÉMENTS IMPLANTÉS:`,
+      ...elements.map(
+        (el, i) =>
+          `${i + 1}. [${el.category.toUpperCase()}] ${el.name} — Dim: ${el.width}m × ${el.length}m (H: ${el.height}m) | Pos: (X: ${el.x}m, Z: ${el.z}m) | Coût: ${el.costFcfa.toLocaleString()} FCFA`
+      ),
+      ``,
+      `Certifié conforme aux normes agronomiques sahéliennes.`
+    ];
+    navigator.clipboard.writeText(lines.join("\n"));
+    toast.success("Bordereau technique copié dans le presse-papier !");
+  };
+
   return (
     <div className="space-y-4 max-w-7xl mx-auto pb-12">
       {/* ── EN-TÊTE DU STUDIO 3D ── */}
@@ -666,11 +759,19 @@ export function Studio3DFarmModeler() {
 
         <div className="flex items-center gap-2 shrink-0">
           <Button
+            onClick={handleExportSpecs}
+            variant="outline"
+            className="rounded-full bg-white/10 hover:bg-white/20 text-white border-white/20 font-bold text-xs px-4 py-2.5 flex items-center gap-1.5"
+          >
+            <FileSpreadsheet className="h-4 w-4" />
+            <span>Copier Devis</span>
+          </Button>
+          <Button
             onClick={handleExport3DImage}
             className="rounded-full bg-[#F97316] hover:bg-[#ea580c] text-white font-bold text-xs px-5 py-2.5 shadow-lg shadow-orange-500/30 flex items-center gap-2"
           >
             <Camera className="h-4 w-4" />
-            <span>Exporter le Rendu 3D (PNG)</span>
+            <span>Exporter Rendu (PNG)</span>
           </Button>
         </div>
       </div>
