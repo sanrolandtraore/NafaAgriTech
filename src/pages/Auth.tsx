@@ -335,7 +335,9 @@ export default function Auth() {
 
         <Card className="w-full border-border/60 shadow-warm animate-fade-in">
           <CardHeader className="text-center space-y-3 pt-6 pb-4">
-            <img src={logo} alt="NAFA - AGRITECH" className="mx-auto h-20 w-auto drop-shadow-md" />
+            <div className="mx-auto h-20 w-20 sm:h-24 sm:w-24 rounded-3xl overflow-hidden bg-white shadow-md border-2 border-emerald-500/20 p-2 flex items-center justify-center">
+              <img src={logo} alt="NAFA - AGRITECH" className="h-full w-full object-contain rounded-2xl" />
+            </div>
             <div>
               <CardTitle className="text-2xl sm:text-3xl font-heading font-extrabold text-foreground tracking-tight">
                 NAFA <span className="text-gradient-warm">- AGRITECH</span>

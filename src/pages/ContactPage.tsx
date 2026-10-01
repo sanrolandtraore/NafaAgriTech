@@ -63,7 +63,9 @@ export const ContactPage: React.FC = () => {
               <ArrowLeft className="h-5 w-5" />
             </Link>
             <Link to="/" className="flex items-center gap-2.5">
-              <img src={logo} alt="NAFA-AGRITECH" className="h-8 w-auto" />
+              <div className="h-9 w-9 sm:h-10 sm:w-10 rounded-xl overflow-hidden bg-white shadow-2xs border border-emerald-500/20 p-0.5 flex items-center justify-center shrink-0">
+                <img src={logo} alt="NAFA-AGRITECH" className="h-full w-full object-contain rounded-lg" />
+              </div>
               <span className="font-heading font-extrabold text-base sm:text-lg">
                 NAFA <span className="text-[#F97316]">- AGRITECH</span>
               </span>
