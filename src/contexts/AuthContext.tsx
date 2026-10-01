@@ -524,8 +524,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       }
     }
 
-    // Mode secours résilient : génération d'un code OTP à 6 chiffres
-    const generatedCode = "123456";
+    // Mode secours résilient : génération cryptographique d'un code OTP aléatoire à 6 chiffres
+    const randomBuffer = new Uint32Array(1);
+    crypto.getRandomValues(randomBuffer);
+    const generatedCode = String(100000 + (randomBuffer[0] % 900000));
     const payload = {
       phone: normalized,
       code: generatedCode,

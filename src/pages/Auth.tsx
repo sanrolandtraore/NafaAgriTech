@@ -132,8 +132,10 @@ export default function Auth() {
       if (res.error) {
         toast.error("Erreur lors de l'envoi du code : " + res.error.message);
       } else {
-        toast.success(`Code envoyé au ${fullPhone} !`, {
-          description: "Utilisez le code 123456 pour valider instantanément.",
+        toast.success(`Code de sécurité généré pour ${fullPhone} !`, {
+          description: res.code
+            ? `Votre code de validation : ${res.code}`
+            : "Consultez vos SMS pour valider votre connexion.",
         });
         setWaStep("otp");
       }
