@@ -289,7 +289,7 @@ export const FieldDesignerStudio: React.FC = () => {
             <span>NAFA FIELD DESIGNER</span>
           </h1>
           <p className="text-xs sm:text-sm text-emerald-100/90 font-medium">
-            Le logiciel de conception et d’intervention terrain pour agronomes africains (Successeur certifié de NAFA Genius Pro)
+            Le logiciel de conception et d’intervention terrain pour agronomes africains
           </p>
         </div>
 
