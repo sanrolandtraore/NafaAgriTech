@@ -24,8 +24,6 @@ import {
 } from "@/lib/imageOptimization";
 import {
   identifyPlantWithNafaEngine,
-  identifyPlantWithPlantNet,
-  type PlantNetIdentificationResult,
   type NafaPlantIdentificationResult,
 } from "@/lib/nafaPlantIdentifier";
 import {
@@ -134,11 +132,15 @@ function detectCurrentSeason(): AgronomicSeason {
   return "saison_seche_chaude"; // Mars à Mai
 }
 
-export function CropDiagnosisTool() {
+interface CropDiagnosisToolProps {
+  enforceRoleGate?: boolean;
+}
+
+export function CropDiagnosisTool({ enforceRoleGate = false }: CropDiagnosisToolProps = {}) {
   const { user, profile, primaryRole, partnerType } = useAuth();
 
-  // Les agriculteurs et éleveurs ne doivent en aucun cas accéder au banc de diagnostic
-  if (!canAccessDiagnosticTools(primaryRole, partnerType)) {
+  // Les agriculteurs et éleveurs ne doivent en aucun cas accéder au banc de diagnostic si le verrou est activé
+  if (enforceRoleGate && !canAccessDiagnosticTools(primaryRole, partnerType)) {
     return (
       <DiagnosticAccessGate>
         <div />
@@ -157,10 +159,9 @@ export function CropDiagnosisTool() {
   const [isDraggingOver, setIsDraggingOver] = useState(false);
   const [imageAnalysis, setImageAnalysis] = useState<FoliarImageAnalysisResult | null>(null);
   const [analyzingImage, setAnalyzingImage] = useState(false);
-  const [plantnetResult, setPlantnetResult] = useState<PlantNetIdentificationResult | null>(null);
-  const [identifyingPlantNet, setIdentifyingPlantNet] = useState(false);
-  const [apiKeyDialogOpen, setApiKeyDialogOpen] = useState(false);
-  const [customPlantNetApiKey, setCustomPlantNetApiKey] = useState<string>(getStoredPlantNetApiKey());
+  const [nafaBotanicalResult, setNafaBotanicalResult] = useState<NafaPlantIdentificationResult | null>(null);
+  const [identifyingBotanical, setIdentifyingBotanical] = useState(false);
+  const [botanicalInfoModalOpen, setBotanicalInfoModalOpen] = useState(false);
 
   // ── Étape 2 : Contexte Agronomique ──
   const [region, setRegion] = useState<string>("Hauts-Bassins");
@@ -293,7 +294,7 @@ export function CropDiagnosisTool() {
     if (galleryRef.current) galleryRef.current.value = "";
 
     setAnalyzingImage(true);
-    setIdentifyingPlantNet(true);
+    setIdentifyingBotanical(true);
 
     try {
       // Compression & Normalisation automatique côté client (supporte n'importe quelle photo jusqu'à 30 Mo)
@@ -333,7 +334,7 @@ export function CropDiagnosisTool() {
           imageBase64: optimized.base64,
           hints: symptoms || cropKey || "",
         });
-        setPlantnetResult(nafaRes);
+        setNafaBotanicalResult(nafaRes);
 
         if (nafaRes.bestMatch) {
           if (nafaRes.isWeed && nafaRes.matchedWeedId) {
@@ -381,7 +382,7 @@ export function CropDiagnosisTool() {
       }
     } finally {
       setAnalyzingImage(false);
-      setIdentifyingPlantNet(false);
+      setIdentifyingBotanical(false);
     }
   };
 
@@ -478,7 +479,7 @@ export function CropDiagnosisTool() {
     setImagePreview("");
     setImageMeta(null);
     setImageAnalysis(null);
-    setPlantnetResult(null);
+    setNafaBotanicalResult(null);
     setSymptoms("");
     setCoords(null);
     setParcelName("");
@@ -497,13 +498,14 @@ export function CropDiagnosisTool() {
       const mimeType = imageFile?.type;
 
       // ÉTAPE 1 : Identification de l'espèce & distinction Culture vs Mauvaise Herbe (Adventice)
-      // Connecté au Filtre 1 Pl@ntNet API
+      // Connecté au Filtre 1 Moteur Botanique NAFA
       const identification = identifyPlant({
         text: symptoms,
         cropKey: plantMode === "culture" ? cropKey : weedKey,
         imageBase64,
         mimeType,
-        plantnetResult: plantnetResult || undefined,
+        botanicalResult: nafaBotanicalResult || undefined,
+        plantnetResult: nafaBotanicalResult || undefined,
       });
 
       // DÉTECTION CONTEXTUELLE 100% AUTOMATIQUE PAR L'IA (DONNÉES RÉELLES DU TERRAIN)
@@ -621,7 +623,8 @@ export function CropDiagnosisTool() {
         context,
         localValidatedCases: validatedCases,
         imageAnalysis: visionResult || undefined,
-        plantnetIdentification: plantnetResult || undefined,
+        botanicalIdentification: nafaBotanicalResult || undefined,
+        plantnetIdentification: nafaBotanicalResult || undefined,
       });
 
       let prim = pipelineOutput.step4Validation.primaryDiagnosis;
@@ -1036,7 +1039,7 @@ export function CropDiagnosisTool() {
                   type="button"
                   variant="outline"
                   size="sm"
-                  onClick={() => setApiKeyDialogOpen(true)}
+                  onClick={() => setBotanicalInfoModalOpen(true)}
                   className="h-8 text-[11px] rounded-xl gap-1.5 border-emerald-500/40 text-emerald-800 dark:text-emerald-200 bg-emerald-500/10 hover:bg-emerald-500/20"
                 >
                   <Database className="h-3.5 w-3.5 text-emerald-600" />
@@ -1285,7 +1288,7 @@ export function CropDiagnosisTool() {
                           setImagePreview("");
                           setImageMeta(null);
                           setImageAnalysis(null);
-                          setPlantnetResult(null);
+                          setNafaBotanicalResult(null);
                         }}
                         className="h-8 px-2.5 text-xs font-bold rounded-xl shadow-md"
                       >
@@ -1400,7 +1403,7 @@ export function CropDiagnosisTool() {
                   )}
 
                   {/* ── FILTRE 1 : IDENTIFICATION IMMÉDIATE DE L'ESPÈCE (VISION BOTANIQUE NAFA) ── */}
-                  {identifyingPlantNet && (
+                  {identifyingBotanical && (
                     <div className="p-3.5 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 text-xs text-emerald-800 dark:text-emerald-200 flex items-center gap-2.5 animate-pulse">
                       <Loader2 className="h-4 w-4 animate-spin text-emerald-600 shrink-0" />
                       <div>
@@ -1415,7 +1418,7 @@ export function CropDiagnosisTool() {
                     </div>
                   )}
 
-                  {plantnetResult && plantnetResult.bestMatch && !identifyingPlantNet && (
+                  {nafaBotanicalResult && nafaBotanicalResult.bestMatch && !identifyingBotanical && (
                     <div className="p-4 rounded-2xl bg-gradient-to-r from-emerald-500/15 via-emerald-500/5 to-teal-500/10 border-2 border-emerald-500/40 space-y-2.5 shadow-xs">
                       <div className="flex items-start justify-between gap-3 flex-wrap">
                         <div className="flex items-center gap-2.5">
@@ -1428,16 +1431,16 @@ export function CropDiagnosisTool() {
                                 Filtre 1 Validé • Base Botanique Propriétaire NAFA Vision
                               </span>
                               <Badge className="bg-emerald-600 text-white text-[10px] font-mono py-0 px-2">
-                                {(plantnetResult.confidence * 100).toFixed(1)}% certitude
+                                {(nafaBotanicalResult.confidence * 100).toFixed(1)}% certitude
                               </Badge>
                               <Badge variant="outline" className="text-[10px] border-emerald-600/40 text-emerald-700 bg-white/60">
                                 100% Autonome • Open Data
                               </Badge>
                             </div>
                             <h4 className="text-base font-extrabold text-foreground flex items-center gap-2">
-                              {plantnetResult.bestMatch.commonName || plantnetResult.bestMatch.scientificName}
+                              {nafaBotanicalResult.bestMatch.commonName || nafaBotanicalResult.bestMatch.scientificName}
                               <span className="text-xs italic text-muted-foreground font-serif">
-                                ({plantnetResult.bestMatch.scientificName})
+                                ({nafaBotanicalResult.bestMatch.scientificName})
                               </span>
                             </h4>
                           </div>
@@ -1445,16 +1448,16 @@ export function CropDiagnosisTool() {
 
                         <div className="flex items-center gap-1.5 flex-wrap">
                           <Badge variant="outline" className="text-[11px] bg-background">
-                            Famille : {plantnetResult.bestMatch.family}
+                            Famille : {nafaBotanicalResult.bestMatch.family}
                           </Badge>
                           <Badge
                             className={
-                              plantnetResult.isWeed
+                              nafaBotanicalResult.isWeed
                                 ? "bg-amber-600 text-white text-[11px]"
                                 : "bg-emerald-600 text-white text-[11px]"
                             }
                           >
-                            {plantnetResult.isWeed ? "Adventice Parasitaire" : "Culture Vivrière / Rente"}
+                            {nafaBotanicalResult.isWeed ? "Adventice Parasitaire" : "Culture Vivrière / Rente"}
                           </Badge>
                         </div>
                       </div>
@@ -1463,10 +1466,10 @@ export function CropDiagnosisTool() {
                         <strong>Certification Botanique :</strong> Identification souveraine par la Base Botanique Propriétaire NAFA-AGRITECH (Open Data FAO EcoCrop, INERA, CIRAD, GBIF). Le diagnostic pathologique RAG et le benchmark PlantVillage prennent ensuite le relais.
                       </p>
 
-                      {plantnetResult.remainingCandidates && plantnetResult.remainingCandidates.length > 0 && (
+                      {nafaBotanicalResult.remainingCandidates && nafaBotanicalResult.remainingCandidates.length > 0 && (
                         <div className="flex items-center gap-1.5 flex-wrap pt-1 border-t border-emerald-500/20 text-[10px] text-muted-foreground">
                           <span className="font-semibold">Candidats botaniques proches :</span>
-                          {plantnetResult.remainingCandidates.slice(0, 3).map((cand, idx) => (
+                          {nafaBotanicalResult.remainingCandidates.slice(0, 3).map((cand, idx) => (
                             <span key={idx} className="bg-background/80 px-2 py-0.5 rounded-md border text-[10px]">
                               {cand.commonName || cand.scientificName} ({(cand.score * 100).toFixed(0)}%)
                             </span>
@@ -2207,7 +2210,7 @@ export function CropDiagnosisTool() {
       </TabsContent>
 
       {/* ── MODAL BASE BOTANIQUE PROPRIÉTAIRE NAFA-AGRITECH ── */}
-      <Dialog open={apiKeyDialogOpen} onOpenChange={setApiKeyDialogOpen}>
+      <Dialog open={botanicalInfoModalOpen} onOpenChange={setBotanicalInfoModalOpen}>
         <DialogContent className="max-w-lg rounded-3xl p-6 space-y-4">
           <DialogHeader>
             <div className="flex items-center gap-2">
@@ -2285,7 +2288,7 @@ export function CropDiagnosisTool() {
             <Button
               type="button"
               size="sm"
-              onClick={() => setApiKeyDialogOpen(false)}
+              onClick={() => setBotanicalInfoModalOpen(false)}
               className="rounded-xl text-xs bg-emerald-600 text-white hover:bg-emerald-700 font-bold px-4"
             >
               Fermer

@@ -401,6 +401,8 @@ export function queryPlantVillageBenchmark(params: {
   symptoms?: string;
   symptomsText?: string;
   imageAnalysis?: FoliarImageAnalysisResult | null;
+  botanicalResult?: any;
+  botanicalSpecies?: string;
   plantnetResult?: any;
   plantNetSpecies?: string;
 }): PlantVillageMatchResult {
@@ -408,9 +410,12 @@ export function queryPlantVillageBenchmark(params: {
   const cleanSymptoms = rawSymptoms.toLowerCase().trim();
   const cropId = (params.cropId || "").toLowerCase().trim();
 
-  // Nom d'espèce fourni soit directement, soit via le résultat Pl@ntNet
+  // Nom d'espèce fourni soit directement, soit via le moteur botanique propriétaire NAFA
   const effectiveSpecies =
+    params.botanicalSpecies ||
     params.plantNetSpecies ||
+    params.botanicalResult?.bestMatch?.scientificName ||
+    params.botanicalResult?.scientificName ||
     params.plantnetResult?.bestMatch?.scientificName ||
     params.plantnetResult?.scientificName ||
     "";
