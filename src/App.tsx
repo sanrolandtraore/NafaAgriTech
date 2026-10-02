@@ -23,6 +23,20 @@ const ContactPage = lazy(() => import("./pages/ContactPage"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 const CyberDefenseDashboard = lazy(() => import("./pages/dashboard/security/CyberDefenseDashboard"));
 
+// Lazy-loaded public SEO pages
+const SolutionsPage = lazy(() => import("./pages/public/SolutionsPage"));
+const DiagnosticAgricolePage = lazy(() => import("./pages/public/solutions/DiagnosticAgricolePage"));
+const CartographieAgricolePage = lazy(() => import("./pages/public/solutions/CartographieAgricolePage"));
+const ConseilsAgronomiquesPage = lazy(() => import("./pages/public/solutions/ConseilsAgronomiquesPage"));
+const IrrigationPage = lazy(() => import("./pages/public/solutions/IrrigationPage"));
+const SuiviExploitationPage = lazy(() => import("./pages/public/solutions/SuiviExploitationPage"));
+const ElevagePage = lazy(() => import("./pages/public/solutions/ElevagePage"));
+const IaCopilotePage = lazy(() => import("./pages/public/solutions/IaCopilotePage"));
+const ServicesPublicPage = lazy(() => import("./pages/public/ServicesPublicPage"));
+const PartenairesPublicPage = lazy(() => import("./pages/public/PartenairesPublicPage"));
+const OfferDetailPage = lazy(() => import("./pages/public/OfferDetailPage"));
+const RessourcesPage = lazy(() => import("./pages/public/RessourcesPage"));
+
 // Lazy-loaded dashboard pages for code splitting
 const RoleDashboardHome = lazy(() => import("./pages/dashboard/RoleDashboardHome"));
 const FarmsPage = lazy(() => import("./pages/dashboard/FarmsPage"));
@@ -114,16 +128,29 @@ const App = () => (
               {/* Public routes intentionally stay outside AuthProvider so the landing page
                   can render even when Supabase is unavailable or not configured yet. */}
               <Route path="/" element={<Index />} />
+              <Route path="/solutions" element={<Suspense fallback={<PageLoader />}><SolutionsPage /></Suspense>} />
+              <Route path="/solutions/diagnostic-agricole" element={<Suspense fallback={<PageLoader />}><DiagnosticAgricolePage /></Suspense>} />
+              <Route path="/solutions/cartographie-agricole" element={<Suspense fallback={<PageLoader />}><CartographieAgricolePage /></Suspense>} />
+              <Route path="/solutions/conseils-agronomiques" element={<Suspense fallback={<PageLoader />}><ConseilsAgronomiquesPage /></Suspense>} />
+              <Route path="/solutions/irrigation" element={<Suspense fallback={<PageLoader />}><IrrigationPage /></Suspense>} />
+              <Route path="/solutions/suivi-exploitation" element={<Suspense fallback={<PageLoader />}><SuiviExploitationPage /></Suspense>} />
+              <Route path="/solutions/elevage" element={<Suspense fallback={<PageLoader />}><ElevagePage /></Suspense>} />
+              <Route path="/solutions/ia-copilote" element={<Suspense fallback={<PageLoader />}><IaCopilotePage /></Suspense>} />
+              <Route path="/services" element={<Suspense fallback={<PageLoader />}><ServicesPublicPage /></Suspense>} />
+              <Route path="/partenaires" element={<Suspense fallback={<PageLoader />}><PartenairesPublicPage /></Suspense>} />
+              <Route path="/partenaire/:partnerId" element={<Suspense fallback={<PageLoader />}><PartnerStorefrontPage /></Suspense>} />
+              <Route path="/partenaires/:partnerId" element={<Suspense fallback={<PageLoader />}><PartnerStorefrontPage /></Suspense>} />
+              <Route path="/partners/:partnerId" element={<Suspense fallback={<PageLoader />}><PartnerStorefrontPage /></Suspense>} />
+              <Route path="/marketplace" element={<AuthProvider><Suspense fallback={<PageLoader />}><ServiceMarketplacePage /></Suspense></AuthProvider>} />
+              <Route path="/marketplace/:offerId" element={<AuthProvider><Suspense fallback={<PageLoader />}><OfferDetailPage /></Suspense></AuthProvider>} />
+              <Route path="/ressources" element={<Suspense fallback={<PageLoader />}><RessourcesPage /></Suspense>} />
+              <Route path="/explorer" element={<AuthProvider><Suspense fallback={<PageLoader />}><PublicExplorerPage /></Suspense></AuthProvider>} />
+              <Route path="/fiches-techniques" element={<AuthProvider><Suspense fallback={<PageLoader />}><CropLibraryPage /></Suspense></AuthProvider>} />
               <Route path="/a-propos" element={<Suspense fallback={<PageLoader />}><AboutPage /></Suspense>} />
               <Route path="/contact" element={<Suspense fallback={<PageLoader />}><ContactPage /></Suspense>} />
               <Route path="/mentions-legales" element={<Suspense fallback={<PageLoader />}><MentionsLegales /></Suspense>} />
               <Route path="/conditions-utilisation" element={<Suspense fallback={<PageLoader />}><ConditionsUtilisation /></Suspense>} />
               <Route path="/politique-confidentialite" element={<Suspense fallback={<PageLoader />}><PolitiqueConfidentialite /></Suspense>} />
-              <Route path="/partenaire/:partnerId" element={<Suspense fallback={<PageLoader />}><PartnerStorefrontPage /></Suspense>} />
-              <Route path="/partners/:partnerId" element={<Suspense fallback={<PageLoader />}><PartnerStorefrontPage /></Suspense>} />
-              <Route path="/marketplace" element={<AuthProvider><Suspense fallback={<PageLoader />}><ServiceMarketplacePage /></Suspense></AuthProvider>} />
-              <Route path="/explorer" element={<AuthProvider><Suspense fallback={<PageLoader />}><PublicExplorerPage /></Suspense></AuthProvider>} />
-              <Route path="/fiches-techniques" element={<AuthProvider><Suspense fallback={<PageLoader />}><CropLibraryPage /></Suspense></AuthProvider>} />
               <Route element={<AuthProvider><><OfflineIndicator /><Outlet /></></AuthProvider>}>
                 <Route path="/auth" element={<Suspense fallback={<PageLoader />}><Auth /></Suspense>} />
                 <Route path="/dashboard" element={<ProtectedRoute><DashboardLayout /></ProtectedRoute>}>

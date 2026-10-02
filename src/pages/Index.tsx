@@ -35,6 +35,8 @@ import { ThemeToggle } from "@/components/ThemeToggle";
 import { useAuth } from "@/contexts/AuthContext";
 import { partnerStorage, PartnerEntry } from "@/lib/partnerStorage";
 import Footer from "@/components/Footer";
+import { SEOHead } from "@/components/seo/SEOHead";
+import { SEO_PAGES, buildOrganizationSchema, buildWebSiteSchema } from "@/lib/seoConfig";
 import logo from "@/assets/logo.png";
 import galleryFarmField from "@/assets/gallery/farm-field.jpg";
 import galleryLivestock from "@/assets/gallery/livestock.jpg";
@@ -99,12 +101,12 @@ const SPACES_CONFIG = [
 
 // ── 2. Configuration des 6 Outils Intelligents (Images 100% Uniques) ──
 const SMART_TOOLS = [
-  { id: "gps", word: "GPS", icon: MapPin, realIcon: "gps", path: "/dashboard/scouting", explorerTab: "gps", image: galleryGpsSurveyor },
-  { id: "inspection", word: "Inspection", icon: ClipboardCheck, realIcon: "diagnostic", path: "/dashboard/smart-inspection", explorerTab: "calculator", image: galleryFarmField },
-  { id: "diagnostic", word: "Diagnostic", icon: Cpu, realIcon: "diagnostic", path: "/dashboard/expert-diagnosis", explorerTab: "fiches", image: galleryPlantDiagnostic },
-  { id: "irrigation", word: "Irrigation", icon: Droplets, realIcon: "irrigation", path: "/dashboard/genius", explorerTab: "irrigation", image: galleryIrrigation },
-  { id: "devis", word: "Devis", icon: FileText, realIcon: "quote", path: "/dashboard/quote-requests", explorerTab: "calculator", image: galleryEngineeringQuote },
-  { id: "cartographie", word: "Cartographie", icon: Layers, realIcon: "cartography", path: "/dashboard/expert-cartography", explorerTab: "gps", image: galleryAerialParcels },
+  { id: "gps", word: "GPS", icon: MapPin, realIcon: "gps", path: "/dashboard/scouting", publicPath: "/solutions/cartographie-agricole", explorerTab: "gps", image: galleryGpsSurveyor },
+  { id: "inspection", word: "Inspection", icon: ClipboardCheck, realIcon: "diagnostic", path: "/dashboard/smart-inspection", publicPath: "/solutions/suivi-exploitation", explorerTab: "calculator", image: galleryFarmField },
+  { id: "diagnostic", word: "Diagnostic", icon: Cpu, realIcon: "diagnostic", path: "/dashboard/expert-diagnosis", publicPath: "/solutions/diagnostic-agricole", explorerTab: "fiches", image: galleryPlantDiagnostic },
+  { id: "irrigation", word: "Irrigation", icon: Droplets, realIcon: "irrigation", path: "/dashboard/genius", publicPath: "/solutions/irrigation", explorerTab: "irrigation", image: galleryIrrigation },
+  { id: "devis", word: "Devis", icon: FileText, realIcon: "quote", path: "/dashboard/quote-requests", publicPath: "/services", explorerTab: "calculator", image: galleryEngineeringQuote },
+  { id: "cartographie", word: "Cartographie", icon: Layers, realIcon: "cartography", path: "/dashboard/expert-cartography", publicPath: "/solutions/cartographie-agricole", explorerTab: "gps", image: galleryAerialParcels },
 ];
 
 // ── 3. Configuration des Catégories Marketplace Rapide (Images 100% Uniques) ──
@@ -184,6 +186,10 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-white dark:bg-[#111827] text-foreground font-sans pb-24 md:pb-28 selection:bg-[#F97316]/20">
+      <SEOHead
+        {...SEO_PAGES.home}
+        structuredData={[buildOrganizationSchema(), buildWebSiteSchema()]}
+      />
       
       {/* ══════════════════════════════════════════════════════
           1. PREMIER ÉCRAN — HERO PREMIUM (Plein Écran, Max 10-15 mots)
@@ -201,7 +207,7 @@ const Index = () => {
         </div>
 
         {/* Barre Supérieure Épurée et Responsive */}
-        <header className="relative z-10 w-full px-3.5 sm:px-6 py-3.5 sm:py-6 flex items-center justify-between max-w-7xl mx-auto">
+        <header className="relative z-10 w-full px-3.5 sm:px-6 py-3.5 sm:py-6 flex items-center justify-between max-w-7xl mx-auto gap-4">
           <Link to="/" className="flex items-center gap-2 sm:gap-3 group shrink-0">
             <div className="h-9 w-9 sm:h-12 sm:w-12 rounded-2xl overflow-hidden bg-white/95 backdrop-blur-md shadow-md border border-white/30 p-1 flex items-center justify-center shrink-0 transition-transform group-hover:scale-105">
               <img
@@ -215,16 +221,25 @@ const Index = () => {
             </span>
           </Link>
 
+          {/* Navigation Publique SEO */}
+          <nav className="hidden lg:flex items-center gap-6 text-sm font-semibold text-white/90">
+            <Link to="/solutions" className="hover:text-emerald-400 transition-colors">Solutions</Link>
+            <Link to="/services" className="hover:text-emerald-400 transition-colors">Services Partenaires</Link>
+            <Link to="/partenaires" className="hover:text-emerald-400 transition-colors">Partenaires</Link>
+            <Link to="/marketplace" className="hover:text-emerald-400 transition-colors">Marketplace</Link>
+            <Link to="/ressources" className="hover:text-emerald-400 transition-colors">Ressources</Link>
+          </nav>
+
           <div className="flex items-center gap-1.5 sm:gap-2.5">
             <ThemeToggle />
             <Button
               variant="outline"
               size="sm"
-              onClick={() => navigate("/explorer")}
-              className="rounded-[24px] bg-white/10 hover:bg-white/20 text-white border-white/20 backdrop-blur-md text-[11px] sm:text-xs font-semibold px-2.5 sm:px-4 flex items-center gap-1.5 transition-transform active:scale-95"
+              onClick={() => navigate("/solutions")}
+              className="rounded-[24px] bg-white/10 hover:bg-white/20 text-white border-white/20 backdrop-blur-md text-[11px] sm:text-xs font-semibold px-2.5 sm:px-4 hidden sm:inline-flex items-center gap-1.5 transition-transform active:scale-95"
             >
               <Compass className="h-3.5 w-3.5 text-emerald-400" />
-              <span>Explorer</span>
+              <span>Solutions</span>
             </Button>
             <Button
               variant="outline"
@@ -433,7 +448,7 @@ const Index = () => {
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4 sm:gap-6">
             {SMART_TOOLS.map((tool) => {
               const Icon = tool.icon;
-              const targetPath = user ? tool.path : `/explorer?tab=${tool.explorerTab || "calculator"}`;
+              const targetPath = user ? tool.path : (tool.publicPath || `/explorer?tab=${tool.explorerTab || "calculator"}`);
               return (
                 <div
                   key={tool.id}
