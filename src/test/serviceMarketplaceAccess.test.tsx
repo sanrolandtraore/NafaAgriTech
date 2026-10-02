@@ -67,7 +67,7 @@ describe("Accès direct à la Marketplace Vitrine pour Agriculteurs, Éleveurs e
 
     // Vérifie que l'en-tête de la Marketplace Vitrine est affiché
     await waitFor(() => {
-      expect(screen.getByText("Marketplace Vitrine NAFA")).toBeInTheDocument();
+      expect(screen.getByText(/Marché Vitrine NAFA|Marketplace Vitrine NAFA/i)).toBeInTheDocument();
     });
 
     // Le message de blocage "Accès Réservé aux Agriculteurs & Éleveurs" NE DOIT PAS apparaître
@@ -91,7 +91,7 @@ describe("Accès direct à la Marketplace Vitrine pour Agriculteurs, Éleveurs e
     );
 
     await waitFor(() => {
-      expect(screen.getByText("Marketplace Vitrine NAFA")).toBeInTheDocument();
+      expect(screen.getByText(/Marché Vitrine NAFA|Marketplace Vitrine NAFA/i)).toBeInTheDocument();
     });
 
     expect(screen.queryByText("Accès Réservé aux Agriculteurs & Éleveurs")).toBeNull();
@@ -112,7 +112,7 @@ describe("Accès direct à la Marketplace Vitrine pour Agriculteurs, Éleveurs e
     );
 
     await waitFor(() => {
-      expect(screen.getByText("Marketplace Vitrine NAFA")).toBeInTheDocument();
+      expect(screen.getByText(/Marché Vitrine NAFA|Marketplace Vitrine NAFA/i)).toBeInTheDocument();
     });
 
     expect(screen.queryByText("Accès Réservé aux Agriculteurs & Éleveurs")).toBeNull();

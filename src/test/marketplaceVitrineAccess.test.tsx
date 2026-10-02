@@ -41,7 +41,7 @@ describe("Accès à la Marketplace Vitrine depuis la page d'accueil", () => {
     );
 
     // 1. Bouton d'accès direct Hero (retiré de la headbar pour épurer la navigation)
-    const vitrineBtns = screen.getAllByRole("button", { name: /Marketplace Vitrine/i });
+    const vitrineBtns = screen.getAllByRole("button", { name: /Marché Vitrine|Marketplace Vitrine/i });
     expect(vitrineBtns.length).toBeGreaterThanOrEqual(1);
     fireEvent.click(vitrineBtns[0]);
     expect(mockNavigate).toHaveBeenCalledWith("/marketplace?role=producteurs");
@@ -50,8 +50,8 @@ describe("Accès à la Marketplace Vitrine depuis la page d'accueil", () => {
     expect(screen.getByText("Agriculteurs & Éleveurs")).toBeInTheDocument();
 
     // 4. Bannière dédiée d'accès direct
-    expect(screen.getByText(/Accès direct à la Marketplace Vitrine/i)).toBeInTheDocument();
-    const openVitrineBtn = screen.getByRole("button", { name: /Ouvrir la Marketplace Vitrine/i });
+    expect(screen.getByText(/Accès direct au Marché Vitrine|Accès direct à la Marketplace Vitrine/i)).toBeInTheDocument();
+    const openVitrineBtn = screen.getByRole("button", { name: /Ouvrir le Marché Vitrine|Ouvrir la Marketplace Vitrine/i });
     expect(openVitrineBtn).toBeInTheDocument();
     fireEvent.click(openVitrineBtn);
     expect(mockNavigate).toHaveBeenCalledWith("/marketplace?role=producteurs");

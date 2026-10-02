@@ -87,15 +87,15 @@ export default function OfferDetailPage() {
     }, 600);
   };
 
-  const isService = offer?.category?.includes("service") || offer?.category?.includes("machinisme");
+    const isService = offer?.category?.includes("service") || offer?.category?.includes("machinisme");
 
   const pageTitle = offer
     ? `${offer.title} | ${offer.partner_name} — NAFA-AGRITECH`
-    : "Offre Marketplace | NAFA-AGRITECH";
+    : "Offre Marché | NAFA-AGRITECH";
 
   const pageDescription = offer?.description
     ? offer.description.slice(0, 160)
-    : "Offre réelle proposée par un partenaire certifié sur la Marketplace NAFA-AGRITECH.";
+    : "Offre réelle proposée par un partenaire certifié sur le Marché NAFA-AGRITECH.";
 
   return (
     <div className="min-h-screen bg-background text-foreground flex flex-col">
@@ -127,7 +127,7 @@ export default function OfferDetailPage() {
         }
         breadcrumbs={[
           { name: "Accueil", url: "/" },
-          { name: "Marketplace", url: "/marketplace" },
+          { name: "Marché", url: "/marketplace" },
           { name: offer?.title || "Détail de l'offre", url: `/marketplace/${offerId || ""}` },
         ]}
       />
@@ -143,7 +143,7 @@ export default function OfferDetailPage() {
             className="rounded-full text-xs font-bold gap-1.5 text-muted-foreground hover:text-foreground"
           >
             <ArrowLeft className="h-4 w-4" />
-            <span>Retour à la Marketplace</span>
+            <span>Retour au Marché</span>
           </Button>
         </div>
 
@@ -275,7 +275,7 @@ export default function OfferDetailPage() {
               L'offre demandée a été retirée ou n'est plus active.
             </p>
             <Button asChild className="rounded-full bg-emerald-600 text-white text-xs font-bold px-6">
-              <Link to="/marketplace">Explorer la Marketplace</Link>
+              <Link to="/marketplace">Explorer le Marché</Link>
             </Button>
           </div>
         )}

@@ -158,7 +158,7 @@ export const Footer: React.FC = () => {
                   className="text-slate-400 hover:text-[#F97316] transition-colors inline-flex items-center gap-1.5"
                 >
                   <ChevronRight className="h-3 w-3 text-[#F97316]" />
-                  <span>Marketplace</span>
+                  <span>Marché</span>
                 </Link>
               </li>
               <li>

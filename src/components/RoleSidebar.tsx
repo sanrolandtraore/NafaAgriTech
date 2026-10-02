@@ -25,9 +25,9 @@ export type NavItem = {
   section?: string;
 };
 
-/** Module « Agriculteur » (Strictement limité au Marketplace des Services : Réserver, Commander, Louer) */
+/** Module « Agriculteur » (Strictement limité au Marché des Services : Réserver, Commander, Louer) */
 export const agriculteurNav: NavItem[] = [
-  { to: "/dashboard/marketplace", labelKey: "Marketplace des Services", icon: Store },
+  { to: "/dashboard/marketplace", labelKey: "Marché des Services", icon: Store },
 ];
 
 /** Module « Éleveur » (Pôle Cheptel strict : Animaux, Santé, Reproduction, Alimentation, Finance) */
@@ -219,6 +219,7 @@ export const getNavLabel = (item: NavItem, t?: (key: string) => string): string 
     "nav.insurance": "Assurance agricole",
     "nav.programs": "Programmes & Projets",
     "nav.partners": "Annuaire Partenaires",
+    "Marché des Services": "Marché des Services",
     "Marketplace des Services": "Marketplace des Services",
     "Finances du Cheptel": "Finances du Cheptel",
     "Réserver un vétérinaire": "Réserver un vétérinaire",

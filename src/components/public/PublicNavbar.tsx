@@ -42,7 +42,7 @@ export const PUBLIC_NAV_LINKS = [
   },
   { name: "Services Partenaires", path: "/services" },
   { name: "Partenaires", path: "/partenaires" },
-  { name: "Marketplace", path: "/marketplace" },
+  { name: "Marché", path: "/marketplace" },
   { name: "Ressources", path: "/ressources" },
   { name: "À propos", path: "/a-propos" },
   { name: "Contact", path: "/contact" },

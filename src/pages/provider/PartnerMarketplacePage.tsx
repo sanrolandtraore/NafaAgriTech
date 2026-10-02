@@ -96,7 +96,7 @@ export default function PartnerMarketplacePage() {
       <div>
         <h1 className="text-2xl md:text-3xl font-heading font-bold flex items-center gap-2.5">
           <Store className="h-7 w-7 text-primary" />
-          Marketplace des Partenaires Agréés
+          Marché des Partenaires Agréés
         </h1>
         <p className="text-sm text-muted-foreground mt-1">
           Découvrez les offres de matériels, semences, intrants certifiés et services avec <strong>démonstrations photos & vidéos</strong>.

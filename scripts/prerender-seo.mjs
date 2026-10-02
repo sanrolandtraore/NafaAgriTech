@@ -108,11 +108,11 @@ const PAGES = [
   },
   {
     path: '/marketplace',
-    title: "Marketplace Agricole & Intrants Certifiés | NAFA-AGRITECH",
-    description: "Marketplace d'équipements, intrants et services proposés par les professionnels et partenaires enregistrés : semences certifiées, pompage solaire, phytosanitaires bio et outillage.",
-    h1: "Marketplace Agricole — Offres Réelles de Partenaires",
+    title: "Marché Agricole & Intrants Certifiés | NAFA-AGRITECH",
+    description: "Marché d'équipements, intrants et services proposés par les professionnels et partenaires enregistrés : semences certifiées, pompage solaire, phytosanitaires bio et outillage.",
+    h1: "Marché Agricole — Offres Réelles de Partenaires",
     lead: "Consultez les offres vérifiées de semences, engrais, matériels d'irrigation et prestations de services agricoles.",
-    keywords: "marketplace agricole, achat semences certifiées, matériel irrigation, engrais Burkina Faso",
+    keywords: "marché agricole, marketplace agricole, achat semences certifiées, matériel irrigation, engrais Burkina Faso",
   },
   {
     path: '/ressources',
@@ -288,7 +288,7 @@ function prerender() {
           <a href="/solutions">Solutions Agricoles</a>
           <a href="/services">Services Techniques Partenaires</a>
           <a href="/partenaires">Partenaires Certifiés</a>
-          <a href="/marketplace">Marketplace</a>
+          <a href="/marketplace">Marché</a>
           <a href="/ressources">Ressources & Guides</a>
         </nav>
       </article>

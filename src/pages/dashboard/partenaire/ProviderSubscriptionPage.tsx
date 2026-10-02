@@ -150,7 +150,7 @@ export default function ProviderSubscriptionPage() {
     }
 
     setAggregatorModalOpen(false);
-    toast.success(`Abonnement ${selectedPlan.title} activé avec succès via ${tx.provider} ! Vos offres sont désormais visibles sur le Marketplace national.`);
+    toast.success(`Abonnement ${selectedPlan.title} activé avec succès via ${tx.provider} ! Vos offres sont désormais visibles sur le Marché national.`);
   };
 
   const handleConfirmSubscription = async () => {
