@@ -34,18 +34,9 @@ describe('Audit Plateforme & Élimination des Données Fictives', () => {
   });
 
   describe('Stockage Partenaire épuré de toute donnée mockée (partnerStorage)', () => {
-    it('ne contient aucune offre assignée à demo-partner-id dans les offres initiales', async () => {
+    it('démarre avec un catalogue d\'offres strictement vide sans aucune offre fictive', async () => {
       const allOffers = await partnerStorage.getOffers();
-      expect(allOffers.length).toBeGreaterThan(0);
-      const fakeOffers = allOffers.filter(o => o.owner_id === 'demo-partner-id');
-      expect(fakeOffers).toHaveLength(0);
-
-      // Toutes les offres appartiennent à des partenaires réels répertoriés
-      for (const offer of allOffers) {
-        expect(offer.owner_id).toBeDefined();
-        expect(offer.owner_id).not.toBe('demo-partner-id');
-        expect(offer.price_indication).toBeDefined();
-      }
+      expect(allOffers).toHaveLength(0);
     });
 
     it('démarre avec un registre de missions partenaire et clients authentiquement vide', async () => {
@@ -56,9 +47,14 @@ describe('Audit Plateforme & Élimination des Données Fictives', () => {
     });
 
     it('isole strictement les offres par owner_id sans fuite de catalogue entre tiers', async () => {
-      const sncitecOffers = await partnerStorage.getOffers('partner-sncitec');
-      expect(sncitecOffers.length).toBeGreaterThan(0);
-      expect(sncitecOffers.every(o => o.owner_id === 'partner-sncitec')).toBe(true);
+      await partnerStorage.saveOffer({
+        title: 'Prestation authentique semences',
+        partner_name: 'Partenaire Réel',
+        owner_id: 'partner-real-1',
+      });
+      const partnerOffers = await partnerStorage.getOffers('partner-real-1');
+      expect(partnerOffers.length).toBeGreaterThan(0);
+      expect(partnerOffers.every(o => o.owner_id === 'partner-real-1')).toBe(true);
 
       const unknownOffers = await partnerStorage.getOffers('unregistered-test-partner');
       expect(unknownOffers).toEqual([]);
