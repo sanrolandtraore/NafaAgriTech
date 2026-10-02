@@ -209,7 +209,7 @@ export function getStoredProviderSubscription(userId?: string): ProviderSubscrip
     activityType: "services_agronomiques",
     companyName: "Mon Entreprise Partenaire",
     phone: "+226 ",
-    email: "partenaire@nafa-agritech.com",
+    email: "partenaire@nafaagritech.app",
     location: "Burkina Faso",
     startDate: new Date().toISOString().split("T")[0],
     endDate: "",

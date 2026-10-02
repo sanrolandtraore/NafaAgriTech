@@ -5,7 +5,7 @@
  * de l'Open Graph, de Twitter Card et des schémas Schema.org (JSON-LD).
  */
 
-export const DEFAULT_SITE_URL = "https://nafa-agritech.com";
+export const DEFAULT_SITE_URL = "https://nafaagritech.app";
 
 export function getSiteUrl(): string {
   // Support d'une variable d'environnement optionnelle si le domaine change

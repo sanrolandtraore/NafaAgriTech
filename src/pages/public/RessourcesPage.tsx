@@ -135,7 +135,7 @@ export default function RessourcesPage() {
             "@type": "Blog",
             "name": "Guides et Bonnes Pratiques Agricoles NAFA-AGRITECH",
             "description": seo.description,
-            "url": "https://nafa-agritech.com/ressources"
+            "url": "https://nafaagritech.app/ressources"
           }
         ]}
         breadcrumbs={[

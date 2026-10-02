@@ -1,5 +1,5 @@
 # NAFA-AGRITECH robots.txt
-# Official Domain: https://nafa-agritech.com
+# Official Domain: https://nafaagritech.app
 
 User-agent: *
 Allow: /
@@ -64,4 +64,4 @@ User-agent: WhatsApp
 Allow: /
 
 # Sitemap reference
-Sitemap: https://nafa-agritech.com/sitemap.xml
+Sitemap: https://nafaagritech.app/sitemap.xml

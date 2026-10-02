@@ -89,7 +89,7 @@ export default function PartenairesPublicPage() {
             "@type": "CollectionPage",
             "name": "Annuaire des Partenaires NAFA-AGRITECH",
             "description": seo.description,
-            "url": "https://nafa-agritech.com/partenaires"
+            "url": "https://nafaagritech.app/partenaires"
           }
         ]}
         breadcrumbs={[

@@ -35,7 +35,7 @@ const hasVercel = fs.existsSync(vercelConfigPath);
 console.log("🚀 2. CONFIGURATION DÉPLOIEMENT VERCEL :");
 console.log(`   - Fichier vercel.json : ${hasVercel ? "✅ Présent (rewrites SPA, headers sécurité, cache Edge CDN)" : "❌ Manquant"}`);
 console.log("   - Webhook GitHub-Vercel : ✅ Connecté sur la branche main");
-console.log("   - Domaine de production : https://nafa-agritech.com\n");
+console.log("   - Domaine de production : https://nafaagritech.app\n");
 
 // 4. VÉRIFICATION DE LA CONNEXION SUPABASE
 console.log("🗄️  3. CONNEXION CLOUD SUPABASE :");

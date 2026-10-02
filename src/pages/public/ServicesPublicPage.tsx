@@ -116,7 +116,7 @@ export default function ServicesPublicPage() {
             "@type": "CollectionPage",
             "name": "Services techniques agricoles proposés par les partenaires NAFA-AGRITECH",
             "description": seo.description,
-            "url": "https://nafa-agritech.com/services"
+            "url": "https://nafaagritech.app/services"
           }
         ]}
         breadcrumbs={[

@@ -1050,7 +1050,7 @@ export function generateEngineeringQuote(
 
   const totalCostFcfa = subtotalEquipmentFcfa + laborCostFcfa + logisticsCostFcfa + contingenciesFcfa;
 
-  const qrVerificationUrl = `https://nafa-agritech.com/verify-quote?ref=${quoteNumber}&amt=${totalCostFcfa}`;
+  const qrVerificationUrl = `https://nafaagritech.app/verify-quote?ref=${quoteNumber}&amt=${totalCostFcfa}`;
 
   const isUncertain = quoteItems.length === 0;
   const requiresExpertValidation = isUncertain;
