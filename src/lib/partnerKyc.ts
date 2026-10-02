@@ -76,7 +76,7 @@ export const DEFAULT_PHYSIQUE_DATA: PersonnePhysiqueData = {
   docNumber: "B12894750",
   docExpiry: "2029-08-20",
   phone: "+226 70 00 00 00",
-  email: "karim.ouedraogo@nafa-agritech.com",
+  email: "karim.ouedraogo@nafaagritech.app",
   city: "Bobo-Dioulasso",
   address: "Secteur 22, Belleville",
   profession: "Conseiller Agricole & Opérateur Machinisme",

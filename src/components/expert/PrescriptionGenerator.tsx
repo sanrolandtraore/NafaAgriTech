@@ -159,7 +159,7 @@ export function PrescriptionGenerator({ initialData, onClose }: PrescriptionGene
       doc.setFontSize(8);
       doc.setTextColor(120, 120, 120);
       doc.text("Respecter impérativement les Délais Avant Récolte (DAR) et les équipements de protection (EPI).", 14, y);
-      doc.text("NAFA - AGRITECH • Bobo-Dioulasso, Burkina Faso • contact@nafa-agritech.com • +226 75774852 / 50134920", 14, y + 4);
+      doc.text("NAFA - AGRITECH • Bobo-Dioulasso, Burkina Faso • nafaagritech@gmail.com • +226 75774852 / 50134920", 14, y + 4);
 
       doc.setTextColor(0, 0, 0);
       doc.setFontSize(9);

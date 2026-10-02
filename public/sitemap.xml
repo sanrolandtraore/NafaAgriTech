@@ -4,7 +4,7 @@
 
   <!-- Accueil Principal -->
   <url>
-    <loc>https://nafa-agritech.com/</loc>
+    <loc>https://nafaagritech.app/</loc>
     <lastmod>2026-10-02</lastmod>
     <changefreq>daily</changefreq>
     <priority>1.0</priority>
@@ -12,7 +12,7 @@
 
   <!-- Hub Solutions -->
   <url>
-    <loc>https://nafa-agritech.com/solutions</loc>
+    <loc>https://nafaagritech.app/solutions</loc>
     <lastmod>2026-10-02</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
@@ -20,43 +20,43 @@
 
   <!-- Solutions Dédiées -->
   <url>
-    <loc>https://nafa-agritech.com/solutions/diagnostic-agricole</loc>
+    <loc>https://nafaagritech.app/solutions/diagnostic-agricole</loc>
     <lastmod>2026-10-02</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://nafa-agritech.com/solutions/cartographie-agricole</loc>
+    <loc>https://nafaagritech.app/solutions/cartographie-agricole</loc>
     <lastmod>2026-10-02</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://nafa-agritech.com/solutions/conseils-agronomiques</loc>
+    <loc>https://nafaagritech.app/solutions/conseils-agronomiques</loc>
     <lastmod>2026-10-02</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://nafa-agritech.com/solutions/irrigation</loc>
+    <loc>https://nafaagritech.app/solutions/irrigation</loc>
     <lastmod>2026-10-02</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://nafa-agritech.com/solutions/suivi-exploitation</loc>
+    <loc>https://nafaagritech.app/solutions/suivi-exploitation</loc>
     <lastmod>2026-10-02</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://nafa-agritech.com/solutions/elevage</loc>
+    <loc>https://nafaagritech.app/solutions/elevage</loc>
     <lastmod>2026-10-02</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://nafa-agritech.com/solutions/ia-copilote</loc>
+    <loc>https://nafaagritech.app/solutions/ia-copilote</loc>
     <lastmod>2026-10-02</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
@@ -64,7 +64,7 @@
 
   <!-- Services Techniques Partenaires -->
   <url>
-    <loc>https://nafa-agritech.com/services</loc>
+    <loc>https://nafaagritech.app/services</loc>
     <lastmod>2026-10-02</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.9</priority>
@@ -72,7 +72,7 @@
 
   <!-- Annuaire des Partenaires Certifiés -->
   <url>
-    <loc>https://nafa-agritech.com/partenaires</loc>
+    <loc>https://nafaagritech.app/partenaires</loc>
     <lastmod>2026-10-02</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.9</priority>
@@ -80,7 +80,7 @@
 
   <!-- Marketplace Publique -->
   <url>
-    <loc>https://nafa-agritech.com/marketplace</loc>
+    <loc>https://nafaagritech.app/marketplace</loc>
     <lastmod>2026-10-02</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.9</priority>
@@ -88,13 +88,13 @@
 
   <!-- Ressources & Guides Pratiques -->
   <url>
-    <loc>https://nafa-agritech.com/ressources</loc>
+    <loc>https://nafaagritech.app/ressources</loc>
     <lastmod>2026-10-02</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://nafa-agritech.com/fiches-techniques</loc>
+    <loc>https://nafaagritech.app/fiches-techniques</loc>
     <lastmod>2026-10-02</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
@@ -102,13 +102,13 @@
 
   <!-- Pages Institutionnelles -->
   <url>
-    <loc>https://nafa-agritech.com/a-propos</loc>
+    <loc>https://nafaagritech.app/a-propos</loc>
     <lastmod>2026-10-02</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://nafa-agritech.com/contact</loc>
+    <loc>https://nafaagritech.app/contact</loc>
     <lastmod>2026-10-02</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
@@ -116,19 +116,19 @@
 
   <!-- Pages Légales & Conformité -->
   <url>
-    <loc>https://nafa-agritech.com/mentions-legales</loc>
+    <loc>https://nafaagritech.app/mentions-legales</loc>
     <lastmod>2026-10-02</lastmod>
     <changefreq>yearly</changefreq>
     <priority>0.3</priority>
   </url>
   <url>
-    <loc>https://nafa-agritech.com/conditions-utilisation</loc>
+    <loc>https://nafaagritech.app/conditions-utilisation</loc>
     <lastmod>2026-10-02</lastmod>
     <changefreq>yearly</changefreq>
     <priority>0.3</priority>
   </url>
   <url>
-    <loc>https://nafa-agritech.com/politique-confidentialite</loc>
+    <loc>https://nafaagritech.app/politique-confidentialite</loc>
     <lastmod>2026-10-02</lastmod>
     <changefreq>yearly</changefreq>
     <priority>0.3</priority>

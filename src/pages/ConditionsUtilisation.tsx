@@ -21,7 +21,7 @@ const ConditionsUtilisation = () => (
         <h2 className="text-xl font-semibold text-foreground mt-8">1. Objet</h2>
         <p>
           Les présentes Conditions Générales d'Utilisation (CGU) régissent l'utilisation de la plateforme 
-          NAFA - AGRITECH, accessible à l'adresse nafa-agritech.com et via l'application mobile progressive (PWA). 
+          NAFA - AGRITECH, accessible à l'adresse nafaagritech.app et via l'application mobile progressive (PWA). 
           En utilisant la plateforme, vous acceptez sans réserve les présentes CGU.
         </p>
 

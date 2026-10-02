@@ -14,11 +14,11 @@ import {
 } from "@/lib/seoConfig";
 
 describe("SEO Architecture & Metadata Audit", () => {
-  it("uses the official canonical domain https://nafa-agritech.com", () => {
-    expect(DEFAULT_SITE_URL).toBe("https://nafa-agritech.com");
-    expect(getCanonicalUrl("/")).toBe("https://nafa-agritech.com");
-    expect(getCanonicalUrl("/solutions")).toBe("https://nafa-agritech.com/solutions");
-    expect(getCanonicalUrl("/solutions/diagnostic-agricole/")).toBe("https://nafa-agritech.com/solutions/diagnostic-agricole");
+  it("uses the official canonical domain https://nafaagritech.app", () => {
+    expect(DEFAULT_SITE_URL).toBe("https://nafaagritech.app");
+    expect(getCanonicalUrl("/")).toBe("https://nafaagritech.app");
+    expect(getCanonicalUrl("/solutions")).toBe("https://nafaagritech.app/solutions");
+    expect(getCanonicalUrl("/solutions/diagnostic-agricole/")).toBe("https://nafaagritech.app/solutions/diagnostic-agricole");
   });
 
   it("ensures all public pages have unique, non-empty titles and descriptions", () => {
@@ -67,7 +67,7 @@ describe("SEO Architecture & Metadata Audit", () => {
     const org = buildOrganizationSchema();
     expect(org["@type"]).toBe("Organization");
     expect(org.name).toBe("NAFA-AGRITECH");
-    expect(org.url).toBe("https://nafa-agritech.com");
+    expect(org.url).toBe("https://nafaagritech.app");
 
     const site = buildWebSiteSchema();
     expect(site["@type"]).toBe("WebSite");
@@ -110,7 +110,7 @@ describe("Public Robots.txt & Sitemap.xml Audit", () => {
     expect(fs.existsSync(robotsPath)).toBe(true);
 
     const content = fs.readFileSync(robotsPath, "utf-8");
-    expect(content).toContain("Sitemap: https://nafa-agritech.com/sitemap.xml");
+    expect(content).toContain("Sitemap: https://nafaagritech.app/sitemap.xml");
     expect(content).toContain("Disallow: /dashboard");
     expect(content).toContain("Disallow: /auth");
     expect(content).toContain("Allow: /solutions");
@@ -123,15 +123,15 @@ describe("Public Robots.txt & Sitemap.xml Audit", () => {
     expect(fs.existsSync(sitemapPath)).toBe(true);
 
     const content = fs.readFileSync(sitemapPath, "utf-8");
-    expect(content).toContain("<loc>https://nafa-agritech.com/</loc>");
-    expect(content).toContain("<loc>https://nafa-agritech.com/solutions</loc>");
-    expect(content).toContain("<loc>https://nafa-agritech.com/solutions/diagnostic-agricole</loc>");
-    expect(content).toContain("<loc>https://nafa-agritech.com/solutions/cartographie-agricole</loc>");
-    expect(content).toContain("<loc>https://nafa-agritech.com/solutions/irrigation</loc>");
-    expect(content).toContain("<loc>https://nafa-agritech.com/services</loc>");
-    expect(content).toContain("<loc>https://nafa-agritech.com/partenaires</loc>");
-    expect(content).toContain("<loc>https://nafa-agritech.com/marketplace</loc>");
-    expect(content).toContain("<loc>https://nafa-agritech.com/ressources</loc>");
+    expect(content).toContain("<loc>https://nafaagritech.app/</loc>");
+    expect(content).toContain("<loc>https://nafaagritech.app/solutions</loc>");
+    expect(content).toContain("<loc>https://nafaagritech.app/solutions/diagnostic-agricole</loc>");
+    expect(content).toContain("<loc>https://nafaagritech.app/solutions/cartographie-agricole</loc>");
+    expect(content).toContain("<loc>https://nafaagritech.app/solutions/irrigation</loc>");
+    expect(content).toContain("<loc>https://nafaagritech.app/services</loc>");
+    expect(content).toContain("<loc>https://nafaagritech.app/partenaires</loc>");
+    expect(content).toContain("<loc>https://nafaagritech.app/marketplace</loc>");
+    expect(content).toContain("<loc>https://nafaagritech.app/ressources</loc>");
   });
 });
 

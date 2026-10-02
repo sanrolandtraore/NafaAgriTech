@@ -14,7 +14,7 @@ import { fileURLToPath } from 'node:url';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const DIST_DIR = path.resolve(__dirname, '..', 'dist');
-const BASE_URL = 'https://nafa-agritech.com';
+const BASE_URL = 'https://nafaagritech.app';
 
 const PAGES = [
   {
@@ -182,7 +182,7 @@ function buildLdJson(page) {
     "url": BASE_URL,
     "logo": `${BASE_URL}/logo.png`,
     "description": "Plateforme numérique d'aide à la décision agricole et pastorale en Afrique de l'Ouest.",
-    "email": "contact@nafa-agritech.com",
+    "email": "nafaagritech@gmail.com",
     "address": {
       "@type": "PostalAddress",
       "addressLocality": "Ouagadougou",
