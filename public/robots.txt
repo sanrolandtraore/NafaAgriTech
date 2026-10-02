@@ -1,8 +1,55 @@
+# NAFA-AGRITECH robots.txt
+# Official Domain: https://nafa-agritech.com
+
+User-agent: *
+Allow: /
+Allow: /solutions
+Allow: /solutions/*
+Allow: /services
+Allow: /partenaires
+Allow: /partenaires/*
+Allow: /partenaire/*
+Allow: /partners/*
+Allow: /marketplace
+Allow: /marketplace/*
+Allow: /ressources
+Allow: /fiches-techniques
+Allow: /a-propos
+Allow: /contact
+Allow: /mentions-legales
+Allow: /conditions-utilisation
+Allow: /politique-confidentialite
+
+# Protected / Authenticated zones - strictly disallowed
+Disallow: /dashboard
+Disallow: /dashboard/*
+Disallow: /auth
+Disallow: /auth/*
+Disallow: /admin
+Disallow: /admin/*
+Disallow: /profile
+Disallow: /account
+Disallow: /api/
+
+# Explicit Bot Directives
 User-agent: Googlebot
 Allow: /
+Disallow: /dashboard/
+Disallow: /auth/
+
+User-agent: Googlebot-Image
+Allow: /assets/
+Allow: /icons/
+Allow: /*.jpg$
+Allow: /*.jpeg$
+Allow: /*.png$
+Allow: /*.webp$
+Allow: /*.svg$
 
 User-agent: Bingbot
 Allow: /
+Disallow: /dashboard/
+Disallow: /auth/
 
 User-agent: Twitterbot
 Allow: /
@@ -10,5 +57,11 @@ Allow: /
 User-agent: facebookexternalhit
 Allow: /
 
-User-agent: *
+User-agent: LinkedInBot
 Allow: /
+
+User-agent: WhatsApp
+Allow: /
+
+# Sitemap reference
+Sitemap: https://nafa-agritech.com/sitemap.xml
