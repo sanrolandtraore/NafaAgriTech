@@ -35,7 +35,7 @@ const ConditionsUtilisation = () => (
           <li>Suivre les cycles culturaux et l'élevage</li>
           <li>Planifier et optimiser les activités agricoles</li>
           <li>Gérer les coûts et la comptabilité</li>
-          <li>Accéder à un marketplace de services agricoles</li>
+          <li>Accéder à un marché de services agricoles</li>
           <li>Suivre des formations en agriculture et élevage</li>
         </ul>
 

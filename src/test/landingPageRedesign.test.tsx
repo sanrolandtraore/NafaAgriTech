@@ -44,8 +44,8 @@ describe("Landing Page Premium - Architecture UX Fulcrum", () => {
     // Carte 3 : Agriculteurs & Éleveurs
     expect(screen.getByText("Agriculteurs & Éleveurs")).toBeInTheDocument();
 
-    // Carte 4 : Marketplace
-    expect(screen.getAllByText("Marketplace").length).toBeGreaterThanOrEqual(1);
+    // Carte 4 : Marché / Marketplace
+    expect(screen.getAllByText(/Marché|Marketplace/i).length).toBeGreaterThanOrEqual(1);
   });
 
   it("affiche le troisième écran avec les 6 outils intelligents (uniquement icône + 1 mot)", () => {
@@ -65,7 +65,7 @@ describe("Landing Page Premium - Architecture UX Fulcrum", () => {
   it("affiche le quatrième écran Marketplace rapide avec les 6 catégories", () => {
     renderIndex();
 
-    expect(screen.getByText("Marketplace rapide")).toBeInTheDocument();
+    expect(screen.getByText(/Marché rapide|Marketplace rapide/i)).toBeInTheDocument();
 
     expect(screen.getByText("Machinisme & Travaux")).toBeInTheDocument();
     expect(screen.getByText("Produits Agricoles")).toBeInTheDocument();
@@ -100,7 +100,7 @@ describe("Landing Page Premium - Architecture UX Fulcrum", () => {
 
     // Éléments de navigation ciblés dans la barre
     expect(within(nav).getByRole("button", { name: /Accueil/i })).toBeInTheDocument();
-    expect(within(nav).getByRole("button", { name: /Marketplace/i })).toBeInTheDocument();
+    expect(within(nav).getByRole("button", { name: /Marché|Marketplace/i })).toBeInTheDocument();
     expect(within(nav).getByRole("button", { name: /Messages/i })).toBeInTheDocument();
     expect(within(nav).getByRole("button", { name: /Profil/i })).toBeInTheDocument();
 

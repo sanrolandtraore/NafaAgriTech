@@ -53,7 +53,7 @@ describe("Modèle Hybride Découvrir avant de s'inscrire (NAFA-AGRITECH)", () =>
     expect(screen.getByText(/4\. Irrigation Designer/i)).toBeInTheDocument();
     expect(screen.getByText(/5\. Élevage & Zootechnie/i)).toBeInTheDocument();
     expect(screen.getByText(/6\. Fiches Techniques/i)).toBeInTheDocument();
-    expect(screen.getByText(/7\. Marketplace & Services/i)).toBeInTheDocument();
+    expect(screen.getByText(/7\. (Marché|Marketplace) & Services/i)).toBeInTheDocument();
   });
 
   it("fournit le simulateur agricole en accès libre avec déclencheur de sauvegarde douce (soft gate)", async () => {

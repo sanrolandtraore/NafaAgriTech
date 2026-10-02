@@ -112,7 +112,7 @@ const PartenaireSettingsTab = () => {
         </CardHeader>
         <CardContent className="space-y-3 text-sm">
           <p className="text-muted-foreground">
-            Valide jusqu'au <strong>{new Date(sub.endDate).toLocaleDateString("fr-FR")}</strong>. Votre abonnement est obligatoire pour que vos produits et services soient visibles par les acheteurs sur le Marketplace national.
+            Valide jusqu'au <strong>{new Date(sub.endDate).toLocaleDateString("fr-FR")}</strong>. Votre abonnement est obligatoire pour que vos produits et services soient visibles par les acheteurs sur le Marché national.
           </p>
           <Button asChild size="sm" className={isActiveSub ? "gradient-primary text-primary-foreground font-semibold" : "bg-amber-600 hover:bg-amber-700 text-white font-semibold"}>
             <Link to="/dashboard/partenaire-abonnement">

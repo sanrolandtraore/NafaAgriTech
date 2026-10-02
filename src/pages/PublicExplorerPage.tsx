@@ -159,7 +159,7 @@ export default function PublicExplorerPage() {
               className="text-xs font-bold rounded-xl hidden md:flex items-center gap-1.5"
             >
               <Store className="h-4 w-4 text-emerald-600" />
-              <span>Marketplace Vitrine</span>
+              <span>Marché Vitrine</span>
             </Button>
 
             <Button
@@ -258,7 +258,7 @@ export default function PublicExplorerPage() {
               </TabsTrigger>
               <TabsTrigger value="marketplace" className="rounded-xl text-xs font-bold gap-2 py-2.5 px-4 data-[state=active]:bg-card data-[state=active]:shadow-xs">
                 <Store className="h-4 w-4 text-purple-600" />
-                <span>7. Marketplace &amp; Services</span>
+                <span>7. Marché &amp; Services</span>
               </TabsTrigger>
             </TabsList>
           </div>
@@ -750,7 +750,7 @@ export default function PublicExplorerPage() {
                     Commerce Agricole &amp; Services Agréés
                   </Badge>
                   <h2 className="text-xl sm:text-2xl font-heading font-black text-foreground">
-                    Marketplace Vitrine en Libre Consultation
+                    Marché Vitrine en Libre Consultation
                   </h2>
                   <p className="text-xs sm:text-sm text-muted-foreground">
                     Consultez les prix réels constatés au Burkina Faso et découvrez les offres des distributeurs certifiés.
@@ -763,7 +763,7 @@ export default function PublicExplorerPage() {
                   className="bg-purple-600 hover:bg-purple-700 text-white font-bold text-xs rounded-xl shadow-xs shrink-0"
                 >
                   <Store className="h-4 w-4 mr-1.5" />
-                  <span>Ouvrir le Marketplace</span>
+                  <span>Ouvrir le Marché</span>
                 </Button>
               </div>
 

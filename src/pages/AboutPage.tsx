@@ -136,7 +136,7 @@ export const AboutPage: React.FC = () => {
                     <CheckCircle2 className="h-4 w-4" />
                   </div>
                   <div>
-                    <h3 className="font-heading font-bold text-sm">Écosystème unifié & Marketplace Vitrine</h3>
+                    <h3 className="font-heading font-bold text-sm">Écosystème unifié & Marché Vitrine</h3>
                     <p className="text-xs text-muted-foreground">
                       Mise en relation directe entre producteurs ruraux, agronomes indépendants, cliniques vétérinaires et distributeurs d'intrants certifiés.
                     </p>

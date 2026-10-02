@@ -86,11 +86,11 @@ const SPACES_CONFIG = [
     icon: Store,
     realIcon: "livestock",
     image: galleryLivestock,
-    badge: "Marketplace Vitrine",
+    badge: "Marché Vitrine",
   },
   {
     id: "marketplace",
-    title: "Marketplace Intrants & Services",
+    title: "Marché Intrants & Services",
     path: "/marketplace?cat=produits_agricoles&role=producteurs",
     icon: ShoppingBag,
     realIcon: "marketplace",
@@ -226,7 +226,7 @@ const Index = () => {
             <Link to="/solutions" className="hover:text-emerald-400 transition-colors">Solutions</Link>
             <Link to="/services" className="hover:text-emerald-400 transition-colors">Services Partenaires</Link>
             <Link to="/partenaires" className="hover:text-emerald-400 transition-colors">Partenaires</Link>
-            <Link to="/marketplace" className="hover:text-emerald-400 transition-colors">Marketplace</Link>
+            <Link to="/marketplace" className="hover:text-emerald-400 transition-colors">Marché</Link>
             <Link to="/ressources" className="hover:text-emerald-400 transition-colors">Ressources</Link>
           </nav>
 
@@ -235,11 +235,11 @@ const Index = () => {
             <Button
               variant="outline"
               size="sm"
-              onClick={() => navigate("/solutions")}
+              onClick={() => navigate("/explorer")}
               className="rounded-[24px] bg-white/10 hover:bg-white/20 text-white border-white/20 backdrop-blur-md text-[11px] sm:text-xs font-semibold px-2.5 sm:px-4 hidden sm:inline-flex items-center gap-1.5 transition-transform active:scale-95"
             >
               <Compass className="h-3.5 w-3.5 text-emerald-400" />
-              <span>Solutions</span>
+              <span>Explorer</span>
             </Button>
             <Button
               variant="outline"
@@ -381,15 +381,15 @@ const Index = () => {
           })}
         </div>
 
-        {/* ── Accès Direct Agriculteurs & Éleveurs à la Marketplace Vitrine ── */}
+        {/* ── Accès Direct Agriculteurs & Éleveurs au Marché Vitrine ── */}
         <div className="rounded-[28px] bg-gradient-to-r from-emerald-950/90 via-[#111827] to-teal-950/90 border border-emerald-500/40 p-6 sm:p-8 flex flex-col md:flex-row items-center justify-between gap-6 shadow-xl">
           <div className="space-y-2 text-center md:text-left">
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/20 border border-emerald-500/40 text-emerald-400 text-xs font-bold">
               <Store className="h-3.5 w-3.5" />
-              <span>Marketplace Vitrine Agriculteurs & Éleveurs</span>
+              <span>Marché Vitrine Agriculteurs &amp; Éleveurs</span>
             </div>
             <h3 className="text-xl sm:text-2xl font-heading font-extrabold text-white tracking-tight">
-              Accès direct à la Marketplace Vitrine : intrants, machinisme, élevage & finance
+              Accès direct au Marché Vitrine : intrants, machinisme, élevage &amp; finance
             </h3>
             <p className="text-xs sm:text-sm text-white/70 max-w-2xl">
               Agriculteurs et éleveurs accèdent librement aux catalogues et services certifiés : réservez vos labours, achetez vos semences et engrais, programmez des soins vétérinaires ou sollicitez des financements et assurances.
@@ -423,7 +423,7 @@ const Index = () => {
               onClick={() => navigate("/marketplace?role=producteurs")}
               className="rounded-full bg-white text-[#111827] hover:bg-emerald-50 font-bold text-xs px-4 py-2.5 shadow-md flex items-center gap-1.5 transition-transform active:scale-95"
             >
-              <span>Ouvrir la Marketplace Vitrine</span>
+              <span>Ouvrir le Marché Vitrine</span>
               <ArrowRight className="h-3.5 w-3.5 text-emerald-600" />
             </Button>
           </div>
@@ -506,13 +506,13 @@ const Index = () => {
 
 
       {/* ══════════════════════════════════════════════════════
-          4. QUATRIÈME ÉCRAN — MARKETPLACE RAPIDE (Aperçu des Catégories)
+          4. QUATRIÈME ÉCRAN — MARCHÉ RAPIDE (Aperçu des Catégories)
       ══════════════════════════════════════════════════════ */}
       <section className="py-16 sm:py-24 max-w-7xl mx-auto px-4 sm:px-6 space-y-8">
         <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
           <div className="space-y-2">
             <h2 className="text-2xl sm:text-4xl font-heading font-extrabold text-foreground tracking-tight">
-              Marketplace rapide
+              Marché rapide
             </h2>
             <p className="text-xs sm:text-sm text-muted-foreground font-medium">
               Explorez les catalogues certifiés des distributeurs locaux.
@@ -728,14 +728,14 @@ const Index = () => {
             <span className="text-[10px] font-bold">Accueil</span>
           </button>
 
-          {/* 2. Marketplace */}
+          {/* 2. Marché */}
           <button
             type="button"
             onClick={() => navigate("/marketplace?role=producteurs")}
             className="flex flex-col items-center gap-1 text-muted-foreground hover:text-foreground active:scale-95 transition-transform w-14"
           >
             <Store className="h-5 w-5" />
-            <span className="text-[10px] font-bold">Marketplace</span>
+            <span className="text-[10px] font-bold">Marché</span>
           </button>
 
           {/* 3. PROJETS / ACTION PRINCIPALE CENTRALE */}

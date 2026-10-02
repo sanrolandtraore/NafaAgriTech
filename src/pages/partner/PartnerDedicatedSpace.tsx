@@ -408,7 +408,7 @@ export const PartnerDedicatedSpace: React.FC = () => {
           <Card>
             <CardHeader>
               <CardTitle className="text-base">Fiche de Présentation Entreprise</CardTitle>
-              <CardDescription>Informations publiques visibles par les clients sur la Marketplace.</CardDescription>
+              <CardDescription>Informations publiques visibles par les clients sur le Marché.</CardDescription>
             </CardHeader>
             <CardContent>
               <form onSubmit={handleSavePresentation} className="space-y-4 text-xs">

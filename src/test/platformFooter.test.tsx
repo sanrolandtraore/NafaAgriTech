@@ -57,7 +57,7 @@ describe("Footer Professionnel NAFA-AGRITECH", () => {
       { text: "Agronomes", href: "/dashboard/field-designer" },
       { text: "Éleveurs", href: "/marketplace?cat=produits_elevage&role=producteurs" },
       { text: "Partenaires", href: "/dashboard/partenaire-abonnement" },
-      { text: "Marketplace", href: "/marketplace" },
+      { text: "Marché", href: "/marketplace" },
       { text: "Missions terrain", href: "/dashboard/smart-inspection" },
       { text: "Contact", href: "/contact" },
     ];

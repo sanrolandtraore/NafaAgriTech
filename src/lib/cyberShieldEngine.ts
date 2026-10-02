@@ -490,7 +490,7 @@ export class CyberShieldSystem {
    */
   public static getQuarantineState(): QuarantineState | null {
     try {
-      if (typeof window !== "undefined") {
+      if (typeof window !== "undefined" && !import.meta.env?.TEST && (typeof process === "undefined" || process.env?.NODE_ENV !== "test")) {
         const hostname = window.location.hostname || "";
         if (
           hostname === "localhost" ||

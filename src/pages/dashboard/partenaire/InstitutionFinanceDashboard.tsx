@@ -249,7 +249,7 @@ export default function InstitutionFinanceDashboard() {
 
   const handleToggleActive = async (offer: PartnerOffer) => {
     await partnerStorage.toggleOfferActive(offer.id);
-    toast.info(offer.is_active ? "Offre masquée du marketplace" : "Offre publiée en ligne sur le marketplace");
+    toast.info(offer.is_active ? "Offre masquée du Marché" : "Offre publiée en ligne sur le Marché");
     loadData();
   };
 
@@ -361,7 +361,7 @@ export default function InstitutionFinanceDashboard() {
             <div>
               <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Crédits & Financements</p>
               <h3 className="text-2xl font-black text-foreground mt-1">{stats.creditsCount}</h3>
-              <p className="text-[11px] text-emerald-600 font-medium mt-0.5">Disponibles sur Marketplace</p>
+              <p className="text-[11px] text-emerald-600 font-medium mt-0.5">Disponibles sur le Marché</p>
             </div>
             <div className="h-11 w-11 rounded-xl bg-emerald-500/10 flex items-center justify-center text-emerald-600">
               <Coins className="h-6 w-6" />
@@ -556,7 +556,7 @@ export default function InstitutionFinanceDashboard() {
                             variant={offer.is_active ? "default" : "secondary"}
                             className={offer.is_active ? "bg-emerald-600 text-white text-[10px]" : "text-[10px] text-muted-foreground"}
                           >
-                            {offer.is_active ? "En Ligne (Marketplace)" : "Hors Ligne"}
+                            {offer.is_active ? "En Ligne (Marché)" : "Hors Ligne"}
                           </Badge>
                         </div>
 
@@ -640,7 +640,7 @@ export default function InstitutionFinanceDashboard() {
             <div>
               <h2 className="text-base font-bold text-foreground flex items-center gap-2">
                 <Megaphone className="h-5 w-5 text-amber-600" />
-                Campagnes Publicitaires & Affiches Marketing sur le Marketplace
+                Campagnes Publicitaires & Affiches Marketing sur le Marché
               </h2>
               <p className="text-xs text-muted-foreground mt-0.5">
                 Diffusez des bannières sponsorisées, offres promotionnelles saisonnières de prêt intrants et assurances pour toucher instantanément les coopératives et agriculteurs.
@@ -656,11 +656,11 @@ export default function InstitutionFinanceDashboard() {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {/* Visualisation en direct du rendu Marketplace */}
+            {/* Visualisation en direct du rendu Marché */}
             <div className="space-y-4">
               <h3 className="text-xs font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-2">
                 <Eye className="h-4 w-4 text-emerald-600" />
-                Aperçu en direct (Vue Agriculteur / Marketplace)
+                Aperçu en direct (Vue Agriculteur / Marché)
               </h3>
 
               {offers.filter((o) => (o as any).finance_type === "pub_marketing" || (o as any).campaign_badge).length === 0 ? (
@@ -782,7 +782,7 @@ export default function InstitutionFinanceDashboard() {
               </div>
               <h3 className="font-bold text-sm">Aucune demande reçue pour l'instant</h3>
               <p className="text-xs text-muted-foreground max-w-sm mx-auto mt-1">
-                Dès qu'un agriculteur ou éleveur manifestera son intérêt pour vos offres de crédit ou d'assurance sur le marketplace, ses coordonnées s'afficheront ici.
+                Dès qu'un agriculteur ou éleveur manifestera son intérêt pour vos offres de crédit ou d'assurance sur le Marché, ses coordonnées s'afficheront ici.
               </p>
             </Card>
           ) : (
@@ -987,7 +987,7 @@ export default function InstitutionFinanceDashboard() {
               {editingOffer ? "Modifier le Produit Financier" : "Créer une Offre Financière ou Campagne Marketing"}
             </DialogTitle>
             <DialogDescription className="text-xs">
-              Renseignez les conditions financières, taux, montants, et visuels publicitaires pour publication sur la marketplace.
+              Renseignez les conditions financières, taux, montants, et visuels publicitaires pour publication sur le Marché.
             </DialogDescription>
           </DialogHeader>
 
@@ -1164,7 +1164,7 @@ export default function InstitutionFinanceDashboard() {
               Annuler
             </Button>
             <Button onClick={handleSaveOffer} className="font-bold bg-emerald-600 hover:bg-emerald-700 text-white text-xs">
-              {editingOffer ? "Mettre à jour l'offre" : "Publier l'Offre sur la Marketplace"}
+              {editingOffer ? "Mettre à jour l'offre" : "Publier l'Offre sur le Marché"}
             </Button>
           </DialogFooter>
         </DialogContent>

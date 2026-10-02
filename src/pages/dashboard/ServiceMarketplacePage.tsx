@@ -583,7 +583,7 @@ export const ServiceMarketplacePage = () => {
               <div className="flex items-start gap-2.5 text-xs sm:text-sm">
                 <Store className="h-4 w-4 text-amber-600 shrink-0 mt-0.5" />
                 <span>
-                  <strong>Mode Consultation Partenaire :</strong> Vous visualisez la Marketplace Vitrine telle qu'affichée pour les agriculteurs et éleveurs. Pour publier ou modifier vos offres, accédez à votre espace dédié.
+                  <strong>Mode Consultation Partenaire :</strong> Vous visualisez le Marché Vitrine tel qu'affiché pour les agriculteurs et éleveurs. Pour publier ou modifier vos offres, accédez à votre espace dédié.
                 </span>
               </div>
               <div className="flex items-center gap-2 shrink-0 self-end sm:self-auto">
@@ -606,13 +606,13 @@ export const ServiceMarketplacePage = () => {
         </div>
       )}
 
-      {/* En-tête Marketplace Unifiée */}
+      {/* En-tête Marché Unifié */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div className="flex items-center gap-3">
           <BackNavigationButton fallbackTo={user ? "/dashboard" : "/"} />
           <div>
             <h1 className="text-xl sm:text-2xl font-heading font-extrabold flex items-center gap-2 text-foreground">
-              <Store className="h-6 w-6 text-emerald-600" /> Marketplace Vitrine NAFA
+              <Store className="h-6 w-6 text-emerald-600" /> Marché Vitrine NAFA
             </h1>
             <p className="text-xs sm:text-sm text-muted-foreground">
               Espace réservé aux agriculteurs et éleveurs : achetez vos intrants, louez du matériel agricole et demandez des services certifiés.
@@ -941,7 +941,7 @@ export const ServiceMarketplacePage = () => {
                   Aucune offre partenaire active pour le moment
                 </h3>
                 <p className="text-sm text-muted-foreground leading-relaxed">
-                  La Marketplace NAFA-AGRITECH présente exclusivement les produits, intrants, matériels et services réels proposés par nos partenaires agréés et vérifiés.
+                  Le Marché NAFA-AGRITECH présente exclusivement les produits, intrants, matériels et services réels proposés par nos partenaires agréés et vérifiés.
                 </p>
                 <div className="pt-2 flex flex-col sm:flex-row items-center justify-center gap-3">
                   <Button asChild className="gap-2 bg-emerald-600 hover:bg-emerald-700 text-white">

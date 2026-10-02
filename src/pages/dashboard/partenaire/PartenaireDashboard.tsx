@@ -544,7 +544,7 @@ export default function PartenaireDashboard() {
             <div>
               <div className="flex items-center gap-2">
                 <span className="font-bold text-sm text-foreground">
-                  Abonnement requis pour visibilité sur le Marketplace
+                  Abonnement requis pour visibilité sur le Marché
                 </span>
                 <Badge variant="destructive" className="text-[10px] px-2 py-0.5 font-bold">
                   Offres masquées au public

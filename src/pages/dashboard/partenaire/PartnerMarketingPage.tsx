@@ -155,7 +155,7 @@ export default function PartnerMarketingPage() {
       };
 
       await partnerStorage.saveOffer(payload);
-      toast.success(editingCampaign ? "Campagne publicitaire mise à jour !" : "Campagne publicitaire diffusée sur la Marketplace !");
+      toast.success(editingCampaign ? "Campagne publicitaire mise à jour !" : "Campagne publicitaire diffusée sur le Marché !");
       setOpenModal(false);
       loadData();
     } catch (e) {
@@ -188,7 +188,7 @@ export default function PartnerMarketingPage() {
               Campagnes Publicitaires & Marketing Financier
             </h1>
             <p className="text-xs md:text-sm text-muted-foreground mt-0.5">
-              Créez des bannières sponsorisées, offres de taux réduit et visuels publicitaires diffusés sur la Marketplace NAFA-AGRITECH.
+              Créez des bannières sponsorisées, offres de taux réduit et visuels publicitaires diffusés sur le Marché NAFA-AGRITECH.
             </p>
           </div>
         </div>
@@ -411,7 +411,7 @@ export default function PartnerMarketingPage() {
               Annuler
             </Button>
             <Button onClick={handleSave} className="font-bold bg-amber-600 hover:bg-amber-700 text-white text-xs">
-              {editingCampaign ? "Mettre à jour" : "Diffuser la Campagne sur la Marketplace"}
+              {editingCampaign ? "Mettre à jour" : "Diffuser la Campagne sur le Marché"}
             </Button>
           </DialogFooter>
         </DialogContent>

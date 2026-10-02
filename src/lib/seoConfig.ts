@@ -172,10 +172,11 @@ export const SEO_PAGES: Record<string, SeoPageMetadata> = {
     ],
   },
   marketplace: {
-    title: "Marketplace Agricole — Offres Réelles de Produits et Services | NAFA-AGRITECH",
+    title: "Marché Agricole — Offres Réelles de Produits et Services | NAFA-AGRITECH",
     description: "Accédez aux offres réelles publiées par nos partenaires enregistrés : matériels agricoles, semences certifiées, intrants biologiques, prestations de machinisme et services d'élevage.",
     canonicalPath: "/marketplace",
     keywords: [
+      "marché agricole",
       "marketplace agricole",
       "achat semences certifiées",
       "équipements agricoles Burkina Faso",
