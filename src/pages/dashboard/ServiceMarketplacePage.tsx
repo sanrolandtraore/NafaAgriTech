@@ -275,28 +275,29 @@ export const ServiceMarketplacePage = () => {
         return isPartnerSubscriptionActive(offer.owner_id);
       });
 
-      // Construction de la liste publique propre avec zéro fuite de données privées
-      const formattedItems: PublicMarketItem[] = activeOffers.map((offer, index) => {
+      // Construction de la liste publique propre : ZÉRO DONNÉE FICTIVE OU SIMULÉE
+      const formattedItems: PublicMarketItem[] = activeOffers.map((offer) => {
         const loc = normalizeLocation(offer.location_name);
-        const rawPrice = parseInt((offer.price_indication || "").replace(/\D/g, ""), 10) || (25000 + (index * 15000));
+        const parsedPrice = parseInt((offer.price_indication || "").replace(/\D/g, ""), 10);
+        const rawPrice = isNaN(parsedPrice) ? 0 : parsedPrice;
         return {
           id: offer.id,
           provider_id: offer.owner_id,
-          partner_name: offer.partner_name || "Partenaire Agréé NAFA",
+          partner_name: offer.partner_name || "Partenaire Agréé",
           title: offer.title,
-          description: offer.description,
+          description: offer.description || null,
           category: mapToStandardCategory(offer.category),
           price: rawPrice,
           price_unit: offer.unit || "prestation",
           location_name: offer.location_name || `${loc.city}, ${loc.region}`,
           city: loc.city,
           region: loc.region,
-          distanceKm: 12 + ((index * 23) % 180),
-          phone: offer.contact_phone || "+226 70 00 00 00",
-          whatsapp: offer.contact_phone || "+226 70 00 00 00",
-          imageUrl: offer.image_url || offer.images?.[0] || "https://images.unsplash.com/photo-1592982537447-7440770cbfc9?w=600&auto=format&fit=crop&q=80",
-          availability: index % 3 === 0 ? "sur_commande" : "immediate",
-          is_verified: true,
+          distanceKm: 0,
+          phone: offer.contact_phone || null,
+          whatsapp: offer.contact_phone || null,
+          imageUrl: offer.image_url || offer.images?.[0] || null,
+          availability: (offer as any).availability || "immediate",
+          is_verified: Boolean((offer as any).is_verified),
           created_at: offer.created_at,
         };
       });
@@ -863,7 +864,28 @@ export const ServiceMarketplacePage = () => {
 
         {/* ═══ VUE CATALOGUE ═══ */}
         <TabsContent value="catalogue" className="space-y-4">
-          {filteredItems.length === 0 ? (
+          {items.length === 0 ? (
+            <Card className="border border-border/80 bg-muted/10 py-16 text-center">
+              <CardContent className="space-y-4 max-w-lg mx-auto">
+                <div className="w-16 h-16 rounded-2xl bg-primary/10 text-primary flex items-center justify-center mx-auto">
+                  <Store className="h-8 w-8" />
+                </div>
+                <h3 className="text-xl font-heading font-bold text-foreground">
+                  Aucune offre partenaire active pour le moment
+                </h3>
+                <p className="text-sm text-muted-foreground leading-relaxed">
+                  La Marketplace NAFA-AGRITECH présente exclusivement les produits, intrants, matériels et services réels proposés par nos partenaires agréés et vérifiés.
+                </p>
+                <div className="pt-2 flex flex-col sm:flex-row items-center justify-center gap-3">
+                  <Button asChild className="gap-2 bg-emerald-600 hover:bg-emerald-700 text-white">
+                    <Link to="/dashboard/partner-space">
+                      <Plus className="h-4 w-4" /> Espace Partenaire (Publier une offre)
+                    </Link>
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          ) : filteredItems.length === 0 ? (
             <Card>
               <CardContent className="py-12 text-center text-muted-foreground space-y-2">
                 <p className="text-base font-semibold">Aucune offre ne correspond à ces critères de recherche.</p>
@@ -878,17 +900,29 @@ export const ServiceMarketplacePage = () => {
               {filteredItems.map((item) => (
                 <Card key={item.id} className="overflow-hidden hover:shadow-md transition border flex flex-col justify-between">
                   <div>
-                    {item.imageUrl && (
+                    {item.imageUrl ? (
                       <div className="relative h-44 bg-muted overflow-hidden">
                         <img
                           src={item.imageUrl}
                           alt={item.title}
                           className="w-full h-full object-cover"
                           loading="lazy"
-                          onError={(e) => {
-                            e.currentTarget.src = "https://images.unsplash.com/photo-1592982537447-7440770cbfc9?w=800&auto=format&fit=crop&q=80";
-                          }}
                         />
+                        <Badge className="absolute top-2.5 left-2.5 bg-card/90 text-foreground backdrop-blur-md text-[10px] border shadow-xs">
+                          {getCategoryLabel(item.category)}
+                        </Badge>
+                        <Badge
+                          variant={item.availability === "immediate" ? "default" : "secondary"}
+                          className={`absolute top-2.5 right-2.5 text-[10px] ${
+                            item.availability === "immediate" ? "bg-emerald-600 text-white" : ""
+                          }`}
+                        >
+                          {item.availability === "immediate" ? "Disponible" : "Sur commande"}
+                        </Badge>
+                      </div>
+                    ) : (
+                      <div className="relative h-28 bg-muted/30 border-b flex items-center justify-center">
+                        <Package className="h-8 w-8 text-muted-foreground/30" />
                         <Badge className="absolute top-2.5 left-2.5 bg-card/90 text-foreground backdrop-blur-md text-[10px] border shadow-xs">
                           {getCategoryLabel(item.category)}
                         </Badge>
@@ -933,18 +967,28 @@ export const ServiceMarketplacePage = () => {
                           <MapPin className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
                           {item.city} ({item.region})
                         </span>
-                        <span className="shrink-0 font-medium text-emerald-800 dark:text-emerald-300">
-                          ~{item.distanceKm} km
-                        </span>
+                        {item.distanceKm > 0 && (
+                          <span className="shrink-0 font-medium text-emerald-800 dark:text-emerald-300">
+                            ~{item.distanceKm} km
+                          </span>
+                        )}
                       </div>
 
                       {/* Prix */}
                       <div className="flex items-baseline justify-between pt-1">
                         <div>
-                          <span className="text-lg font-extrabold text-foreground">
-                            {item.price.toLocaleString("fr-FR")}
-                          </span>
-                          <span className="text-xs text-muted-foreground ml-1">FCFA / {item.price_unit}</span>
+                          {item.price > 0 ? (
+                            <>
+                              <span className="text-lg font-extrabold text-foreground">
+                                {item.price.toLocaleString("fr-FR")}
+                              </span>
+                              <span className="text-xs text-muted-foreground ml-1">FCFA / {item.price_unit}</span>
+                            </>
+                          ) : (
+                            <span className="text-sm font-bold text-foreground">
+                              {item.price_unit ? `Sur devis (${item.price_unit})` : "Sur devis"}
+                            </span>
+                          )}
                         </div>
                       </div>
                     </CardContent>
@@ -953,32 +997,54 @@ export const ServiceMarketplacePage = () => {
                   {/* Actions de contact & commande */}
                   <div className="p-4 pt-0 space-y-2">
                     <div className="grid grid-cols-2 gap-2">
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        className="text-xs h-8 gap-1"
-                        asChild
-                      >
-                        <a href={`tel:${item.phone}`}>
-                          <Phone className="h-3 w-3" /> Appeler
-                        </a>
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        className="text-xs h-8 gap-1 border-emerald-500/40 text-emerald-700 hover:bg-emerald-50"
-                        asChild
-                      >
-                        <a
-                          href={`https://wa.me/${(item.whatsapp || "").replace(/\D/g, "")}?text=${encodeURIComponent(
-                            `Bonjour, je vous contacte depuis la plateforme NAFA - AGRITECH à propos de : ${item.title}`
-                          )}`}
-                          target="_blank"
-                          rel="noopener noreferrer"
+                      {item.phone ? (
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="text-xs h-8 gap-1"
+                          asChild
                         >
-                          <MessageCircle className="h-3.5 w-3.5 text-emerald-600" /> WhatsApp
-                        </a>
-                      </Button>
+                          <a href={`tel:${item.phone}`}>
+                            <Phone className="h-3 w-3" /> Appeler
+                          </a>
+                        </Button>
+                      ) : (
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="text-xs h-8 gap-1 opacity-50 cursor-not-allowed"
+                          disabled
+                        >
+                          <Phone className="h-3 w-3" /> Non renseigné
+                        </Button>
+                      )}
+                      {item.whatsapp ? (
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="text-xs h-8 gap-1 border-emerald-500/40 text-emerald-700 hover:bg-emerald-50 dark:hover:bg-emerald-950/20"
+                          asChild
+                        >
+                          <a
+                            href={`https://wa.me/${item.whatsapp.replace(/\D/g, "")}?text=${encodeURIComponent(
+                              `Bonjour, je vous contacte depuis la plateforme NAFA - AGRITECH à propos de : ${item.title}`
+                            )}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                          >
+                            <MessageCircle className="h-3.5 w-3.5 text-emerald-600" /> WhatsApp
+                          </a>
+                        </Button>
+                      ) : (
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="text-xs h-8 gap-1 opacity-50 cursor-not-allowed"
+                          disabled
+                        >
+                          <MessageCircle className="h-3.5 w-3.5" /> WhatsApp
+                        </Button>
+                      )}
                     </div>
 
                     {(() => {

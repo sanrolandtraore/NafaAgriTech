@@ -486,6 +486,22 @@ export default function ProductServiceCatalog({
                 <div key={i} className="h-80 rounded-2xl bg-muted animate-pulse" />
               ))}
             </div>
+          ) : offers.length === 0 ? (
+            <Card className="card-premium text-center py-16">
+              <CardContent className="space-y-3">
+                <Package className="h-14 w-14 mx-auto text-muted-foreground/40" />
+                <h3 className="text-xl font-bold text-foreground">Catalogue de la Marketplace</h3>
+                <p className="text-sm text-muted-foreground max-w-md mx-auto">
+                  Aucune offre n'est disponible pour le moment. La Marketplace NAFA-AGRITECH diffuse exclusivement les offres réelles issues de partenaires certifiés et enregistrés.
+                </p>
+                <Button
+                  onClick={() => navigate("/dashboard/partner-space")}
+                  className="mt-2 font-bold rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white"
+                >
+                  Accéder à l'Espace Partenaire
+                </Button>
+              </CardContent>
+            </Card>
           ) : filteredOffers.length === 0 ? (
             <Card className="card-premium text-center py-16">
               <CardContent className="space-y-3">
