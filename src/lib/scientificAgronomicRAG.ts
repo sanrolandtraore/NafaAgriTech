@@ -22,10 +22,9 @@
 import { supabase } from "@/integrations/supabase/client";
 import type { FoliarImageAnalysisResult } from "./plantVisionAnalyzer";
 import {
-  identifyPlantWithPlantNet,
   identifyPlantWithNafaEngine,
-  type PlantNetIdentificationResult,
   type NafaPlantIdentificationResult,
+  type PlantNetIdentificationResult,
 } from "./nafaPlantIdentifier";
 import {
   queryPlantVillageBenchmark,
@@ -187,7 +186,8 @@ export interface PlantIdentificationResult {
   blockReason?: string;
   missingPhotosAdvice?: string;
   growthStageDetected?: GrowthStage;
-  plantnetIdentification?: PlantNetIdentificationResult;
+  botanicalIdentification?: NafaPlantIdentificationResult;
+  plantnetIdentification?: NafaPlantIdentificationResult;
 }
 
 export interface DiagnosisCandidate {
@@ -242,7 +242,8 @@ export interface ScientificDiagnosisResult {
   };
   imageAnalysis?: FoliarImageAnalysisResult;
   realPrescriptionDetails?: RealPrescriptionDetails;
-  plantnetIdentification?: PlantNetIdentificationResult;
+  botanicalIdentification?: NafaPlantIdentificationResult;
+  plantnetIdentification?: NafaPlantIdentificationResult;
   plantVillageMatch?: PlantVillageMatchResult;
   openAgroBenchmarking?: OpenAgroBenchmarkData;
   weedManagementPlan?: {
@@ -1557,63 +1558,67 @@ export function identifyPlant(params: {
   cropKey?: string;
   imageBase64?: string;
   mimeType?: string;
-  plantnetResult?: PlantNetIdentificationResult;
+  botanicalResult?: NafaPlantIdentificationResult;
+  plantnetResult?: NafaPlantIdentificationResult;
 }): PlantIdentificationResult {
   const textOnly = cleanString(params.text || "");
   const qWithCrop = cleanString(params.text || "") + " " + cleanString(params.cropKey || "");
-  const pNet = params.plantnetResult;
+  const botanical = params.botanicalResult || params.plantnetResult;
 
-  // 0. FILTRE 1 : IDENTIFICATION IMMÉDIATE PAR L'API PL@NTNET (SUR DES MILLIERS D'ESPÈCES)
-  // Lorsque Pl@ntNet fournit une identification avec score de confiance significatif
-  if (pNet && pNet.bestMatch) {
-    // Cas A : Pl@ntNet a identifié une mauvaise herbe / adventice parasitaire
-    if (pNet.isWeed && pNet.matchedWeedId) {
-      const weedMatch = WEED_SPECIES_CATALOG.find((w) => w.id === pNet.matchedWeedId);
+  // 0. FILTRE 1 : IDENTIFICATION IMMÉDIATE PAR LA BASE BOTANIQUE PROPRIÉTAIRE NAFA VISION
+  // Lorsque le moteur botanique NAFA fournit une identification avec score de confiance significatif
+  if (botanical && botanical.bestMatch) {
+    // Cas A : Le moteur a identifié une mauvaise herbe / adventice parasitaire
+    if (botanical.isWeed && botanical.matchedWeedId) {
+      const weedMatch = WEED_SPECIES_CATALOG.find((w) => w.id === botanical.matchedWeedId);
       if (weedMatch) {
         return {
           identifiedSpecies: weedMatch,
           isWeed: true,
-          confidence: Math.max(0.95, pNet.confidence),
+          confidence: Math.max(0.95, botanical.confidence),
           confidenceLevel: "Élevé",
           canProceed: true,
-          plantnetIdentification: pNet,
+          botanicalIdentification: botanical,
+          plantnetIdentification: botanical,
         };
       }
     }
 
-    // Cas B : Pl@ntNet a identifié une culture agricole burkinabè certifiée
-    if (pNet.matchedNafaCropId) {
-      const cropMatch = PLANT_SPECIES_CATALOG.find((c) => c.id === pNet.matchedNafaCropId);
+    // Cas B : Le moteur a identifié une culture agricole burkinabè certifiée
+    if (botanical.matchedNafaCropId) {
+      const cropMatch = PLANT_SPECIES_CATALOG.find((c) => c.id === botanical.matchedNafaCropId);
       if (cropMatch) {
         return {
           identifiedSpecies: cropMatch,
           isWeed: false,
-          confidence: Math.max(0.95, pNet.confidence),
+          confidence: Math.max(0.95, botanical.confidence),
           confidenceLevel: "Élevé",
           canProceed: true,
-          plantnetIdentification: pNet,
+          botanicalIdentification: botanical,
+          plantnetIdentification: botanical,
         };
       }
     }
 
-    // Cas C : Recherche par nom scientifique ou nom commun retourné par Pl@ntNet
-    const pNetSci = cleanString(pNet.bestMatch.scientificName);
-    const pNetCommon = cleanString(pNet.bestMatch.commonName || "");
+    // Cas C : Recherche par nom scientifique ou nom commun
+    const botSci = cleanString(botanical.bestMatch.scientificName);
+    const botCommon = cleanString(botanical.bestMatch.commonName || "");
 
-    const matchedFromPNet = PLANT_SPECIES_CATALOG.find((c) => {
+    const matchedFromBot = PLANT_SPECIES_CATALOG.find((c) => {
       const sci = cleanString(c.scientificName);
       const com = cleanString(c.commonName);
-      return sci.includes(pNetSci) || pNetSci.includes(sci) || com.includes(pNetCommon) || pNetCommon.includes(com);
+      return sci.includes(botSci) || botSci.includes(sci) || com.includes(botCommon) || botCommon.includes(com);
     });
 
-    if (matchedFromPNet) {
+    if (matchedFromBot) {
       return {
-        identifiedSpecies: matchedFromPNet,
+        identifiedSpecies: matchedFromBot,
         isWeed: false,
-        confidence: Math.max(0.92, pNet.confidence),
+        confidence: Math.max(0.92, botanical.confidence),
         confidenceLevel: "Élevé",
         canProceed: true,
-        plantnetIdentification: pNet,
+        botanicalIdentification: botanical,
+        plantnetIdentification: botanical,
       };
     }
   }
@@ -2407,10 +2412,16 @@ export function executeScientificDiagnosisPipeline(params: {
   context: AgronomicContext;
   localValidatedCases?: ValidatedCase[];
   imageAnalysis?: FoliarImageAnalysisResult;
-  plantnetIdentification?: PlantNetIdentificationResult;
+  botanicalIdentification?: NafaPlantIdentificationResult;
+  plantnetIdentification?: NafaPlantIdentificationResult;
 }): ScientificDiagnosisResult {
   const { identification, context, localValidatedCases = [], imageAnalysis } = params;
-  const effectivePlantNet = params.plantnetIdentification || identification.plantnetIdentification;
+  const effectiveBotanical =
+    params.botanicalIdentification ||
+    params.plantnetIdentification ||
+    identification.botanicalIdentification ||
+    identification.plantnetIdentification;
+  const effectivePlantNet = effectiveBotanical;
 
   // Si l'identification n'a pas pu être certifiée à l'étape 1, stopper immédiatement
   if (!identification.canProceed || !identification.identifiedSpecies) {
@@ -2429,7 +2440,8 @@ export function executeScientificDiagnosisPipeline(params: {
         inconclusiveNotice:
           "Preuves botaniques insuffisantes. Veuillez photographier les feuilles à plat, le collet et les fleurs ou confirmer la culture manuellement.",
       },
-      plantnetIdentification: effectivePlantNet,
+      botanicalIdentification: effectiveBotanical,
+      plantnetIdentification: effectiveBotanical,
     };
   }
 
@@ -2464,6 +2476,7 @@ export function executeScientificDiagnosisPipeline(params: {
         officialReferences: [weed.ineraRef, "Directives de Malherbologie INERA / CILSS", "EPPO Global Database"],
         confidenceLevel: "Élevé",
       },
+      botanicalIdentification: effectiveBotanical,
       plantnetIdentification: effectivePlantNet,
       weedManagementPlan: {
         weedName: weed.commonName,
@@ -2488,6 +2501,7 @@ export function executeScientificDiagnosisPipeline(params: {
     cropId: crop.id,
     symptoms: context.symptoms,
     imageAnalysis,
+    botanicalResult: effectiveBotanical,
     plantnetResult: effectivePlantNet,
   });
 
@@ -2739,6 +2753,7 @@ export function executeScientificDiagnosisPipeline(params: {
       },
       imageAnalysis,
       realPrescriptionDetails,
+      botanicalIdentification: effectiveBotanical,
       plantnetIdentification: effectivePlantNet,
       plantVillageMatch: pvBenchmark,
       openAgroBenchmarking,
@@ -2780,6 +2795,7 @@ export function executeScientificDiagnosisPipeline(params: {
     },
     imageAnalysis,
     realPrescriptionDetails,
+    botanicalIdentification: effectiveBotanical,
     plantnetIdentification: effectivePlantNet,
     plantVillageMatch: pvBenchmark,
     openAgroBenchmarking,

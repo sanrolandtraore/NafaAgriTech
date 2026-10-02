@@ -1,6 +1,6 @@
-import { describe, it, expect, beforeEach } from "vitest";
 import {
   identifyPlantWithPlantNet,
+  identifyPlantWithNafaEngine,
   getStoredPlantNetApiKey,
   savePlantNetApiKey,
   hasConfiguredPlantNetApiKey,
@@ -274,6 +274,42 @@ describe("Intégration Pl@ntNet API (Filtre 1) & PlantVillage Benchmark (Filtre 
       expect(diagnosisResult.weedManagementPlan).toBeDefined();
       expect(diagnosisResult.weedManagementPlan?.weedName).toContain("Striga");
       expect(diagnosisResult.step4Validation.primaryDiagnosis?.score).toBeGreaterThanOrEqual(90);
+    });
+
+    it("fonctionne de manière 100% autonome avec le moteur NAFA Vision propriétaire sans appel externe", async () => {
+      const nafaRes = await identifyPlantWithNafaEngine({
+        hints: "Culture de maïs avec feuilles allongées",
+      });
+
+      expect(nafaRes).toBeDefined();
+      expect(nafaRes.engineSource).toBe("nafa_proprietary_engine");
+      expect(nafaRes.bestMatch?.scientificName).toContain("Zea mays");
+      expect(nafaRes.confidence).toBeGreaterThanOrEqual(0.9);
+
+      const step1 = identifyPlant({
+        botanicalResult: nafaRes,
+      });
+
+      expect(step1.canProceed).toBe(true);
+      expect(step1.identifiedSpecies?.id).toBe("mais");
+      expect(step1.botanicalIdentification).toBeDefined();
+
+      const pipelineOutput = executeScientificDiagnosisPipeline({
+        identification: step1,
+        context: {
+          region: "Hauts-Bassins",
+          season: "hivernage",
+          growthStage: "vegetatif_tallage",
+          soilType: "sablonneux_dior",
+          symptoms: "stries foliaires et perforations",
+          affectedOrgans: ["feuilles"],
+        },
+        botanicalIdentification: nafaRes,
+      });
+
+      expect(pipelineOutput.step4Validation.isConfirmed).toBe(true);
+      expect(pipelineOutput.botanicalIdentification).toBeDefined();
+      expect(pipelineOutput.botanicalIdentification?.engineSource).toBe("nafa_proprietary_engine");
     });
   });
 });
