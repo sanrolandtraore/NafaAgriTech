@@ -79,7 +79,7 @@ describe("Intégration Pl@ntNet API (Filtre 1) & PlantVillage Benchmark (Filtre 
       };
 
       const result = identifyPlant({
-        plantnetResult: pNetRes,
+        plantnetResult: pNetRes as any,
       });
 
       expect(result.canProceed).toBe(true);
@@ -107,7 +107,7 @@ describe("Intégration Pl@ntNet API (Filtre 1) & PlantVillage Benchmark (Filtre 
       };
 
       const result = identifyPlant({
-        plantnetResult: pNetWeed,
+        plantnetResult: pNetWeed as any,
       });
 
       expect(result.canProceed).toBe(true);
@@ -141,7 +141,7 @@ describe("Intégration Pl@ntNet API (Filtre 1) & PlantVillage Benchmark (Filtre 
         symptoms: "Taches nécrotiques brunâtres foliaires avec feutrage blanc humide mildiou Phytophthora",
         imageAnalysis: {
           hasImage: true,
-          imageResolution: { width: 800, height: 600 },
+          imageDimensions: { width: 800, height: 600 },
           identifiedOrgan: "feuilles",
           measuredMetrics: {
             healthyTissuePercent: 70,
@@ -184,7 +184,7 @@ describe("Intégration Pl@ntNet API (Filtre 1) & PlantVillage Benchmark (Filtre 
       };
 
       const step1 = identifyPlant({
-        plantnetResult: pNetRes,
+        plantnetResult: pNetRes as any,
       });
 
       const context: AgronomicContext = {
@@ -201,7 +201,7 @@ describe("Intégration Pl@ntNet API (Filtre 1) & PlantVillage Benchmark (Filtre 
         context,
         imageAnalysis: {
           hasImage: true,
-          imageResolution: { width: 800, height: 600 },
+          imageDimensions: { width: 800, height: 600 },
           identifiedOrgan: "feuilles",
           measuredMetrics: {
             healthyTissuePercent: 72,
@@ -215,8 +215,8 @@ describe("Intégration Pl@ntNet API (Filtre 1) & PlantVillage Benchmark (Filtre 
           severityAssessment: "moyen",
           visualDiagnosisRationale: "Symptomatologie fongique typique de Phytophthora",
           colorDistribution: { greenRatio: 0.72, brownNecrosisRatio: 0.16, yellowChlorosisRatio: 0.06, whiteMoldRatio: 0.1, pustuleOrangeRatio: 0 },
-        },
-        plantnetIdentification: pNetRes,
+        } as any,
+        plantnetIdentification: pNetRes as any,
       });
 
       expect(diagnosisResult.step4Validation.isConfirmed).toBe(true);
@@ -252,7 +252,7 @@ describe("Intégration Pl@ntNet API (Filtre 1) & PlantVillage Benchmark (Filtre 
       };
 
       const step1 = identifyPlant({
-        plantnetResult: pNetStriga,
+        plantnetResult: pNetStriga as any,
       });
 
       const context: AgronomicContext = {
@@ -267,7 +267,7 @@ describe("Intégration Pl@ntNet API (Filtre 1) & PlantVillage Benchmark (Filtre 
       const diagnosisResult = executeScientificDiagnosisPipeline({
         identification: step1,
         context,
-        plantnetIdentification: pNetStriga,
+        plantnetIdentification: pNetStriga as any,
       });
 
       expect(diagnosisResult.step4Validation.isConfirmed).toBe(true);

@@ -78,7 +78,7 @@ export async function getDb(): Promise<IDBPDatabase<OfflineDBSchema>> {
         syncStore.createIndex('by-timestamp', 'timestamp');
         syncStore.createIndex('by-user', 'userId');
       } else if (oldVersion < 2) {
-        const store = transaction.objectStore('syncQueue') as IDBObjectStore;
+        const store = transaction.objectStore('syncQueue') as unknown as IDBObjectStore;
         if (!store.indexNames.contains('by-user')) store.createIndex('by-user', 'userId');
       }
     },

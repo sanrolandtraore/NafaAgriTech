@@ -1,4 +1,4 @@
-﻿/**
+/**
  * NAFA GENIUS IA - Moteur de Traitement Multilingue du Langage Naturel (NLU)
  * et Dispatcher d'Actions Agronomiques Directes.
  * 
@@ -585,7 +585,7 @@ export async function executeGeniusAction(action: ParsedGeniusAction): Promise<A
 
       // Si en ligne et utilisateur connecté, insérer directement dans client_visits
       if (navigator.onLine && user) {
-        const { data, error } = await supabase.from("client_visits").insert(visitPayload).select().single();
+        const { data, error }: any = await supabase.from("client_visits" as any).insert(visitPayload).select().single();
         if (!error && data) {
           return {
             success: true,

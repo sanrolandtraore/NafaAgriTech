@@ -1,6 +1,11 @@
+
+// Les tables metier ne figurent pas dans les types Supabase generes (src/integrations/supabase/types.ts) :
+// on passe par une vue non typee du client pour ces requetes.
+const db = supabase as unknown as SupabaseClient;
 ﻿import { useState } from "react";
 import PremiumGate from "@/components/PremiumGate";
 import { supabase } from "@/integrations/supabase/client";
+import type { SupabaseClient } from "@supabase/supabase-js";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -23,13 +28,13 @@ const exportOptions: { value: ExportType; label: string }[] = [
 const fetchData = async (type: ExportType) => {
   switch (type) {
     case "clients":
-      return supabase.from("expert_clients").select("name, phone, village, region, crops, total_area_ha, notes, created_at").order("name");
+      return db.from("expert_clients").select("name, phone, village, region, crops, total_area_ha, notes, created_at").order("name");
     case "visits":
-      return supabase.from("client_visits").select("visit_date, parcel_name, observations, recommendations, next_visit_date, expert_clients(name)").order("visit_date", { ascending: false });
+      return db.from("client_visits").select("visit_date, parcel_name, observations, recommendations, next_visit_date, expert_clients(name)").order("visit_date", { ascending: false });
     case "diagnoses":
-      return supabase.from("crop_diagnoses").select("crop_name, symptoms, disease_name, confidence, treatment, created_at").order("created_at", { ascending: false });
+      return db.from("crop_diagnoses").select("crop_name, symptoms, disease_name, confidence, treatment, created_at").order("created_at", { ascending: false });
     case "prescriptions":
-      return supabase.from("expert_prescriptions").select("prescription_number, issue_date, client_name, crop_name, diagnosis, products, dosage, created_at").order("issue_date", { ascending: false });
+      return db.from("expert_prescriptions").select("prescription_number, issue_date, client_name, crop_name, diagnosis, products, dosage, created_at").order("issue_date", { ascending: false });
   }
 };
 
@@ -141,10 +146,10 @@ const ExpertExportPage = () => {
                 setLoading(true);
                 try {
                   const [clientsRes, visitsRes, diagnosesRes, prescRes] = await Promise.all([
-                    supabase.from("expert_clients").select("name, phone, village, region, total_area_ha"),
-                    supabase.from("client_visits").select("visit_date, parcel_name, recommendations, expert_clients(name)").order("visit_date", { ascending: false }).limit(20),
-                    supabase.from("crop_diagnoses").select("crop_name, disease_name, confidence, created_at").order("created_at", { ascending: false }).limit(20),
-                    supabase.from("expert_prescriptions").select("prescription_number, client_name, crop_name, diagnosis, issue_date").order("issue_date", { ascending: false }).limit(20),
+                    db.from("expert_clients").select("name, phone, village, region, total_area_ha"),
+                    db.from("client_visits").select("visit_date, parcel_name, recommendations, expert_clients(name)").order("visit_date", { ascending: false }).limit(20),
+                    db.from("crop_diagnoses").select("crop_name, disease_name, confidence, created_at").order("created_at", { ascending: false }).limit(20),
+                    db.from("expert_prescriptions").select("prescription_number, client_name, crop_name, diagnosis, issue_date").order("issue_date", { ascending: false }).limit(20),
                   ]);
 
                   const doc = new jsPDF();

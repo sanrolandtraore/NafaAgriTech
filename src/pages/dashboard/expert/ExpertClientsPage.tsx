@@ -8,8 +8,13 @@ import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Users, Plus, Phone, Calendar, AlertTriangle, Loader2, FileText } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import type { SupabaseClient } from "@supabase/supabase-js";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "@/hooks/use-toast";
+
+// Les tables metier ne figurent pas dans les types Supabase generes (src/integrations/supabase/types.ts) :
+// on passe par une vue non typee du client pour ces requetes.
+const db = supabase as unknown as SupabaseClient;
 
 interface Client {
   id: string;
@@ -51,8 +56,8 @@ export default function ExpertClientsPage() {
     if (!user) return;
     setLoading(true);
     const [c, v] = await Promise.all([
-      supabase.from("expert_clients").select("*").eq("expert_id", user.id).order("client_full_name"),
-      supabase.from("client_visits").select("*").eq("expert_id", user.id).order("visit_date", { ascending: false }),
+      db.from("expert_clients").select("*").eq("expert_id", user.id).order("client_full_name"),
+      db.from("client_visits").select("*").eq("expert_id", user.id).order("visit_date", { ascending: false }),
     ]);
     setClients((c.data ?? []) as Client[]);
     setVisits((v.data ?? []) as Visit[]);
@@ -65,7 +70,7 @@ export default function ExpertClientsPage() {
     if (!user || !cName.trim()) return;
     // generate placeholder client_user_id since it's a free-form contact
     const clientUserId = crypto.randomUUID();
-    const { error } = await supabase.from("expert_clients").insert({
+    const { error } = await db.from("expert_clients").insert({
       expert_id: user.id,
       client_user_id: clientUserId,
       client_full_name: cName,
@@ -79,7 +84,7 @@ export default function ExpertClientsPage() {
 
   const addVisit = async () => {
     if (!user || !openClient) return;
-    const { error } = await supabase.from("client_visits").insert({
+    const { error } = await db.from("client_visits").insert({
       expert_id: user.id,
       client_user_id: openClient.client_user_id,
       visit_date: vDate,

@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
+import type { SupabaseClient } from "@supabase/supabase-js";
 import { useAuth } from "@/contexts/AuthContext";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -28,6 +29,10 @@ import {
   applyOptimisticInsert,
   applyOptimisticDelete,
 } from "@/lib/offlineDb";
+
+// Les tables metier ne figurent pas dans les types Supabase generes (src/integrations/supabase/types.ts) :
+// on passe par une vue non typee du client pour ces requetes.
+const db = supabase as unknown as SupabaseClient;
 
 type ScoutingSession = {
   id: string;
@@ -123,7 +128,7 @@ export default function ScoutingPage() {
 
     if (user && navigator.onLine) {
       try {
-        const { data, error } = await supabase
+        const { data, error } = await db
           .from("scouting_sessions")
           .select("*")
           .eq("user_id", user.id)
@@ -215,7 +220,7 @@ export default function ScoutingPage() {
 
     if (navigator.onLine) {
       try {
-        const { data, error } = await supabase.from("scouting_sessions").insert(payload as any).select();
+        const { data, error } = await db.from("scouting_sessions").insert(payload as any).select();
         if (error) throw error;
         toast.success("Rapport de scouting enregistré et synchronisé !");
         setShowForm(false);
@@ -276,7 +281,7 @@ export default function ScoutingPage() {
       return;
     }
 
-    const { error } = await supabase.from("scouting_sessions").delete().eq("id", id);
+    const { error } = await db.from("scouting_sessions").delete().eq("id", id);
     if (error) toast.error("Erreur suppression");
     else { toast.success("Session supprimée"); fetchSessions(); }
   };

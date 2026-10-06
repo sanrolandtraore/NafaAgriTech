@@ -1,10 +1,15 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import type { SupabaseClient } from "@supabase/supabase-js";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
 import { Calculator, TrendingUp, Leaf, DollarSign, Package } from "lucide-react";
+
+// Les tables metier ne figurent pas dans les types Supabase generes (src/integrations/supabase/types.ts) :
+// on passe par une vue non typee du client pour ces requetes.
+const db = supabase as unknown as SupabaseClient;
 
 const InvestmentPlanPage = () => {
   const [cycles, setCycles] = useState<any[]>([]);
@@ -16,7 +21,7 @@ const InvestmentPlanPage = () => {
   const [calculating, setCalculating] = useState(false);
 
   useEffect(() => {
-    supabase
+    db
       .from("crop_cycles")
       .select("id, season, status, parcels(name), crop_references(name)")
       .order("created_at", { ascending: false })
@@ -28,13 +33,13 @@ const InvestmentPlanPage = () => {
     setLoading(true);
 
     const [cycleRes, planRes, inputsRes] = await Promise.all([
-      supabase
+      db
         .from("crop_cycles")
         .select("*, parcels(name, area_ha, calculated_area_ha), crop_references(name, plants_per_ha, avg_yield_per_ha, avg_price_per_kg)")
         .eq("id", cycleId)
         .single(),
-      supabase.from("investment_plans").select("*").eq("crop_cycle_id", cycleId).maybeSingle(),
-      supabase.from("crop_cycle_inputs").select("*").eq("crop_cycle_id", cycleId).order("input_name"),
+      db.from("investment_plans").select("*").eq("crop_cycle_id", cycleId).maybeSingle(),
+      db.from("crop_cycle_inputs").select("*").eq("crop_cycle_id", cycleId).order("input_name"),
     ]);
 
     setCycle(cycleRes.data);

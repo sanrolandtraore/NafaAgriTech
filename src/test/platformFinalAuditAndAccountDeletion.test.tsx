@@ -101,6 +101,7 @@ describe("Audit Final — Isolation Stricte des Modules & Cloisonnement", () => 
 describe("Protection des Données & Confidentialité sur les Pages Vitrine", () => {
   it("PartnerVerifiedBadge n'expose JAMAIS le numéro brut de pièce d'identité (CNIB/Passeport)", () => {
     const mockKyc: PartnerKycDossier = {
+      partnerId: "partner-test-1",
       status: "verifie",
       type: "personne_physique",
       certificationId: "NAFA-CERT-2026-BF-9999",
@@ -110,14 +111,14 @@ describe("Protection des Données & Confidentialité sur les Pages Vitrine", () 
         docNumber: "B12894750CONFIDENTIEL",
         fullName: "Dr. Oumar Traoré",
         profession: "Médecin Vétérinaire",
-      },
+      } as any,
       moraleData: {
         companyName: "",
         legalForm: "SARL",
         rccmNumber: "",
         ifuNumber: "",
         managerFullName: "",
-      },
+      } as any,
     };
 
     const { container } = render(

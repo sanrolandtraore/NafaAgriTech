@@ -13,7 +13,12 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
+import type { SupabaseClient } from "@supabase/supabase-js";
 import { BURKINA_ALL_CROPS_TECHNICAL_SHEETS, CropTechnicalSheetData } from "@/lib/cropLibraryData";
+
+// Les tables metier ne figurent pas dans les types Supabase generes (src/integrations/supabase/types.ts) :
+// on passe par une vue non typee du client pour ces requetes.
+const db = supabase as unknown as SupabaseClient;
 
 const ITEMS_PER_PAGE = 24;
 
@@ -33,7 +38,7 @@ export default function CropLibraryPage() {
   useEffect(() => {
     // Tentative de récupération distante pour mise à jour éventuelle,
     // en préservant systématiquement les 235 cultures locales complètes.
-    supabase.from("crop_technical_sheets").select("*").order("name_fr").then(({ data }) => {
+    Promise.resolve(db.from("crop_technical_sheets").select("*").order("name_fr")).then(({ data }) => {
       if (data && data.length >= BURKINA_ALL_CROPS_TECHNICAL_SHEETS.length) {
         setSheets(data as CropTechnicalSheetData[]);
       } else {

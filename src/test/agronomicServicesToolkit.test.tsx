@@ -30,7 +30,9 @@ const mockAuth = (role = "agronome", userId = "user-agronome-1") => {
       phone: "+226 70 20 30 40",
       city: "Ouagadougou",
     } as any,
-    role: role as any,
+    roles: [role],
+    primaryRole: role,
+    partnerType: role as any,
     loading: false,
     session: {} as any,
     isExpert: true,
@@ -38,7 +40,7 @@ const mockAuth = (role = "agronome", userId = "user-agronome-1") => {
     isPartner: true,
     isProducer: false,
     signOut: vi.fn(),
-  });
+  } as any);
 };
 
 describe("Suite Professionnelle « NAFA FIELD DESIGNER »", () => {

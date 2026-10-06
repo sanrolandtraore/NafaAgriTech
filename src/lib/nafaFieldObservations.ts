@@ -269,22 +269,22 @@ export const nafaFieldObservationsStorage = {
 
     // Réplication asynchrone non-bloquante vers Supabase si table disponible
     try {
-      supabase
-        .from("nafa_botanical_observations")
-        .insert({
-          crop_or_weed_id: newObs.speciesId,
-          scientific_name: newObs.scientificName,
-          common_name: newObs.commonName,
-          organ: newObs.organ,
-          symptoms_observed: newObs.symptomsObserved,
-          confirmed_diagnosis: newObs.confirmedDiagnosis,
-          expert_name: newObs.expertName,
-          expert_certification: newObs.expertCertification,
-          validated_at: newObs.validatedAt,
-          gps_data: newObs.gps,
-        } as any)
-        .then(() => {})
-        .catch(() => {});
+      Promise.resolve(
+        supabase
+          .from("nafa_botanical_observations" as any)
+          .insert({
+            crop_or_weed_id: newObs.speciesId,
+            scientific_name: newObs.scientificName,
+            common_name: newObs.commonName,
+            organ: newObs.organ,
+            symptoms_observed: newObs.symptomsObserved,
+            confirmed_diagnosis: newObs.confirmedDiagnosis,
+            expert_name: newObs.expertName,
+            expert_certification: newObs.expertCertification,
+            validated_at: newObs.validatedAt,
+            gps_data: newObs.gps,
+          } as any)
+      ).catch(() => {});
     } catch {}
 
     return newObs;

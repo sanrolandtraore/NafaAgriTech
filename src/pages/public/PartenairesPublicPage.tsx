@@ -178,7 +178,7 @@ export default function PartenairesPublicPage() {
                     <div className="flex items-start justify-between gap-3">
                       <div className="h-12 w-12 rounded-2xl bg-muted border border-border/60 p-1 flex items-center justify-center shrink-0">
                         <img
-                          src={partner.logo_url || logo}
+                          src={(partner as PartnerEntry & { logo_url?: string | null }).logo_url || logo}
                           alt={partner.name}
                           className="h-full w-full object-contain rounded-xl"
                           onError={(e) => {

@@ -59,6 +59,7 @@ export interface PartnerKycDossier {
   submittedAt?: string;
   reviewedAt?: string;
   verifiedAt?: string;
+  updatedAt?: string;
   rejectionReason?: string;
   certificationId?: string; // Ex: NAFA-CERT-2026-BF-0842
   physiqueData: PersonnePhysiqueData;

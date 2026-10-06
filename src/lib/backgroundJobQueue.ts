@@ -313,7 +313,7 @@ class BackgroundJobQueueEngine {
     // 1. Diagnostic IA asynchrone
     this.registerHandler("ai_crop_diagnosis", async (job, updateProgress) => {
       updateProgress(20);
-      const { cropKey, symptoms, imageBase64 } = job.payload;
+      const { cropKey, symptoms } = job.payload as { cropKey?: string; symptoms?: string; imageBase64?: string };
       
       // Simulation ou délégation Edge Function avec timeout
       updateProgress(50);
@@ -326,33 +326,29 @@ class BackgroundJobQueueEngine {
         // Exécution du RAG scientifique
         const diagnosis = executeScientificDiagnosisPipeline({
           identification: {
-            status: "success",
             identifiedSpecies: {
+              id: cropKey || "tomate",
+              commonName: cropKey || "Tomate",
               scientificName: "Solanum lycopersicum",
-              scientificNameWithoutAuthor: "Solanum lycopersicum",
-              commonNames: [cropKey || "Tomate"],
-              genus: "Solanum",
               family: "Solanaceae",
-              score: 0.95,
+              category: "maraichage",
+              isWeed: false,
+              burkinaVarieties: ["Mongal F1"],
+              growthStages: ["fructification_grossissement"],
+              description: "Culture maraîchère sahélienne",
             },
-            bestCommonName: cropKey || "Tomate",
-            scientificName: "Solanum lycopersicum",
-            family: "Solanaceae",
-            confidenceScore: 95,
-            confidence: 0.95,
-            bestMatch: null,
             isWeed: false,
-            rawMatches: [],
-            apiSource: "plantnet_live",
-            message: "Espèce certifiée",
+            confidence: 0.95,
+            confidenceLevel: "Élevé",
             canProceed: true,
           },
           context: {
-            cropKey: cropKey || "tomate",
-            growthStage: "fructification",
             region: "Centre-Ouest (Koudougou)",
-            irrigationType: "Goutte-à-goutte",
-            symptomsDescription: symptoms || "Taches foliaires",
+            season: "hivernage",
+            growthStage: "fructification_grossissement",
+            soilType: "limoneux_alluvial",
+            symptoms: symptoms || "Taches foliaires",
+            affectedOrgans: ["feuilles"],
           },
         });
         clearTimeout(timeoutId);
@@ -369,7 +365,7 @@ class BackgroundJobQueueEngine {
       updateProgress(30);
       const { generateTechnicalDossierPdf } = await import("./nafaGeniusPdf");
       updateProgress(70);
-      const pdf = await generateTechnicalDossierPdf(job.payload);
+      await generateTechnicalDossierPdf(job.payload as any);
       updateProgress(100);
       return { success: true, generatedAt: new Date().toISOString() };
     });

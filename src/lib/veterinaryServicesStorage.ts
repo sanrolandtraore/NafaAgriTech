@@ -687,7 +687,7 @@ class VeterinaryServicesStorage {
     // 2. Sauvegarde Supabase si connecté
     if (isValidUuid(booking.client_id)) {
       try {
-        await supabase.from("service_requests").insert({
+        await supabase.from("service_requests" as any).insert({
           user_id: booking.client_id,
           service_type: "veterinaire_intervention",
           description: `Réservation [${booking.service_name}] pour ${booking.partner_name} - Animaux: ${booking.animal_type || "N/A"} (${booking.animal_count || 1}). Notes: ${booking.notes || ""}`,

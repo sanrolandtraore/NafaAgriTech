@@ -57,8 +57,8 @@ export function useDefaultLivestockFarm() {
     let cancelled = false;
     (async () => {
       try {
-        const { data: existing, error: selectErr } = await supabase
-          .from("farms")
+        const { data: existing, error: selectErr }: any = await supabase
+          .from("farms" as any)
           .select("id")
           .eq("user_id", user.id)
           .order("created_at", { ascending: true })
@@ -78,8 +78,8 @@ export function useDefaultLivestockFarm() {
         }
 
         // Try creating remote farm silently
-        const { data: created, error: insertErr } = await supabase
-          .from("farms")
+        const { data: created, error: insertErr }: any = await supabase
+          .from("farms" as any)
           .insert({ user_id: user.id, name: "Mon élevage" })
           .select("id")
           .single();

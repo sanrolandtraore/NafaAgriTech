@@ -1,5 +1,6 @@
 import { useEffect, useState, useMemo } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import type { SupabaseClient } from "@supabase/supabase-js";
 import { useOfflineData } from "@/hooks/useOfflineData";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -47,6 +48,10 @@ import MechanizationBookingModal from "@/components/mechanization/MechanizationB
 import MechanizationUssdSimulator from "@/components/mechanization/MechanizationUssdSimulator";
 import { listMechanizationMachines, listMechanizationServices, listMyMechanizationJobs } from "@/components/mechanization/repository";
 import { MechanizationJob, MechanizationMachine, MechanizationService } from "@/components/mechanization/types";
+
+// Les tables metier ne figurent pas dans les types Supabase generes (src/integrations/supabase/types.ts) :
+// on passe par une vue non typee du client pour ces requetes.
+const db = supabase as unknown as SupabaseClient;
 
 const statusColors: Record<string, string> = {
   disponible: "bg-emerald-500/10 text-emerald-600 border-emerald-500/20",
@@ -116,8 +121,8 @@ export const EquipmentPage = () => {
 
   useEffect(() => {
     Promise.all([
-      supabase.from("farms").select("id,name"),
-      supabase.from("parcels").select("id,name,area_ha"),
+      db.from("farms").select("id,name"),
+      db.from("parcels").select("id,name,area_ha"),
       listMechanizationMachines(),
       listMechanizationServices(),
       listMyMechanizationJobs(),
@@ -184,9 +189,9 @@ export const EquipmentPage = () => {
       areaHa: Number(data.area_ha),
       totalCost: Number(data.total_cost),
       depositAmount: Number(data.deposit_amount),
-      paymentMethod: data.payment_method,
-      escrowStatus: data.escrow_status,
-      jobStatus: data.job_status,
+      paymentMethod: data.payment_method as MechanizationJob["paymentMethod"],
+      escrowStatus: data.escrow_status as MechanizationJob["escrowStatus"],
+      jobStatus: data.job_status as MechanizationJob["jobStatus"],
       operatorName: data.operator_name ?? "En attente d'affectation",
       operatorPhone: data.operator_phone ?? "",
       fieldAgentName: data.field_agent_name ?? "Non affecté",

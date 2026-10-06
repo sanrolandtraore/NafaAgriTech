@@ -188,7 +188,7 @@ const Index = () => {
     <div className="min-h-screen bg-white dark:bg-[#111827] text-foreground font-sans pb-24 md:pb-28 selection:bg-[#F97316]/20">
       <SEOHead
         {...SEO_PAGES.home}
-        structuredData={[buildOrganizationSchema(), buildWebSiteSchema()]}
+        schemaJsonLd={[buildOrganizationSchema(), buildWebSiteSchema()]}
       />
       
       {/* ══════════════════════════════════════════════════════

@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import type { SupabaseClient } from "@supabase/supabase-js";
 import { useOfflineData } from "@/hooks/useOfflineData";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -12,6 +13,10 @@ import { toast } from "sonner";
 import { Plus, Trash2, CalendarDays, CheckCircle2, AlertCircle, WifiOff } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import BackNavigationButton from "@/components/BackNavigationButton";
+
+// Les tables metier ne figurent pas dans les types Supabase generes (src/integrations/supabase/types.ts) :
+// on passe par une vue non typee du client pour ces requetes.
+const db = supabase as unknown as SupabaseClient;
 
 const CalendarPage = () => {
   const { data: events, loading, isOffline, insertRow, updateRow, deleteRow } = useOfflineData({
@@ -26,10 +31,12 @@ const CalendarPage = () => {
   const [form, setForm] = useState({ crop_cycle_id: "", title: "", event_type: "tache", planned_date: "", notes: "" });
 
   useEffect(() => {
-    supabase
-      .from("crop_cycles")
-      .select("id, season, parcels(name), crop_references(name)")
-      .order("created_at", { ascending: false })
+    Promise.resolve(
+      db
+        .from("crop_cycles")
+        .select("id, season, parcels(name), crop_references(name)")
+        .order("created_at", { ascending: false })
+    )
       .then(({ data }) => setCycles(data || []))
       .catch((err) => console.warn("Erreur chargement cycles:", err));
   }, []);

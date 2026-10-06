@@ -174,7 +174,7 @@ export function PrescriptionGenerator({ initialData, onClose }: PrescriptionGene
       if (user) {
         setSaving(true);
         try {
-          await supabase.from("expert_prescriptions").insert({
+          await supabase.from("expert_prescriptions" as any).insert({
             expert_id: user.id,
             client_user_id: user.id,
             title: `Ordonnance ${clientName || "Client"} - ${today}`,

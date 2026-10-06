@@ -1,7 +1,12 @@
+
+// Les tables metier ne figurent pas dans les types Supabase generes (src/integrations/supabase/types.ts) :
+// on passe par une vue non typee du client pour ces requetes.
+const db = supabase as unknown as SupabaseClient;
 ﻿import { useEffect, useState } from "react";
 import { Card } from "@/components/ui/card";
 import { BarChart3, Users, Microscope, FileText, Calendar, Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import type { SupabaseClient } from "@supabase/supabase-js";
 import { useAuth } from "@/contexts/AuthContext";
 
 export default function ExpertAnalyticsPage() {
@@ -13,11 +18,11 @@ export default function ExpertAnalyticsPage() {
     if (!user) return;
     const startMonth = new Date(); startMonth.setDate(1); startMonth.setHours(0, 0, 0, 0);
     Promise.all([
-      supabase.from("expert_clients").select("id", { count: "exact", head: true }).eq("expert_id", user.id),
-      supabase.from("client_visits").select("id", { count: "exact", head: true }).eq("expert_id", user.id).gte("visit_date", startMonth.toISOString().slice(0, 10)),
-      supabase.from("crop_diagnoses").select("id", { count: "exact", head: true }).eq("expert_id", user.id),
-      supabase.from("expert_prescriptions").select("id", { count: "exact", head: true }).eq("expert_id", user.id),
-      supabase.from("client_visits").select("id", { count: "exact", head: true }).eq("expert_id", user.id).gte("next_visit_date", new Date().toISOString().slice(0, 10)),
+      db.from("expert_clients").select("id", { count: "exact", head: true }).eq("expert_id", user.id),
+      db.from("client_visits").select("id", { count: "exact", head: true }).eq("expert_id", user.id).gte("visit_date", startMonth.toISOString().slice(0, 10)),
+      db.from("crop_diagnoses").select("id", { count: "exact", head: true }).eq("expert_id", user.id),
+      db.from("expert_prescriptions").select("id", { count: "exact", head: true }).eq("expert_id", user.id),
+      db.from("client_visits").select("id", { count: "exact", head: true }).eq("expert_id", user.id).gte("next_visit_date", new Date().toISOString().slice(0, 10)),
     ]).then(([a, b, c, d, e]) => {
       setStats({
         clients: a.count ?? 0,

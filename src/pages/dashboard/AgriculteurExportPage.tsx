@@ -1,6 +1,7 @@
 import { useState } from "react";
 import PremiumGate from "@/components/PremiumGate";
 import { supabase } from "@/integrations/supabase/client";
+import type { SupabaseClient } from "@supabase/supabase-js";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -12,6 +13,10 @@ import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import { isMissingTableError } from "@/hooks/useOfflineData";
 import { getCachedData } from "@/lib/offlineDb";
+
+// Les tables metier ne figurent pas dans les types Supabase generes (src/integrations/supabase/types.ts) :
+// on passe par une vue non typee du client pour ces requetes.
+const db = supabase as unknown as SupabaseClient;
 
 type ExportType = "cycles" | "costs" | "activities" | "harvests" | "investment" | "workers" | "equipment";
 
@@ -27,15 +32,15 @@ const exportOptions: { value: ExportType; label: string }[] = [
 
 const fetchData = async (type: ExportType) => {
   switch (type) {
-    case "cycles": return supabase.from("crop_cycles").select("season, status, start_date, end_date, expected_yield_kg, expected_revenue, actual_yield_kg, actual_revenue, plant_count, parcels(name, area_ha), crop_references(name)").order("created_at", { ascending: false });
-    case "costs": return supabase.from("cost_entries").select("date, category, description, amount, crop_cycles(season, parcels(name))").order("date", { ascending: false });
-    case "activities": return supabase.from("activity_logs").select("date, activity_type, description, quantity, unit, cost, crop_cycles(season, parcels(name))").order("date", { ascending: false });
-    case "harvests": return supabase.from("harvests").select("date, lot_number, quantity_kg, quality_grade, unit_price_kg, buyer, sold, crop_cycles(season, crop_references(name))").order("date", { ascending: false });
-    case "investment": return supabase.from("investment_plans").select("total_input_cost, total_labor_cost, total_equipment_cost, total_transport_cost, total_investment, expected_revenue, expected_roi_percent, break_even_yield_kg, crop_cycles(season, parcels(name), crop_references(name))").order("created_at", { ascending: false });
-    case "workers": return supabase.from("workers").select("full_name, role, phone, daily_rate, status, farms(name)").order("full_name");
+    case "cycles": return db.from("crop_cycles").select("season, status, start_date, end_date, expected_yield_kg, expected_revenue, actual_yield_kg, actual_revenue, plant_count, parcels(name, area_ha), crop_references(name)").order("created_at", { ascending: false });
+    case "costs": return db.from("cost_entries").select("date, category, description, amount, crop_cycles(season, parcels(name))").order("date", { ascending: false });
+    case "activities": return db.from("activity_logs").select("date, activity_type, description, quantity, unit, cost, crop_cycles(season, parcels(name))").order("date", { ascending: false });
+    case "harvests": return db.from("harvests").select("date, lot_number, quantity_kg, quality_grade, unit_price_kg, buyer, sold, crop_cycles(season, crop_references(name))").order("date", { ascending: false });
+    case "investment": return db.from("investment_plans").select("total_input_cost, total_labor_cost, total_equipment_cost, total_transport_cost, total_investment, expected_revenue, expected_roi_percent, break_even_yield_kg, crop_cycles(season, parcels(name), crop_references(name))").order("created_at", { ascending: false });
+    case "workers": return db.from("workers").select("full_name, role, phone, daily_rate, status, farms(name)").order("full_name");
     case "equipment": {
       try {
-        const res = await supabase.from("equipment").select("name, type, status, purchase_date, purchase_cost, farms(name)").order("name");
+        const res = await db.from("equipment").select("name, type, status, purchase_date, purchase_cost, farms(name)").order("name");
         if (res.error && isMissingTableError(res.error)) {
           const cached = await getCachedData("equipment", "useOfflineData_equipment_*, farms(name)");
           return { data: (cached as any[]) || [], error: null };
@@ -143,10 +148,10 @@ const AgriculteurExportPage = () => {
               setLoading(true);
               try {
                 const [cyclesRes, plansRes, costsRes, harvestsRes] = await Promise.all([
-                  supabase.from("crop_cycles").select("season, status, start_date, expected_yield_kg, expected_revenue, plant_count, parcels(name, area_ha, farms(name)), crop_references(name)"),
-                  supabase.from("investment_plans").select("*, crop_cycles(season, parcels(name), crop_references(name))"),
-                  supabase.from("cost_entries").select("date, category, description, amount"),
-                  supabase.from("harvests").select("date, lot_number, quantity_kg, quality_grade, unit_price_kg, sold"),
+                  db.from("crop_cycles").select("season, status, start_date, expected_yield_kg, expected_revenue, plant_count, parcels(name, area_ha, farms(name)), crop_references(name)"),
+                  db.from("investment_plans").select("*, crop_cycles(season, parcels(name), crop_references(name))"),
+                  db.from("cost_entries").select("date, category, description, amount"),
+                  db.from("harvests").select("date, lot_number, quantity_kg, quality_grade, unit_price_kg, sold"),
                 ]);
                 const doc = new jsPDF();
                 doc.setFontSize(20); doc.text("DOSSIER DE FINANCEMENT", 14, 20);

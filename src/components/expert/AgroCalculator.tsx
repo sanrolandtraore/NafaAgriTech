@@ -67,11 +67,12 @@ export function AgroCalculator() {
   }, [selectedCrop]);
 
   useEffect(() => {
-    supabase
-      .from("expert_parcels")
-      .select("id, name, area_ha")
-      .order("created_at", { ascending: false })
-      .then(({ data }) => setParcels((data as SavedParcel[]) || []));
+    Promise.resolve(
+      supabase
+        .from("expert_parcels" as any)
+        .select("id, name, area_ha")
+        .order("created_at", { ascending: false })
+    ).then(({ data }) => setParcels((data as unknown as SavedParcel[]) || []));
   }, []);
 
   const handleApplyParcel = (id: string) => {
