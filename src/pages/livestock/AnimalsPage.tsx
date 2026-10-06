@@ -1,4 +1,5 @@
 import { useState, useMemo } from "react";
+import { Link } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -10,7 +11,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
-import { Plus, Trash2, Filter, WifiOff, Users, Edit3, Scale, ShieldAlert, Sparkles } from "lucide-react";
+import { Plus, Trash2, Filter, WifiOff, Users, Edit3, Scale, ShieldAlert, Sparkles, Camera } from "lucide-react";
 import { useOfflineData, isValidUuid } from "@/hooks/useOfflineData";
 import { useDefaultLivestockFarm } from "@/hooks/useDefaultLivestockFarm";
 import BackNavigationButton from "@/components/BackNavigationButton";
@@ -280,6 +281,12 @@ const AnimalsPage = () => {
               Mode hors-ligne
             </Badge>
           )}
+          <Link to="/dashboard/animal-counting">
+            <Button variant="outline" className="h-10 font-bold border-primary/40 text-primary hover:bg-primary/5 gap-1.5 shadow-xs">
+              <Camera className="h-4 w-4" />
+              Comptage IA
+            </Button>
+          </Link>
           <Dialog open={openCreate} onOpenChange={setOpenCreate}>
             <DialogTrigger asChild>
               <Button className="h-10 font-bold shadow-xs">
