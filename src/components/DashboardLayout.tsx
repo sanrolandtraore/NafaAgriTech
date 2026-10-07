@@ -57,7 +57,7 @@ const DashboardLayout = () => {
               <div className="h-9 w-9 sm:h-10 sm:w-10 rounded-xl overflow-hidden bg-white shadow-2xs border border-emerald-500/20 p-0.5 flex items-center justify-center shrink-0">
                 <img src={logo} alt="NAFA - AGRITECH" className="h-full w-full object-contain rounded-lg" />
               </div>
-              <span className="font-heading font-extrabold text-sm sm:text-base text-foreground/90">
+              <span className="font-heading font-extrabold text-sm sm:text-base text-foreground/90 hidden min-[400px]:inline truncate">
                 NAFA <span className="text-emerald-600 dark:text-emerald-400">- AGRITECH</span>
               </span>
             </div>

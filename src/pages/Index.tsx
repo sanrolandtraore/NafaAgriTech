@@ -194,7 +194,7 @@ const Index = () => {
       {/* ══════════════════════════════════════════════════════
           1. PREMIER ÉCRAN — HERO PREMIUM (Plein Écran, Max 10-15 mots)
       ══════════════════════════════════════════════════════ */}
-      <section className="relative h-screen min-h-[640px] w-full flex flex-col justify-between overflow-hidden">
+      <section className="relative min-h-[100dvh] sm:h-screen sm:min-h-[640px] w-full flex flex-col justify-between overflow-hidden">
         {/* Visuel Réel Plein Écran (Agronome sur le terrain avec tablette / drone) */}
         <div className="absolute inset-0 z-0 overflow-hidden">
           <img
@@ -444,32 +444,32 @@ const Index = () => {
             </div>
           </div>
 
-          <div className="flex flex-wrap items-center justify-center gap-2.5 shrink-0">
+          <div className="w-full md:w-auto flex flex-wrap items-center justify-center gap-2.5 shrink-0">
             <Button
               size="sm"
               onClick={() => navigate("/marketplace?cat=services_agricoles&role=producteurs")}
-              className="rounded-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs px-4 py-2.5 shadow-md transition-transform active:scale-95"
+              className="rounded-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs px-4 py-2.5 shadow-md transition-transform active:scale-95 w-full sm:w-auto"
             >
               Services Agricoles
             </Button>
             <Button
               size="sm"
               onClick={() => navigate("/marketplace?cat=services_veterinaires&role=producteurs")}
-              className="rounded-full bg-teal-600 hover:bg-teal-700 text-white font-bold text-xs px-4 py-2.5 shadow-md transition-transform active:scale-95"
+              className="rounded-full bg-teal-600 hover:bg-teal-700 text-white font-bold text-xs px-4 py-2.5 shadow-md transition-transform active:scale-95 w-full sm:w-auto"
             >
               Services Vétérinaires
             </Button>
             <Button
               size="sm"
               onClick={() => navigate("/marketplace?cat=machinisme&role=producteurs")}
-              className="rounded-full bg-amber-600 hover:bg-amber-700 text-white font-bold text-xs px-4 py-2.5 shadow-md transition-transform active:scale-95"
+              className="rounded-full bg-amber-600 hover:bg-amber-700 text-white font-bold text-xs px-4 py-2.5 shadow-md transition-transform active:scale-95 w-full sm:w-auto"
             >
               Machinisme
             </Button>
             <Button
               size="sm"
               onClick={() => navigate("/marketplace?role=producteurs")}
-              className="rounded-full bg-white text-[#111827] hover:bg-emerald-50 font-bold text-xs px-4 py-2.5 shadow-md flex items-center gap-1.5 transition-transform active:scale-95"
+              className="rounded-full bg-white text-[#111827] hover:bg-emerald-50 font-bold text-xs px-4 py-2.5 shadow-md flex items-center justify-center gap-1.5 transition-transform active:scale-95 w-full sm:w-auto"
             >
               <span>Ouvrir le Marché Vitrine</span>
               <ArrowRight className="h-3.5 w-3.5 text-emerald-600" />
