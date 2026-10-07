@@ -43,6 +43,7 @@ import { NafaAiCopilot } from "./NafaAiCopilot";
 import { NewFarmModal } from "./NewFarmModal";
 import { CropDiagnosisTool } from "@/components/expert/CropDiagnosisTool";
 import { Studio3DFarmModeler } from "./Studio3DFarmModeler";
+import { WcadiIrrigationStudio } from "./WcadiIrrigationStudio";
 
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -610,17 +611,44 @@ export const FieldDesignerStudio: React.FC = () => {
           <CropDesignerTool onSavePlan={handleSaveCropPlan} fields={fields} activeFarmId={activeFarmId} />
         </TabsContent>
 
-        {/* ── 4. CONCEPTEUR D'IRRIGATION ── */}
+        {/* ── 4. CONCEPTEUR D'IRRIGATION (STYLE RIVULIS WCADI) ── */}
         <TabsContent value="irrigation">
           <div className="space-y-4">
-            <div className="p-3 bg-muted/40 rounded-2xl border text-xs flex items-center justify-between">
-              <span className="font-bold">Modèle IRRIS & Conception Hydraulique :</span>
-              <Badge variant="outline" className="text-[11px] font-semibold">Normes CIRAD & FAO-56</Badge>
-            </div>
-            <IrrigationDesignerTool
-              onSaveProject={handleSaveIrrigation}
-              fields={fields}
-              activeFarmId={activeFarmId}
+            <WcadiIrrigationStudio
+              initialGpsPoints={fields[0]?.points || []}
+              onSaveProject={(p) => {
+                // Synchronisation avec l'état local
+                handleSaveIrrigation({
+                  id: p.id,
+                  farmId: activeFarmId,
+                  fieldId: fields[0]?.id,
+                  systemType: (p.hydraulicResults.systemType === "californien" ? "gravitaire" : p.hydraulicResults.systemType) as any,
+                  waterSource: (p.waterAndEnergy.waterSource === "puits_grand_diametre" ? "puits" : p.waterAndEnergy.waterSource) as any,
+                  dynamicWaterDepthM: p.waterAndEnergy.dynamicWaterDepthM,
+                  sourceFlowM3h: p.waterAndEnergy.sourceFlowM3h,
+                  pumpType: "solaire_fil_du_soleil",
+                  pumpPowerKw: p.hydraulicResults.pumpPowerKw,
+                  tankHeightM: p.waterAndEnergy.waterTowerHeightM,
+                  tankVolumeM3: Math.round(p.hydraulicResults.dailyVolumeM3 * 0.25),
+                  mainPipeLengthM: p.hydraulicResults.mainPipeLengthM,
+                  mainPipeDiameterMm: p.hydraulicResults.mainPipeDiameterMm,
+                  subPipeLengthM: p.hydraulicResults.subPipeLengthM,
+                  subPipeDiameterMm: p.hydraulicResults.subPipeDiameterMm,
+                  lateralLengthM: p.hydraulicResults.totalDripTapeLengthM,
+                  lateralSpacingM: p.cropParams.rowSpacingM,
+                  emitterSpacingM: p.cropParams.emitterSpacingM,
+                  emitterFlowLh: p.cropParams.emitterFlowLh,
+                  totalEmittersCount: p.hydraulicResults.totalEmittersCount,
+                  totalFlowRateM3h: p.hydraulicResults.sectorFlowM3h,
+                  numSectors: p.hydraulicResults.numSectors,
+                  dailyIrrigationHours: p.hydraulicResults.shiftDurationHours,
+                  isTechnicalEstimate: false,
+                  notes: `Dimensionnement WCADI : ${p.financialTotalFcfa.toLocaleString()} FCFA (Nomenclature vérifiée)`,
+                  syncStatus: "pending",
+                  createdAt: p.createdAt,
+                  updatedAt: p.createdAt,
+                });
+              }}
             />
           </div>
         </TabsContent>
