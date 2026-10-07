@@ -285,54 +285,6 @@ const Index = () => {
                 <span>Créer mon compte gratuitement</span>
               </Button>
             </div>
-
-            <div className="text-[11px] sm:text-xs text-white/70 font-medium max-w-xl mx-auto drop-shadow-sm flex items-center justify-center gap-1.5">
-              <span>Découvrez nos simulateurs et technologies en accès libre</span>
-            </div>
-
-            {/* Barre d'Outils Express & Indicateurs Visuels (Tool-First) */}
-            <div className="pt-2 flex flex-wrap items-center justify-center gap-2 max-w-2xl mx-auto">
-              <button
-                type="button"
-                onClick={() => navigate(user ? "/dashboard/field-designer" : "/explorer?tab=calculator")}
-                className="px-3 py-1.5 rounded-full bg-white/10 hover:bg-white/20 text-white text-xs font-bold border border-white/20 backdrop-blur-md flex items-center gap-1.5 transition-all active:scale-95"
-              >
-                <Compass className="h-3.5 w-3.5 text-emerald-400" />
-                <span>Studio 3D &amp; CAO</span>
-              </button>
-              <button
-                type="button"
-                onClick={() => navigate(user ? "/dashboard/genius" : "/explorer?tab=irrigation")}
-                className="px-3 py-1.5 rounded-full bg-white/10 hover:bg-white/20 text-white text-xs font-bold border border-white/20 backdrop-blur-md flex items-center gap-1.5 transition-all active:scale-95"
-              >
-                <Droplets className="h-3.5 w-3.5 text-sky-400" />
-                <span>Irrigation FAO-56</span>
-              </button>
-              <button
-                type="button"
-                onClick={() => navigate(user ? "/dashboard/expert-diagnosis" : "/explorer?tab=fiches")}
-                className="px-3 py-1.5 rounded-full bg-white/10 hover:bg-white/20 text-white text-xs font-bold border border-white/20 backdrop-blur-md flex items-center gap-1.5 transition-all active:scale-95"
-              >
-                <Cpu className="h-3.5 w-3.5 text-orange-400" />
-                <span>Diagnostic Végétal IA</span>
-              </button>
-              <button
-                type="button"
-                onClick={() => navigate(user ? "/dashboard/animal-counting" : "/marketplace?cat=produits_elevage")}
-                className="px-3 py-1.5 rounded-full bg-white/10 hover:bg-white/20 text-white text-xs font-bold border border-white/20 backdrop-blur-md flex items-center gap-1.5 transition-all active:scale-95"
-              >
-                <Beef className="h-3.5 w-3.5 text-amber-400" />
-                <span>Vision Élevage</span>
-              </button>
-              <button
-                type="button"
-                onClick={() => navigate("/marketplace?role=producteurs")}
-                className="px-3 py-1.5 rounded-full bg-white/10 hover:bg-white/20 text-white text-xs font-bold border border-white/20 backdrop-blur-md flex items-center gap-1.5 transition-all active:scale-95"
-              >
-                <Store className="h-3.5 w-3.5 text-emerald-300" />
-                <span>Marché Vitrine</span>
-              </button>
-            </div>
           </div>
         </div>
 
@@ -424,57 +376,6 @@ const Index = () => {
               </div>
             );
           })}
-        </div>
-
-        {/* ── Accès Direct Agriculteurs & Éleveurs au Marché Vitrine ── */}
-        <div className="rounded-[28px] bg-gradient-to-r from-emerald-950/90 via-[#111827] to-teal-950/90 border border-emerald-500/40 p-5 sm:p-6 flex flex-col md:flex-row items-center justify-between gap-5 shadow-xl">
-          <div className="space-y-1.5 text-center md:text-left">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/20 border border-emerald-500/40 text-emerald-400 text-xs font-bold">
-              <Store className="h-3.5 w-3.5" />
-              <span>Marché Vitrine Agriculteurs &amp; Éleveurs</span>
-            </div>
-            <h3 className="text-lg sm:text-xl font-heading font-extrabold text-white tracking-tight">
-              Accès direct au Marché Vitrine : intrants, machinisme, élevage &amp; finance
-            </h3>
-            <div className="flex flex-wrap items-center justify-center md:justify-start gap-1.5 pt-1">
-              <span className="px-2.5 py-0.5 rounded-full bg-white/10 text-emerald-300 text-[11px] font-semibold border border-white/10">Semences &amp; Engrais</span>
-              <span className="px-2.5 py-0.5 rounded-full bg-white/10 text-amber-300 text-[11px] font-semibold border border-white/10">Location Tracteurs</span>
-              <span className="px-2.5 py-0.5 rounded-full bg-white/10 text-teal-300 text-[11px] font-semibold border border-white/10">Santé Animale</span>
-              <span className="px-2.5 py-0.5 rounded-full bg-white/10 text-sky-300 text-[11px] font-semibold border border-white/10">Crédit &amp; Assurance</span>
-            </div>
-          </div>
-
-          <div className="w-full md:w-auto flex flex-wrap items-center justify-center gap-2.5 shrink-0">
-            <Button
-              size="sm"
-              onClick={() => navigate("/marketplace?cat=services_agricoles&role=producteurs")}
-              className="rounded-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs px-4 py-2.5 shadow-md transition-transform active:scale-95 w-full sm:w-auto"
-            >
-              Services Agricoles
-            </Button>
-            <Button
-              size="sm"
-              onClick={() => navigate("/marketplace?cat=services_veterinaires&role=producteurs")}
-              className="rounded-full bg-teal-600 hover:bg-teal-700 text-white font-bold text-xs px-4 py-2.5 shadow-md transition-transform active:scale-95 w-full sm:w-auto"
-            >
-              Services Vétérinaires
-            </Button>
-            <Button
-              size="sm"
-              onClick={() => navigate("/marketplace?cat=machinisme&role=producteurs")}
-              className="rounded-full bg-amber-600 hover:bg-amber-700 text-white font-bold text-xs px-4 py-2.5 shadow-md transition-transform active:scale-95 w-full sm:w-auto"
-            >
-              Machinisme
-            </Button>
-            <Button
-              size="sm"
-              onClick={() => navigate("/marketplace?role=producteurs")}
-              className="rounded-full bg-white text-[#111827] hover:bg-emerald-50 font-bold text-xs px-4 py-2.5 shadow-md flex items-center justify-center gap-1.5 transition-transform active:scale-95 w-full sm:w-auto"
-            >
-              <span>Ouvrir le Marché Vitrine</span>
-              <ArrowRight className="h-3.5 w-3.5 text-emerald-600" />
-            </Button>
-          </div>
         </div>
       </section>
 

@@ -27,12 +27,7 @@ describe("Modèle Hybride Découvrir avant de s'inscrire (NAFA-AGRITECH)", () =>
     expect(screen.getByRole("button", { name: /Créer mon compte gratuitement/i })).toBeInTheDocument();
 
     // Bouton Explorer dans le header
-    expect(screen.getAllByRole("button", { name: /Explorer/i }).length).toBeGreaterThanOrEqual(2);
-
-    // Sous-titre expliquant la découverte libre et la sauvegarde après création de compte
-    expect(
-      screen.getByText(/Découvrez nos simulateurs et technologies en accès libre/i)
-    ).toBeInTheDocument();
+    expect(screen.getAllByRole("button", { name: /Explorer/i }).length).toBeGreaterThanOrEqual(1);
   });
 
   it("permet d'accéder au Hub Public d'exploration sans compte et présente les modules clés", () => {

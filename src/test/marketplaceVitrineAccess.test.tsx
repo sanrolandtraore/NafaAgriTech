@@ -40,20 +40,10 @@ describe("Accès à la Marketplace Vitrine depuis la page d'accueil", () => {
       </BrowserRouter>
     );
 
-    // 1. Bouton d'accès direct Hero (retiré de la headbar pour épurer la navigation)
-    const vitrineBtns = screen.getAllByRole("button", { name: /Marché Vitrine|Marketplace Vitrine/i });
-    expect(vitrineBtns.length).toBeGreaterThanOrEqual(1);
-    fireEvent.click(vitrineBtns[0]);
-    expect(mockNavigate).toHaveBeenCalledWith("/marketplace?role=producteurs");
-
-    // 3. Espace Agriculteurs & Éleveurs dans la grille
-    expect(screen.getByText("Agriculteurs & Éleveurs")).toBeInTheDocument();
-
-    // 4. Bannière dédiée d'accès direct
-    expect(screen.getByText(/Accès direct au Marché Vitrine|Accès direct à la Marketplace Vitrine/i)).toBeInTheDocument();
-    const openVitrineBtn = screen.getByRole("button", { name: /Ouvrir le Marché Vitrine|Ouvrir la Marketplace Vitrine/i });
-    expect(openVitrineBtn).toBeInTheDocument();
-    fireEvent.click(openVitrineBtn);
+    // Espace Agriculteurs & Éleveurs dans la grille
+    const agriCard = screen.getByText("Agriculteurs & Éleveurs");
+    expect(agriCard).toBeInTheDocument();
+    fireEvent.click(agriCard);
     expect(mockNavigate).toHaveBeenCalledWith("/marketplace?role=producteurs");
   });
 });
