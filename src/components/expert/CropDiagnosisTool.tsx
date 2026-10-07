@@ -15,7 +15,7 @@ import {
   Clock, History, Trash2, MapPin, Navigation, BookOpen, CloudOff, FileText, ShieldCheck, Leaf,
   AlertTriangle, Edit3, UserCheck, Microscope, Search, Info, HelpCircle, Shield,
   Award, RefreshCw, Layers, CheckCheck, Eye, Key, ExternalLink, Database, Cpu,
-  UploadCloud, FileImage, Check
+  UploadCloud, FileImage, Check, SwitchCamera, Video, X
 } from "lucide-react";
 import {
   optimizeAndCompressImage,
@@ -229,6 +229,13 @@ function CropDiagnosisToolInner() {
 
   const cameraRef = useRef<HTMLInputElement>(null);
   const galleryRef = useRef<HTMLInputElement>(null);
+  const liveVideoRef = useRef<HTMLVideoElement>(null);
+  const mediaStreamRef = useRef<MediaStream | null>(null);
+
+  // ── Modale Caméra Live / Prise de Vue Directe ──
+  const [isLiveCameraOpen, setIsLiveCameraOpen] = useState(false);
+  const [cameraFacingMode, setCameraFacingMode] = useState<"environment" | "user">("environment");
+  const [cameraLoading, setCameraLoading] = useState(false);
 
   // ── Statut Réseau ──
   useEffect(() => {
@@ -392,6 +399,106 @@ function CropDiagnosisToolInner() {
       setIdentifyingBotanical(false);
     }
   };
+
+  // ── Gestion de la Caméra en Direct / Webcam ──
+  const stopLiveCamera = useCallback(() => {
+    if (mediaStreamRef.current) {
+      mediaStreamRef.current.getTracks().forEach((t) => t.stop());
+      mediaStreamRef.current = null;
+    }
+    if (liveVideoRef.current) {
+      liveVideoRef.current.srcObject = null;
+    }
+    setIsLiveCameraOpen(false);
+    setCameraLoading(false);
+  }, []);
+
+  const startLiveCamera = useCallback(async (facing: "environment" | "user" = "environment") => {
+    if (typeof navigator === "undefined" || !navigator.mediaDevices?.getUserMedia) {
+      cameraRef.current?.click();
+      return;
+    }
+
+    setCameraLoading(true);
+    setIsLiveCameraOpen(true);
+
+    if (mediaStreamRef.current) {
+      mediaStreamRef.current.getTracks().forEach((t) => t.stop());
+      mediaStreamRef.current = null;
+    }
+
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: {
+          facingMode: { ideal: facing },
+          width: { ideal: 1920 },
+          height: { ideal: 1080 },
+        },
+        audio: false,
+      });
+      mediaStreamRef.current = stream;
+      setCameraFacingMode(facing);
+      if (liveVideoRef.current) {
+        liveVideoRef.current.srcObject = stream;
+        try {
+          await liveVideoRef.current.play();
+        } catch {
+          // autoplay fallback
+        }
+      }
+    } catch (err) {
+      console.warn("Accès webcam refusé ou non supporté, bascule sur la caméra native :", err);
+      stopLiveCamera();
+      cameraRef.current?.click();
+    } finally {
+      setCameraLoading(false);
+    }
+  }, [stopLiveCamera]);
+
+  const toggleCameraFacing = useCallback(() => {
+    const nextFacing = cameraFacingMode === "environment" ? "user" : "environment";
+    startLiveCamera(nextFacing);
+  }, [cameraFacingMode, startLiveCamera]);
+
+  const captureLiveSnapshot = useCallback(() => {
+    if (!liveVideoRef.current) return;
+    const video = liveVideoRef.current;
+    const w = video.videoWidth || 1280;
+    const h = video.videoHeight || 720;
+
+    const canvas = document.createElement("canvas");
+    canvas.width = w;
+    canvas.height = h;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) {
+      stopLiveCamera();
+      return;
+    }
+
+    ctx.drawImage(video, 0, 0, w, h);
+    canvas.toBlob(
+      (blob) => {
+        stopLiveCamera();
+        if (blob) {
+          const file = new File([blob], `photo-plante-${Date.now()}.jpg`, {
+            type: "image/jpeg",
+            lastModified: Date.now(),
+          });
+          onFile(file);
+        }
+      },
+      "image/jpeg",
+      0.9
+    );
+  }, [stopLiveCamera, onFile]);
+
+  useEffect(() => {
+    return () => {
+      if (mediaStreamRef.current) {
+        mediaStreamRef.current.getTracks().forEach((t) => t.stop());
+      }
+    };
+  }, []);
 
   // Chargement rapide d'un échantillon synthétique représentatif
   const handleLoadSample = async (sampleType: "tomate" | "mais" | "oignon") => {
@@ -1185,11 +1292,12 @@ function CropDiagnosisToolInner() {
                 <span className="text-[11px] text-muted-foreground">Formats acceptés : JPG, PNG, WEBP (jusqu'à 30 Mo)</span>
               </div>
 
-              {/* Inputs fichiers invisibles avec accept universel */}
+              {/* Inputs fichiers avec support natif mobile camera */}
               <input
                 ref={cameraRef}
                 type="file"
-                accept="image/png,image/jpeg,image/webp,image/jpg,image/*"
+                accept="image/*"
+                capture="environment"
                 className="hidden"
                 onChange={(e) => {
                   const f = e.target.files?.[0] ?? null;
@@ -1200,7 +1308,7 @@ function CropDiagnosisToolInner() {
               <input
                 ref={galleryRef}
                 type="file"
-                accept="image/png,image/jpeg,image/webp,image/jpg,image/*"
+                accept="image/*"
                 className="hidden"
                 onChange={(e) => {
                   const f = e.target.files?.[0] ?? null;
@@ -1209,6 +1317,95 @@ function CropDiagnosisToolInner() {
                 }}
               />
 
+              {/* Modale de Prise de Vue Caméra en Direct / Webcam */}
+              <Dialog open={isLiveCameraOpen} onOpenChange={(open) => { if (!open) stopLiveCamera(); }}>
+                <DialogContent className="max-w-xl p-0 overflow-hidden rounded-3xl border border-border shadow-2xl bg-black text-white">
+                  <div className="p-4 bg-slate-900/95 flex items-center justify-between border-b border-white/10">
+                    <div className="flex items-center gap-2">
+                      <Camera className="h-5 w-5 text-emerald-400" />
+                      <div>
+                        <DialogTitle className="text-sm font-bold text-white">
+                          Prise de Vue Caméra en Direct
+                        </DialogTitle>
+                        <DialogDescription className="text-xs text-white/70">
+                          Cadrez nettement la feuille, la tige ou le végétal affecté
+                        </DialogDescription>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-1.5">
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        onClick={toggleCameraFacing}
+                        className="h-8 px-2.5 rounded-xl text-white/90 hover:text-white hover:bg-white/10 text-xs gap-1.5"
+                        title="Changer d'objectif (avant / arrière)"
+                      >
+                        <SwitchCamera className="h-4 w-4" />
+                        <span className="hidden sm:inline">Pivoter</span>
+                      </Button>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        onClick={stopLiveCamera}
+                        className="h-8 w-8 p-0 rounded-xl text-white/70 hover:text-white hover:bg-white/10"
+                      >
+                        <X className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </div>
+
+                  <div className="relative bg-black min-h-[300px] max-h-[55vh] flex items-center justify-center overflow-hidden">
+                    {cameraLoading && (
+                      <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 bg-black/80 z-10 text-white">
+                        <Loader2 className="h-8 w-8 animate-spin text-emerald-400" />
+                        <p className="text-xs font-semibold">Démarrage du flux vidéo...</p>
+                      </div>
+                    )}
+                    <video
+                      ref={liveVideoRef}
+                      autoPlay
+                      playsInline
+                      muted
+                      className="w-full h-full object-contain max-h-[55vh]"
+                    />
+
+                    {/* Viseur de cadrage */}
+                    <div className="pointer-events-none absolute inset-6 sm:inset-10 border-2 border-dashed border-emerald-400/50 rounded-2xl flex items-center justify-center">
+                      <div className="text-[10px] sm:text-xs text-emerald-300 bg-black/70 px-3 py-1 rounded-full backdrop-blur-xs font-semibold">
+                        Alignez l'organe de la plante sous une bonne lumière
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="p-4 bg-slate-900/95 flex flex-wrap items-center justify-between gap-3 border-t border-white/10">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => {
+                        stopLiveCamera();
+                        cameraRef.current?.click();
+                      }}
+                      className="h-10 text-xs rounded-xl bg-white/5 border-white/20 text-white hover:bg-white/10"
+                    >
+                      <Camera className="h-4 w-4 mr-1.5 text-amber-400" />
+                      Caméra native
+                    </Button>
+
+                    <Button
+                      type="button"
+                      onClick={captureLiveSnapshot}
+                      className="h-11 px-6 rounded-2xl gradient-primary text-white font-bold text-sm shadow-lg gap-2"
+                    >
+                      <Camera className="h-5 w-5" />
+                      Capturer la photo
+                    </Button>
+                  </div>
+                </DialogContent>
+              </Dialog>
+
               {/* Zone principale : Aperçu ou Glisser-Déposer */}
               {!imagePreview ? (
                 <div
@@ -1216,45 +1413,45 @@ function CropDiagnosisToolInner() {
                   onDragLeave={handleDragLeave}
                   onDrop={handleDrop}
                   className={cn(
-                    "border-2 border-dashed rounded-[20px] p-5 sm:p-6 text-center transition-all flex flex-col items-center justify-center gap-3 cursor-pointer",
+                    "border-2 border-dashed rounded-[22px] p-6 text-center transition-all flex flex-col items-center justify-center gap-3.5 cursor-pointer",
                     isDraggingOver
                       ? "border-[#F97316] bg-orange-500/10 scale-[1.01]"
                       : "border-border/80 bg-muted/20 hover:border-emerald-500/50 hover:bg-muted/30"
                   )}
                   onClick={() => galleryRef.current?.click()}
                 >
-                  <div className="w-12 h-12 rounded-2xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center">
-                    <UploadCloud className="h-6 w-6" />
+                  <div className="w-14 h-14 rounded-2xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shadow-2xs">
+                    <UploadCloud className="h-7 w-7" />
                   </div>
                   <div className="space-y-1">
-                    <p className="text-xs sm:text-sm font-bold text-foreground">
-                      Glissez votre photo ici ou cliquez pour parcourir
+                    <p className="text-sm sm:text-base font-bold text-foreground">
+                      Glissez votre photo ici, prenez un cliché ou parcourez
                     </p>
-                    <p className="text-[11px] text-muted-foreground">
-                      Compression automatique haute performance sans perte de détails
+                    <p className="text-xs text-muted-foreground">
+                      Compression automatique haute performance sans perte de détails (formats JPG, PNG, WEBP)
                     </p>
                   </div>
 
-                  <div className="flex flex-wrap items-center justify-center gap-2 pt-1" onClick={(e) => e.stopPropagation()}>
+                  <div className="flex flex-wrap items-center justify-center gap-3 pt-2" onClick={(e) => e.stopPropagation()}>
                     <Button
                       type="button"
                       variant="outline"
                       size="sm"
-                      className="rounded-xl text-xs font-semibold gap-1.5 h-9"
+                      className="rounded-2xl text-xs font-bold gap-2 h-10 px-4 border-emerald-500/40 bg-background hover:bg-emerald-500/10 hover:border-emerald-500"
                       onClick={() => galleryRef.current?.click()}
                     >
                       <ImageIcon className="h-4 w-4 text-emerald-600" />
-                      <span>Parcourir mes photos</span>
+                      <span>Importer une image (Galerie / Fichier)</span>
                     </Button>
                     <Button
                       type="button"
                       variant="outline"
                       size="sm"
-                      className="rounded-xl text-xs font-semibold gap-1.5 h-9"
-                      onClick={() => cameraRef.current?.click()}
+                      className="rounded-2xl text-xs font-bold gap-2 h-10 px-4 border-orange-500/40 bg-background hover:bg-orange-500/10 hover:border-orange-500"
+                      onClick={() => startLiveCamera("environment")}
                     >
                       <Camera className="h-4 w-4 text-[#F97316]" />
-                      <span>Prendre une photo</span>
+                      <span>Prendre une photo (Caméra / Webcam)</span>
                     </Button>
                   </div>
                 </div>
@@ -1281,9 +1478,20 @@ function CropDiagnosisToolInner() {
                         type="button"
                         variant="secondary"
                         size="sm"
-                        onClick={() => galleryRef.current?.click()}
-                        className="h-8 px-2.5 text-xs font-bold rounded-xl shadow-md bg-white/90 dark:bg-card/90 hover:bg-white"
+                        onClick={() => startLiveCamera("environment")}
+                        className="h-8 px-2.5 text-xs font-bold rounded-xl shadow-md bg-white/90 dark:bg-card/90 hover:bg-white gap-1"
                       >
+                        <Camera className="h-3.5 w-3.5 text-primary" />
+                        Reprendre
+                      </Button>
+                      <Button
+                        type="button"
+                        variant="secondary"
+                        size="sm"
+                        onClick={() => galleryRef.current?.click()}
+                        className="h-8 px-2.5 text-xs font-bold rounded-xl shadow-md bg-white/90 dark:bg-card/90 hover:bg-white gap-1"
+                      >
+                        <ImageIcon className="h-3.5 w-3.5 text-emerald-600" />
                         Changer
                       </Button>
                       <Button
