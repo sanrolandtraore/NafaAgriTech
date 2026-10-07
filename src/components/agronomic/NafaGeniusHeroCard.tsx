@@ -91,9 +91,12 @@ export const NafaGeniusHeroCard: React.FC<NafaGeniusHeroCardProps> = ({
             </h2>
           </div>
 
-          <p className="text-xs sm:text-sm text-gray-300 leading-relaxed">
-            Mesurez vos parcelles au GPS, concevez vos lignes de plantation, dimensionnez vos réseaux d'irrigation et bâtiments d'élevage, et chiffrez vos devis en FCFA sans connexion Internet.
-          </p>
+          <div className="flex flex-wrap items-center gap-2 text-xs text-white/80">
+            <span className="px-2.5 py-0.5 rounded-full bg-white/10 border border-white/10 font-semibold">Arpentage GPS WGS84</span>
+            <span className="px-2.5 py-0.5 rounded-full bg-white/10 border border-white/10 font-semibold">Hydraulique &amp; Solaire</span>
+            <span className="px-2.5 py-0.5 rounded-full bg-white/10 border border-white/10 font-semibold">Bâtiments Bioclimatiques</span>
+            <span className="px-2.5 py-0.5 rounded-full bg-white/10 border border-white/10 font-semibold">Devis Chiffrés FCFA</span>
+          </div>
         </div>
 
         {/* Right Side: Launch button */}
