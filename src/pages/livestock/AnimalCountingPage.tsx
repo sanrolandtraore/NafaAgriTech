@@ -349,7 +349,7 @@ export default function AnimalCountingPage() {
           <div>
             <h1 className="text-2xl font-heading font-extrabold text-foreground flex items-center gap-2">
               <Camera className="h-6 w-6 text-primary" />
-              Comptage Intelligent d'Animaux
+              Comptage & Densité d'Élevage
             </h1>
             <p className="text-sm text-muted-foreground">
               Vision par ordinateur, détection sans double comptage et analyse de densité zootechnique.
@@ -396,14 +396,17 @@ export default function AnimalCountingPage() {
 
           <div>
             <Label className="text-xs font-bold text-muted-foreground uppercase">Rattacher à un lot du cheptel</Label>
-            <Select value={selectedBatchId} onValueChange={setSelectedBatchId}>
+            <Select 
+              value={selectedBatchId || "none"} 
+              onValueChange={(val) => setSelectedBatchId(val === "none" ? "" : val)}
+            >
               <SelectTrigger className="mt-1">
                 <SelectValue placeholder="Sélectionner un lot..." />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">-- Aucun lot sélectionné --</SelectItem>
-                {batches?.map((b: any) => (
-                  <SelectItem key={b.id} value={b.id}>
+                <SelectItem value="none">-- Aucun lot sélectionné --</SelectItem>
+                {batches?.filter((b: any) => Boolean(b && b.id)).map((b: any) => (
+                  <SelectItem key={b.id} value={String(b.id)}>
                     {b.group_label || b.name || "Lot sans nom"} ({b.group_size || 0} sujets)
                   </SelectItem>
                 ))}
