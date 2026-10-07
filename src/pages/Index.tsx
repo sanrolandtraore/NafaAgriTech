@@ -285,9 +285,54 @@ const Index = () => {
                 <span>Créer mon compte gratuitement</span>
               </Button>
             </div>
-            <p className="text-xs sm:text-sm text-white/90 font-medium max-w-xl mx-auto drop-shadow-sm">
-              Découvrez nos simulateurs et technologies en accès libre • Créez votre compte pour sauvegarder vos exploitations, parcelles et projets.
-            </p>
+
+            <div className="text-[11px] sm:text-xs text-white/70 font-medium max-w-xl mx-auto drop-shadow-sm flex items-center justify-center gap-1.5">
+              <span>Découvrez nos simulateurs et technologies en accès libre</span>
+            </div>
+
+            {/* Barre d'Outils Express & Indicateurs Visuels (Tool-First) */}
+            <div className="pt-2 flex flex-wrap items-center justify-center gap-2 max-w-2xl mx-auto">
+              <button
+                type="button"
+                onClick={() => navigate(user ? "/dashboard/field-designer" : "/explorer?tab=calculator")}
+                className="px-3 py-1.5 rounded-full bg-white/10 hover:bg-white/20 text-white text-xs font-bold border border-white/20 backdrop-blur-md flex items-center gap-1.5 transition-all active:scale-95"
+              >
+                <Compass className="h-3.5 w-3.5 text-emerald-400" />
+                <span>Studio 3D &amp; CAO</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => navigate(user ? "/dashboard/genius" : "/explorer?tab=irrigation")}
+                className="px-3 py-1.5 rounded-full bg-white/10 hover:bg-white/20 text-white text-xs font-bold border border-white/20 backdrop-blur-md flex items-center gap-1.5 transition-all active:scale-95"
+              >
+                <Droplets className="h-3.5 w-3.5 text-sky-400" />
+                <span>Irrigation FAO-56</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => navigate(user ? "/dashboard/expert-diagnosis" : "/explorer?tab=fiches")}
+                className="px-3 py-1.5 rounded-full bg-white/10 hover:bg-white/20 text-white text-xs font-bold border border-white/20 backdrop-blur-md flex items-center gap-1.5 transition-all active:scale-95"
+              >
+                <Cpu className="h-3.5 w-3.5 text-orange-400" />
+                <span>Diagnostic Végétal IA</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => navigate(user ? "/dashboard/animal-counting" : "/marketplace?cat=produits_elevage")}
+                className="px-3 py-1.5 rounded-full bg-white/10 hover:bg-white/20 text-white text-xs font-bold border border-white/20 backdrop-blur-md flex items-center gap-1.5 transition-all active:scale-95"
+              >
+                <Beef className="h-3.5 w-3.5 text-amber-400" />
+                <span>Vision Élevage</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => navigate("/marketplace?role=producteurs")}
+                className="px-3 py-1.5 rounded-full bg-white/10 hover:bg-white/20 text-white text-xs font-bold border border-white/20 backdrop-blur-md flex items-center gap-1.5 transition-all active:scale-95"
+              >
+                <Store className="h-3.5 w-3.5 text-emerald-300" />
+                <span>Marché Vitrine</span>
+              </button>
+            </div>
           </div>
         </div>
 
@@ -382,18 +427,21 @@ const Index = () => {
         </div>
 
         {/* ── Accès Direct Agriculteurs & Éleveurs au Marché Vitrine ── */}
-        <div className="rounded-[28px] bg-gradient-to-r from-emerald-950/90 via-[#111827] to-teal-950/90 border border-emerald-500/40 p-6 sm:p-8 flex flex-col md:flex-row items-center justify-between gap-6 shadow-xl">
-          <div className="space-y-2 text-center md:text-left">
+        <div className="rounded-[28px] bg-gradient-to-r from-emerald-950/90 via-[#111827] to-teal-950/90 border border-emerald-500/40 p-5 sm:p-6 flex flex-col md:flex-row items-center justify-between gap-5 shadow-xl">
+          <div className="space-y-1.5 text-center md:text-left">
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/20 border border-emerald-500/40 text-emerald-400 text-xs font-bold">
               <Store className="h-3.5 w-3.5" />
               <span>Marché Vitrine Agriculteurs &amp; Éleveurs</span>
             </div>
-            <h3 className="text-xl sm:text-2xl font-heading font-extrabold text-white tracking-tight">
+            <h3 className="text-lg sm:text-xl font-heading font-extrabold text-white tracking-tight">
               Accès direct au Marché Vitrine : intrants, machinisme, élevage &amp; finance
             </h3>
-            <p className="text-xs sm:text-sm text-white/70 max-w-2xl">
-              Agriculteurs et éleveurs accèdent librement aux catalogues et services certifiés : réservez vos labours, achetez vos semences et engrais, programmez des soins vétérinaires ou sollicitez des financements et assurances.
-            </p>
+            <div className="flex flex-wrap items-center justify-center md:justify-start gap-1.5 pt-1">
+              <span className="px-2.5 py-0.5 rounded-full bg-white/10 text-emerald-300 text-[11px] font-semibold border border-white/10">Semences &amp; Engrais</span>
+              <span className="px-2.5 py-0.5 rounded-full bg-white/10 text-amber-300 text-[11px] font-semibold border border-white/10">Location Tracteurs</span>
+              <span className="px-2.5 py-0.5 rounded-full bg-white/10 text-teal-300 text-[11px] font-semibold border border-white/10">Santé Animale</span>
+              <span className="px-2.5 py-0.5 rounded-full bg-white/10 text-sky-300 text-[11px] font-semibold border border-white/10">Crédit &amp; Assurance</span>
+            </div>
           </div>
 
           <div className="flex flex-wrap items-center justify-center gap-2.5 shrink-0">
@@ -658,9 +706,11 @@ const Index = () => {
             <h3 className="text-2xl sm:text-3xl font-heading font-extrabold tracking-tight">
               Rejoignez dès aujourd'hui l'écosystème NAFA-AGRITECH
             </h3>
-            <p className="text-xs sm:text-sm text-white/70 leading-relaxed">
-              Agriculteurs, éleveurs, agronomes, vétérinaires et entreprises partenaires : créez votre compte gratuit et accédez aux outils professionnels 100% hors-ligne.
-            </p>
+            <div className="flex flex-wrap items-center justify-center md:justify-start gap-2 pt-1 text-xs text-white/80">
+              <span className="px-2.5 py-1 rounded-full bg-white/10 border border-white/10 font-medium">Accessible hors-ligne</span>
+              <span className="px-2.5 py-1 rounded-full bg-white/10 border border-white/10 font-medium">Données locales sécurisées</span>
+              <span className="px-2.5 py-1 rounded-full bg-white/10 border border-white/10 font-medium">Standards agronomiques certifiés</span>
+            </div>
           </div>
 
           <div className="flex flex-col sm:flex-row items-center gap-3 shrink-0 w-full sm:w-auto">

@@ -145,6 +145,9 @@ export const FieldDesignerStudio: React.FC = () => {
   // Modale création d'exploitation
   const [newFarmModalOpen, setNewFarmModalOpen] = useState(false);
 
+  // Mode Simple vs Mode Expert (Progressive disclosure CAD/GIS)
+  const [modeExpert, setModeExpert] = useState(false);
+
   // Synchronisation des abonnements
   useEffect(() => {
     const unsub = subscribeToSyncState(setSyncState);
@@ -278,93 +281,99 @@ export const FieldDesignerStudio: React.FC = () => {
 
   return (
     <div className="space-y-6 w-full max-w-7xl mx-auto px-2 sm:px-4 py-4 sm:py-6">
-      {/* ── EN-TÊTE PRINCIPAL : NAFA FIELD DESIGNER ── */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-gradient-to-r from-emerald-950 via-slate-900 to-emerald-950 text-white p-5 sm:p-7 rounded-[28px] border-2 border-emerald-500/30 shadow-xl">
-        <div className="space-y-2">
-          <div className="flex items-center gap-2 flex-wrap">
-            <Badge className="bg-emerald-500/20 text-emerald-400 border-emerald-500/40 text-xs font-bold py-0.5">
-              Disponible sans connexion • Offline-First
-            </Badge>
-            <Badge variant="outline" className="text-white/80 border-white/20 text-xs">
-              Burkina Faso & Afrique de l'Ouest
-            </Badge>
+      {/* ── RUBAN SUPÉRIEUR COMPACT CAD/GIS (TOOLBAR PROFESSIONNELLE 80/20) ── */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3 bg-gradient-to-r from-emerald-950 via-slate-900 to-emerald-950 text-white rounded-2xl border border-emerald-500/30 shadow-lg">
+        {/* Titre & Statut */}
+        <div className="flex items-center gap-3">
+          <div className="w-9 h-9 rounded-xl bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 flex items-center justify-center font-bold shrink-0">
+            <Compass className="h-5 w-5" />
           </div>
-          <h1 className="text-2xl sm:text-3xl font-heading font-black tracking-tight flex items-center gap-2.5">
-            <Compass className="h-7 w-7 text-emerald-400" />
-            <span>NAFA FIELD DESIGNER</span>
-          </h1>
-          <p className="text-xs sm:text-sm text-emerald-100/90 font-medium">
-            Le logiciel de conception et d’intervention terrain pour agronomes africains
-          </p>
+          <div>
+            <div className="flex items-center gap-2">
+              <h1 className="text-base sm:text-lg font-heading font-black tracking-tight">
+                NAFA FIELD DESIGNER
+              </h1>
+              <Badge className="bg-emerald-500/20 text-emerald-400 border-emerald-500/40 text-[10px] font-bold py-0 h-5">
+                Offline-First
+              </Badge>
+            </div>
+            <p className="text-[11px] text-emerald-200/80 leading-none mt-0.5">
+              CAO &amp; SIG Agricole • 80% Espace de travail
+            </p>
+          </div>
         </div>
 
-        {/* ── STATUT DE SYNCHRONISATION EN TEMPS RÉEL (OBLIGATOIRE) ── */}
-        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 bg-black/40 p-3 rounded-2xl border border-white/10 shrink-0">
-          <div className="flex items-center gap-2">
+        {/* Sélecteur d'exploitation, Mode Simple/Expert & Actions */}
+        <div className="flex flex-wrap items-center gap-2">
+          {/* Sélecteur compact */}
+          <div className="flex items-center gap-1.5 bg-black/40 px-2.5 py-1 rounded-xl border border-white/10">
+            <span className="text-[10px] font-bold text-white/70 uppercase shrink-0">Ferme:</span>
+            <Select value={activeFarmId} onValueChange={handleSelectFarm}>
+              <SelectTrigger className="h-7 text-xs font-bold rounded-lg border-0 bg-transparent text-white px-2 py-0 focus:ring-0 w-36 sm:w-48 truncate">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {farms.map((f) => (
+                  <SelectItem key={f.id} value={f.id}>
+                    {f.name} ({f.locality})
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <Button
+              size="sm"
+              variant="ghost"
+              onClick={() => setNewFarmModalOpen(true)}
+              className="h-6 w-6 p-0 text-white/80 hover:text-white hover:bg-white/20 rounded-md"
+              title="Nouvelle exploitation"
+            >
+              <Plus className="h-3.5 w-3.5" />
+            </Button>
+          </div>
+
+          {/* Toggle Mode Simple / Mode Expert */}
+          <button
+            type="button"
+            onClick={() => setModeExpert(!modeExpert)}
+            className={`px-3 py-1 rounded-xl text-xs font-bold border transition-all flex items-center gap-1.5 ${
+              modeExpert
+                ? "bg-[#F97316] text-white border-orange-400 shadow-xs"
+                : "bg-white/10 text-white/90 border-white/20 hover:bg-white/20"
+            }`}
+          >
+            <span>{modeExpert ? "Mode Expert ⚙" : "Mode Simple"}</span>
+          </button>
+
+          {/* Statut Sync & Bouton sync */}
+          <div className="flex items-center gap-2 bg-black/40 px-2.5 py-1 rounded-xl border border-white/10 text-xs">
             {syncState.status === "synced" && (
-              <span className="flex items-center gap-1.5 text-xs font-bold text-emerald-400">
-                <span className="h-2 w-2 rounded-full bg-emerald-400 animate-pulse" />
-                Synchronisé
+              <span className="flex items-center gap-1 text-[11px] font-bold text-emerald-400">
+                <span className="h-2 w-2 rounded-full bg-emerald-400" />
+                Sync
               </span>
             )}
             {syncState.status === "syncing" && (
-              <span className="flex items-center gap-1.5 text-xs font-bold text-amber-400">
+              <span className="flex items-center gap-1 text-[11px] font-bold text-amber-400">
                 <span className="h-2 w-2 rounded-full bg-amber-400 animate-ping" />
-                Synchronisation ({syncState.pendingCount})
-              </span>
-            )}
-            {syncState.status === "error" && (
-              <span className="flex items-center gap-1.5 text-xs font-bold text-red-400">
-                <span className="h-2 w-2 rounded-full bg-red-400" />
-                Erreur de synchronisation
+                Syncing
               </span>
             )}
             {syncState.status === "offline" && (
-              <span className="flex items-center gap-1.5 text-xs font-bold text-slate-300">
+              <span className="flex items-center gap-1 text-[11px] font-bold text-slate-300">
                 <span className="h-2 w-2 rounded-full bg-slate-400" />
-                Mode local hors connexion
+                Local
               </span>
             )}
+            <button
+              type="button"
+              onClick={triggerManualSync}
+              className="text-white/80 hover:text-white p-0.5 ml-0.5"
+              title="Synchroniser"
+            >
+              <RefreshCw className="h-3.5 w-3.5" />
+            </button>
           </div>
-
-          <Button
-            size="sm"
-            variant="ghost"
-            onClick={triggerManualSync}
-            className="h-8 px-2.5 text-xs text-white hover:bg-white/10 rounded-xl gap-1"
-          >
-            <RefreshCw className="h-3.5 w-3.5" />
-            Synchroniser
-          </Button>
         </div>
-      </div>
-
-      {/* ── BARRE DE SÉLECTION D'EXPLOITATION ACTIVE ── */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3.5 bg-card rounded-2xl border">
-        <div className="flex items-center gap-2 flex-1">
-          <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider shrink-0">
-            Exploitation active :
-          </span>
-          <Select value={activeFarmId} onValueChange={handleSelectFarm}>
-            <SelectTrigger className="h-10 text-xs font-bold rounded-xl max-w-md">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {farms.map((f) => (
-                <SelectItem key={f.id} value={f.id}>
-                  {f.name} ({f.locality})
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-
-        <Button
-          onClick={() => setNewFarmModalOpen(true)}
-          className="h-10 rounded-xl font-bold text-xs gradient-primary text-primary-foreground gap-1.5 shrink-0"
-        >
-          <Plus className="h-4 w-4" /> Nouvelle exploitation
-        </Button>
       </div>
 
       {/* ── NAVIGATION PAR ONGLETS MÉTIER ── */}
@@ -595,6 +604,27 @@ export const FieldDesignerStudio: React.FC = () => {
                   <span>
                     GPS : {activeFarm.gps.lat.toFixed(5)}°N, {activeFarm.gps.lng.toFixed(5)}°W
                   </span>
+                </div>
+              )}
+
+              {/* Mode Expert : Panneau Technique Avancé (Progressive Disclosure) */}
+              {modeExpert && (
+                <div className="pt-3 border-t border-border/60 grid grid-cols-1 sm:grid-cols-3 gap-3 animate-in fade-in duration-200">
+                  <div className="p-3 rounded-xl bg-muted/40 border text-xs space-y-1">
+                    <span className="font-bold text-muted-foreground uppercase text-[10px] block">Système Géodésique</span>
+                    <p className="font-mono font-semibold">Ellipsoïde WGS-84 (EPSG:4326)</p>
+                    <p className="text-[11px] text-muted-foreground">Projection UTM Zone 30N</p>
+                  </div>
+                  <div className="p-3 rounded-xl bg-muted/40 border text-xs space-y-1">
+                    <span className="font-bold text-muted-foreground uppercase text-[10px] block">Formule Hydraulique</span>
+                    <p className="font-mono font-semibold">Hazen-Williams / Darcy-Weisbach</p>
+                    <p className="text-[11px] text-muted-foreground">Pertes de charge C = 150 (PEHD)</p>
+                  </div>
+                  <div className="p-3 rounded-xl bg-muted/40 border text-xs space-y-1">
+                    <span className="font-bold text-muted-foreground uppercase text-[10px] block">Bordereau &amp; Mercuriale</span>
+                    <p className="font-mono font-semibold">Mercuriale BF &bull; BTP Sahélien</p>
+                    <p className="text-[11px] text-muted-foreground">Indexation matériaux 2026</p>
+                  </div>
                 </div>
               )}
             </CardContent>
