@@ -203,14 +203,14 @@ Notes agronomiques : ${sheet.notes}`;
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b pb-4">
         <div>
           <div className="flex items-center gap-2">
-            <div className="p-2 rounded-lg bg-primary/10 text-primary">
+            <div className="p-2 rounded-lg bg-primary/10 text-primary shrink-0">
               <BookOpen className="h-6 w-6" />
             </div>
             <div>
-              <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">
+              <h1 className="text-xl sm:text-3xl font-bold tracking-tight">
                 Fiches Techniques Agronomiques
               </h1>
-              <p className="text-sm text-muted-foreground">
+              <p className="text-xs sm:text-sm text-muted-foreground">
                 Base complète de <strong className="text-foreground">{sheets.length} cultures</strong> adaptées au Sahel et à l'Afrique de l'Ouest (priorité Burkina Faso INERA & FAO-56).
               </p>
             </div>
@@ -218,15 +218,15 @@ Notes agronomiques : ${sheet.notes}`;
         </div>
 
         {/* Badges compteurs rapides */}
-        <div className="flex flex-wrap items-center gap-2">
-          <Badge variant="outline" className="px-3 py-1 font-semibold border-primary/30 bg-primary/5 text-primary">
-            🌾 {sheets.length} Cultures au catalogue
+        <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
+          <Badge variant="outline" className="px-2.5 sm:px-3 py-1 text-xs font-semibold border-primary/30 bg-primary/5 text-primary">
+            🌾 {sheets.length} Cultures
           </Badge>
-          <Badge variant="secondary" className="px-3 py-1 font-semibold bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border border-emerald-500/20">
-            ★ {burkinaCount} Priorité Burkina Faso
+          <Badge variant="secondary" className="px-2.5 sm:px-3 py-1 text-xs font-semibold bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border border-emerald-500/20">
+            ★ {burkinaCount} BF Priorité
           </Badge>
           {selectedIds.size > 0 && (
-            <Badge variant="default" className="px-3 py-1 font-bold">
+            <Badge variant="default" className="px-2.5 sm:px-3 py-1 text-xs font-bold">
               ✓ {selectedIds.size} sélectionnée(s)
             </Badge>
           )}
@@ -433,12 +433,12 @@ Notes agronomiques : ${sheet.notes}`;
                   }`}
                   onClick={() => setOpenedId(isOpen ? null : sheet.id)}
                 >
-                  <CardContent className="p-4 space-y-3">
+                  <CardContent className="p-3.5 sm:p-4 space-y-3">
                     {/* En-tête de la carte */}
                     <div className="flex items-start justify-between gap-2">
-                      <div className="flex items-start gap-2.5 flex-1 min-w-0">
+                      <div className="flex items-start gap-2 sm:gap-2.5 flex-1 min-w-0">
                         <div 
-                          className="pt-0.5" 
+                          className="pt-0.5 shrink-0" 
                           onClick={(e) => toggleSelect(sheet.id, e)}
                         >
                           <Checkbox 
@@ -449,7 +449,7 @@ Notes agronomiques : ${sheet.notes}`;
                         </div>
                         <div className="min-w-0 flex-1">
                           <div className="flex items-center gap-1.5 flex-wrap">
-                            <h3 className="font-semibold text-sm sm:text-base text-foreground leading-snug">
+                            <h3 className="font-semibold text-sm sm:text-base text-foreground leading-snug break-words">
                               {sheet.name_fr}
                             </h3>
                             {sheet.is_burkina_priority && (
@@ -466,11 +466,11 @@ Notes agronomiques : ${sheet.notes}`;
                         </div>
                       </div>
 
-                      <div className="flex items-center gap-1 shrink-0">
+                      <div className="flex items-center gap-0.5 sm:gap-1 shrink-0">
                         <Button
                           variant="ghost"
                           size="icon"
-                          className="h-7 w-7 text-muted-foreground hover:text-foreground"
+                          className="h-7 w-7 text-muted-foreground hover:text-foreground shrink-0"
                           title="Copier la fiche"
                           onClick={(e) => copySheetData(sheet, e)}
                         >
@@ -479,7 +479,7 @@ Notes agronomiques : ${sheet.notes}`;
                         <Button
                           variant="ghost"
                           size="icon"
-                          className="h-7 w-7 text-muted-foreground hover:text-foreground"
+                          className="h-7 w-7 text-muted-foreground hover:text-foreground shrink-0"
                           title={isOpen ? "Replier" : "Déplier"}
                         >
                           {isOpen ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
@@ -489,18 +489,18 @@ Notes agronomiques : ${sheet.notes}`;
 
                     {/* Ligne d'attributs clés compacts */}
                     <div className="flex flex-wrap items-center gap-1.5 text-xs text-muted-foreground pt-1">
-                      <Badge variant="outline" className="text-[11px] font-normal bg-muted/40">
+                      <Badge variant="outline" className="text-[10px] sm:text-[11px] font-normal bg-muted/40">
                         {sheet.category}
                       </Badge>
-                      <span className="text-[11px] inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-amber-500/10 text-amber-800 dark:text-amber-300">
-                        <Calendar className="h-3 w-3" />
+                      <span className="text-[10px] sm:text-[11px] inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-amber-500/10 text-amber-800 dark:text-amber-300">
+                        <Calendar className="h-3 w-3 shrink-0" />
                         {sheet.cycle_days_min}-{sheet.cycle_days_max} j
                       </span>
-                      <span className="text-[11px] inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-blue-500/10 text-blue-800 dark:text-blue-300">
-                        <Droplets className="h-3 w-3" />
+                      <span className="text-[10px] sm:text-[11px] inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-blue-500/10 text-blue-800 dark:text-blue-300">
+                        <Droplets className="h-3 w-3 shrink-0" />
                         {sheet.water_needs_mm} mm
                       </span>
-                      <span className="text-[11px] font-medium text-emerald-700 dark:text-emerald-400">
+                      <span className="text-[10px] sm:text-[11px] font-medium text-emerald-700 dark:text-emerald-400">
                         Rdt : {sheet.yield_potential_t_ha} t/ha
                       </span>
                     </div>
@@ -518,9 +518,9 @@ Notes agronomiques : ${sheet.notes}`;
                       <div className="pt-3 mt-2 border-t border-dashed space-y-2.5 text-xs">
                         {/* NPK */}
                         {sheet.npk_needs && (
-                          <div className="p-2 rounded bg-muted/30 border border-muted flex items-center justify-between">
+                          <div className="p-2.5 rounded bg-muted/30 border border-muted flex flex-col sm:flex-row sm:items-center justify-between gap-1">
                             <span className="font-semibold text-foreground">Formule NPK recommandée :</span>
-                            <span className="font-mono font-bold text-primary">
+                            <span className="font-mono font-bold text-primary text-[11px] sm:text-xs">
                               N: {sheet.npk_needs.N} • P₂O₅: {sheet.npk_needs.P} • K₂O: {sheet.npk_needs.K} kg/ha
                             </span>
                           </div>
@@ -581,25 +581,25 @@ Notes agronomiques : ${sheet.notes}`;
                         )}
 
                         {/* Boutons d'action sur la fiche */}
-                        <div className="flex items-center justify-end gap-2 pt-2">
+                        <div className="flex flex-col sm:flex-row items-stretch sm:items-center sm:justify-end gap-2 pt-2">
                           <Button 
                             size="sm" 
                             variant="outline" 
-                            className="h-7 text-xs gap-1"
+                            className="h-8 sm:h-7 text-xs gap-1.5 w-full sm:w-auto"
                             onClick={(e) => copySheetData(sheet, e)}
                           >
-                            <Copy className="h-3 w-3" />
+                            <Copy className="h-3.5 w-3.5" />
                             Copier la fiche
                           </Button>
                           <Button 
                             size="sm" 
-                            className="h-7 text-xs gap-1 gradient-primary text-primary-foreground font-semibold"
+                            className="h-8 sm:h-7 text-xs gap-1.5 gradient-primary text-primary-foreground font-semibold w-full sm:w-auto"
                             onClick={(e) => {
                               e.stopPropagation();
                               navigate(`/dashboard/expert-calculator?crop=${sheet.crop_key}`);
                             }}
                           >
-                            <Calculator className="h-3 w-3" />
+                            <Calculator className="h-3.5 w-3.5" />
                             Calculer les intrants
                           </Button>
                         </div>
@@ -613,11 +613,11 @@ Notes agronomiques : ${sheet.notes}`;
 
           {/* Pagination si plusieurs pages */}
           {totalPages > 1 && (
-            <div className="flex items-center justify-between border-t pt-4 text-xs text-muted-foreground">
-              <span>
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-3 border-t pt-4 text-xs text-muted-foreground">
+              <span className="text-center sm:text-left">
                 Page <strong className="text-foreground">{currentPage}</strong> sur {totalPages} ({filtered.length} cultures)
               </span>
-              <div className="flex items-center gap-1">
+              <div className="flex flex-wrap items-center justify-center gap-1">
                 <Button
                   size="sm"
                   variant="outline"

@@ -230,7 +230,7 @@ export default function PublicExplorerPage() {
       <main id="demonstrateurs" className="max-w-7xl mx-auto px-4 sm:px-6 py-10 sm:py-14 flex-1 w-full space-y-8">
         <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full space-y-8">
           {/* Barre d'onglets ergonomique avec défilement horizontal */}
-          <div className="overflow-x-auto pb-2 -mx-4 px-4 sm:mx-0 sm:px-0">
+          <div className="overflow-x-auto pb-2 -mx-4 px-4 sm:mx-0 sm:px-0 no-scrollbar touch-pan-x">
             <TabsList className="bg-muted/60 p-1.5 rounded-2xl gap-1.5 inline-flex min-w-max border border-border/80">
               <TabsTrigger value="calculateur" className="rounded-xl text-xs font-bold gap-2 py-2.5 px-4 data-[state=active]:bg-card data-[state=active]:shadow-xs">
                 <Calculator className="h-4 w-4 text-[#F97316]" />
@@ -688,33 +688,33 @@ export default function PublicExplorerPage() {
               </div>
 
               {/* Grille des fiches techniques consultables librement */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5 sm:gap-4">
                 {filteredSheets.map((crop) => (
                   <div
                     key={crop.id}
-                    className="p-4 rounded-2xl bg-muted/40 border border-border/80 hover:border-teal-500/50 transition-all space-y-2.5 flex flex-col justify-between"
+                    className="p-3.5 sm:p-4 rounded-2xl bg-muted/40 border border-border/80 hover:border-teal-500/50 transition-all space-y-2.5 flex flex-col justify-between"
                   >
                     <div className="space-y-1">
-                      <div className="flex items-center justify-between gap-2">
+                      <div className="flex items-center justify-between gap-2 flex-wrap">
                         <Badge variant="outline" className="text-[10px] capitalize font-bold text-teal-700 dark:text-teal-300">
                           {crop.category}
                         </Badge>
                         {crop.is_burkina_priority && (
-                          <Badge className="bg-emerald-600 text-white text-[9px] py-0">BF Priorité</Badge>
+                          <Badge className="bg-emerald-600 text-white text-[9px] py-0 shrink-0">BF Priorité</Badge>
                         )}
                       </div>
-                      <h4 className="font-extrabold text-sm text-foreground">{crop.name_fr}</h4>
+                      <h4 className="font-extrabold text-sm text-foreground break-words">{crop.name_fr}</h4>
                       {crop.scientific_name && (
-                        <p className="text-[11px] font-mono text-muted-foreground italic">{crop.scientific_name}</p>
+                        <p className="text-[11px] font-mono text-muted-foreground italic truncate">{crop.scientific_name}</p>
                       )}
                     </div>
 
-                    <div className="text-[11px] text-muted-foreground space-y-1 pt-1 border-t border-border/50">
-                      <div className="flex justify-between">
+                    <div className="text-[11px] text-muted-foreground space-y-1 pt-1.5 border-t border-border/50">
+                      <div className="flex items-center justify-between gap-1">
                         <span>Cycle :</span>
                         <span className="font-bold text-foreground">{crop.cycle_days_min} à {crop.cycle_days_max} jours</span>
                       </div>
-                      <div className="flex justify-between">
+                      <div className="flex items-center justify-between gap-1">
                         <span>Rendement :</span>
                         <span className="font-bold text-foreground">{crop.yield_potential_t_ha} T/ha</span>
                       </div>
@@ -724,13 +724,13 @@ export default function PublicExplorerPage() {
               </div>
 
               <div className="p-4 rounded-2xl bg-muted/30 border border-border/70 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs">
-                <span className="text-muted-foreground">
+                <span className="text-muted-foreground text-center sm:text-left">
                   Consultez l'ensemble des <strong>235 fiches techniques complètes</strong> avec fiches de fertilisation et gestion des ravageurs.
                 </span>
                 <Button
                   size="sm"
                   onClick={() => navigate("/fiches-techniques")}
-                  className="bg-teal-600 hover:bg-teal-700 text-white font-bold text-xs rounded-xl shadow-xs"
+                  className="w-full sm:w-auto bg-teal-600 hover:bg-teal-700 text-white font-bold text-xs rounded-xl shadow-xs shrink-0"
                 >
                   <span>Ouvrir le catalogue complet</span>
                   <ArrowRight className="h-3.5 w-3.5 ml-1.5" />

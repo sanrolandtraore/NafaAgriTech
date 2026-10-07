@@ -157,11 +157,11 @@ export const SyncStatusBadge: React.FC = () => {
         <PopoverTrigger asChild>
           <button 
             type="button"
-            className="inline-flex items-center gap-1.5 py-1 px-3 text-xs font-semibold rounded-full border border-amber-500/40 bg-amber-500/15 text-amber-800 dark:text-amber-300 hover:bg-amber-500/25 transition cursor-pointer shadow-xs"
+            className="inline-flex items-center gap-1 sm:gap-1.5 py-1 px-2 sm:px-3 text-xs font-semibold rounded-full border border-amber-500/40 bg-amber-500/15 text-amber-800 dark:text-amber-300 hover:bg-amber-500/25 transition cursor-pointer shadow-xs shrink-0"
             title="Données sauvegardées localement en attente de synchronisation"
           >
             <Clock className={`h-3.5 w-3.5 text-amber-600 ${isSyncing ? "animate-spin" : ""}`} />
-            <span>{label}</span>
+            <span className="hidden min-[380px]:inline">{label}</span>
           </button>
         </PopoverTrigger>
         <PopoverContent className="w-72 p-3 text-xs space-y-2 shadow-lg" align="end">
@@ -202,14 +202,14 @@ export const SyncStatusBadge: React.FC = () => {
       <PopoverTrigger asChild>
         <button 
           type="button"
-          className="inline-flex items-center gap-1.5 py-1 px-3 text-xs font-semibold rounded-full border border-emerald-500/30 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-500/20 transition cursor-pointer shadow-xs"
+          className="inline-flex items-center gap-1 sm:gap-1.5 py-1 px-2 sm:px-3 text-xs font-semibold rounded-full border border-emerald-500/30 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-500/20 transition cursor-pointer shadow-xs shrink-0"
           title="Toutes les données sont synchronisées"
         >
           <span className="relative flex h-2 w-2">
             <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
           </span>
           <CheckCircle2 className="h-3.5 w-3.5 text-emerald-600" />
-          <span>Synchronisé</span>
+          <span className="hidden min-[380px]:inline">Synchronisé</span>
         </button>
       </PopoverTrigger>
       <PopoverContent className="w-64 p-3 text-xs space-y-2 shadow-lg" align="end">

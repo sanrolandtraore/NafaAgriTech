@@ -137,7 +137,7 @@ Normes de calcul : INERA / FAO-56`;
 
         <Button
           onClick={handleExportSummary}
-          className="rounded-full bg-[#F97316] hover:bg-[#ea580c] text-white font-bold text-xs px-5 py-2.5 shadow-lg shadow-orange-500/30 shrink-0 flex items-center gap-2"
+          className="rounded-full bg-[#F97316] hover:bg-[#ea580c] text-white font-bold text-xs px-5 py-2.5 shadow-lg shadow-orange-500/30 shrink-0 flex items-center justify-center gap-2 w-full md:w-auto"
         >
           <FileSpreadsheet className="h-4 w-4" />
           <span>Exporter la fiche</span>
@@ -147,7 +147,7 @@ Normes de calcul : INERA / FAO-56`;
       {/* ── ZONE DE SÉLECTION : CULTURE & SUPERFICIE ── */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         {/* Choix de la Culture avec Icone Réelle */}
-        <Card className="p-4 rounded-[22px] border-border/80 shadow-xs md:col-span-2 space-y-3">
+        <Card className="p-3.5 sm:p-4 rounded-[22px] border-border/80 shadow-xs md:col-span-2 space-y-3">
           <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
             <Sprout className="h-4 w-4 text-emerald-600" />
             <span>1. Sélectionner le type de culture</span>
@@ -160,16 +160,16 @@ Normes de calcul : INERA / FAO-56`;
                   key={c.id}
                   type="button"
                   onClick={() => setSelectedCropId(c.id)}
-                  className={`flex items-center gap-2.5 p-2.5 rounded-2xl border text-left transition-all ${
+                  className={`flex items-center gap-2 sm:gap-2.5 p-2 sm:p-2.5 rounded-2xl border text-left transition-all ${
                     isSelected
                       ? "bg-emerald-500/10 border-emerald-500 shadow-sm text-foreground font-bold"
                       : "bg-background border-border/70 hover:bg-muted/50 text-muted-foreground font-medium"
                   }`}
                 >
                   <RealModuleIcon type={c.iconType} size="xs" className="shrink-0" />
-                  <div className="min-w-0">
-                    <p className="text-xs truncate">{c.name.split(" (")[0]}</p>
-                    <p className="text-[10px] text-muted-foreground truncate">{c.cycleDays} jours</p>
+                  <div className="min-w-0 flex-1">
+                    <p className="text-[11px] sm:text-xs truncate font-semibold leading-tight">{c.name.split(" (")[0]}</p>
+                    <p className="text-[10px] text-muted-foreground truncate leading-tight mt-0.5">{c.cycleDays} jours</p>
                   </div>
                 </button>
               );
@@ -178,7 +178,7 @@ Normes de calcul : INERA / FAO-56`;
         </Card>
 
         {/* Superficie et Parcelle GPS */}
-        <Card className="p-4 rounded-[22px] border-border/80 shadow-xs space-y-3 flex flex-col justify-between">
+        <Card className="p-3.5 sm:p-4 rounded-[22px] border-border/80 shadow-xs space-y-3 flex flex-col justify-between">
           <div className="space-y-3">
             <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
               <Layers className="h-4 w-4 text-[#F97316]" />
@@ -252,22 +252,22 @@ Normes de calcul : INERA / FAO-56`;
 
       {/* ── TABS MULTI-FONCTIONS NAFA GENIUS ── */}
       <Tabs defaultValue="seeds" className="space-y-4">
-        <TabsList className="w-full grid grid-cols-2 sm:grid-cols-4 h-auto p-1.5 rounded-[22px] bg-muted/60 border border-border">
-          <TabsTrigger value="seeds" className="rounded-xl py-2.5 text-xs font-bold gap-2">
-            <Sprout className="h-4 w-4" />
-            <span>Semences & Densité</span>
+        <TabsList className="w-full grid grid-cols-2 sm:grid-cols-4 h-auto p-1.5 rounded-[22px] bg-muted/60 border border-border gap-1">
+          <TabsTrigger value="seeds" className="rounded-xl py-2 sm:py-2.5 px-2 text-[11px] sm:text-xs font-bold gap-1.5 flex items-center justify-center text-center">
+            <Sprout className="h-3.5 w-3.5 sm:h-4 sm:w-4 shrink-0" />
+            <span className="truncate">Semences & Densité</span>
           </TabsTrigger>
-          <TabsTrigger value="phyto" className="rounded-xl py-2.5 text-xs font-bold gap-2">
-            <ShieldAlert className="h-4 w-4" />
-            <span>Phytosanitaire ({results.phytoTreatments.length})</span>
+          <TabsTrigger value="phyto" className="rounded-xl py-2 sm:py-2.5 px-2 text-[11px] sm:text-xs font-bold gap-1.5 flex items-center justify-center text-center">
+            <ShieldAlert className="h-3.5 w-3.5 sm:h-4 sm:w-4 shrink-0" />
+            <span className="truncate">Phyto ({results.phytoTreatments.length})</span>
           </TabsTrigger>
-          <TabsTrigger value="fertilizer" className="rounded-xl py-2.5 text-xs font-bold gap-2">
-            <Droplets className="h-4 w-4" />
-            <span>Fertilisants & Eau</span>
+          <TabsTrigger value="fertilizer" className="rounded-xl py-2 sm:py-2.5 px-2 text-[11px] sm:text-xs font-bold gap-1.5 flex items-center justify-center text-center">
+            <Droplets className="h-3.5 w-3.5 sm:h-4 sm:w-4 shrink-0" />
+            <span className="truncate">Fertilisants & Eau</span>
           </TabsTrigger>
-          <TabsTrigger value="finance" className="rounded-xl py-2.5 text-xs font-bold gap-2">
-            <TrendingUp className="h-4 w-4" />
-            <span>Bilan & Rentabilité</span>
+          <TabsTrigger value="finance" className="rounded-xl py-2 sm:py-2.5 px-2 text-[11px] sm:text-xs font-bold gap-1.5 flex items-center justify-center text-center">
+            <TrendingUp className="h-3.5 w-3.5 sm:h-4 sm:w-4 shrink-0" />
+            <span className="truncate">Bilan & Rentabilité</span>
           </TabsTrigger>
         </TabsList>
 
@@ -492,8 +492,8 @@ Normes de calcul : INERA / FAO-56`;
                 <span>Programme de Fumure & Engrais Minéraux</span>
               </h3>
 
-              <div className="space-y-3">
-                <div className="p-3.5 rounded-2xl bg-card border border-border/80 flex items-center justify-between">
+              <div className="space-y-2.5">
+                <div className="p-3 sm:p-3.5 rounded-2xl bg-card border border-border/80 flex flex-col sm:flex-row sm:items-center justify-between gap-1">
                   <div>
                     <p className="font-bold text-xs text-foreground">Fumure Organique (Compost / Fumier)</p>
                     <p className="text-[11px] text-muted-foreground">À épandre avant labour profond</p>
@@ -501,30 +501,30 @@ Normes de calcul : INERA / FAO-56`;
                   <span className="font-black text-sm text-foreground">{results.manureTons} Tonnes</span>
                 </div>
 
-                <div className="p-3.5 rounded-2xl bg-card border border-border/80 flex items-center justify-between">
+                <div className="p-3 sm:p-3.5 rounded-2xl bg-card border border-border/80 flex flex-col sm:flex-row sm:items-center justify-between gap-1">
                   <div>
                     <p className="font-bold text-xs text-foreground">{selectedCrop.fertilizerNeeds.npkFormula}</p>
                     <p className="text-[11px] text-muted-foreground">Engrais de fond au semis / repiquage</p>
                   </div>
-                  <div className="text-right">
+                  <div className="text-left sm:text-right">
                     <span className="font-black text-sm text-emerald-600">{results.npkKg} kg</span>
                     <span className="text-[11px] text-muted-foreground block">({results.npkBags50kg} sacs de 50 kg)</span>
                   </div>
                 </div>
 
-                <div className="p-3.5 rounded-2xl bg-card border border-border/80 flex items-center justify-between">
+                <div className="p-3 sm:p-3.5 rounded-2xl bg-card border border-border/80 flex flex-col sm:flex-row sm:items-center justify-between gap-1">
                   <div>
                     <p className="font-bold text-xs text-foreground">Urée 46% N</p>
                     <p className="text-[11px] text-muted-foreground">Apport d'entretien (en 2 fractions)</p>
                   </div>
-                  <div className="text-right">
+                  <div className="text-left sm:text-right">
                     <span className="font-black text-sm text-emerald-600">{results.ureaKg} kg</span>
                     <span className="text-[11px] text-muted-foreground block">({results.ureaBags50kg} sacs de 50 kg)</span>
                   </div>
                 </div>
               </div>
 
-              <div className="p-3 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 flex justify-between items-center text-xs font-bold text-foreground">
+              <div className="p-3 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 flex flex-col sm:flex-row sm:items-center justify-between gap-1 text-xs font-bold text-foreground">
                 <span>Budget Fertilisants estimé :</span>
                 <span className="text-emerald-700 dark:text-emerald-300 font-black">
                   {results.fertilizerCostFcfa.toLocaleString()} FCFA
@@ -533,22 +533,22 @@ Normes de calcul : INERA / FAO-56`;
             </Card>
 
             {/* Besoins Hydriques FAO-56 */}
-            <Card className="p-5 rounded-[24px] border-border space-y-4">
+            <Card className="p-4 sm:p-5 rounded-[24px] border-border space-y-4">
               <h3 className="text-sm font-bold flex items-center gap-2 text-foreground">
                 <Droplets className="h-4 w-4 text-blue-500" />
                 <span>Besoins en Eau (Norme FAO-56 Sahélienne)</span>
               </h3>
 
-              <div className="space-y-3 text-xs">
-                <div className="p-3.5 rounded-2xl bg-card border border-border/80 flex items-center justify-between">
+              <div className="space-y-2.5 text-xs">
+                <div className="p-3 sm:p-3.5 rounded-2xl bg-card border border-border/80 flex flex-col sm:flex-row sm:items-center justify-between gap-1">
                   <span className="text-muted-foreground">Consommation journalière moyenne :</span>
                   <span className="font-black text-foreground">{results.dailyWaterM3} m³ / jour</span>
                 </div>
-                <div className="p-3.5 rounded-2xl bg-card border border-border/80 flex items-center justify-between">
+                <div className="p-3 sm:p-3.5 rounded-2xl bg-card border border-border/80 flex flex-col sm:flex-row sm:items-center justify-between gap-1">
                   <span className="text-muted-foreground">Consommation totale sur le cycle ({selectedCrop.cycleDays}j) :</span>
                   <span className="font-black text-blue-600">{results.totalWaterM3} m³</span>
                 </div>
-                <div className="p-3.5 rounded-2xl bg-card border border-border/80 flex items-center justify-between">
+                <div className="p-3 sm:p-3.5 rounded-2xl bg-card border border-border/80 flex flex-col sm:flex-row sm:items-center justify-between gap-1">
                   <span className="text-muted-foreground">Débit pompe conseillé (sur 6h de soleil) :</span>
                   <span className="font-black text-foreground">
                     {(results.dailyWaterM3 / 6).toFixed(1)} m³ / heure
@@ -623,15 +623,15 @@ Normes de calcul : INERA / FAO-56`;
             {/* Détail analytique des dépenses */}
             <div className="p-4 rounded-2xl bg-muted/30 border border-border/80 space-y-2 text-xs">
               <span className="font-bold text-foreground block">Ventilation des charges d'intrants :</span>
-              <div className="flex justify-between text-muted-foreground py-1 border-b border-border/40">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1 text-muted-foreground py-1 border-b border-border/40">
                 <span>Semences certifiées :</span>
                 <span className="font-bold text-foreground">{results.seedCostFcfa.toLocaleString()} FCFA</span>
               </div>
-              <div className="flex justify-between text-muted-foreground py-1 border-b border-border/40">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1 text-muted-foreground py-1 border-b border-border/40">
                 <span>Traitements phytosanitaires ({results.phytoTreatments.length} interventions) :</span>
                 <span className="font-bold text-foreground">{results.totalPhytoCostFcfa.toLocaleString()} FCFA</span>
               </div>
-              <div className="flex justify-between text-muted-foreground py-1">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1 text-muted-foreground py-1">
                 <span>Fertilisants minéraux (NPK + Urée) :</span>
                 <span className="font-bold text-foreground">{results.fertilizerCostFcfa.toLocaleString()} FCFA</span>
               </div>
