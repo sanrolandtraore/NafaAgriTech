@@ -63,6 +63,14 @@ import {
   Check,
   FolderKanban,
   Zap,
+  PenTool,
+  Copy,
+  Circle,
+  Crosshair,
+  Undo2,
+  CornerDownRight,
+  Move,
+  ChevronRight,
 } from "lucide-react";
 import { toast } from "sonner";
 import { MarketplaceMaterialPricePickerModal } from "./MarketplaceMaterialPricePickerModal";
@@ -96,6 +104,13 @@ export interface FarmElement3D {
   height: number;
   rotation: number;
   costFcfa: number;
+  // Propriétés de CAO / Plan Sur-Mesure
+  cornerRadius?: number; // Rayon d'arrondi des angles (m)
+  isCurved?: boolean; // Forme circulaire / pivot 360°
+  curveRadius?: number; // Rayon circulaire (m)
+  linearMeters?: number; // Métré linéaire (ml) pour canalisations & clôtures
+  pathPoints?: Array<{ x: number; z: number }>; // Jalons vectoriels du tracé
+  customNotes?: string; // Spécifications techniques du bureau d'études
 }
 
 export type AmenagementType =
@@ -917,8 +932,29 @@ export function Studio3DFarmModeler({
 
   // Onglet actif du panneau de personnalisation
   const [customTab, setCustomTab] = useState<
-    "amenagement" | "gps" | "carto" | "sols_couleurs" | "hydraulique"
+    "amenagement" | "gps" | "carto" | "sols_couleurs" | "hydraulique" | "sur_mesure"
   >("amenagement");
+
+  // Outils CAO & Tracé Vectoriel Professionnel
+  const [leftDrawerTab, setLeftDrawerTab] = useState<"catalog" | "cad_draw" | "elements_list">(
+    "catalog"
+  );
+  const [isDrawMode, setIsDrawMode] = useState(false);
+  const [drawToolType, setDrawToolType] = useState<
+    "parcel" | "pipe" | "fence" | "road" | "building" | "pivot"
+  >("parcel");
+  const [drawName, setDrawName] = useState("");
+  const [drawWidth, setDrawWidth] = useState(20);
+  const [drawPoints, setDrawPoints] = useState<Array<{ x: number; z: number }>>([]);
+  const [drawSnapGrid, setDrawSnapGrid] = useState(true);
+
+  // Projet Personnalisé & Bureau d'Études
+  const [customPlanName, setCustomPlanName] = useState(
+    activeFarm?.name || "Agro-Complexe Pilote de Tanghin"
+  );
+  const [customDomainAreaHa, setCustomDomainAreaHa] = useState<number>(
+    activeFarm?.totalAreaHa || 4.8
+  );
 
   // Éléments du plan 3D
   const [elements, setElements] = useState<FarmElement3D[]>([
@@ -1019,14 +1055,62 @@ export function Studio3DFarmModeler({
   const dirLightRef = useRef<THREE.DirectionalLight | null>(null);
   const hemiLightRef = useRef<THREE.HemisphereLight | null>(null);
 
-  // Contrôles Orbite 3D
+  // Contrôles Orbite 3D & Interactions CAO
   const isDraggingRef = useRef(false);
+  const pointerStartPosRef = useRef({ x: 0, y: 0 });
+  const hasMovedRef = useRef(false);
   const prevMouseRef = useRef({ x: 0, y: 0 });
   const cameraAnglesRef = useRef({ theta: Math.PI / 4, phi: Math.PI / 3, radius: 130 });
+  const drawPointsGroupRef = useRef<THREE.Group | null>(null);
 
   // Contrôles Canvas 2.5D
   const [canvas2dOffset, setCanvas2dOffset] = useState({ x: 0, y: 0 });
   const [canvas2dZoom, setCanvas2dZoom] = useState(1);
+
+  // Métriques de tracé CAO en temps réel
+  const drawMetrics = useMemo(() => {
+    if (drawPoints.length < 2) {
+      return { totalLength: 0, areaM2: 0, areaHa: 0, estimatedCostFcfa: 0 };
+    }
+    let totalLength = 0;
+    for (let i = 0; i < drawPoints.length - 1; i++) {
+      const dx = drawPoints[i + 1].x - drawPoints[i].x;
+      const dz = drawPoints[i + 1].z - drawPoints[i].z;
+      totalLength += Math.hypot(dx, dz);
+    }
+    totalLength = Math.round(totalLength * 10) / 10;
+
+    // Calcul de surface par formule de Gauss / lacets (Shoelace) si >= 3 points
+    let areaM2 = 0;
+    if (drawPoints.length >= 3) {
+      let sum = 0;
+      for (let i = 0; i < drawPoints.length; i++) {
+        const j = (i + 1) % drawPoints.length;
+        sum += drawPoints[i].x * drawPoints[j].z - drawPoints[j].x * drawPoints[i].z;
+      }
+      areaM2 = Math.round(Math.abs(sum) / 2);
+    } else {
+      areaM2 = Math.round(totalLength * drawWidth);
+    }
+    const areaHa = Math.round((areaM2 / 10000) * 100) / 100;
+
+    let estimatedCostFcfa = 0;
+    if (drawToolType === "pipe") {
+      estimatedCostFcfa = Math.round(totalLength * 4200); // 4 200 FCFA/ml
+    } else if (drawToolType === "fence") {
+      estimatedCostFcfa = Math.round(totalLength * 6800); // 6 800 FCFA/ml
+    } else if (drawToolType === "road") {
+      estimatedCostFcfa = Math.round(totalLength * 5500); // 5 500 FCFA/ml
+    } else if (drawToolType === "building") {
+      estimatedCostFcfa = Math.round(areaM2 * 45000); // 45 000 FCFA/m²
+    } else if (drawToolType === "pivot") {
+      estimatedCostFcfa = 18500000;
+    } else {
+      estimatedCostFcfa = Math.round(areaM2 * 150); // 150 FCFA/m²
+    }
+
+    return { totalLength, areaM2, areaHa, estimatedCostFcfa };
+  }, [drawPoints, drawWidth, drawToolType]);
 
   // Budget total calculé
   const totalBudgetFcfa = elements.reduce((sum, el) => sum + el.costFcfa, 0);
@@ -1381,6 +1465,86 @@ export function Studio3DFarmModeler({
           bush.castShadow = true;
           group.add(bush);
         }
+      } else if (el.isCurved || el.type === "pivot_irrigation") {
+        // Pivot d'irrigation circulaire 360° ou forme circulaire
+        const radius = el.curveRadius || Math.max(el.width, el.length) / 2;
+
+        // Disque de base humidifié / culture en cercle
+        const circleMat = new THREE.MeshStandardMaterial({
+          color: cropColorHex,
+          roughness: 0.8,
+        });
+        const circleGeo = new THREE.CylinderGeometry(radius, radius, 0.15, 36);
+        const baseDisk = new THREE.Mesh(circleGeo, circleMat);
+        baseDisk.position.y = 0.08;
+        baseDisk.receiveShadow = true;
+        group.add(baseDisk);
+
+        // Pylône central
+        const towerMat = new THREE.MeshStandardMaterial({ color: 0x455a64, metalness: 0.7 });
+        const towerGeo = new THREE.CylinderGeometry(0.35, 0.9, el.height, 8);
+        const tower = new THREE.Mesh(towerGeo, towerMat);
+        tower.position.y = el.height / 2;
+        tower.castShadow = true;
+        group.add(tower);
+
+        // Rampe d'aspersion tubulaire radiale
+        const armMat = new THREE.MeshStandardMaterial({ color: pipeColorHex, metalness: 0.6 });
+        const armGeo = new THREE.CylinderGeometry(0.12, 0.12, radius);
+        const arm = new THREE.Mesh(armGeo, armMat);
+        arm.position.set(radius / 2, el.height * 0.85, 0);
+        arm.rotation.z = Math.PI / 2;
+        arm.castShadow = true;
+        group.add(arm);
+
+        // Tour extérieure roulante
+        const wheelTowerGeo = new THREE.CylinderGeometry(0.2, 0.45, el.height * 0.7, 6);
+        const wheelTower = new THREE.Mesh(wheelTowerGeo, towerMat);
+        wheelTower.position.set(radius, el.height * 0.35, 0);
+        wheelTower.castShadow = true;
+        group.add(wheelTower);
+      } else if (
+        el.cornerRadius &&
+        el.cornerRadius > 0 &&
+        (el.category === "crop" || el.category === "building")
+      ) {
+        // Forme extrudée avec coins arrondis (Fillet CAO)
+        const shape = new THREE.Shape();
+        const w = el.width;
+        const l = el.length;
+        const r = Math.min(el.cornerRadius, w / 2 - 0.2, l / 2 - 0.2);
+        const x0 = -w / 2;
+        const z0 = -l / 2;
+
+        shape.moveTo(x0 + r, z0);
+        shape.lineTo(x0 + w - r, z0);
+        shape.quadraticCurveTo(x0 + w, z0, x0 + w, z0 + r);
+        shape.lineTo(x0 + w, z0 + l - r);
+        shape.quadraticCurveTo(x0 + w, z0 + l, x0 + w - r, z0 + l);
+        shape.lineTo(x0 + r, z0 + l);
+        shape.quadraticCurveTo(x0, z0 + l, x0, z0 + l - r);
+        shape.lineTo(x0, z0 + r);
+        shape.quadraticCurveTo(x0, z0, x0 + r, z0);
+
+        const extrudeGeo = new THREE.ExtrudeGeometry(shape, {
+          depth: el.height,
+          bevelEnabled: false,
+        });
+        extrudeGeo.rotateX(Math.PI / 2);
+
+        const matColor = el.category === "crop" ? cropColorHex : buildingColorHex;
+        const roundedMesh = new THREE.Mesh(
+          extrudeGeo,
+          new THREE.MeshStandardMaterial({
+            color: matColor,
+            roughness: el.category === "crop" ? 0.8 : 0.4,
+            metalness: el.category === "crop" ? 0.1 : 0.3,
+          })
+        );
+        roundedMesh.position.y = el.height;
+        roundedMesh.castShadow = true;
+        roundedMesh.receiveShadow = true;
+        group.add(roundedMesh);
       } else {
         const proceduralMesh = buildProceduralMeshForType(
           el.type,
@@ -1394,15 +1558,31 @@ export function Studio3DFarmModeler({
 
       // Contour de sélection
       if (el.id === selectedId) {
-        const wireGeo = new THREE.BoxGeometry(el.width + 0.6, el.height + 0.6, el.length + 0.6);
-        const wireMat = new THREE.MeshBasicMaterial({
-          color: 0x10b981,
-          wireframe: true,
-          wireframeLinewidth: 2,
-        });
-        const wire = new THREE.Mesh(wireGeo, wireMat);
-        wire.position.y = el.height / 2;
-        group.add(wire);
+        if (el.isCurved || el.type === "pivot_irrigation") {
+          const r = el.curveRadius || Math.max(el.width, el.length) / 2;
+          const wireGeo = new THREE.CylinderGeometry(
+            r + 0.5,
+            r + 0.5,
+            el.height + 0.6,
+            24,
+            1,
+            true
+          );
+          const wireMat = new THREE.MeshBasicMaterial({ color: 0x10b981, wireframe: true });
+          const wire = new THREE.Mesh(wireGeo, wireMat);
+          wire.position.y = el.height / 2;
+          group.add(wire);
+        } else {
+          const wireGeo = new THREE.BoxGeometry(el.width + 0.6, el.height + 0.6, el.length + 0.6);
+          const wireMat = new THREE.MeshBasicMaterial({
+            color: 0x10b981,
+            wireframe: true,
+            wireframeLinewidth: 2,
+          });
+          const wire = new THREE.Mesh(wireGeo, wireMat);
+          wire.position.y = el.height / 2;
+          group.add(wire);
+        }
       }
 
       return group;
@@ -1710,6 +1890,43 @@ export function Studio3DFarmModeler({
     });
   }, [elements, createElementMesh, renderMode]);
 
+  // Synchronisation des jalons de tracé vectoriel CAO dans Three.js
+  useEffect(() => {
+    if (renderMode !== "webgl" || !sceneRef.current) return;
+    let group = drawPointsGroupRef.current;
+    if (!group) {
+      group = new THREE.Group();
+      drawPointsGroupRef.current = group;
+      sceneRef.current.add(group);
+    }
+    while (group.children.length > 0) {
+      group.remove(group.children[0]);
+    }
+
+    if (drawPoints.length === 0) return;
+
+    const sphereGeo = new THREE.SphereGeometry(0.7, 16, 16);
+    const sphereMat = new THREE.MeshStandardMaterial({
+      color: 0xf97316,
+      emissive: 0xf97316,
+      emissiveIntensity: 0.6,
+    });
+
+    drawPoints.forEach((pt) => {
+      const marker = new THREE.Mesh(sphereGeo, sphereMat);
+      marker.position.set(pt.x, 0.7, pt.z);
+      group.add(marker);
+    });
+
+    if (drawPoints.length >= 2) {
+      const pts = drawPoints.map((p) => new THREE.Vector3(p.x, 0.4, p.z));
+      const lineGeo = new THREE.BufferGeometry().setFromPoints(pts);
+      const lineMat = new THREE.LineBasicMaterial({ color: 0xf97316, linewidth: 3 });
+      const line = new THREE.Line(lineGeo, lineMat);
+      group.add(line);
+    }
+  }, [drawPoints, renderMode]);
+
   // Éclairage Three.js
   useEffect(() => {
     if (
@@ -1927,6 +2144,37 @@ export function Studio3DFarmModeler({
           sideFill = "#607d8b";
         }
 
+        if (el.isCurved || el.type === "pivot_irrigation") {
+          const r = el.curveRadius || Math.max(el.width, el.length) / 2;
+          ctx.beginPath();
+          const segments = 24;
+          for (let s = 0; s <= segments; s++) {
+            const th = (s / segments) * Math.PI * 2;
+            const px = el.x + r * Math.cos(th);
+            const pz = el.z + r * Math.sin(th);
+            const p = projectIso(px, 0.1, pz);
+            if (s === 0) ctx.moveTo(p.x, p.y);
+            else ctx.lineTo(p.x, p.y);
+          }
+          ctx.closePath();
+          ctx.fillStyle = isSel ? "#10b981" : topFill;
+          ctx.fill();
+          ctx.strokeStyle = isSel ? "#34d399" : "#1b5e20";
+          ctx.lineWidth = 2;
+          ctx.stroke();
+
+          const cp = projectIso(el.x, el.height, el.z);
+          ctx.fillStyle = "#ffffff";
+          ctx.beginPath();
+          ctx.arc(cp.x, cp.y, 4, 0, Math.PI * 2);
+          ctx.fill();
+
+          ctx.fillStyle = "#ffffff";
+          ctx.font = "bold 10px sans-serif";
+          ctx.fillText(el.name.split(" ")[0], cp.x + 6, cp.y - 4);
+          return;
+        }
+
         // Face latérale gauche
         ctx.beginPath();
         ctx.moveTo(b1.x, b1.y);
@@ -1966,6 +2214,38 @@ export function Studio3DFarmModeler({
         ctx.fillText(el.name.split(" ")[0], t4.x, t4.y - 4);
       });
 
+      // 5. Affichage des jalons de tracé vectoriel CAO
+      if (drawPoints.length > 0) {
+        if (drawPoints.length >= 2) {
+          ctx.strokeStyle = "#f97316";
+          ctx.lineWidth = 3;
+          ctx.setLineDash([5, 4]);
+          ctx.beginPath();
+          drawPoints.forEach((pt, idx) => {
+            const p = projectIso(pt.x, 0.3, pt.z);
+            if (idx === 0) ctx.moveTo(p.x, p.y);
+            else ctx.lineTo(p.x, p.y);
+          });
+          ctx.stroke();
+          ctx.setLineDash([]);
+        }
+
+        drawPoints.forEach((pt, idx) => {
+          const p = projectIso(pt.x, 0.3, pt.z);
+          ctx.fillStyle = "#f97316";
+          ctx.beginPath();
+          ctx.arc(p.x, p.y, 5, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.strokeStyle = "#ffffff";
+          ctx.lineWidth = 1.5;
+          ctx.stroke();
+
+          ctx.fillStyle = "#ffffff";
+          ctx.font = "bold 9px sans-serif";
+          ctx.fillText(`P${idx + 1}`, p.x + 7, p.y - 4);
+        });
+      }
+
       ctx.restore();
       animId = requestAnimationFrame(render);
     };
@@ -1987,6 +2267,7 @@ export function Studio3DFarmModeler({
     showCadastralBoundary,
     showContourLines,
     currentField,
+    drawPoints,
   ]);
 
   // Redimensionnement du Canvas 2.5D
@@ -2009,13 +2290,102 @@ export function Studio3DFarmModeler({
   // -------------------------------------------------------------
   // GESTION POINTER / ORBITE (SOURIS & TACTILE)
   // -------------------------------------------------------------
+  // -------------------------------------------------------------
+  // GESTION POINTER / CLIC / RAYCASTING (SOURIS & TACTILE)
+  // -------------------------------------------------------------
+  const handleCanvasClick = (clientX: number, clientY: number) => {
+    if (renderMode === "webgl") {
+      const container = mountRef.current;
+      if (!container || !cameraRef.current || !sceneRef.current) return;
+      const rect = container.getBoundingClientRect();
+      const mouse = new THREE.Vector2(
+        ((clientX - rect.left) / rect.width) * 2 - 1,
+        -((clientY - rect.top) / rect.height) * 2 + 1
+      );
+      const raycaster = new THREE.Raycaster();
+      raycaster.setFromCamera(mouse, cameraRef.current);
+
+      if (isDrawMode) {
+        // Intersection avec le plan horizontal Y = 0 (sol agricole)
+        const plane = new THREE.Plane(new THREE.Vector3(0, 1, 0), 0);
+        const targetPoint = new THREE.Vector3();
+        const hit = raycaster.ray.intersectPlane(plane, targetPoint);
+        if (hit) {
+          const snap = drawSnapGrid ? 0.5 : 0.1;
+          const snappedX = Math.round(targetPoint.x / snap) * snap;
+          const snappedZ = Math.round(targetPoint.z / snap) * snap;
+          setDrawPoints((prev) => [...prev, { x: snappedX, z: snappedZ }]);
+          toast.info(`Jalon P${drawPoints.length + 1} posé : (${snappedX}m, ${snappedZ}m)`);
+        }
+      } else {
+        // Sélection d'un objet existant par lancer de rayon
+        if (objectsGroupRef.current) {
+          const hits = raycaster.intersectObjects(objectsGroupRef.current.children, true);
+          if (hits.length > 0) {
+            let rootObj: THREE.Object3D | null = hits[0].object;
+            while (rootObj && rootObj.parent !== objectsGroupRef.current) {
+              rootObj = rootObj.parent;
+            }
+            if (rootObj && rootObj.name) {
+              setSelectedId(rootObj.name);
+              return;
+            }
+          }
+        }
+        setSelectedId(null);
+      }
+    } else if (renderMode === "isometric2d") {
+      const container = container2dRef.current;
+      if (!container) return;
+      const rect = container.getBoundingClientRect();
+      const clickX = clientX - rect.left;
+      const clickY = clientY - rect.top;
+      const w = container.clientWidth;
+      const h = container.clientHeight;
+
+      const relX = (clickX - (w / 2 + canvas2dOffset.x)) / canvas2dZoom;
+      const relY = (clickY - (h / 2 + 40 + canvas2dOffset.y)) / canvas2dZoom;
+
+      const Xs = relX / 3.5;
+      const Ys = relY / 1.8;
+      const rx = (Xs + Ys) / 2;
+      const rz = (Ys - Xs) / 2;
+      const snap = drawSnapGrid ? 0.5 : 0.1;
+      const gx = Math.round(rx / snap) * snap;
+      const gz = Math.round(rz / snap) * snap;
+
+      if (isDrawMode) {
+        setDrawPoints((prev) => [...prev, { x: gx, z: gz }]);
+        toast.info(`Jalon P${drawPoints.length + 1} posé : (${gx}m, ${gz}m)`);
+      } else {
+        const hit = elements.find(
+          (el) => Math.abs(el.x - gx) <= el.width / 2 && Math.abs(el.z - gz) <= el.length / 2
+        );
+        if (hit) {
+          setSelectedId(hit.id);
+        } else {
+          setSelectedId(null);
+        }
+      }
+    }
+  };
+
   const handlePointerDown = (clientX: number, clientY: number) => {
     isDraggingRef.current = true;
+    hasMovedRef.current = false;
+    pointerStartPosRef.current = { x: clientX, y: clientY };
     prevMouseRef.current = { x: clientX, y: clientY };
   };
 
   const handlePointerMove = (clientX: number, clientY: number) => {
     if (!isDraggingRef.current) return;
+    const dist = Math.hypot(
+      clientX - pointerStartPosRef.current.x,
+      clientY - pointerStartPosRef.current.y
+    );
+    if (dist > 5) {
+      hasMovedRef.current = true;
+    }
     const dx = clientX - prevMouseRef.current.x;
     const dy = clientY - prevMouseRef.current.y;
     prevMouseRef.current = { x: clientX, y: clientY };
@@ -2035,8 +2405,11 @@ export function Studio3DFarmModeler({
     }
   };
 
-  const handlePointerUp = () => {
+  const handlePointerUp = (clientX?: number, clientY?: number) => {
     isDraggingRef.current = false;
+    if (!hasMovedRef.current && clientX !== undefined && clientY !== undefined) {
+      handleCanvasClick(clientX, clientY);
+    }
   };
 
   const handleWheel = (e: React.WheelEvent) => {
@@ -2054,8 +2427,360 @@ export function Studio3DFarmModeler({
   };
 
   // -------------------------------------------------------------
-  // ACTIONS SUR LE MODÈLE
+  // ACTIONS SUR LE MODÈLE & SUITE CAO PROFESSIONNELLE
   // -------------------------------------------------------------
+  const handleUpdateSelected = (patch: Partial<FarmElement3D>) => {
+    if (!selectedId) return;
+    setElements((prev) =>
+      prev.map((el) => {
+        if (el.id !== selectedId) return el;
+        const updated = { ...el, ...patch };
+        if (patch.length !== undefined || patch.width !== undefined) {
+          const oldArea = Math.max(1, el.width * el.length);
+          const newArea = Math.max(1, updated.width * updated.length);
+          const unitCost = el.costFcfa / oldArea;
+          updated.costFcfa = Math.round(unitCost * newArea);
+        }
+        return updated;
+      })
+    );
+  };
+
+  // Allonger l'élément sélectionné
+  const handleLengthenSelected = (deltaMeters: number) => {
+    if (!selectedId) return;
+    const current = elements.find((e) => e.id === selectedId);
+    if (!current) return;
+    const newLength = Math.max(0.5, Math.round((current.length + deltaMeters) * 10) / 10);
+    const oldArea = Math.max(1, current.width * current.length);
+    const newArea = Math.max(1, current.width * newLength);
+    const unitCost = current.costFcfa / oldArea;
+    const newCost = Math.round(unitCost * newArea);
+    handleUpdateSelected({
+      length: newLength,
+      costFcfa: newCost,
+      linearMeters: current.linearMeters
+        ? Math.max(0.5, Math.round((current.linearMeters + deltaMeters) * 10) / 10)
+        : undefined,
+    });
+    toast.info(`Longueur allongée : ${newLength} m (${deltaMeters > 0 ? "+" : ""}${deltaMeters} m)`);
+  };
+
+  // Élargir l'élément sélectionné
+  const handleWidenSelected = (deltaMeters: number) => {
+    if (!selectedId) return;
+    const current = elements.find((e) => e.id === selectedId);
+    if (!current) return;
+    const newWidth = Math.max(0.2, Math.round((current.width + deltaMeters) * 10) / 10);
+    const oldArea = Math.max(1, current.width * current.length);
+    const newArea = Math.max(1, newWidth * current.length);
+    const unitCost = current.costFcfa / oldArea;
+    const newCost = Math.round(unitCost * newArea);
+    handleUpdateSelected({ width: newWidth, costFcfa: newCost });
+    toast.info(`Largeur élargie : ${newWidth} m (${deltaMeters > 0 ? "+" : ""}${deltaMeters} m)`);
+  };
+
+  // Arrondir les angles de l'élément sélectionné
+  const handleSetCornerRadius = (radius: number) => {
+    if (!selectedId) return;
+    handleUpdateSelected({ cornerRadius: Math.max(0, radius) });
+    toast.success(
+      radius > 0 ? `Arrondi des coins fixé à ${radius} m.` : "Angles vifs rétablis (0m)."
+    );
+  };
+
+  // Basculer en forme circulaire / pivot 360°
+  const handleToggleCurved = () => {
+    if (!selectedId) return;
+    const current = elements.find((e) => e.id === selectedId);
+    if (!current) return;
+    const nextIsCurved = !current.isCurved;
+    handleUpdateSelected({
+      isCurved: nextIsCurved,
+      curveRadius: nextIsCurved
+        ? Math.round(Math.max(current.width, current.length) / 2)
+        : undefined,
+    });
+    toast.success(
+      nextIsCurved ? "Mode circulaire / pivot 360° activé." : "Mode rectangulaire standard rétabli."
+    );
+  };
+
+  // Dupliquer l'élément sélectionné en parallèle (+5m)
+  const handleDuplicateSelected = () => {
+    if (!selectedId) return;
+    const current = elements.find((e) => e.id === selectedId);
+    if (!current) return;
+    const dup: FarmElement3D = {
+      ...current,
+      id: `elem-${Date.now()}`,
+      name: `${current.name} (Parallèle)`,
+      x: Math.round((current.x + 5) * 10) / 10,
+      z: Math.round((current.z + 5) * 10) / 10,
+    };
+    setElements((prev) => [...prev, dup]);
+    setSelectedId(dup.id);
+    toast.success(`Ouvrage dupliqué en parallèle (+5m) : "${dup.name}"`);
+  };
+
+  // Valider et implanter un tracé vectoriel
+  const handleValidateDrawnElement = () => {
+    if (drawPoints.length < 2) {
+      toast.error("Veuillez poser au moins 2 jalons sur le terrain pour implanter l'ouvrage.");
+      return;
+    }
+
+    let totalDist = 0;
+    for (let i = 0; i < drawPoints.length - 1; i++) {
+      const dx = drawPoints[i + 1].x - drawPoints[i].x;
+      const dz = drawPoints[i + 1].z - drawPoints[i].z;
+      totalDist += Math.hypot(dx, dz);
+    }
+    totalDist = Math.round(totalDist * 10) / 10;
+
+    const xs = drawPoints.map((p) => p.x);
+    const zs = drawPoints.map((p) => p.z);
+    const minX = Math.min(...xs);
+    const maxX = Math.max(...xs);
+    const minZ = Math.min(...zs);
+    const maxZ = Math.max(...zs);
+    const centerX = Math.round(((minX + maxX) / 2) * 10) / 10;
+    const centerZ = Math.round(((minZ + maxZ) / 2) * 10) / 10;
+    const spanX = Math.max(1, Math.round((maxX - minX) * 10) / 10);
+    const spanZ = Math.max(1, Math.round((maxZ - minZ) * 10) / 10);
+
+    const angleDeg = Math.round(
+      (Math.atan2(
+        drawPoints[drawPoints.length - 1].z - drawPoints[0].z,
+        drawPoints[drawPoints.length - 1].x - drawPoints[0].x
+      ) *
+        180) /
+        Math.PI
+    );
+
+    let newEl: FarmElement3D;
+    const id = `draw-${Date.now()}`;
+
+    if (drawToolType === "pipe") {
+      newEl = {
+        id,
+        name: drawName.trim() || `Canalisation PEHD (${totalDist} ml)`,
+        category: "irrigation",
+        type: "pipe_trench",
+        x: centerX,
+        z: centerZ,
+        width: 0.8,
+        length: totalDist,
+        height: 0.3,
+        rotation: angleDeg,
+        costFcfa: Math.round(totalDist * 4200),
+        linearMeters: totalDist,
+        pathPoints: [...drawPoints],
+      };
+    } else if (drawToolType === "fence") {
+      newEl = {
+        id,
+        name: drawName.trim() || `Clôture Grillagée (${totalDist} ml)`,
+        category: "infrastructure",
+        type: "fence_mesh",
+        x: centerX,
+        z: centerZ,
+        width: 0.4,
+        length: totalDist,
+        height: 1.8,
+        rotation: angleDeg,
+        costFcfa: Math.round(totalDist * 6800),
+        linearMeters: totalDist,
+        pathPoints: [...drawPoints],
+      };
+    } else if (drawToolType === "road") {
+      newEl = {
+        id,
+        name: drawName.trim() || `Piste Latéritique (${totalDist} ml)`,
+        category: "infrastructure",
+        type: "road_track",
+        x: centerX,
+        z: centerZ,
+        width: 4.0,
+        length: totalDist,
+        height: 0.15,
+        rotation: angleDeg,
+        costFcfa: Math.round(totalDist * 5500),
+        linearMeters: totalDist,
+        pathPoints: [...drawPoints],
+      };
+    } else if (drawToolType === "pivot") {
+      const radius = Math.max(10, Math.round(totalDist));
+      newEl = {
+        id,
+        name: drawName.trim() || `Pivot d'Irrigation (R: ${radius}m)`,
+        category: "irrigation",
+        type: "pivot_irrigation",
+        x: drawPoints[0].x,
+        z: drawPoints[0].z,
+        width: radius * 2,
+        length: radius * 2,
+        height: 3.5,
+        rotation: 0,
+        isCurved: true,
+        curveRadius: radius,
+        costFcfa: 18500000,
+      };
+    } else if (drawToolType === "building") {
+      newEl = {
+        id,
+        name: drawName.trim() || `Bâtiment / Hangar (${spanX}m × ${spanZ}m)`,
+        category: "building",
+        type: "storage_shed",
+        x: centerX,
+        z: centerZ,
+        width: spanX,
+        length: spanZ,
+        height: 3.8,
+        rotation: 0,
+        costFcfa: Math.round(spanX * spanZ * 45000),
+        pathPoints: [...drawPoints],
+      };
+    } else {
+      const areaM2 = Math.round(spanX * spanZ);
+      newEl = {
+        id,
+        name: drawName.trim() || `Parcelle Maraîchère (${areaM2} m²)`,
+        category: "crop",
+        type: "crop_vegetables",
+        x: centerX,
+        z: centerZ,
+        width: spanX,
+        length: spanZ,
+        height: 1.0,
+        rotation: 0,
+        costFcfa: Math.round(areaM2 * 150),
+        pathPoints: [...drawPoints],
+      };
+    }
+
+    setElements((prev) => [...prev, newEl]);
+    setSelectedId(newEl.id);
+    setDrawPoints([]);
+    setIsDrawMode(false);
+    toast.success(`Ouvrage personnalisé "${newEl.name}" créé et implanté !`);
+  };
+
+  const handleClearDrawPoints = () => {
+    setDrawPoints([]);
+    toast.info("Tracé en cours réinitialisé.");
+  };
+
+  const handleUndoLastDrawPoint = () => {
+    setDrawPoints((prev) => prev.slice(0, -1));
+    toast.info("Dernier jalon retiré.");
+  };
+
+  // Export GeoJSON standard pour SIG / QGIS
+  const handleExportGeoJson = () => {
+    const geojson = {
+      type: "FeatureCollection",
+      metadata: {
+        generator: "NAFA Studio 3D Field Designer CAD",
+        projectName: customPlanName,
+        date: new Date().toISOString(),
+        surfaceHa: customDomainAreaHa,
+        totalBudgetFcfa,
+      },
+      features: elements.map((el) => ({
+        type: "Feature",
+        id: el.id,
+        properties: {
+          name: el.name,
+          category: el.category,
+          type: el.type,
+          width: el.width,
+          length: el.length,
+          height: el.height,
+          rotation: el.rotation,
+          costFcfa: el.costFcfa,
+          cornerRadius: el.cornerRadius || 0,
+          isCurved: !!el.isCurved,
+          linearMeters: el.linearMeters,
+          customNotes: el.customNotes,
+        },
+        geometry: {
+          type: "Point",
+          coordinates: [el.x, el.z],
+        },
+      })),
+    };
+
+    const blob = new Blob([JSON.stringify(geojson, null, 2)], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `Plan_Agricole_${customPlanName.replace(/\s+/g, "_")}_${Date.now()}.geojson`;
+    a.click();
+    URL.revokeObjectURL(url);
+    toast.success("Fichier GeoJSON exporté pour SIG / QGIS / Arpentage !");
+  };
+
+  // Export plan CAO JSON vectoriel
+  const handleExportCadJson = () => {
+    const projectData = {
+      version: "2.0-cad",
+      projectName: customPlanName,
+      exportedAt: new Date().toISOString(),
+      domainAreaHa: customDomainAreaHa,
+      amenagementType,
+      soilType,
+      customColors,
+      totalBudgetFcfa,
+      elements,
+    };
+    const blob = new Blob([JSON.stringify(projectData, null, 2)], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `Plan_CAO_Studio3D_${customPlanName.replace(/\s+/g, "_")}_${Date.now()}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+    toast.success("Plan CAO complet exporté en format JSON vectoriel !");
+  };
+
+  // Importer un plan CAO
+  const handleImportCadJson = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      try {
+        const parsed = JSON.parse(event.target?.result as string);
+        if (Array.isArray(parsed.elements)) {
+          setElements(parsed.elements);
+          if (parsed.projectName) setCustomPlanName(parsed.projectName);
+          if (parsed.domainAreaHa) setCustomDomainAreaHa(parsed.domainAreaHa);
+          if (parsed.customColors) setCustomColors(parsed.customColors);
+          toast.success(
+            `Plan CAO "${parsed.projectName || "personnalisé"}" chargé (${parsed.elements.length} ouvrages).`
+          );
+        } else {
+          toast.error("Format de fichier JSON non reconnu.");
+        }
+      } catch {
+        toast.error("Erreur lors de la lecture du fichier JSON.");
+      }
+    };
+    reader.readAsText(file);
+  };
+
+  // Initialiser un nouveau plan vierge
+  const handleNewCustomBlankPlan = () => {
+    setElements([]);
+    setSelectedId(null);
+    setDrawPoints([]);
+    setIsDrawMode(false);
+    toast.success(
+      `Nouveau plan vierge initialisé pour "${customPlanName}" (${customDomainAreaHa} ha). Vous pouvez commencer vos tracés et implantations !`
+    );
+  };
+
   const handleAddElement = (preset: (typeof PRESET_ELEMENTS)[0] | JardiCatalogItem) => {
     const newEl: FarmElement3D = {
       id: `elem-${Date.now()}`,
@@ -2096,9 +2821,10 @@ export function Studio3DFarmModeler({
 
   const handleDeleteSelected = () => {
     if (!selectedId) return;
+    const current = elements.find((el) => el.id === selectedId);
     setElements((prev) => prev.filter((el) => el.id !== selectedId));
     setSelectedId(null);
-    toast.info("Élément supprimé de la maquette.");
+    toast.info(`Ouvrage "${current?.name || ""}" supprimé de la maquette.`);
   };
 
   const handleRotateSelected = () => {
@@ -2381,6 +3107,17 @@ export function Studio3DFarmModeler({
               }`}
             >
               Bilan Hydrique & Données
+            </button>
+            <button
+              type="button"
+              onClick={() => setCustomTab("sur_mesure")}
+              className={`px-3 py-1.5 rounded-xl transition-all ${
+                customTab === "sur_mesure"
+                  ? "bg-primary text-primary-foreground shadow-xs"
+                  : "text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              Plan Sur-Mesure & CAO
             </button>
           </div>
         </div>
@@ -2826,113 +3563,552 @@ export function Studio3DFarmModeler({
             </div>
           </div>
         )}
+
+        {/* 6. ONGLET PLAN SUR-MESURE & CAO EXPERT */}
+        {customTab === "sur_mesure" && (
+          <div className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="space-y-1.5">
+                <Label className="text-xs font-bold text-foreground">
+                  Nom du Projet / Exploitation
+                </Label>
+                <Input
+                  type="text"
+                  value={customPlanName}
+                  onChange={(e) => setCustomPlanName(e.target.value)}
+                  placeholder="Ex: Agro-Complexe Pilote de Tanghin"
+                  className="h-9 text-xs font-bold"
+                />
+                <span className="text-[10px] text-muted-foreground">
+                  Identifiant du projet pour les rapports, devis et exports CAO.
+                </span>
+              </div>
+
+              <div className="space-y-1.5">
+                <Label className="text-xs font-bold text-foreground">
+                  Superficie Totale du Domaine (Hectares)
+                </Label>
+                <div className="flex items-center gap-2">
+                  <Input
+                    type="number"
+                    step="0.1"
+                    min="0.1"
+                    value={customDomainAreaHa}
+                    onChange={(e) => setCustomDomainAreaHa(parseFloat(e.target.value) || 1)}
+                    className="h-9 text-xs font-bold"
+                  />
+                  <span className="text-xs font-bold text-muted-foreground">ha</span>
+                </div>
+                <span className="text-[10px] text-muted-foreground">
+                  Ajuste la surface utile de la maquette (1 ha = 10 000 m²).
+                </span>
+              </div>
+
+              {/* Bilan Métré & Devis */}
+              <div className="p-3.5 rounded-2xl bg-muted/40 border border-border/80 space-y-1 flex flex-col justify-center">
+                <div className="flex items-center justify-between text-xs font-bold">
+                  <span>Ouvrages Implantés :</span>
+                  <Badge variant="outline" className="text-primary font-bold">
+                    {elements.length} Ouvrages
+                  </Badge>
+                </div>
+                <p className="text-[11px] text-muted-foreground">
+                  Surface couverte :{" "}
+                  <strong>
+                    {elements
+                      .reduce((sum, el) => sum + Math.round(el.width * el.length), 0)
+                      .toLocaleString()}{" "}
+                    m²
+                  </strong>
+                </p>
+                <p className="text-[11px] text-emerald-600 dark:text-emerald-400 font-bold">
+                  Budget Global Estimé : {totalBudgetFcfa.toLocaleString()} FCFA
+                </p>
+              </div>
+            </div>
+
+            {/* Actions Projets & Exports CAO */}
+            <div className="pt-2 border-t border-border/60 flex flex-wrap items-center justify-between gap-2.5">
+              <div className="flex flex-wrap items-center gap-2">
+                <Button
+                  type="button"
+                  onClick={handleNewCustomBlankPlan}
+                  variant="outline"
+                  className="rounded-xl border-dashed border-primary text-primary hover:bg-primary/10 text-xs font-bold h-8 flex items-center gap-1.5"
+                >
+                  <Plus className="h-3.5 w-3.5" />
+                  <span>Nouveau Plan Vierge Sur-Mesure</span>
+                </Button>
+                <Button
+                  type="button"
+                  onClick={() => {
+                    setIsDrawMode(true);
+                    setLeftDrawerTab("cad_draw");
+                    toast.info(
+                      "Mode Tracé CAO activé ! Cliquez sur le terrain pour tracer vos ouvrages."
+                    );
+                  }}
+                  className="rounded-xl bg-amber-600 hover:bg-amber-500 text-white text-xs font-bold h-8 flex items-center gap-1.5 shadow-sm"
+                >
+                  <PenTool className="h-3.5 w-3.5" />
+                  <span>Lancer l'Outil de Tracé Vectoriel</span>
+                </Button>
+              </div>
+
+              <div className="flex flex-wrap items-center gap-2">
+                <Button
+                  type="button"
+                  onClick={handleExportCadJson}
+                  variant="outline"
+                  className="rounded-xl text-xs font-bold h-8 flex items-center gap-1.5"
+                >
+                  <Download className="h-3.5 w-3.5 text-primary" />
+                  <span>Exporter Plan CAO (JSON)</span>
+                </Button>
+                <Button
+                  type="button"
+                  onClick={handleExportGeoJson}
+                  variant="outline"
+                  className="rounded-xl text-xs font-bold h-8 flex items-center gap-1.5"
+                >
+                  <Map className="h-3.5 w-3.5 text-[#F97316]" />
+                  <span>Exporter GeoJSON (SIG / QGIS)</span>
+                </Button>
+                <label className="cursor-pointer inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-input bg-background hover:bg-muted text-xs font-bold h-8 transition-colors">
+                  <UploadCloud className="h-3.5 w-3.5 text-emerald-600" />
+                  <span>Importer Plan CAO</span>
+                  <input
+                    type="file"
+                    accept=".json"
+                    onChange={handleImportCadJson}
+                    className="hidden"
+                  />
+                </label>
+              </div>
+            </div>
+          </div>
+        )}
       </Card>
 
       {/* ── INTERFACE PRINCIPALE DU STUDIO (CATALOGUE & RENDU) ── */}
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-4">
-        {/* Panneau latéral gauche : Catalogue d'éléments */}
+        {/* Panneau latéral gauche : Catalogue d'éléments & Outils CAO */}
         <Card className="p-4 rounded-[24px] border-border/80 shadow-xs space-y-4 lg:col-span-1 flex flex-col justify-between">
           <div className="space-y-3">
-            <div className="flex items-center justify-between">
-              <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
-                Ajouter un élément
-              </Label>
-              <Badge variant="outline" className="text-[10px] font-bold">
-                {elements.length} placés
-              </Badge>
+            {/* Onglets du volet gauche : Catalogue / Tracer CAO / Liste des Ouvrages */}
+            <div className="grid grid-cols-3 gap-1 p-1 bg-muted rounded-xl text-[11px] font-bold">
+              <button
+                type="button"
+                onClick={() => setLeftDrawerTab("catalog")}
+                className={`py-1 px-1.5 rounded-lg transition-all text-center flex items-center justify-center gap-1 ${
+                  leftDrawerTab === "catalog"
+                    ? "bg-card text-foreground shadow-xs"
+                    : "text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                <Box className="h-3 w-3" />
+                <span>Catalogue</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setLeftDrawerTab("cad_draw");
+                  setIsDrawMode(true);
+                }}
+                className={`py-1 px-1.5 rounded-lg transition-all text-center flex items-center justify-center gap-1 ${
+                  leftDrawerTab === "cad_draw"
+                    ? "bg-amber-500 text-white shadow-xs"
+                    : "text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                <PenTool className="h-3 w-3" />
+                <span>Tracer</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setLeftDrawerTab("elements_list")}
+                className={`py-1 px-1.5 rounded-lg transition-all text-center flex items-center justify-center gap-1 ${
+                  leftDrawerTab === "elements_list"
+                    ? "bg-card text-foreground shadow-xs"
+                    : "text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                <Layers className="h-3 w-3" />
+                <span>Plan ({elements.length})</span>
+              </button>
             </div>
 
-            {/* Système de filtres & recherche typique Jardi Up 3D */}
-            <div className="space-y-2">
-              <div className="relative">
-                <Input
-                  type="text"
-                  placeholder="Rechercher manguier, forage, solaire, poulailler..."
-                  value={jardiSearchQuery}
-                  onChange={(e) => setJardiSearchQuery(e.target.value)}
-                  className="h-8 text-xs pl-2 pr-7 rounded-xl bg-muted/50 border-border/70"
-                />
-                {jardiSearchQuery && (
-                  <button
-                    type="button"
-                    onClick={() => setJardiSearchQuery("")}
-                    className="absolute right-2 top-2 text-[10px] text-muted-foreground hover:text-foreground"
-                  >
-                    ✕
-                  </button>
-                )}
-              </div>
+            {/* TAB 1: CATALOGUE DE MODÈLES TYPIQUES */}
+            {leftDrawerTab === "catalog" && (
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+                    Ajouter un élément
+                  </Label>
+                  <Badge variant="outline" className="text-[10px] font-bold">
+                    {elements.length} placés
+                  </Badge>
+                </div>
 
-              {/* Filtres par corps de métier (Jardi Up 3D) */}
-              <div className="flex flex-wrap gap-1">
-                <button
-                  type="button"
-                  onClick={() => setJardiCategoryFilter("all")}
-                  className={`px-2 py-1 rounded-lg text-[10px] font-bold transition-colors ${
-                    jardiCategoryFilter === "all"
-                      ? "bg-primary text-primary-foreground"
-                      : "bg-muted/80 text-muted-foreground hover:bg-muted"
-                  }`}
-                >
-                  Tous ({JARDI_CATALOG_ITEMS.length})
-                </button>
-                {JARDI_CATEGORIES.map((cat) => (
-                  <button
-                    key={cat.id}
+                {/* Système de filtres & recherche typique Jardi Up 3D */}
+                <div className="space-y-2">
+                  <div className="relative">
+                    <Input
+                      type="text"
+                      placeholder="Rechercher manguier, forage, solaire, poulailler..."
+                      value={jardiSearchQuery}
+                      onChange={(e) => setJardiSearchQuery(e.target.value)}
+                      className="h-8 text-xs pl-2 pr-7 rounded-xl bg-muted/50 border-border/70"
+                    />
+                    {jardiSearchQuery && (
+                      <button
+                        type="button"
+                        onClick={() => setJardiSearchQuery("")}
+                        className="absolute right-2 top-2 text-[10px] text-muted-foreground hover:text-foreground"
+                      >
+                        ✕
+                      </button>
+                    )}
+                  </div>
+
+                  {/* Filtres par corps de métier (Jardi Up 3D) */}
+                  <div className="flex flex-wrap gap-1">
+                    <button
+                      type="button"
+                      onClick={() => setJardiCategoryFilter("all")}
+                      className={`px-2 py-1 rounded-lg text-[10px] font-bold transition-colors ${
+                        jardiCategoryFilter === "all"
+                          ? "bg-primary text-primary-foreground"
+                          : "bg-muted/80 text-muted-foreground hover:bg-muted"
+                      }`}
+                    >
+                      Tous ({JARDI_CATALOG_ITEMS.length})
+                    </button>
+                    {JARDI_CATEGORIES.map((cat) => (
+                      <button
+                        key={cat.id}
+                        type="button"
+                        onClick={() => setJardiCategoryFilter(cat.id)}
+                        className={`px-2 py-1 rounded-lg text-[10px] font-bold transition-colors flex items-center gap-1 ${
+                          jardiCategoryFilter === cat.id
+                            ? "bg-primary text-primary-foreground"
+                            : "bg-muted/80 text-muted-foreground hover:bg-muted"
+                        }`}
+                      >
+                        <span>{cat.shortLabel}</span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Liste des éléments de la bibliothèque 3D typique */}
+                <div className="space-y-2 max-h-[320px] overflow-y-auto pr-1">
+                  {JARDI_CATALOG_ITEMS.filter((item) => {
+                    if (jardiCategoryFilter !== "all" && item.jardiCategory !== jardiCategoryFilter) {
+                      return false;
+                    }
+                    if (jardiSearchQuery.trim()) {
+                      const q = jardiSearchQuery.toLowerCase();
+                      const matchName = item.name.toLowerCase().includes(q);
+                      const matchDesc = item.description.toLowerCase().includes(q);
+                      const matchTag = item.tags.some((t) => t.toLowerCase().includes(q));
+                      return matchName || matchDesc || matchTag;
+                    }
+                    return true;
+                  }).map((item) => {
+                    const IconComp = item.icon || Box;
+                    return (
+                      <button
+                        key={item.type}
+                        type="button"
+                        onClick={() => handleAddElement(item)}
+                        className="w-full flex items-center justify-between p-2.5 rounded-2xl border border-border/80 bg-card hover:bg-emerald-500/10 hover:border-emerald-500/40 text-left transition-all group"
+                      >
+                        <div className="flex items-center gap-2.5 min-w-0">
+                          <div className="w-8 h-8 rounded-xl bg-primary/10 text-primary flex items-center justify-center shrink-0 group-hover:bg-[#F97316] group-hover:text-white transition-colors">
+                            <IconComp className="h-4 w-4" />
+                          </div>
+                          <div className="min-w-0">
+                            <p className="text-xs font-bold text-foreground truncate">{item.name}</p>
+                            <p className="text-[10px] text-muted-foreground truncate">
+                              {item.width}m × {item.length}m • {item.costFcfa.toLocaleString()} F
+                              {item.supplierRecommendation ? ` • ${item.supplierRecommendation}` : ""}
+                            </p>
+                          </div>
+                        </div>
+                        <Plus className="h-4 w-4 text-muted-foreground group-hover:text-emerald-600 shrink-0 ml-1" />
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
+            {/* TAB 2: OUTILS DE TRACÉ VECTORIEL CAO */}
+            {leftDrawerTab === "cad_draw" && (
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-bold uppercase tracking-wider text-foreground flex items-center gap-1.5">
+                    <PenTool className="h-3.5 w-3.5 text-amber-500" />
+                    <span>Tracé Vectoriel CAO</span>
+                  </span>
+                  <Badge
+                    className={`${
+                      isDrawMode
+                        ? "bg-amber-500 text-white animate-pulse"
+                        : "bg-muted text-muted-foreground"
+                    } text-[10px] font-bold`}
+                  >
+                    {isDrawMode ? "Tracé Actif" : "En veille"}
+                  </Badge>
+                </div>
+
+                {/* Sélecteur de type d'ouvrage à tracer */}
+                <div className="space-y-1.5">
+                  <Label className="text-[11px] font-bold text-muted-foreground">Type d'ouvrage :</Label>
+                  <div className="grid grid-cols-2 gap-1 text-[11px] font-bold">
+                    {[
+                      { id: "parcel", label: "Parcelle", icon: Sprout, color: "text-emerald-500" },
+                      { id: "pipe", label: "Canalisation", icon: Droplets, color: "text-sky-500" },
+                      { id: "fence", label: "Clôture", icon: ShieldCheck, color: "text-slate-400" },
+                      { id: "road", label: "Piste", icon: Tractor, color: "text-amber-600" },
+                      { id: "building", label: "Bâtiment", icon: Building2, color: "text-orange-500" },
+                      { id: "pivot", label: "Pivot 360°", icon: Circle, color: "text-teal-500" },
+                    ].map((t) => {
+                      const IconComp = t.icon;
+                      const isSel = drawToolType === t.id;
+                      return (
+                        <button
+                          key={t.id}
+                          type="button"
+                          onClick={() => {
+                            setDrawToolType(t.id as any);
+                            if (t.id === "pipe") setDrawName("Canalisation PEHD 63mm");
+                            else if (t.id === "fence") setDrawName("Clôture Grillagée 1.8m");
+                            else if (t.id === "road") setDrawName("Piste Latéritique 4m");
+                            else if (t.id === "pivot") setDrawName("Pivot d'Irrigation Circulaire");
+                            else if (t.id === "building") setDrawName("Hangar / Bâtiment Agricole");
+                            else setDrawName("Parcelle Maraîchère Sur-Mesure");
+                          }}
+                          className={`p-1.5 rounded-xl border text-left flex items-center gap-1.5 transition-all ${
+                            isSel
+                              ? "bg-amber-500/15 border-amber-500 text-foreground"
+                              : "border-border/70 hover:bg-muted/50 text-muted-foreground"
+                          }`}
+                        >
+                          <IconComp className={`h-3.5 w-3.5 ${t.color}`} />
+                          <span className="truncate">{t.label}</span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* Nom personnalisé */}
+                <div className="space-y-1">
+                  <Label className="text-[11px] font-bold text-muted-foreground">Nom de l'ouvrage :</Label>
+                  <Input
+                    type="text"
+                    value={drawName}
+                    onChange={(e) => setDrawName(e.target.value)}
+                    placeholder="Ex: Canalisation Principale PEHD"
+                    className="h-8 text-xs font-bold rounded-xl"
+                  />
+                </div>
+
+                {/* Bouton d'activation & Magnétisme */}
+                <div className="flex items-center gap-1.5">
+                  <Button
                     type="button"
-                    onClick={() => setJardiCategoryFilter(cat.id)}
-                    className={`px-2 py-1 rounded-lg text-[10px] font-bold transition-colors flex items-center gap-1 ${
-                      jardiCategoryFilter === cat.id
-                        ? "bg-primary text-primary-foreground"
-                        : "bg-muted/80 text-muted-foreground hover:bg-muted"
+                    onClick={() => setIsDrawMode((v) => !v)}
+                    className={`flex-1 rounded-xl text-xs font-bold h-8 flex items-center justify-center gap-1.5 ${
+                      isDrawMode
+                        ? "bg-amber-600 hover:bg-amber-500 text-white shadow-md animate-pulse"
+                        : "bg-muted hover:bg-muted/80 text-foreground"
                     }`}
                   >
-                    <span>{cat.shortLabel}</span>
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* Liste des éléments de la bibliothèque 3D typique */}
-            <div className="space-y-2 max-h-[360px] overflow-y-auto pr-1">
-              {JARDI_CATALOG_ITEMS.filter((item) => {
-                if (jardiCategoryFilter !== "all" && item.jardiCategory !== jardiCategoryFilter) {
-                  return false;
-                }
-                if (jardiSearchQuery.trim()) {
-                  const q = jardiSearchQuery.toLowerCase();
-                  const matchName = item.name.toLowerCase().includes(q);
-                  const matchDesc = item.description.toLowerCase().includes(q);
-                  const matchTag = item.tags.some((t) => t.toLowerCase().includes(q));
-                  return matchName || matchDesc || matchTag;
-                }
-                return true;
-              }).map((item) => {
-                const IconComp = item.icon || Box;
-                return (
+                    <PenTool className="h-3.5 w-3.5" />
+                    <span>{isDrawMode ? "Tracé Actif (Cliquez)" : "Activer Tracé"}</span>
+                  </Button>
                   <button
-                    key={item.type}
                     type="button"
-                    onClick={() => handleAddElement(item)}
-                    className="w-full flex items-center justify-between p-2.5 rounded-2xl border border-border/80 bg-card hover:bg-emerald-500/10 hover:border-emerald-500/40 text-left transition-all group"
+                    onClick={() => setDrawSnapGrid((s) => !s)}
+                    title={drawSnapGrid ? "Magnétisme 0.5m actif" : "Tracé libre"}
+                    className={`h-8 px-2 rounded-xl text-[11px] font-bold border transition-colors flex items-center gap-1 ${
+                      drawSnapGrid
+                        ? "bg-emerald-500/20 text-emerald-400 border-emerald-500/40"
+                        : "bg-muted text-muted-foreground border-border"
+                    }`}
                   >
-                    <div className="flex items-center gap-2.5 min-w-0">
-                      <div className="w-8 h-8 rounded-xl bg-primary/10 text-primary flex items-center justify-center shrink-0 group-hover:bg-[#F97316] group-hover:text-white transition-colors">
-                        <IconComp className="h-4 w-4" />
+                    <Grid className="h-3 w-3" />
+                    <span>0.5m</span>
+                  </button>
+                </div>
+
+                {/* Fiche des jalons posés */}
+                <div className="p-2.5 rounded-2xl bg-muted/30 border border-border/70 space-y-1.5 text-xs">
+                  <div className="flex items-center justify-between font-bold text-muted-foreground text-[10px]">
+                    <span>JALONS SUR LE PLAN :</span>
+                    <span className="text-foreground">{drawPoints.length} point(s)</span>
+                  </div>
+
+                  {drawPoints.length === 0 ? (
+                    <p className="text-[11px] text-muted-foreground italic py-1">
+                      Cliquez sur le terrain 3D pour poser vos jalons (P1, P2...).
+                    </p>
+                  ) : (
+                    <div className="space-y-1 max-h-[90px] overflow-y-auto pr-1">
+                      {drawPoints.map((pt, i) => (
+                        <div
+                          key={i}
+                          className="flex items-center justify-between text-[11px] font-mono py-0.5 border-b border-border/40"
+                        >
+                          <span className="font-bold text-amber-500">P{i + 1}</span>
+                          <span>
+                            X: {pt.x}m, Z: {pt.z}m
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                  {drawPoints.length >= 2 && (
+                    <div className="pt-1.5 border-t border-border/50 space-y-0.5 text-[11px]">
+                      <div className="flex justify-between">
+                        <span className="text-muted-foreground">Linéaire :</span>
+                        <strong className="text-foreground">{drawMetrics.totalLength} ml</strong>
                       </div>
-                      <div className="min-w-0">
-                        <p className="text-xs font-bold text-foreground truncate">{item.name}</p>
-                        <p className="text-[10px] text-muted-foreground truncate">
-                          {item.width}m × {item.length}m • {item.costFcfa.toLocaleString()} F
-                          {item.supplierRecommendation ? ` • ${item.supplierRecommendation}` : ""}
-                        </p>
+                      <div className="flex justify-between">
+                        <span className="text-muted-foreground">Emprise calculée :</span>
+                        <strong className="text-foreground">
+                          {drawMetrics.areaM2} m² ({drawMetrics.areaHa} ha)
+                        </strong>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-muted-foreground">Coût estimé :</span>
+                        <strong className="text-emerald-600 dark:text-emerald-400">
+                          {drawMetrics.estimatedCostFcfa.toLocaleString()} FCFA
+                        </strong>
                       </div>
                     </div>
-                    <Plus className="h-4 w-4 text-muted-foreground group-hover:text-emerald-600 shrink-0 ml-1" />
-                  </button>
-                );
-              })}
-            </div>
+                  )}
+                </div>
+
+                {/* Actions sur le tracé */}
+                {drawPoints.length > 0 && (
+                  <div className="space-y-1.5">
+                    <Button
+                      type="button"
+                      onClick={handleValidateDrawnElement}
+                      className="w-full h-8 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs flex items-center justify-center gap-1.5 shadow-md"
+                    >
+                      <Check className="h-3.5 w-3.5" />
+                      <span>Valider & Implanter l'Ouvrage</span>
+                    </Button>
+                    <div className="grid grid-cols-2 gap-1.5">
+                      <button
+                        type="button"
+                        onClick={handleUndoLastDrawPoint}
+                        className="py-1 px-2 rounded-xl bg-muted hover:bg-muted/80 text-[11px] font-bold text-muted-foreground flex items-center justify-center gap-1"
+                      >
+                        <Undo2 className="h-3 w-3" />
+                        <span>Retirer P{drawPoints.length}</span>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={handleClearDrawPoints}
+                        className="py-1 px-2 rounded-xl bg-rose-500/15 hover:bg-rose-500/25 text-[11px] font-bold text-rose-400 flex items-center justify-center gap-1"
+                      >
+                        <RotateCcw className="h-3 w-3" />
+                        <span>Effacer tout</span>
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* TAB 3: LISTE DES OUVRAGES IMPLANTÉS SUR LE PLAN */}
+            {leftDrawerTab === "elements_list" && (
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+                    Ouvrages sur le plan ({elements.length})
+                  </span>
+                  {elements.length > 0 && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        if (window.confirm("Effacer tous les ouvrages du plan ?")) {
+                          setElements([]);
+                          setSelectedId(null);
+                        }
+                      }}
+                      className="text-[10px] text-rose-400 hover:text-rose-300 font-bold"
+                    >
+                      Vider le plan
+                    </button>
+                  )}
+                </div>
+
+                {elements.length === 0 ? (
+                  <div className="p-4 rounded-2xl border border-dashed text-center text-xs text-muted-foreground">
+                    Aucun ouvrage implanté. Utilisez le catalogue ou l'outil de tracé pour commencer.
+                  </div>
+                ) : (
+                  <div className="space-y-1.5 max-h-[340px] overflow-y-auto pr-1">
+                    {elements.map((el) => {
+                      const isSel = el.id === selectedId;
+                      return (
+                        <div
+                          key={el.id}
+                          onClick={() => setSelectedId(el.id)}
+                          className={`p-2.5 rounded-2xl border transition-all cursor-pointer flex items-center justify-between gap-2 ${
+                            isSel
+                              ? "bg-emerald-500/15 border-emerald-500 text-foreground shadow-xs"
+                              : "border-border/70 hover:bg-muted/40 text-muted-foreground"
+                          }`}
+                        >
+                          <div className="min-w-0">
+                            <p className="text-xs font-bold text-foreground truncate">{el.name}</p>
+                            <p className="text-[10px] text-muted-foreground truncate">
+                              {el.width}m × {el.length}m • {el.costFcfa.toLocaleString()} FCFA
+                            </p>
+                          </div>
+                          <div className="flex items-center gap-1 shrink-0">
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setSelectedId(el.id);
+                                handleDuplicateSelected();
+                              }}
+                              title="Dupliquer +5m"
+                              className="p-1 rounded-lg hover:bg-muted text-muted-foreground hover:text-foreground"
+                            >
+                              <Copy className="h-3 w-3" />
+                            </button>
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setElements((prev) => prev.filter((item) => item.id !== el.id));
+                                if (selectedId === el.id) setSelectedId(null);
+                                toast.info(`Ouvrage "${el.name}" supprimé.`);
+                              }}
+                              title="Supprimer"
+                              className="p-1 rounded-lg hover:bg-rose-500/20 text-muted-foreground hover:text-rose-400"
+                            >
+                              <Trash2 className="h-3 w-3" />
+                            </button>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+            )}
           </div>
 
           {/* Budget Chiffré Estimé + Bouton Prix Réels Marketplace */}
@@ -2966,7 +4142,7 @@ export function Studio3DFarmModeler({
               ref={mountRef}
               onMouseDown={(e) => handlePointerDown(e.clientX, e.clientY)}
               onMouseMove={(e) => handlePointerMove(e.clientX, e.clientY)}
-              onMouseUp={handlePointerUp}
+              onMouseUp={(e) => handlePointerUp(e.clientX, e.clientY)}
               onTouchStart={(e) => {
                 if (e.touches.length === 1) {
                   handlePointerDown(e.touches[0].clientX, e.touches[0].clientY);
@@ -2977,7 +4153,7 @@ export function Studio3DFarmModeler({
                   handlePointerMove(e.touches[0].clientX, e.touches[0].clientY);
                 }
               }}
-              onTouchEnd={handlePointerUp}
+              onTouchEnd={() => handlePointerUp(prevMouseRef.current.x, prevMouseRef.current.y)}
               onWheel={handleWheel}
               className="w-full h-[520px] cursor-grab active:cursor-grabbing select-none"
             />
@@ -2989,7 +4165,7 @@ export function Studio3DFarmModeler({
               ref={container2dRef}
               onMouseDown={(e) => handlePointerDown(e.clientX, e.clientY)}
               onMouseMove={(e) => handlePointerMove(e.clientX, e.clientY)}
-              onMouseUp={handlePointerUp}
+              onMouseUp={(e) => handlePointerUp(e.clientX, e.clientY)}
               onTouchStart={(e) => {
                 if (e.touches.length === 1) {
                   handlePointerDown(e.touches[0].clientX, e.touches[0].clientY);
@@ -3000,7 +4176,7 @@ export function Studio3DFarmModeler({
                   handlePointerMove(e.touches[0].clientX, e.touches[0].clientY);
                 }
               }}
-              onTouchEnd={handlePointerUp}
+              onTouchEnd={() => handlePointerUp(prevMouseRef.current.x, prevMouseRef.current.y)}
               onWheel={handleWheel}
               className="w-full h-[520px] cursor-grab active:cursor-grabbing select-none relative"
             >
@@ -3010,7 +4186,7 @@ export function Studio3DFarmModeler({
 
           {/* ── BARRE D'OUTILS FLOTTANTE SUPÉRIEURE ── */}
           <div className="absolute top-4 left-4 right-4 flex flex-wrap items-center justify-between gap-2 z-10 pointer-events-none">
-            {/* Presets de vue */}
+            {/* Presets de vue & Outil Tracé CAO */}
             <div className="flex items-center gap-1.5 p-1 rounded-2xl bg-slate-900/90 border border-white/15 backdrop-blur-md pointer-events-auto shadow-lg">
               <button
                 type="button"
@@ -3046,6 +4222,24 @@ export function Studio3DFarmModeler({
                 }`}
               >
                 <span>{walkMode ? "Mode Piéton (Actif)" : "Visite"}</span>
+              </button>
+              <div className="w-px h-5 bg-white/20 mx-0.5" />
+              <button
+                type="button"
+                onClick={() => {
+                  setIsDrawMode((m) => !m);
+                  if (!isDrawMode) {
+                    setLeftDrawerTab("cad_draw");
+                  }
+                }}
+                className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-colors flex items-center gap-1.5 ${
+                  isDrawMode
+                    ? "bg-amber-500 text-white shadow-md animate-pulse"
+                    : "text-white/80 hover:bg-white/10"
+                }`}
+              >
+                <PenTool className="h-3.5 w-3.5" />
+                <span>{isDrawMode ? "Tracé Actif" : "Tracer (CAO)"}</span>
               </button>
             </div>
 
@@ -3120,39 +4314,408 @@ export function Studio3DFarmModeler({
             </div>
           </div>
 
-          {/* ── BARRE D'ACTIONS INFÉRIEURE POUR L'ÉLÉMENT SÉLECTIONNÉ ── */}
-          {selectedId && (
-            <div className="absolute bottom-4 left-4 right-4 p-3 rounded-2xl bg-slate-900/95 border border-emerald-500/40 backdrop-blur-md text-white flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-2xl z-10">
+          {/* ── BANNIÈRE HUD MODE TRACÉ CAO ACTIF ── */}
+          {isDrawMode && (
+            <div className="absolute top-18 left-4 right-4 p-2.5 rounded-2xl bg-slate-900/95 border border-amber-500/60 backdrop-blur-md text-white flex flex-col sm:flex-row sm:items-center justify-between gap-2 z-10 shadow-xl pointer-events-auto">
               <div className="flex items-center gap-2">
-                <CheckCircle2 className="h-4 w-4 text-emerald-400" />
+                <div className="w-6 h-6 rounded-lg bg-amber-500/20 text-amber-400 flex items-center justify-center shrink-0">
+                  <PenTool className="h-3.5 w-3.5 animate-spin" />
+                </div>
                 <span className="text-xs font-bold">
-                  Sélectionné : {elements.find((e) => e.id === selectedId)?.name}
+                  Mode Tracé : Cliquez sur le terrain pour implanter vos jalons ({drawPoints.length} jalons posés).
                 </span>
-                <span className="text-[11px] text-muted-foreground">
-                  ({elements.find((e) => e.id === selectedId)?.costFcfa.toLocaleString()} FCFA)
-                </span>
+                {drawPoints.length >= 2 && (
+                  <Badge className="bg-emerald-500/20 text-emerald-300 border-emerald-500/40 text-[10px]">
+                    {drawMetrics.totalLength} ml • {drawMetrics.areaM2} m²
+                  </Badge>
+                )}
               </div>
-
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-1.5 shrink-0">
+                {drawPoints.length > 0 && (
+                  <>
+                    <button
+                      type="button"
+                      onClick={handleUndoLastDrawPoint}
+                      className="px-2.5 py-1 rounded-xl bg-white/10 hover:bg-white/20 text-[11px] font-bold flex items-center gap-1 text-white"
+                    >
+                      <Undo2 className="h-3 w-3" />
+                      <span>Retirer</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={handleClearDrawPoints}
+                      className="px-2.5 py-1 rounded-xl bg-white/10 hover:bg-white/20 text-[11px] font-bold flex items-center gap-1 text-white"
+                    >
+                      <RotateCcw className="h-3 w-3" />
+                      <span>Effacer</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={handleValidateDrawnElement}
+                      className="px-3 py-1 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-[11px] font-bold flex items-center gap-1 text-white shadow-md"
+                    >
+                      <Check className="h-3 w-3" />
+                      <span>Valider l'Ouvrage</span>
+                    </button>
+                  </>
+                )}
                 <button
                   type="button"
-                  onClick={handleRotateSelected}
-                  className="px-3 py-1.5 rounded-xl bg-white/10 hover:bg-white/20 text-xs font-bold flex items-center gap-1.5 transition-colors"
+                  onClick={() => setIsDrawMode(false)}
+                  className="px-2.5 py-1 rounded-xl bg-rose-500/20 hover:bg-rose-500/30 text-rose-300 text-[11px] font-bold"
                 >
-                  <RotateCw className="h-3.5 w-3.5" />
-                  <span>Pivoter 45°</span>
-                </button>
-                <button
-                  type="button"
-                  onClick={handleDeleteSelected}
-                  className="px-3 py-1.5 rounded-xl bg-rose-500/20 hover:bg-rose-500/30 text-rose-300 text-xs font-bold flex items-center gap-1.5 transition-colors border border-rose-500/40"
-                >
-                  <Trash2 className="h-3.5 w-3.5" />
-                  <span>Supprimer</span>
+                  Quitter
                 </button>
               </div>
             </div>
           )}
+
+          {/* ── CONSOLE CAO PROFESSIONNELLE D'ÉDITION & DIMENSIONNEMENT ── */}
+          {selectedId && (() => {
+            const sel = elements.find((e) => e.id === selectedId);
+            if (!sel) return null;
+            const areaM2 = Math.round(sel.width * sel.length);
+            const areaHa = Math.round((areaM2 / 10000) * 100) / 100;
+            return (
+              <div className="absolute bottom-4 left-4 right-4 p-3.5 rounded-2xl bg-slate-900/95 border-2 border-emerald-500/50 backdrop-blur-md text-white space-y-2.5 shadow-2xl z-20 max-h-[300px] overflow-y-auto pointer-events-auto">
+                {/* Entête avec Nom éditable & Métriques */}
+                <div className="flex flex-wrap items-center justify-between gap-2 pb-2 border-b border-white/10">
+                  <div className="flex items-center gap-2 min-w-0">
+                    <div className="w-6 h-6 rounded-lg bg-emerald-500/20 text-emerald-400 flex items-center justify-center shrink-0">
+                      <CheckCircle2 className="h-4 w-4" />
+                    </div>
+                    <span className="text-xs font-bold text-muted-foreground">Sélectionné :</span>
+                    <input
+                      type="text"
+                      value={sel.name}
+                      onChange={(e) => handleUpdateSelected({ name: e.target.value })}
+                      className="bg-transparent border-b border-white/20 hover:border-white/50 focus:border-emerald-400 px-1 py-0.5 text-xs font-bold text-white focus:outline-hidden min-w-[180px]"
+                    />
+                    <Badge variant="outline" className="text-[10px] text-emerald-300 border-emerald-500/40">
+                      {sel.category.toUpperCase()}
+                    </Badge>
+                  </div>
+
+                  <div className="flex items-center gap-2">
+                    <span className="text-[11px] font-mono text-emerald-400 font-bold">
+                      ({sel.costFcfa.toLocaleString()} FCFA)
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => setSelectedId(null)}
+                      className="text-white/60 hover:text-white text-xs px-1.5 py-0.5 rounded-md hover:bg-white/10"
+                      title="Désélectionner"
+                    >
+                      ✕
+                    </button>
+                  </div>
+                </div>
+
+                {/* 4 Blocs d'outils CAO d'ingénierie */}
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-2.5 text-xs">
+                  {/* BLOC 1: MODIFIER (Position & Rotation) */}
+                  <div className="p-2 rounded-xl bg-white/5 border border-white/10 space-y-1.5">
+                    <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider block">
+                      1. Modifier (Position & Angle)
+                    </span>
+                    <div className="grid grid-cols-2 gap-1 text-[11px]">
+                      <div>
+                        <span className="text-[10px] text-white/60">X: {sel.x}m</span>
+                        <div className="flex items-center gap-0.5 mt-0.5">
+                          <button
+                            type="button"
+                            onClick={() =>
+                              handleUpdateSelected({ x: Math.round((sel.x - 1) * 10) / 10 })
+                            }
+                            className="px-1.5 py-0.5 rounded-md bg-white/10 hover:bg-white/20 font-bold"
+                          >
+                            -1m
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() =>
+                              handleUpdateSelected({ x: Math.round((sel.x + 1) * 10) / 10 })
+                            }
+                            className="px-1.5 py-0.5 rounded-md bg-white/10 hover:bg-white/20 font-bold"
+                          >
+                            +1m
+                          </button>
+                        </div>
+                      </div>
+                      <div>
+                        <span className="text-[10px] text-white/60">Z: {sel.z}m</span>
+                        <div className="flex items-center gap-0.5 mt-0.5">
+                          <button
+                            type="button"
+                            onClick={() =>
+                              handleUpdateSelected({ z: Math.round((sel.z - 1) * 10) / 10 })
+                            }
+                            className="px-1.5 py-0.5 rounded-md bg-white/10 hover:bg-white/20 font-bold"
+                          >
+                            -1m
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() =>
+                              handleUpdateSelected({ z: Math.round((sel.z + 1) * 10) / 10 })
+                            }
+                            className="px-1.5 py-0.5 rounded-md bg-white/10 hover:bg-white/20 font-bold"
+                          >
+                            +1m
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                    {/* Rotation */}
+                    <div className="flex items-center justify-between pt-1 border-t border-white/10">
+                      <span className="text-[10px] text-white/70">Rot: {sel.rotation}°</span>
+                      <div className="flex items-center gap-1">
+                        <button
+                          type="button"
+                          onClick={handleRotateSelected}
+                          className="px-2 py-0.5 rounded-md bg-white/10 hover:bg-white/20 text-[10px] font-bold flex items-center gap-1"
+                        >
+                          <RotateCw className="h-3 w-3" />
+                          <span>Pivoter 45°</span>
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() =>
+                            handleUpdateSelected({ rotation: (sel.rotation + 90) % 360 })
+                          }
+                          className="px-1.5 py-0.5 rounded-md bg-white/10 hover:bg-white/20 text-[10px] font-bold"
+                        >
+                          +90°
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* BLOC 2: ALLONGER & REDIMENSIONNER */}
+                  <div className="p-2 rounded-xl bg-white/5 border border-white/10 space-y-1.5">
+                    <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider block">
+                      2. Allonger & Étirer
+                    </span>
+                    <div className="flex items-center justify-between text-[11px]">
+                      <span className="text-white/70">Longueur:</span>
+                      <strong className="text-emerald-400 font-mono">{sel.length} m</strong>
+                    </div>
+                    <div className="flex flex-wrap items-center gap-1">
+                      <button
+                        type="button"
+                        onClick={() => handleLengthenSelected(1)}
+                        title="Allonger +1m"
+                        aria-label="Allonger +1m"
+                        className="px-1.5 py-0.5 rounded-md bg-emerald-600/30 hover:bg-emerald-600/50 text-emerald-300 font-bold text-[10px]"
+                      >
+                        +1m
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => handleLengthenSelected(5)}
+                        title="Allonger +5m"
+                        aria-label="Allonger +5m"
+                        className="px-1.5 py-0.5 rounded-md bg-emerald-600/40 hover:bg-emerald-600/60 text-emerald-200 font-bold text-[10px]"
+                      >
+                        +5m
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => handleLengthenSelected(10)}
+                        title="Allonger +10m"
+                        aria-label="Allonger +10m"
+                        className="px-1.5 py-0.5 rounded-md bg-emerald-600/50 hover:bg-emerald-600/70 text-white font-bold text-[10px]"
+                      >
+                        +10m
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => handleLengthenSelected(25)}
+                        title="Allonger +25m"
+                        aria-label="Allonger +25m"
+                        className="px-1.5 py-0.5 rounded-md bg-emerald-600/60 hover:bg-emerald-600/80 text-white font-bold text-[10px]"
+                      >
+                        +25m
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => handleLengthenSelected(-1)}
+                        title="Rétrécir longueur -1m"
+                        aria-label="Rétrécir longueur -1m"
+                        className="px-1.5 py-0.5 rounded-md bg-white/10 hover:bg-white/20 text-white/70 font-bold text-[10px]"
+                      >
+                        -1m
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => handleLengthenSelected(-5)}
+                        title="Rétrécir longueur -5m"
+                        aria-label="Rétrécir longueur -5m"
+                        className="px-1.5 py-0.5 rounded-md bg-white/10 hover:bg-white/20 text-white/70 font-bold text-[10px]"
+                      >
+                        -5m
+                      </button>
+                    </div>
+                    {/* Largeur */}
+                    <div className="flex items-center justify-between pt-1 border-t border-white/10 text-[11px]">
+                      <span className="text-white/70">Largeur:</span>
+                      <span className="font-mono">{sel.width} m</span>
+                      <div className="flex items-center gap-1">
+                        <button
+                          type="button"
+                          onClick={() => handleWidenSelected(1)}
+                          title="Élargir +1m"
+                          aria-label="Élargir +1m"
+                          className="px-1.5 py-0.5 rounded-md bg-white/10 hover:bg-white/20 font-bold text-[10px]"
+                        >
+                          +1m
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => handleWidenSelected(5)}
+                          title="Élargir +5m"
+                          aria-label="Élargir +5m"
+                          className="px-1.5 py-0.5 rounded-md bg-white/10 hover:bg-white/20 font-bold text-[10px]"
+                        >
+                          +5m
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => handleWidenSelected(-1)}
+                          title="Rétrécir largeur -1m"
+                          aria-label="Rétrécir largeur -1m"
+                          className="px-1.5 py-0.5 rounded-md bg-white/10 hover:bg-white/20 font-bold text-[10px]"
+                        >
+                          -1m
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* BLOC 3: ARRONDIR & COURBER */}
+                  <div className="p-2 rounded-xl bg-white/5 border border-white/10 space-y-1.5">
+                    <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider block">
+                      3. Arrondir & Courber
+                    </span>
+                    <div className="flex items-center justify-between text-[11px]">
+                      <span className="text-white/70">Arrondi:</span>
+                      <strong className="text-cyan-400 font-mono">{sel.cornerRadius || 0} m</strong>
+                    </div>
+                    <div className="flex flex-wrap items-center gap-1">
+                      <button
+                        type="button"
+                        onClick={() => handleSetCornerRadius(0)}
+                        className={`px-1.5 py-0.5 rounded-md text-[10px] font-bold ${
+                          !sel.cornerRadius
+                            ? "bg-cyan-500 text-white"
+                            : "bg-white/10 hover:bg-white/20"
+                        }`}
+                      >
+                        Vif (0m)
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => handleSetCornerRadius(1)}
+                        title="Arrondi 1m"
+                        aria-label="Arrondi 1m"
+                        className={`px-1.5 py-0.5 rounded-md text-[10px] font-bold ${
+                          sel.cornerRadius === 1
+                            ? "bg-cyan-500 text-white"
+                            : "bg-white/10 hover:bg-white/20"
+                        }`}
+                      >
+                        1m
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => handleSetCornerRadius(2.5)}
+                        title="Arrondi 2.5m"
+                        aria-label="Arrondi 2.5m"
+                        className={`px-1.5 py-0.5 rounded-md text-[10px] font-bold ${
+                          sel.cornerRadius === 2.5
+                            ? "bg-cyan-500 text-white"
+                            : "bg-white/10 hover:bg-white/20"
+                        }`}
+                      >
+                        2.5m
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => handleSetCornerRadius(5)}
+                        title="Arrondi 5m"
+                        aria-label="Arrondi 5m"
+                        className={`px-1.5 py-0.5 rounded-md text-[10px] font-bold ${
+                          sel.cornerRadius === 5
+                            ? "bg-cyan-500 text-white"
+                            : "bg-white/10 hover:bg-white/20"
+                        }`}
+                      >
+                        5m
+                      </button>
+                    </div>
+                    {/* Bascule circulaire 360° */}
+                    <div className="pt-1 border-t border-white/10">
+                      <button
+                        type="button"
+                        onClick={handleToggleCurved}
+                        className={`w-full py-1 px-1.5 rounded-lg text-[10px] font-bold flex items-center justify-center gap-1 transition-colors ${
+                          sel.isCurved
+                            ? "bg-teal-500 text-white shadow-xs"
+                            : "bg-white/10 hover:bg-white/20 text-white/80"
+                        }`}
+                      >
+                        <Circle className="h-3 w-3" />
+                        <span>{sel.isCurved ? "Pivot 360° Actif" : "Pivot / Cercle 360°"}</span>
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* BLOC 4: ACTIONS, MÉTRÉS & SUPPRESSION */}
+                  <div className="p-2 rounded-xl bg-white/5 border border-white/10 space-y-1.5 flex flex-col justify-between">
+                    <div>
+                      <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider block">
+                        4. Métrés & Actions
+                      </span>
+                      <div className="text-[11px] space-y-0.5 pt-0.5">
+                        <div className="flex justify-between">
+                          <span className="text-white/60">Surface :</span>
+                          <span className="font-bold">
+                            {areaM2} m² ({areaHa} ha)
+                          </span>
+                        </div>
+                        {sel.linearMeters && (
+                          <div className="flex justify-between">
+                            <span className="text-white/60">Linéaire :</span>
+                            <span className="font-bold">{sel.linearMeters} ml</span>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-1 pt-1 border-t border-white/10">
+                      <button
+                        type="button"
+                        onClick={handleDuplicateSelected}
+                        className="py-1 px-1.5 rounded-xl bg-white/10 hover:bg-white/20 text-white text-[11px] font-bold flex items-center justify-center gap-1 transition-colors"
+                        title="Dupliquer +5m en parallèle"
+                      >
+                        <Copy className="h-3 w-3" />
+                        <span>Dupliquer</span>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={handleDeleteSelected}
+                        className="py-1 px-1.5 rounded-xl bg-rose-500/20 hover:bg-rose-500/30 text-rose-300 text-[11px] font-bold flex items-center justify-center gap-1 transition-colors border border-rose-500/40"
+                      >
+                        <Trash2 className="h-3 w-3" />
+                        <span>Supprimer</span>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            );
+          })()}
 
           {/* Informations d'aide */}
           <div className="absolute bottom-3 left-3 text-[10px] text-white/60 pointer-events-none flex items-center gap-1.5">
