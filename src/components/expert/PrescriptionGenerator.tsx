@@ -9,6 +9,7 @@ import { FileDown, Plus, X } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
+import { pdfExportHistory } from "@/lib/pdfExportHistory";
 
 export interface PrescriptionLine {
   product: string;
@@ -167,8 +168,25 @@ export function PrescriptionGenerator({ initialData, onClose }: PrescriptionGene
       doc.line(125, y + 10, 196, y + 10);
 
       const fileName = `ordonnance-${(clientName || "exploitant").replace(/[^a-zA-Z0-9]/g, "_")}-${today.replace(/\//g, "-")}.pdf`;
-      doc.save(fileName);
-      toast({ title: "Ordonnance générée avec succès", description: `Fichier téléchargé : ${fileName}` });
+      pdfExportHistory.saveAndRecordPdf({
+        title: `Ordonnance Phytosanitaire - ${crop || "Culture"} (${clientName || "Exploitant"})`,
+        filename: fileName,
+        module: "crop_diagnosis",
+        categoryLabel: "Ordonnance & Traitements",
+        doc,
+        authorName: profile?.full_name || "Expert Agronome",
+        clientName: clientName,
+        summary: `Prescription agronomique (${crop || "Culture"} - ${parcel || "Parcelle"}) : ${lines.filter((l) => l.product).length} produit(s). Diagnostic : ${diagnosis || "Consultation terrain"}.`,
+        dataSnapshot: {
+          clientName,
+          clientPhone,
+          parcel,
+          crop,
+          diagnosis,
+          lines,
+          recommendations,
+        },
+      });
 
       // Archivage sécurisé en base distante si connecté
       if (user) {

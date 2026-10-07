@@ -24,7 +24,7 @@ describe("Interface Page Fiches Techniques Agronomiques (CropLibraryPage)", () =
 
     expect(screen.getByText("Fiches Techniques Agronomiques")).toBeInTheDocument();
     expect(screen.getAllByText(/235/i).length).toBeGreaterThanOrEqual(1);
-    expect(screen.getByText(/★ 188 Priorité Burkina Faso/i)).toBeInTheDocument();
+    expect(screen.getByText(/★ 188 BF Priorité/i)).toBeInTheDocument();
   });
 
   it("permet la recherche textuelle d'une culture", async () => {

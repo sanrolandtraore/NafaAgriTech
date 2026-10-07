@@ -17,6 +17,7 @@ import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import { supabase } from "@/integrations/supabase/client";
 import { partnerBrandingStorage } from "./partnerBrandingStorage";
+import { pdfExportHistory } from "./pdfExportHistory";
 
 // ============================================================================
 // 1. TYPES & CONTRATS DE DONNÉES OBLIGATOIRES
@@ -1800,10 +1801,29 @@ export const nafaInspectionEngine = {
     doc.text(`Cachet électronique : SIG-${inspection.id.slice(0, 8).toUpperCase()}`, pageW / 2 + 10, y + 22);
     doc.text(`Certifié conforme selon les règles de l'art`, pageW / 2 + 10, y + 28);
 
-    // Téléchargement automatique
+    // Téléchargement automatique & Archivage Historique
     const filePrefix = isCustom && branding.companyName
       ? branding.companyName.replace(/[^a-zA-Z0-9]/g, "_").toLowerCase()
       : "rapport_inspection";
-    doc.save(`${filePrefix}_${type.code}_${inspection.client_name.replace(/[^a-zA-Z0-9]/g, "_")}.pdf`);
+    const filename = `${filePrefix}_${type.code}_${inspection.client_name.replace(/[^a-zA-Z0-9]/g, "_")}.pdf`;
+
+    pdfExportHistory.saveAndRecordPdf({
+      title: `${type.name} - ${inspection.client_name}`,
+      filename,
+      module: "inspection",
+      categoryLabel: "Inspection Terrain",
+      doc,
+      authorName: expertDisplay,
+      clientName: inspection.client_name,
+      summary: report?.summary || `Inspection ${type.name} réalisée pour ${inspection.client_name} (${inspection.client_location || "Exploitation"}).`,
+      dataSnapshot: {
+        inspectionId: inspection.id,
+        typeCode: type.code,
+        score: report?.conformity_score,
+        date: inspection.created_at,
+      },
+    });
+
   },
 };
+

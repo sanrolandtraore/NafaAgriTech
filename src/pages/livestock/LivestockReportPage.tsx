@@ -30,6 +30,8 @@ import {
 } from "lucide-react";
 import BackNavigationButton from "@/components/BackNavigationButton";
 import { generateLivestockReportPdf } from "@/lib/livestockReportPdf";
+import { pdfExportHistory } from "@/lib/pdfExportHistory";
+import PdfExportHistoryModal from "@/components/export/PdfExportHistoryModal";
 
 const fmt = (n: number) => Math.round(n || 0).toLocaleString("fr-FR");
 
@@ -46,6 +48,7 @@ export default function LivestockReportPage() {
   const { user } = useAuth();
   const [period, setPeriod] = useState<"30j" | "trimestre" | "annee" | "all">("annee");
   const [generatingPdf, setGeneratingPdf] = useState(false);
+  const [showPdfHistory, setShowPdfHistory] = useState(false);
 
   // Fetch all relevant livestock datasets
   const { data: animals, loading: loadingAnimals, isOffline } = useOfflineData<any>({
@@ -199,8 +202,22 @@ export default function LivestockReportPage() {
         kpis,
       });
 
-      doc.save(`Rapport_Activite_Elevage_NAFA_${new Date().toISOString().split("T")[0]}.pdf`);
-      toast.success("Rapport d'activité PDF téléchargé avec succès !");
+      const filename = `Rapport_Activite_Elevage_NAFA_${new Date().toISOString().split("T")[0]}.pdf`;
+      pdfExportHistory.saveAndRecordPdf({
+        title: `Bilan d'Élevage - ${periodLabels[period] || "Synthèse"}`,
+        filename,
+        module: "livestock",
+        categoryLabel: "Bilan Pastoral & Zootechnique",
+        doc,
+        summary: `Rapport d'activité (${periodLabels[period] || "Période"}) : ${kpis.totalActiveAnimals} têtes, ventes ${kpis.totalSales.toLocaleString("fr-FR")} FCFA, dépenses ${kpis.totalExpenses.toLocaleString("fr-FR")} FCFA.`,
+        dataSnapshot: {
+          period,
+          totalAnimals: kpis.totalActiveAnimals,
+          totalSales: kpis.totalSales,
+          totalExpenses: kpis.totalExpenses,
+          netMargin: kpis.netMargin,
+        },
+      });
     } catch (err: any) {
       console.error(err);
       toast.error("Erreur lors de la génération du rapport PDF");
@@ -266,6 +283,16 @@ export default function LivestockReportPage() {
 
           <Button
             variant="outline"
+            onClick={() => setShowPdfHistory(true)}
+            className="h-10 text-xs font-bold gap-1.5 border-primary/30 hover:bg-primary/10"
+            title="Consulter l'historique des rapports PDF"
+          >
+            <FileText className="h-4 w-4 text-primary" />
+            Historique PDF
+          </Button>
+
+          <Button
+            variant="outline"
             onClick={handlePrint}
             className="h-10 text-xs font-bold gap-1.5 hidden sm:inline-flex"
           >
@@ -283,6 +310,7 @@ export default function LivestockReportPage() {
           </Button>
         </div>
       </div>
+
 
       {/* KPI Cards Banner */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
@@ -555,6 +583,15 @@ export default function LivestockReportPage() {
           </Card>
         </TabsContent>
       </Tabs>
+
+      {/* Modal d'historique des bilans zootechniques PDF */}
+      <PdfExportHistoryModal
+        open={showPdfHistory}
+        onOpenChange={setShowPdfHistory}
+        defaultModuleFilter="livestock"
+        title="Historique des Bilans Zootechniques PDF"
+      />
     </div>
   );
 }
+

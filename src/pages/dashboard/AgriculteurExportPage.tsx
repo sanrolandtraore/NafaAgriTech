@@ -13,6 +13,7 @@ import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import { isMissingTableError } from "@/hooks/useOfflineData";
 import { getCachedData } from "@/lib/offlineDb";
+import { pdfExportHistory } from "@/lib/pdfExportHistory";
 
 // Les tables metier ne figurent pas dans les types Supabase generes (src/integrations/supabase/types.ts) :
 // on passe par une vue non typee du client pour ces requetes.
@@ -172,9 +173,22 @@ const AgriculteurExportPage = () => {
                 doc.setFontSize(10);
                 doc.text(`Total coûts: ${Math.round(totalCosts).toLocaleString()} FCFA`, 14, y + 8);
                 doc.text(`Total récolté: ${Math.round(totalHarvest).toLocaleString()} kg`, 14, y + 14);
-                doc.text(`Revenu ventes: ${Math.round(totalSales).toLocaleString()} FCFA`, 14, y + 20);
-                doc.save(`nafa_dossier_financement.pdf`);
-                toast.success("Dossier généré !");
+                const filename = `nafa_dossier_financement_${new Date().toISOString().split("T")[0]}.pdf`;
+                pdfExportHistory.saveAndRecordPdf({
+                  title: "Dossier de Financement Bancaire",
+                  filename,
+                  module: "quote_finance",
+                  categoryLabel: "Dossier Bancaire & Investissement",
+                  doc,
+                  summary: `Dossier de financement complet : ${(cyclesRes.data || []).length} cycles, ${(plansRes.data || []).length} plans d'investissement, coûts ${Math.round(totalCosts).toLocaleString()} FCFA, ventes ${Math.round(totalSales).toLocaleString()} FCFA.`,
+                  dataSnapshot: {
+                    cyclesCount: (cyclesRes.data || []).length,
+                    totalCosts,
+                    totalSales,
+                    totalHarvest,
+                  },
+                });
+
               } catch (err: any) { toast.error(err.message); }
               finally { setLoading(false); }
             }}

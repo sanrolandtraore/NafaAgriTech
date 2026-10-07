@@ -10,6 +10,7 @@ import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import { partnerStorage } from "@/lib/partnerStorage";
 import { useAuth } from "@/contexts/AuthContext";
+import { pdfExportHistory } from "@/lib/pdfExportHistory";
 
 type ExportType = "offers" | "missions" | "clients" | "interventions" | "quotes";
 
@@ -170,8 +171,18 @@ export default function PartenaireExportPage() {
         headStyles: { fillColor: [40, 116, 166] },
       });
 
-      doc.save(`nafa_${selected}_${new Date().toISOString().slice(0, 10)}.pdf`);
-      toast.success("Rapport PDF généré !");
+      const filename = `nafa_${selected}_${new Date().toISOString().slice(0, 10)}.pdf`;
+      const optLabel = exportOptions.find((o) => o.value === selected)?.label || selected;
+      pdfExportHistory.saveAndRecordPdf({
+        title: `Bilan Partenaire - ${optLabel}`,
+        filename,
+        module: "quote_finance",
+        categoryLabel: "Bilan Partenaire Commercial",
+        doc,
+        authorName: profile?.full_name || "Partenaire",
+        summary: `Export consolidé : ${rows.length} lignes — ${optLabel}.`,
+      });
+
     } catch (e: any) {
       toast.error(e.message || "Erreur lors de l'export PDF");
     }

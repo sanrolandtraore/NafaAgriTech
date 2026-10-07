@@ -8,7 +8,8 @@
 
 import React, { useState } from "react";
 import { FieldVisitReport, Farm, Field } from "@/types/fieldDesigner";
-import { exportFieldVisitPdf } from "@/lib/fieldDesignerPdfExport";
+import { exportFieldVisitPdf, saveFieldVisitReportPdf } from "@/lib/fieldDesignerPdfExport";
+import PdfExportHistoryModal from "@/components/export/PdfExportHistoryModal";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -66,6 +67,7 @@ export const FieldVisitReportTool: React.FC<FieldVisitReportToolProps> = ({
   const [coords, setCoords] = useState<{ lat: number; lng: number } | null>(
     farm.gps ? { lat: farm.gps.lat, lng: farm.gps.lng } : null
   );
+  const [showPdfHistory, setShowPdfHistory] = useState(false);
 
   const captureGPS = () => {
     if (!navigator.geolocation) return;
@@ -106,9 +108,7 @@ export const FieldVisitReportTool: React.FC<FieldVisitReportToolProps> = ({
 
   const handleExportPdf = (report: FieldVisitReport) => {
     const targetField = fields.find((f) => f.id === report.fieldId);
-    const doc = exportFieldVisitPdf(report, farm, targetField);
-    doc.save(`Rapport_Visite_${farm.name.replace(/\s+/g, "_")}_${report.visitDate}.pdf`);
-    toast.success("Rapport PDF généré et téléchargé.");
+    saveFieldVisitReportPdf(report, farm, targetField);
   };
 
   return (
@@ -125,10 +125,23 @@ export const FieldVisitReportTool: React.FC<FieldVisitReportToolProps> = ({
                 Consignez vos constatations in-situ et générez un PDF professionnel instantané.
               </p>
             </div>
-            <Badge variant="outline" className="text-xs font-bold text-primary">
-              Visite In-Situ
-            </Badge>
+            <div className="flex items-center gap-2">
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => setShowPdfHistory(true)}
+                className="h-8 text-xs font-bold rounded-xl gap-1.5 border-primary/30 hover:bg-primary/10"
+                title="Consulter l'historique des rapports PDF"
+              >
+                <FileText className="h-3.5 w-3.5 text-primary" />
+                Historique PDF
+              </Button>
+              <Badge variant="outline" className="text-xs font-bold text-primary">
+                Visite In-Situ
+              </Badge>
+            </div>
           </div>
+
 
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
             <div>
@@ -326,6 +339,15 @@ export const FieldVisitReportTool: React.FC<FieldVisitReportToolProps> = ({
           </CardContent>
         </Card>
       )}
+
+      {/* Modal d'historique des rapports de visite PDF */}
+      <PdfExportHistoryModal
+        open={showPdfHistory}
+        onOpenChange={setShowPdfHistory}
+        defaultModuleFilter="field_designer"
+        title="Historique des Rapports de Visite Terrain"
+      />
     </div>
   );
 };
+

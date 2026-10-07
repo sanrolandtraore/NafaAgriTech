@@ -56,6 +56,7 @@ import {
   type LocalDiagnosis,
 } from "@/lib/offlineDiagnoses";
 import { PrescriptionGenerator, type PrescriptionInitialData } from "./PrescriptionGenerator";
+import PdfExportHistoryModal from "@/components/export/PdfExportHistoryModal";
 import {
   PLANT_SPECIES_CATALOG,
   WEED_SPECIES_CATALOG,
@@ -215,6 +216,7 @@ function CropDiagnosisToolInner() {
   // ── Modale Ordonnance PDF ──
   const [prescriptionOpen, setPrescriptionOpen] = useState(false);
   const [prescriptionData, setPrescriptionData] = useState<PrescriptionInitialData | null>(null);
+  const [showPdfHistory, setShowPdfHistory] = useState(false);
 
   // ── Modale / Édition de Certification Expert ──
   const [isExpertEditing, setIsExpertEditing] = useState(false);
@@ -2177,13 +2179,22 @@ function CropDiagnosisToolInner() {
               )}
 
               {/* Actions : Ordonnance PDF & Sauvegarde */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-3 border-t">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-3 border-t">
                 <Button
                   variant="outline"
                   onClick={handleOpenPrescription}
                   className="h-12 rounded-2xl font-bold border-primary text-primary hover:bg-primary/10 gap-2 shadow-xs"
                 >
-                  <FileText className="h-4 w-4" /> Générer Ordonnance Phytosanitaire PDF
+                  <FileText className="h-4 w-4" /> Ordonnance PDF
+                </Button>
+
+                <Button
+                  variant="outline"
+                  onClick={() => setShowPdfHistory(true)}
+                  className="h-12 rounded-2xl font-bold border-border hover:bg-muted text-foreground gap-2 shadow-xs"
+                  title="Consulter l'historique des ordonnances et diagnostics exportés"
+                >
+                  <History className="h-4 w-4 text-purple-600" /> Historique PDF
                 </Button>
 
                 <Button
@@ -2218,7 +2229,16 @@ function CropDiagnosisToolInner() {
             )}
           </DialogContent>
         </Dialog>
+
+        {/* Modal d'historique des documents PDF de diagnostic */}
+        <PdfExportHistoryModal
+          open={showPdfHistory}
+          onOpenChange={setShowPdfHistory}
+          defaultModuleFilter="crop_diagnosis"
+          title="Historique des Ordonnances & Diagnostics Végétaux"
+        />
       </TabsContent>
+
 
       {/* ═══════════════════════════════════════════════════════════════════════ */}
       {/* ONGLET 2 : CATALOGUE DÉDIÉ AUX MAUVAISES HERBES (ADVENTICES DU SAHEL) */}

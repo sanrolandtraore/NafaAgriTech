@@ -1,4 +1,4 @@
-﻿import { useState } from "react";
+import { useState } from "react";
 import {
   Inspection,
   InspectionType,
@@ -30,6 +30,7 @@ import {
   Printer,
 } from "lucide-react";
 import { toast } from "sonner";
+import PdfExportHistoryModal from "@/components/export/PdfExportHistoryModal";
 
 interface InspectionReportViewerProps {
   inspection: Inspection;
@@ -47,6 +48,7 @@ export default function InspectionReportViewer({
   onInspectionUpdated,
 }: InspectionReportViewerProps) {
   const [syncing, setSyncing] = useState(false);
+  const [showPdfHistory, setShowPdfHistory] = useState(false);
 
   // Récupération ou génération à chaud du rapport
   const fields = nafaInspectionEngine.getInspectionFields(inspection.id);
@@ -172,8 +174,20 @@ export default function InspectionReportViewer({
             <Download className="h-3.5 w-3.5" />
             Télécharger PDF Officiel
           </Button>
+
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={() => setShowPdfHistory(true)}
+            className="text-xs font-semibold gap-1.5 flex-1 md:flex-none border-primary/30 hover:bg-primary/10"
+            title="Consulter l'historique des documents PDF exportés"
+          >
+            <FileText className="h-3.5 w-3.5 text-primary" />
+            Historique PDF
+          </Button>
         </div>
       </div>
+
 
       {/* ── Métriques de Conformité & Géodésie ── */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5">
@@ -382,6 +396,14 @@ export default function InspectionReportViewer({
           </div>
         </CardContent>
       </Card>
+
+      <PdfExportHistoryModal
+        open={showPdfHistory}
+        onOpenChange={setShowPdfHistory}
+        defaultModuleFilter="inspection"
+        title="Historique des Rapports d'Inspection PDF"
+      />
     </div>
   );
 }
+
