@@ -74,6 +74,13 @@ import {
   FarmBuilding,
   QuoteItem,
 } from "@/types/fieldDesigner";
+import {
+  JARDI_CATEGORIES,
+  JARDI_CATALOG_ITEMS,
+  JardiCategory,
+  JardiCatalogItem,
+  buildProceduralMeshForType,
+} from "@/lib/studio3dLibrary";
 
 export type ElementCategory = "crop" | "irrigation" | "building" | "infrastructure";
 
@@ -984,9 +991,12 @@ export function Studio3DFarmModeler({
 
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [activeTabCategory, setActiveTabCategory] = useState<ElementCategory>("crop");
+  const [jardiCategoryFilter, setJardiCategoryFilter] = useState<JardiCategory | "all">("all");
+  const [jardiSearchQuery, setJardiSearchQuery] = useState<string>("");
   const [lightingMode, setLightingMode] = useState<"day" | "sunset" | "night">("day");
   const [viewPreset, setViewPreset] = useState<"iso" | "top" | "free">("iso");
   const [isRotating, setIsRotating] = useState(false);
+  const [walkMode, setWalkMode] = useState(false);
 
   // Moteur de rendu : WebGL ou fallback Canvas 2.5D
   const isWebGLAvail = useMemo(() => checkWebGLSupport(), []);
@@ -1372,14 +1382,14 @@ export function Studio3DFarmModeler({
           group.add(bush);
         }
       } else {
-        const mat = new THREE.MeshStandardMaterial({
-          color: buildingColorHex,
-          roughness: 0.7,
-        });
-        const mesh = new THREE.Mesh(new THREE.BoxGeometry(el.width, el.height, el.length), mat);
-        mesh.position.y = el.height / 2;
-        mesh.castShadow = true;
-        group.add(mesh);
+        const proceduralMesh = buildProceduralMeshForType(
+          el.type,
+          el.width,
+          el.length,
+          el.height,
+          customColors
+        );
+        group.add(proceduralMesh);
       }
 
       // Contour de sélection
@@ -2046,7 +2056,7 @@ export function Studio3DFarmModeler({
   // -------------------------------------------------------------
   // ACTIONS SUR LE MODÈLE
   // -------------------------------------------------------------
-  const handleAddElement = (preset: (typeof PRESET_ELEMENTS)[0]) => {
+  const handleAddElement = (preset: (typeof PRESET_ELEMENTS)[0] | JardiCatalogItem) => {
     const newEl: FarmElement3D = {
       id: `elem-${Date.now()}`,
       name: preset.name,
@@ -2063,6 +2073,25 @@ export function Studio3DFarmModeler({
     setElements((prev) => [...prev, newEl]);
     setSelectedId(newEl.id);
     toast.success(`Élément "${newEl.name}" ajouté avec succès.`);
+  };
+
+  const handleToggleWalkMode = () => {
+    setWalkMode((prev) => {
+      const next = !prev;
+      if (next) {
+        setViewPreset("free");
+        setIsRotating(false);
+        cameraAnglesRef.current = { theta: 0, phi: Math.PI / 2.3, radius: 45 };
+        updateCameraPosition();
+        toast.info("Mode Visite Piéton actif : caméra au niveau des cultures.");
+      } else {
+        setViewPreset("iso");
+        cameraAnglesRef.current = { theta: Math.PI / 4, phi: Math.PI / 3, radius: 130 };
+        updateCameraPosition();
+        toast.info("Retour en vue d'ensemble Isométrique.");
+      }
+      return next;
+    });
   };
 
   const handleDeleteSelected = () => {
@@ -2813,77 +2842,93 @@ export function Studio3DFarmModeler({
               </Badge>
             </div>
 
-            {/* Onglets Catégories */}
-            <div className="grid grid-cols-4 gap-1 bg-muted p-1 rounded-xl text-[11px] font-bold">
-              <button
-                type="button"
-                onClick={() => setActiveTabCategory("crop")}
-                className={`py-1.5 rounded-lg transition-colors truncate ${
-                  activeTabCategory === "crop"
-                    ? "bg-card text-foreground shadow-xs"
-                    : "text-muted-foreground"
-                }`}
-              >
-                Cultures
-              </button>
-              <button
-                type="button"
-                onClick={() => setActiveTabCategory("irrigation")}
-                className={`py-1.5 rounded-lg transition-colors truncate ${
-                  activeTabCategory === "irrigation"
-                    ? "bg-card text-foreground shadow-xs"
-                    : "text-muted-foreground"
-                }`}
-              >
-                Irrigation
-              </button>
-              <button
-                type="button"
-                onClick={() => setActiveTabCategory("building")}
-                className={`py-1.5 rounded-lg transition-colors truncate ${
-                  activeTabCategory === "building"
-                    ? "bg-card text-foreground shadow-xs"
-                    : "text-muted-foreground"
-                }`}
-              >
-                Bâtiments
-              </button>
-              <button
-                type="button"
-                onClick={() => setActiveTabCategory("infrastructure")}
-                className={`py-1.5 rounded-lg transition-colors truncate ${
-                  activeTabCategory === "infrastructure"
-                    ? "bg-card text-foreground shadow-xs"
-                    : "text-muted-foreground"
-                }`}
-              >
-                CES/DRS
-              </button>
+            {/* Système de filtres & recherche typique Jardi Up 3D */}
+            <div className="space-y-2">
+              <div className="relative">
+                <Input
+                  type="text"
+                  placeholder="Rechercher manguier, forage, solaire, poulailler..."
+                  value={jardiSearchQuery}
+                  onChange={(e) => setJardiSearchQuery(e.target.value)}
+                  className="h-8 text-xs pl-2 pr-7 rounded-xl bg-muted/50 border-border/70"
+                />
+                {jardiSearchQuery && (
+                  <button
+                    type="button"
+                    onClick={() => setJardiSearchQuery("")}
+                    className="absolute right-2 top-2 text-[10px] text-muted-foreground hover:text-foreground"
+                  >
+                    ✕
+                  </button>
+                )}
+              </div>
+
+              {/* Filtres par corps de métier (Jardi Up 3D) */}
+              <div className="flex flex-wrap gap-1">
+                <button
+                  type="button"
+                  onClick={() => setJardiCategoryFilter("all")}
+                  className={`px-2 py-1 rounded-lg text-[10px] font-bold transition-colors ${
+                    jardiCategoryFilter === "all"
+                      ? "bg-primary text-primary-foreground"
+                      : "bg-muted/80 text-muted-foreground hover:bg-muted"
+                  }`}
+                >
+                  Tous ({JARDI_CATALOG_ITEMS.length})
+                </button>
+                {JARDI_CATEGORIES.map((cat) => (
+                  <button
+                    key={cat.id}
+                    type="button"
+                    onClick={() => setJardiCategoryFilter(cat.id)}
+                    className={`px-2 py-1 rounded-lg text-[10px] font-bold transition-colors flex items-center gap-1 ${
+                      jardiCategoryFilter === cat.id
+                        ? "bg-primary text-primary-foreground"
+                        : "bg-muted/80 text-muted-foreground hover:bg-muted"
+                    }`}
+                  >
+                    <span>{cat.shortLabel}</span>
+                  </button>
+                ))}
+              </div>
             </div>
 
-            {/* Liste des éléments du catalogue */}
-            <div className="space-y-2 max-h-[380px] overflow-y-auto pr-1">
-              {PRESET_ELEMENTS.filter((el) => el.category === activeTabCategory).map((preset) => {
-                const IconComponent = preset.icon;
+            {/* Liste des éléments de la bibliothèque 3D typique */}
+            <div className="space-y-2 max-h-[360px] overflow-y-auto pr-1">
+              {JARDI_CATALOG_ITEMS.filter((item) => {
+                if (jardiCategoryFilter !== "all" && item.jardiCategory !== jardiCategoryFilter) {
+                  return false;
+                }
+                if (jardiSearchQuery.trim()) {
+                  const q = jardiSearchQuery.toLowerCase();
+                  const matchName = item.name.toLowerCase().includes(q);
+                  const matchDesc = item.description.toLowerCase().includes(q);
+                  const matchTag = item.tags.some((t) => t.toLowerCase().includes(q));
+                  return matchName || matchDesc || matchTag;
+                }
+                return true;
+              }).map((item) => {
+                const IconComp = item.icon || Box;
                 return (
                   <button
-                    key={preset.type}
+                    key={item.type}
                     type="button"
-                    onClick={() => handleAddElement(preset)}
+                    onClick={() => handleAddElement(item)}
                     className="w-full flex items-center justify-between p-2.5 rounded-2xl border border-border/80 bg-card hover:bg-emerald-500/10 hover:border-emerald-500/40 text-left transition-all group"
                   >
                     <div className="flex items-center gap-2.5 min-w-0">
                       <div className="w-8 h-8 rounded-xl bg-primary/10 text-primary flex items-center justify-center shrink-0 group-hover:bg-[#F97316] group-hover:text-white transition-colors">
-                        <IconComponent className="h-4 w-4" />
+                        <IconComp className="h-4 w-4" />
                       </div>
                       <div className="min-w-0">
-                        <p className="text-xs font-bold text-foreground truncate">{preset.name}</p>
-                        <p className="text-[10px] text-muted-foreground">
-                          {preset.width}m × {preset.length}m • {preset.costFcfa.toLocaleString()} F
+                        <p className="text-xs font-bold text-foreground truncate">{item.name}</p>
+                        <p className="text-[10px] text-muted-foreground truncate">
+                          {item.width}m × {item.length}m • {item.costFcfa.toLocaleString()} F
+                          {item.supplierRecommendation ? ` • ${item.supplierRecommendation}` : ""}
                         </p>
                       </div>
                     </div>
-                    <Plus className="h-4 w-4 text-muted-foreground group-hover:text-emerald-600 shrink-0" />
+                    <Plus className="h-4 w-4 text-muted-foreground group-hover:text-emerald-600 shrink-0 ml-1" />
                   </button>
                 );
               })}
@@ -2991,14 +3036,16 @@ export function Studio3DFarmModeler({
               </button>
               <button
                 type="button"
-                onClick={() => handleSetView("free")}
-                className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-colors ${
-                  viewPreset === "free"
+                onClick={handleToggleWalkMode}
+                className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-colors flex items-center gap-1 ${
+                  walkMode
+                    ? "bg-emerald-600 text-white shadow-md animate-pulse"
+                    : viewPreset === "free"
                     ? "bg-[#F97316] text-white"
                     : "text-white/80 hover:bg-white/10"
                 }`}
               >
-                Visite
+                <span>{walkMode ? "Mode Piéton (Actif)" : "Visite"}</span>
               </button>
             </div>
 
