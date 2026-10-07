@@ -18,12 +18,17 @@ import {
   retryFailedRecords,
   resolveStuckSyncErrors
 } from "@/lib/dexieDb";
+import {
+  syncAllDatastores,
+  onUniversalSyncChange,
+  UniversalSyncSummary,
+  getUniversalSyncSummary
+} from "@/lib/universalSyncEngine";
 
 export const SyncStatusBadge: React.FC = () => {
   const [isOnline, setIsOnline] = useState(typeof navigator !== "undefined" ? navigator.onLine : true);
-  const [counts, setCounts] = useState({ pending: 0, synced: 0, error: 0 });
+  const [syncSummary, setSyncSummary] = useState<UniversalSyncSummary>(getUniversalSyncSummary());
   const [isSyncing, setIsSyncing] = useState(false);
-  const [lastSyncTime, setLastSyncTime] = useState<string | null>(null);
 
   useEffect(() => {
     // 1. Online / Offline listeners
@@ -36,15 +41,10 @@ export const SyncStatusBadge: React.FC = () => {
     window.addEventListener("online", handleOnline);
     window.addEventListener("offline", handleOffline);
 
-    // 2. Initial count load
-    getSyncCounts().then(setCounts);
-
-    // 3. Reactive subscription from Dexie DB
-    const unsubscribe = onSyncStatusChange((newCounts) => {
-      setCounts(newCounts);
-      if (newCounts.pending === 0 && newCounts.error === 0) {
-        setLastSyncTime(new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }));
-      }
+    // 2. Reactive subscription to Universal Sync Engine (unifies all datastores)
+    const unsubscribe = onUniversalSyncChange((newSummary) => {
+      setSyncSummary(newSummary);
+      setIsSyncing(newSummary.status === "syncing");
     });
 
     return () => {
@@ -58,9 +58,7 @@ export const SyncStatusBadge: React.FC = () => {
     setIsSyncing(true);
     try {
       await resolveStuckSyncErrors();
-      const updated = await getSyncCounts();
-      setCounts(updated);
-      setLastSyncTime(new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }));
+      await syncAllDatastores({ silent: false });
     } catch (e) {
       console.error("Erreur déblocage synchronisation:", e);
     } finally {
@@ -72,23 +70,22 @@ export const SyncStatusBadge: React.FC = () => {
     if (!navigator.onLine) return;
     setIsSyncing(true);
     try {
-      if (counts.error > 0) {
-        await retryFailedRecords();
-      }
-      await syncPendingRecords();
-      const updated = await getSyncCounts();
-      setCounts(updated);
-      setLastSyncTime(new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }));
+      await syncAllDatastores({ silent: false });
     } catch (e) {
-      console.error("Erreur synchronisation manuelle:", e);
+      console.error("Erreur synchronisation universelle:", e);
     } finally {
       setIsSyncing(false);
     }
   };
 
+  const totalPending = syncSummary.totalPending;
+  const hasError = syncSummary.status === "error" || syncSummary.totalFailed > 0;
+  const lastSyncTime = syncSummary.lastSyncedAt;
+
   // Détermination du statut visuel WhatsApp-style
   // Erreur
-  if (counts.error > 0) {
+  if (hasError) {
+    const errorCount = syncSummary.totalFailed || 1;
     return (
       <Popover>
         <PopoverTrigger asChild>
@@ -102,7 +99,7 @@ export const SyncStatusBadge: React.FC = () => {
               <span className="relative inline-flex rounded-full h-2 w-2 bg-red-500"></span>
             </span>
             <AlertTriangle className="h-3.5 w-3.5 text-red-600" />
-            <span>{counts.error} échec{counts.error > 1 ? "s" : ""}</span>
+            <span>{errorCount} échec{errorCount > 1 ? "s" : ""}</span>
           </button>
         </PopoverTrigger>
         <PopoverContent className="w-80 p-3 text-xs space-y-2.5 shadow-lg" align="end">
@@ -110,14 +107,14 @@ export const SyncStatusBadge: React.FC = () => {
             <span className="flex items-center gap-1.5 text-red-600">
               <AlertTriangle className="h-4 w-4" /> Erreur de synchronisation
             </span>
-            <span className="text-[11px] text-muted-foreground">{counts.error} bloqué(s)</span>
+            <span className="text-[11px] text-muted-foreground">{errorCount} bloqué(s)</span>
           </div>
           <p className="text-muted-foreground text-[11px] leading-relaxed">
             Certaines modifications locales n'ont pas pu être poussées vers le serveur. Vos données restent conservées en sécurité sur cet appareil.
           </p>
           <div className="pt-1 flex flex-col gap-2 border-t border-border/50">
             <div className="flex items-center justify-between text-[10px] text-muted-foreground">
-              <span>{counts.pending} en attente</span>
+              <span>{totalPending} en attente</span>
               <span className="text-emerald-600 font-semibold">100% Sauvegardé en local</span>
             </div>
             <div className="flex items-center justify-end gap-1.5">
@@ -150,10 +147,10 @@ export const SyncStatusBadge: React.FC = () => {
   }
 
   // En attente (offline ou modifications en file)
-  if (counts.pending > 0 || !isOnline) {
+  if (totalPending > 0 || !isOnline) {
     const label = !isOnline 
-      ? (counts.pending > 0 ? `Hors-ligne (${counts.pending})` : "Hors-ligne")
-      : `${counts.pending} en attente`;
+      ? (totalPending > 0 ? `Hors-ligne (${totalPending})` : "Hors-ligne")
+      : `${totalPending} en attente`;
 
     return (
       <Popover>
@@ -177,10 +174,10 @@ export const SyncStatusBadge: React.FC = () => {
           <p className="text-muted-foreground text-[11px]">
             {!isOnline 
               ? "Vous travaillez en toute autonomie hors connexion. Toutes vos saisies sont enregistrées immédiatement dans IndexedDB et partiront dès le retour du réseau."
-              : `${counts.pending} opération(s) locale(s) attendent la synchronisation Supabase.`}
+              : `${totalPending} opération(s) locale(s) attendent la synchronisation Supabase.`}
           </p>
           <div className="pt-1 flex items-center justify-between text-[11px] text-muted-foreground">
-            <span>Local : {counts.synced} synchronisé(s)</span>
+            <span>Global : {syncSummary.totalSynced} synchronisé(s)</span>
             {isOnline && (
               <Button
                 size="sm"

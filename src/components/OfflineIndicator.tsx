@@ -1,12 +1,11 @@
 import { useState, useEffect } from 'react';
 import { Wifi, WifiOff, RefreshCw } from 'lucide-react';
-import { getSyncQueueCount } from '@/lib/offlineDb';
-import { onSyncChange, syncOnReconnect } from '@/lib/syncManager';
+import { onUniversalSyncChange, syncAllDatastores, getUniversalSyncSummary } from '@/lib/universalSyncEngine';
 import { Badge } from '@/components/ui/badge';
 
 const OfflineIndicator = () => {
-  const [isOnline, setIsOnline] = useState(navigator.onLine);
-  const [pendingCount, setPendingCount] = useState(0);
+  const [isOnline, setIsOnline] = useState(typeof navigator !== 'undefined' ? navigator.onLine : true);
+  const [pendingCount, setPendingCount] = useState(getUniversalSyncSummary().totalPending);
   const [syncing, setSyncing] = useState(false);
 
   useEffect(() => {
@@ -15,9 +14,11 @@ const OfflineIndicator = () => {
     window.addEventListener('online', goOnline);
     window.addEventListener('offline', goOffline);
     
-    // Check pending items
-    getSyncQueueCount().then(setPendingCount);
-    const unsub = onSyncChange(setPendingCount);
+    // Écouter le moteur universel
+    const unsub = onUniversalSyncChange((summary) => {
+      setPendingCount(summary.totalPending);
+      setSyncing(summary.status === 'syncing');
+    });
 
     return () => {
       window.removeEventListener('online', goOnline);
@@ -29,9 +30,7 @@ const OfflineIndicator = () => {
   const handleManualSync = async () => {
     if (!navigator.onLine || syncing) return;
     setSyncing(true);
-    await syncOnReconnect();
-    const count = await getSyncQueueCount();
-    setPendingCount(count);
+    await syncAllDatastores({ silent: false });
     setSyncing(false);
   };
 

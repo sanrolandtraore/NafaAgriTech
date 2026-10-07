@@ -168,6 +168,11 @@ export async function saveOfflineRecord(
 
   await notifySyncStatusChanged();
 
+  // Diffuser la modification en direct à toute l'application et aux autres onglets
+  if (typeof window !== 'undefined') {
+    window.dispatchEvent(new CustomEvent('nafa:data-updated', { detail: { table, id, operation } }));
+  }
+
   // Si en ligne, tenter immédiatement une synchronisation en arrière-plan (expérience WhatsApp)
   if (typeof navigator !== 'undefined' && navigator.onLine) {
     setTimeout(() => {
