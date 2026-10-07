@@ -27,7 +27,9 @@ import {
   WifiOff,
   Maximize2,
   Trash2,
+  FileText,
 } from "lucide-react";
+
 import {
   AnimalSpeciesType,
   DetectionBox,
@@ -38,6 +40,8 @@ import {
 } from "@/lib/livestockVisionCounter";
 import { livestockCountStorage, LivestockCountRecord } from "@/lib/livestockCountStorage";
 import { generateLivestockCountPdf } from "@/lib/livestockCountPdf";
+import { pdfExportHistory } from "@/lib/pdfExportHistory";
+import PdfExportHistoryModal from "@/components/export/PdfExportHistoryModal";
 import BackNavigationButton from "@/components/BackNavigationButton";
 import { useOfflineData } from "@/hooks/useOfflineData";
 
@@ -46,6 +50,7 @@ export default function AnimalCountingPage() {
   const [selectedBatchId, setSelectedBatchId] = useState<string>("");
   const [surfaceAreaM2, setSurfaceAreaM2] = useState<number>(100);
   const [technicianNotes, setTechnicianNotes] = useState<string>("");
+  const [showPdfHistory, setShowPdfHistory] = useState(false);
 
   // Médias et flux
   const [imageSrc, setImageSrc] = useState<string | null>(null);
@@ -313,9 +318,27 @@ export default function AnimalCountingPage() {
       location: "Burkina Faso",
     });
 
-    pdf.save(`NAFA_Comptage_${species}_${new Date().toISOString().slice(0, 10)}.pdf`);
-    toast.success("Rapport officiel PDF téléchargé avec succès.");
+    const filename = `NAFA_Comptage_${species}_${new Date().toISOString().slice(0, 10)}.pdf`;
+    const count = analysisResult ? analysisResult.detectedCount : 0;
+    const density = analysisResult?.densityAnalysis?.densityPerM2?.toFixed(2) || "N/A";
+    const status = analysisResult?.densityAnalysis?.statusLabel || "optimale";
+
+    pdfExportHistory.saveAndRecordPdf({
+      title: `Rapport de Comptage - ${species.toUpperCase()}`,
+      filename,
+      module: "livestock",
+      categoryLabel: "Comptage Zootechnique",
+      doc: pdf,
+      summary: `Dénombrement assisté : ${count} ${species}. Densité : ${density} têtes/m² (${status}).`,
+      dataSnapshot: {
+        species,
+        totalCount: count,
+        alertLevel: status,
+        surfaceAreaM2,
+      },
+    });
   };
+
 
   return (
     <div className="container max-w-6xl mx-auto px-4 py-6 space-y-6">
@@ -333,12 +356,23 @@ export default function AnimalCountingPage() {
             </p>
           </div>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-wrap">
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={() => setShowPdfHistory(true)}
+            className="text-xs font-semibold gap-1.5 border-primary/30 hover:bg-primary/10"
+            title="Consulter l'historique des rapports PDF"
+          >
+            <FileText className="h-4 w-4 text-primary" />
+            Historique PDF
+          </Button>
           <Badge variant="outline" className="gap-1 border-primary/30 text-primary">
             <Wifi className="h-3.5 w-3.5" /> 100% Fonctionnel Hors-ligne
           </Badge>
         </div>
       </div>
+
 
       {/* Paramétrage de la session */}
       <Card className="border-primary/20 shadow-sm bg-gradient-to-r from-background to-muted/20">
@@ -740,6 +774,15 @@ export default function AnimalCountingPage() {
           </Card>
         </div>
       </div>
+
+      {/* Modal d'historique des rapports PDF zootechniques */}
+      <PdfExportHistoryModal
+        open={showPdfHistory}
+        onOpenChange={setShowPdfHistory}
+        defaultModuleFilter="livestock"
+        title="Historique des Rapports de Comptage & Zootechnie"
+      />
     </div>
   );
 }
+

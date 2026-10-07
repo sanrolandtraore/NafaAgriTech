@@ -15,6 +15,7 @@ import { Eye, Download, FileText, Loader2, Microscope } from "lucide-react";
 import ExportPreviewTable from "@/components/ExportPreviewTable";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
+import { pdfExportHistory } from "@/lib/pdfExportHistory";
 
 type ExportType = "clients" | "visits" | "diagnoses" | "prescriptions";
 
@@ -194,8 +195,16 @@ const ExpertExportPage = () => {
                     headStyles: { fillColor: [16, 149, 107] },
                   });
 
-                  doc.save("nafa_rapport_expert_agronome.pdf");
-                  toast.success("Rapport d'activité généré !");
+                  const filename = `nafa_rapport_expert_agronome_${new Date().toISOString().split("T")[0]}.pdf`;
+                  pdfExportHistory.saveAndRecordPdf({
+                    title: "Bilan d'Activité Agro-Conseil",
+                    filename,
+                    module: "crop_diagnosis",
+                    categoryLabel: "Bilan d'Activité Agronome",
+                    doc,
+                    summary: `Rapport d'activité consolidé : ${(clientsRes.data || []).length} clients, ${(visitsRes.data || []).length} visites, ${(prescRes.data || []).length} ordonnances.`,
+                  });
+
                 } catch (err: any) {
                   toast.error(err.message);
                 } finally {

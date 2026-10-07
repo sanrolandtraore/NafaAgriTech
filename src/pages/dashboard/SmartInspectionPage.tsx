@@ -38,6 +38,7 @@ import InspectionMissionSelector from "@/components/inspection/InspectionMission
 import InspectionDynamicCollector from "@/components/inspection/InspectionDynamicCollector";
 import InspectionReportViewer from "@/components/inspection/InspectionReportViewer";
 import CustomFormGeneratorModal from "@/components/inspection/CustomFormGeneratorModal";
+import PdfExportHistoryModal from "@/components/export/PdfExportHistoryModal";
 
 export default function SmartInspectionPage() {
   const [activeTab, setActiveTab] = useState<"new" | "history" | "sync" | "templates">("new");
@@ -57,6 +58,7 @@ export default function SmartInspectionPage() {
   );
   const [historySearch, setHistorySearch] = useState("");
   const [syncingAll, setSyncingAll] = useState(false);
+  const [showPdfHistory, setShowPdfHistory] = useState(false);
 
   // Custom Form Modal state
   const [openGeneratorModal, setOpenGeneratorModal] = useState(false);
@@ -173,7 +175,18 @@ export default function SmartInspectionPage() {
           </p>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-wrap">
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={() => setShowPdfHistory(true)}
+            className="text-xs font-semibold gap-1.5 border-primary/30 hover:bg-primary/10"
+            title="Consulter l'historique complet des rapports d'inspection PDF"
+          >
+            <FileText className="h-4 w-4 text-primary" />
+            Historique PDF
+          </Button>
+
           {activeTab !== "new" && (
             <Button
               size="sm"
@@ -194,6 +207,7 @@ export default function SmartInspectionPage() {
           </div>
         </div>
       </div>
+
 
       {/* ── Navigation par Onglets ── */}
       <Tabs value={activeTab} onValueChange={(v: any) => setActiveTab(v)} className="space-y-6">
@@ -727,6 +741,15 @@ export default function SmartInspectionPage() {
           }
         }}
       />
+
+      {/* Modal d'historique centralisé des exports PDF d'inspection */}
+      <PdfExportHistoryModal
+        open={showPdfHistory}
+        onOpenChange={setShowPdfHistory}
+        defaultModuleFilter="inspection"
+        title="Historique des Rapports d'Inspection Terrain"
+      />
     </div>
   );
+
 }

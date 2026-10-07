@@ -71,8 +71,14 @@ import {
   CornerDownRight,
   Move,
   ChevronRight,
+  FileText,
+  FileCheck2,
 } from "lucide-react";
 import { toast } from "sonner";
+import jsPDF from "jspdf";
+import autoTable from "jspdf-autotable";
+import { pdfExportHistory } from "@/lib/pdfExportHistory";
+import PdfExportHistoryModal from "@/components/export/PdfExportHistoryModal";
 import { MarketplaceMaterialPricePickerModal } from "./MarketplaceMaterialPricePickerModal";
 import {
   Farm,
@@ -1043,6 +1049,7 @@ export function Studio3DFarmModeler({
 
   // Modal des Prix Réels Marketplace
   const [marketplaceModalOpen, setMarketplaceModalOpen] = useState(false);
+  const [showPdfHistory, setShowPdfHistory] = useState(false);
 
   // Three.js instances ref
   const sceneRef = useRef<THREE.Scene | null>(null);
@@ -2969,6 +2976,120 @@ export function Studio3DFarmModeler({
     toast.success("Bordereau technique copié dans le presse-papier !");
   };
 
+  // Export Devis & Dossier Technique PDF avec archivage automatique dans l'historique
+  const handleExportTechnicalPdf = () => {
+    try {
+      const doc = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
+      const pageWidth = doc.internal.pageSize.getWidth();
+      const pageHeight = doc.internal.pageSize.getHeight();
+
+      // En-tête officiel vert & or
+      doc.setFillColor(21, 128, 61);
+      doc.rect(0, 0, pageWidth, 24, "F");
+      doc.setFillColor(234, 179, 8);
+      doc.rect(0, 24, pageWidth, 2.5, "F");
+
+      doc.setTextColor(255, 255, 255);
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(13);
+      doc.text("NAFA STUDIO 3D • DOSSIER TECHNIQUE & DEVIS", 14, 12);
+
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(8);
+      doc.text("CONCEPTION AGRONOMIQUE • HYDRAULIQUE & ÉNERGIE SOLAIRE • BÂTIMENT", 14, 18);
+
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(10);
+      doc.text((currentField?.name || "PROJET").toUpperCase(), pageWidth - 14, 14, { align: "right" });
+
+      // Cadre Métadonnées Projet
+      let y = 35;
+      doc.setFillColor(248, 250, 252);
+      doc.setDrawColor(220, 226, 232);
+      doc.roundedRect(14, y, pageWidth - 28, 28, 2, 2, "FD");
+
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(10);
+      doc.setTextColor(30, 41, 59);
+      doc.text(`Projet : ${activeFarm?.name || "Exploitation Agricole"} — ${currentField.name}`, 18, y + 7);
+
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(8.5);
+      doc.setTextColor(71, 85, 105);
+      doc.text(`Superficie : ${currentField.areaHa} ha | Périmètre : ${currentField.perimeterM} m | Sol : ${soilType.toUpperCase()}`, 18, y + 14);
+      doc.text(`Hydraulique : Débit forage ${waterFlowM3H} m³/h | Besoin de pointe ${estimatedPeakWaterNeedM3H} m³/h | Couverture : ${waterCoveragePct}%`, 18, y + 20);
+
+      y += 34;
+
+      // Tableau des Infrastructures implantées
+      const tableBody = elements.map((el, i) => [
+        String(i + 1),
+        el.name,
+        el.category.toUpperCase(),
+        `${el.width}m × ${el.length}m (H: ${el.height}m)`,
+        `X: ${Math.round(el.x)}m, Z: ${Math.round(el.z)}m`,
+        `${el.costFcfa.toLocaleString("fr-FR")} F`,
+      ]);
+
+      autoTable(doc, {
+        startY: y,
+        head: [["#", "Désignation", "Corps d'état", "Dimensions", "Implantation", "Coût Estimé"]],
+        body: tableBody,
+        theme: "grid",
+        headStyles: { fillColor: [21, 128, 61], textColor: [255, 255, 255], fontStyle: "bold" },
+        styles: { fontSize: 8, cellPadding: 2.5 },
+      });
+
+      const finalY = (doc as any).lastAutoTable?.finalY || 160;
+
+      // Récapitulatif Budgétaire
+      doc.setFillColor(240, 253, 244);
+      doc.setDrawColor(187, 247, 208);
+      doc.roundedRect(pageWidth - 95, finalY + 6, 81, 24, 2, 2, "FD");
+
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(8.5);
+      doc.setTextColor(21, 128, 61);
+      doc.text("Nombre d'infrastructures :", pageWidth - 91, finalY + 12);
+      doc.text(String(elements.length), pageWidth - 18, finalY + 12, { align: "right" });
+
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(10);
+      doc.text("BUDGET ESTIMÉ (FCFA) :", pageWidth - 91, finalY + 22);
+      doc.text(`${totalBudgetFcfa.toLocaleString("fr-FR")} F`, pageWidth - 18, finalY + 22, { align: "right" });
+
+      // Pied de page légal & normalisé
+      doc.setDrawColor(220, 225, 230);
+      doc.line(14, pageHeight - 14, pageWidth - 14, pageHeight - 14);
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(7.5);
+      doc.setTextColor(100, 116, 139);
+      doc.text("Document technique certifié NAFA Studio 3D • Conforme aux normes agronomiques du Burkina Faso", 14, pageHeight - 8);
+
+      const filename = `plan_studio3d_${(currentField.name || "projet").replace(/[^a-zA-Z0-9]/g, "_").toLowerCase()}_${Date.now()}.pdf`;
+
+      pdfExportHistory.saveAndRecordPdf({
+        title: `Dossier CAO 3D - ${currentField.name} (${activeFarm?.name || "Domaine"})`,
+        filename,
+        module: "studio_3d",
+        categoryLabel: "Conception 3D & Devis",
+        doc,
+        summary: `Plan d'aménagement 3D (${elements.length} infrastructures, budget total ${totalBudgetFcfa.toLocaleString("fr-FR")} FCFA) sur ${currentField.areaHa} ha.`,
+        dataSnapshot: {
+          fieldName: currentField.name,
+          areaHa: currentField.areaHa,
+          elementsCount: elements.length,
+          totalBudgetFcfa,
+          soilType,
+          waterFlowM3H,
+        },
+      });
+    } catch (e: any) {
+      console.error("Erreur génération PDF 3D:", e);
+      toast.error("Erreur lors de la génération du dossier PDF.");
+    }
+  };
+
   return (
     <div className="space-y-4 max-w-7xl mx-auto pb-12">
       {/* ── EN-TÊTE DU STUDIO ── */}
@@ -3016,6 +3137,23 @@ export function Studio3DFarmModeler({
             <span>Sauvegarder Projet</span>
           </Button>
           <Button
+            onClick={handleExportTechnicalPdf}
+            className="rounded-full bg-emerald-700 hover:bg-emerald-600 text-white font-bold text-xs px-4 py-2.5 shadow-md flex items-center gap-1.5"
+            title="Générer et archiver le dossier technique PDF complet"
+          >
+            <FileText className="h-4 w-4" />
+            <span>Dossier PDF</span>
+          </Button>
+          <Button
+            onClick={() => setShowPdfHistory(true)}
+            variant="outline"
+            className="rounded-full bg-white/10 hover:bg-white/20 text-white border-white/20 font-bold text-xs px-4 py-2.5 flex items-center gap-1.5"
+            title="Consulter l'historique des documents PDF exportés"
+          >
+            <FileCheck2 className="h-4 w-4 text-emerald-400" />
+            <span>Historique PDF</span>
+          </Button>
+          <Button
             onClick={handleExportSpecs}
             variant="outline"
             className="rounded-full bg-white/10 hover:bg-white/20 text-white border-white/20 font-bold text-xs px-4 py-2.5 flex items-center gap-1.5"
@@ -3032,6 +3170,7 @@ export function Studio3DFarmModeler({
           </Button>
         </div>
       </div>
+
 
       {/* ── PANNEAU DE PERSONNALISATION EXPERT & AMÉNAGEMENT DU PROJET ── */}
       <Card className="p-4 sm:p-5 rounded-[24px] border-2 border-emerald-500/25 bg-card shadow-md space-y-4">
@@ -4736,8 +4875,17 @@ export function Studio3DFarmModeler({
           setMarketplaceModalOpen(false);
         }}
       />
+
+      {/* Modal d'historique des plans et devis CAO 3D */}
+      <PdfExportHistoryModal
+        open={showPdfHistory}
+        onOpenChange={setShowPdfHistory}
+        defaultModuleFilter="studio_3d"
+        title="Historique des Plans & Devis CAO 3D"
+      />
     </div>
   );
 }
+
 
 export default Studio3DFarmModeler;

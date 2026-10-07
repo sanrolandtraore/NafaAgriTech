@@ -8,9 +8,10 @@
 import React, { useState, useEffect } from "react";
 import { EngineeringQuoteDoc, QuoteItem, Farm, FarmBuilding, IrrigationProject } from "@/types/fieldDesigner";
 import { generateBuildingBillOfQuantities, generateIrrigationBillOfQuantities } from "@/lib/fieldMaterialsEstimator";
-import { exportQuotePdf } from "@/lib/fieldDesignerPdfExport";
+import { exportQuotePdf, saveTechnicalQuotePdf } from "@/lib/fieldDesignerPdfExport";
 import { materialsStorage } from "@/lib/fieldDesignerPrices";
 import { MarketplaceMaterialPricePickerModal } from "./MarketplaceMaterialPricePickerModal";
+import PdfExportHistoryModal from "@/components/export/PdfExportHistoryModal";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -62,6 +63,7 @@ export const FieldQuotesTool: React.FC<FieldQuotesToolProps> = ({
   const [marketplaceModalOpen, setMarketplaceModalOpen] = useState(false);
   const [targetLineId, setTargetLineId] = useState<string | null>(null);
   const [targetLineDesignation, setTargetLineDesignation] = useState<string | null>(null);
+  const [showPdfHistory, setShowPdfHistory] = useState(false);
 
   // Initialisation à partir des bâtiments et réseaux existants
   useEffect(() => {
@@ -241,10 +243,9 @@ export const FieldQuotesTool: React.FC<FieldQuotesToolProps> = ({
       updatedAt: new Date().toISOString(),
     };
 
-    const doc = exportQuotePdf(targetDoc, farm, expertName);
-    doc.save(`Devis_${farm.name.replace(/\s+/g, "_")}_${new Date().toISOString().split("T")[0]}.pdf`);
-    toast.success("Devis PDF téléchargé avec succès.");
+    saveTechnicalQuotePdf(targetDoc, farm, expertName);
   };
+
 
   return (
     <div className="space-y-6 max-w-4xl mx-auto">
@@ -469,13 +470,22 @@ export const FieldQuotesTool: React.FC<FieldQuotesToolProps> = ({
             </div>
           </div>
 
-          <div className="flex gap-3 pt-2">
+          <div className="flex flex-wrap gap-3 pt-2">
             <Button
               onClick={handleSave}
               className="flex-1 h-13 rounded-2xl font-black text-sm gradient-primary text-primary-foreground gap-2"
             >
               <Save className="h-5 w-5" />
               Enregistrer ce Devis
+            </Button>
+            <Button
+              onClick={() => setShowPdfHistory(true)}
+              variant="outline"
+              className="h-13 rounded-2xl font-black text-sm border-border hover:bg-muted text-foreground gap-2 px-5"
+              title="Consulter l'historique des devis PDF enregistrés"
+            >
+              <Wallet className="h-5 w-5 text-emerald-600" />
+              Historique PDF
             </Button>
             <Button
               onClick={() => handleExportPdf()}
@@ -498,6 +508,15 @@ export const FieldQuotesTool: React.FC<FieldQuotesToolProps> = ({
         targetLineId={targetLineId}
         targetLineDesignation={targetLineDesignation}
       />
+
+      {/* Modal d'historique des devis et métrés PDF */}
+      <PdfExportHistoryModal
+        open={showPdfHistory}
+        onOpenChange={setShowPdfHistory}
+        defaultModuleFilter="field_designer"
+        title="Historique des Devis Chiffrés FCFA"
+      />
     </div>
   );
 };
+

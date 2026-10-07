@@ -9,6 +9,8 @@ import { FileText, FileSpreadsheet, Eye, Trash2, RotateCcw, Search, X } from "lu
 import { Badge } from "@/components/ui/badge";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
+import { pdfExportHistory } from "@/lib/pdfExportHistory";
+import PdfExportHistoryModal from "@/components/export/PdfExportHistoryModal";
 
 export interface ExportPreviewProps {
   rows: Record<string, any>[];
@@ -61,6 +63,7 @@ const getLabel = (key: string) => columnLabels[key] || key.replace(/_/g, " ").re
 const ExportPreviewTable = ({ rows, headers, title, filePrefix, headerColor = [139, 90, 43], onRowsChange }: ExportPreviewProps) => {
   const [search, setSearch] = useState("");
   const [deletedIndices, setDeletedIndices] = useState<Set<number>>(new Set());
+  const [showPdfHistory, setShowPdfHistory] = useState(false);
 
   const visibleRows = rows.filter((row, idx) => {
     if (deletedIndices.has(idx)) return false;
@@ -113,9 +116,22 @@ const ExportPreviewTable = ({ rows, headers, title, filePrefix, headerColor = [1
       styles: { fontSize: 7 },
       headStyles: { fillColor: headerColor },
     });
-    doc.save(`${filePrefix}_${new Date().toISOString().split("T")[0]}.pdf`);
-    toast.success("PDF exporté !");
+    const filename = `${filePrefix}_${new Date().toISOString().split("T")[0]}.pdf`;
+    pdfExportHistory.saveAndRecordPdf({
+      title: `Export de Données - ${title}`,
+      filename,
+      module: "farm_management",
+      categoryLabel: "Export Table & Données",
+      doc,
+      summary: `Export tableau de ${exportRows.length} lignes (${headers.length} colonnes) — ${title}.`,
+      dataSnapshot: {
+        filePrefix,
+        rowsCount: exportRows.length,
+        headersCount: headers.length,
+      },
+    });
   };
+
 
   return (
     <Card>
@@ -145,9 +161,19 @@ const ExportPreviewTable = ({ rows, headers, title, filePrefix, headerColor = [1
             <Button size="sm" onClick={exportPDF}>
               <FileText className="h-4 w-4 mr-1" />PDF
             </Button>
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => setShowPdfHistory(true)}
+              className="border-primary/30 hover:bg-primary/10"
+              title="Consulter l'historique de tous les documents PDF exportés"
+            >
+              <FileText className="h-4 w-4 mr-1 text-primary" />Historique PDF
+            </Button>
             <Button size="sm" variant="outline" onClick={exportCSV}>
               <FileSpreadsheet className="h-4 w-4 mr-1" />CSV
             </Button>
+
           </div>
         </div>
       </CardHeader>
@@ -230,8 +256,16 @@ const ExportPreviewTable = ({ rows, headers, title, filePrefix, headerColor = [1
           <Badge variant="secondary">{headers.length} colonnes</Badge>
         </div>
       </CardContent>
+
+      <PdfExportHistoryModal
+        open={showPdfHistory}
+        onOpenChange={setShowPdfHistory}
+        defaultModuleFilter="farm_management"
+        title="Historique des Exports de Données PDF"
+      />
     </Card>
   );
 };
+
 
 export default ExportPreviewTable;

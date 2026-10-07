@@ -45,6 +45,7 @@ import { NewFarmModal } from "./NewFarmModal";
 import { CropDiagnosisTool } from "@/components/expert/CropDiagnosisTool";
 import { Studio3DFarmModeler } from "./Studio3DFarmModeler";
 import { WcadiIrrigationStudio } from "./WcadiIrrigationStudio";
+import PdfExportHistoryModal from "@/components/export/PdfExportHistoryModal";
 
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -148,6 +149,7 @@ export const FieldDesignerStudio: React.FC = () => {
 
   // Mode Simple vs Mode Expert (Progressive disclosure CAD/GIS)
   const [modeExpert, setModeExpert] = useState(false);
+  const [showPdfHistory, setShowPdfHistory] = useState(false);
 
   // Synchronisation des abonnements
   useEffect(() => {
@@ -349,7 +351,19 @@ export const FieldDesignerStudio: React.FC = () => {
             <span>{modeExpert ? "Mode Expert ⚙" : "Mode Simple"}</span>
           </button>
 
+          {/* Bouton Historique PDF */}
+          <button
+            type="button"
+            onClick={() => setShowPdfHistory(true)}
+            className="px-3 py-1 rounded-xl text-xs font-bold border bg-white/10 text-white/90 border-white/20 hover:bg-white/20 transition-all flex items-center gap-1.5"
+            title="Consulter l'historique de tous les documents PDF créés"
+          >
+            <FileText className="h-3.5 w-3.5 text-emerald-400" />
+            <span>Historique PDF</span>
+          </button>
+
           {/* Statut Sync & Bouton sync */}
+
           <div className="flex items-center gap-2 bg-black/40 px-2.5 py-1 rounded-xl border border-white/10 text-xs">
             {syncState.status === "synced" && (
               <span className="flex items-center gap-1 text-[11px] font-bold text-emerald-400">
@@ -760,6 +774,15 @@ export const FieldDesignerStudio: React.FC = () => {
         onOpenChange={setNewFarmModalOpen}
         onSave={handleSaveFarm}
       />
+
+      {/* Modal d'historique des documents CAO, devis et interventions */}
+      <PdfExportHistoryModal
+        open={showPdfHistory}
+        onOpenChange={setShowPdfHistory}
+        defaultModuleFilter="field_designer"
+        title="Historique des Documents CAO, Devis & Visites"
+      />
     </div>
   );
 };
+

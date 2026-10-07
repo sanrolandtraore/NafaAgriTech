@@ -8,6 +8,7 @@ import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import { EngineeringQuoteDoc, FieldVisitReport, Farm, Field } from "@/types/fieldDesigner";
 import { partnerBrandingStorage, PartnerBranding } from "./partnerBrandingStorage";
+import { pdfExportHistory } from "./pdfExportHistory";
 
 function hexToRgb(hex: string): [number, number, number] {
   const clean = hex.replace("#", "");
@@ -287,6 +288,66 @@ export function exportFieldVisitPdf(
     doc.setTextColor(6, 95, 70);
     doc.text(`Prochaine visite programmée : ${visit.nextVisitDate}`, 20, y + 9);
   }
+
+  return doc;
+}
+
+/**
+ * Génère le devis PDF, déclenche le téléchargement et l'enregistre dans l'historique
+ */
+export function saveTechnicalQuotePdf(
+  quote: EngineeringQuoteDoc,
+  farm?: Farm,
+  expertName?: string
+): jsPDF {
+  const doc = exportQuotePdf(quote, farm, expertName);
+  const cleanTitle = quote.title || "Devis d'Aménagement Agricole";
+  const filename = `devis_${(quote.title || "amenagement").replace(/[^a-zA-Z0-9]/g, "_").toLowerCase()}_${Date.now()}.pdf`;
+
+  pdfExportHistory.saveAndRecordPdf({
+    title: cleanTitle,
+    filename,
+    module: "field_designer",
+    categoryLabel: "Devis Chiffré FCFA",
+    doc,
+    authorName: expertName,
+    clientName: quote.clientName,
+    summary: `Devis d'ingénierie d'un montant total de ${quote.totalGeneralFCFA?.toLocaleString("fr-FR")} FCFA pour ${farm?.name || "l'exploitation"}.`,
+    dataSnapshot: {
+      quoteId: quote.id,
+      totalFCFA: quote.totalGeneralFCFA,
+      farmId: farm?.id,
+    },
+  });
+
+  return doc;
+}
+
+/**
+ * Génère le rapport d'intervention terrain PDF, déclenche le téléchargement et l'enregistre dans l'historique
+ */
+export function saveFieldVisitReportPdf(
+  visit: FieldVisitReport,
+  farm?: Farm,
+  field?: Field
+): jsPDF {
+  const doc = exportFieldVisitPdf(visit, farm, field);
+  const filename = `visite_${(farm?.name || "exploitation").replace(/[^a-zA-Z0-9]/g, "_").toLowerCase()}_${Date.now()}.pdf`;
+
+  pdfExportHistory.saveAndRecordPdf({
+    title: `Rapport de Visite - ${farm?.name || "Exploitation"}`,
+    filename,
+    module: "field_designer",
+    categoryLabel: "Intervention Terrain",
+    doc,
+    authorName: visit.expertName,
+    summary: `Intervention du ${visit.visitDate} sur la parcelle ${field?.name || "principale"}. Culture : ${visit.cropObserved || "Générale"}.`,
+    dataSnapshot: {
+      visitId: visit.id,
+      farmId: farm?.id,
+      fieldId: field?.id,
+    },
+  });
 
   return doc;
 }
