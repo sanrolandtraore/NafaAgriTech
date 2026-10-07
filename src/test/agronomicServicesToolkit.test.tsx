@@ -90,7 +90,6 @@ describe("Suite Professionnelle « NAFA FIELD DESIGNER »", () => {
 
       // En-tête officiel
       expect(screen.getByRole("heading", { level: 1, name: /NAFA FIELD DESIGNER/i })).toBeInTheDocument();
-      expect(screen.getByText(/Suite d'Ingénierie & d'Intervention Terrain/i)).toBeInTheDocument();
 
       // Vérifie la présence de cartes clés NAFA FIELD DESIGNER
       expect(screen.getAllByText("Mesure GPS & Arpentage de Parcelle").length).toBeGreaterThan(0);
@@ -167,7 +166,6 @@ describe("Suite Professionnelle « NAFA FIELD DESIGNER »", () => {
 
       // Titre & En-tête
       expect(screen.getAllByRole("heading", { name: /NAFA FIELD DESIGNER/i }).length).toBeGreaterThan(0);
-      expect(screen.getByText(/Suite d'Ingénierie Agricole • Disponible sans connexion/i)).toBeInTheDocument();
 
       // Les 7 actions d'ingénierie directe obligatoires :
       expect(screen.getAllByRole("button", { name: /Analyser/i }).length).toBeGreaterThan(0);

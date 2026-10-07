@@ -80,11 +80,6 @@ export const NafaGeniusHeroCard: React.FC<NafaGeniusHeroCardProps> = ({
       <div className="relative z-10 flex flex-col lg:flex-row lg:items-center justify-between gap-6">
         {/* Left Side: Brand identity & Title */}
         <div className="space-y-3 max-w-xl">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#F97316]/20 border border-[#F97316]/30 text-[#F97316] text-xs font-black uppercase tracking-wider">
-            <Sparkles className="h-3.5 w-3.5 animate-spin" />
-            <span>Suite d'Ingénierie Agricole • Disponible sans connexion</span>
-          </div>
-
           <div>
             <h2 className="text-2xl sm:text-3xl font-heading font-black tracking-tight flex items-center gap-2.5 flex-wrap">
               <span>NAFA FIELD DESIGNER</span>

@@ -24,9 +24,7 @@ import {
 } from "lucide-react";
 import BackNavigationButton from "@/components/BackNavigationButton";
 import { partnerStorage, PartnerOffer } from "@/lib/partnerStorage";
-import MechEstimatorCard from "@/components/mechanization/MechanizationEstimatorCard";
 import MechBookingModal from "@/components/mechanization/MechanizationBookingModal";
-import MechUssdSimulator from "@/components/mechanization/MechanizationUssdSimulator";
 import { isPartnerSubscriptionActive } from "@/lib/providerSubscription";
 import BurkinaPaymentModal from "@/components/payment/BurkinaPaymentModal";
 import { PaymentTransaction } from "@/lib/burkinaPaymentAggregator";
@@ -196,10 +194,7 @@ export const ServiceMarketplacePage = () => {
     return "all";
   });
 
-  // ─── État d'intégration Mécanisation & Location dans le module d'achat ───
-  const [showEstimator, setShowEstimator] = useState(false);
-  const [showPartnerBanner, setShowPartnerBanner] = useState(false);
-  const [activeToolTab, setActiveToolTab] = useState<"estimator" | "ussd">("estimator");
+  // ─── État modal réservation ───
   const [mechModalOpen, setMechModalOpen] = useState(false);
   const [mechEstimateData, setMechEstimateData] = useState<any>(null);
 
@@ -567,54 +562,6 @@ export const ServiceMarketplacePage = () => {
   return (
     <div className="space-y-6 max-w-7xl mx-auto pb-12 px-3 sm:px-6 animate-fade-in">
       {/* Information pour les partenaires connectés qui consultent la vitrine (Caché par défaut - Cliquer pour voir) */}
-      {isPartner && (
-        <div className="rounded-xl border border-amber-500/30 bg-amber-500/5 px-3 py-2 text-xs text-amber-800 dark:text-amber-200 transition-all">
-          {!showPartnerBanner ? (
-            <div className="flex items-center justify-between gap-2">
-              <button
-                type="button"
-                onClick={() => setShowPartnerBanner(true)}
-                className="flex items-center gap-2 hover:underline text-left cursor-pointer font-semibold"
-              >
-                <Store className="h-4 w-4 text-amber-600 shrink-0" />
-                <span>Mode Consultation Partenaire</span>
-                <span className="text-[11px] text-muted-foreground font-normal hidden sm:inline">• Cliquer pour voir les détails</span>
-                <ChevronDown className="h-3.5 w-3.5 text-amber-600 shrink-0" />
-              </button>
-              <Button asChild size="sm" variant="ghost" className="h-7 text-xs text-amber-800 dark:text-amber-200 hover:bg-amber-500/20 px-2 rounded-lg shrink-0">
-                <Link to="/dashboard/partner-space?tab=services">
-                  <Package className="h-3.5 w-3.5 mr-1" /> Mon Espace Partenaire
-                </Link>
-              </Button>
-            </div>
-          ) : (
-            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 pt-1">
-              <div className="flex items-start gap-2.5 text-xs sm:text-sm">
-                <Store className="h-4 w-4 text-amber-600 shrink-0 mt-0.5" />
-                <span>
-                  <strong>Mode Consultation Partenaire :</strong> Vous visualisez le Marché Vitrine tel qu'affiché pour les agriculteurs et éleveurs. Pour publier ou modifier vos offres, accédez à votre espace dédié.
-                </span>
-              </div>
-              <div className="flex items-center gap-2 shrink-0 self-end sm:self-auto">
-                <Button asChild size="sm" className="bg-amber-600 hover:bg-amber-700 text-white text-xs rounded-xl font-semibold h-8">
-                  <Link to="/dashboard/partner-space?tab=services">
-                    <Package className="h-3.5 w-3.5 mr-1.5" /> Gérer mes Services &amp; Produits
-                  </Link>
-                </Button>
-                <Button
-                  size="sm"
-                  variant="ghost"
-                  onClick={() => setShowPartnerBanner(false)}
-                  className="text-xs h-8 text-amber-700 dark:text-amber-300 hover:bg-amber-500/20 rounded-xl px-2"
-                >
-                  <ChevronUp className="h-3.5 w-3.5 mr-1" /> Masquer
-                </Button>
-              </div>
-            </div>
-          )}
-        </div>
-      )}
-
       {/* En-tête Marché Unifié */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div className="flex items-center gap-3">
@@ -628,10 +575,6 @@ export const ServiceMarketplacePage = () => {
             </p>
           </div>
         </div>
-
-        <Badge variant="outline" className="border-emerald-500/40 text-emerald-700 bg-emerald-500/10 text-xs py-1.5 px-3">
-          <Shield className="h-3.5 w-3.5 mr-1.5 text-emerald-600" /> Séquestre Garanti
-        </Badge>
       </div>
 
       {/* Barre d'action rapide : Acheter / Louer / Demander un service */}
@@ -661,124 +604,6 @@ export const ServiceMarketplacePage = () => {
           <Wrench className="h-3.5 w-3.5 mr-1.5 text-blue-600" /> Services & Conseils (Agronomiques, Vétérinaires & Finance)
         </Button>
       </div>
-
-      {/* Barre d'explication du Séquestre Garanti */}
-      <Card className="border-emerald-500/30 bg-emerald-500/5">
-        <CardContent className="p-3.5 flex items-center gap-3 text-xs">
-          <Shield className="h-5 w-5 text-emerald-600 shrink-0" />
-          <p className="text-foreground/90">
-            <strong>Paiement sous séquestre sécurisé NAFA :</strong> Vos fonds restent bloqués jusqu'à la livraison conforme des intrants et du matériel ou l'achèvement des travaux validés sur le terrain.
-          </p>
-        </CardContent>
-      </Card>
-
-      {/* ─── MODULE INTÉGRÉ : SIMULATEUR DE LOCATION DE MATÉRIEL & CHANTIERS (Caché par défaut - Cliquer pour voir) ─── */}
-      {!showEstimator ? (
-        <div
-          onClick={() => setShowEstimator(true)}
-          role="button"
-          tabIndex={0}
-          onKeyDown={(e) => e.key === "Enter" && setShowEstimator(true)}
-          className="rounded-2xl border border-amber-500/30 bg-amber-500/5 hover:bg-amber-500/10 transition-all p-3 sm:p-3.5 flex items-center justify-between gap-3 cursor-pointer group shadow-xs"
-        >
-          <div className="flex items-center gap-3">
-            <div className="p-2 rounded-xl bg-amber-500/20 text-amber-700 dark:text-amber-400 shrink-0 group-hover:scale-105 transition-transform">
-              <Tractor className="h-5 w-5" />
-            </div>
-            <div>
-              <div className="flex items-center gap-2 flex-wrap">
-                <span className="font-heading font-extrabold text-foreground text-xs sm:text-sm">
-                  Simulateur de Location de Matériel &amp; Calcul de Chantiers
-                </span>
-                <Badge variant="outline" className="border-amber-500/40 text-amber-800 dark:text-amber-300 text-[10px] py-0 px-2">
-                  Inclus dans Achat &amp; Location
-                </Badge>
-              </div>
-              <p className="text-[11px] text-muted-foreground line-clamp-1 mt-0.5">
-                Estimez le coût d'un labour, hersage, semis, pulvérisation ou récolte selon vos hectares • Cliquer pour voir
-              </p>
-            </div>
-          </div>
-          <Button
-            size="sm"
-            variant="outline"
-            className="shrink-0 rounded-xl gap-1.5 font-bold text-xs h-8 border-amber-500/40 text-amber-800 dark:text-amber-300 hover:bg-amber-500/20"
-          >
-            <span>Cliquer pour voir</span>
-            <ChevronDown className="h-3.5 w-3.5" />
-          </Button>
-        </div>
-      ) : (
-        <Card className="border border-amber-500/30 bg-gradient-to-r from-amber-500/10 via-amber-500/5 to-transparent overflow-hidden animate-in fade-in duration-200">
-          <CardContent className="p-4 sm:p-5">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-              <div className="flex items-start gap-3">
-                <div className="p-2.5 rounded-xl bg-amber-500/20 text-amber-700 dark:text-amber-400 shrink-0">
-                  <Tractor className="h-6 w-6" />
-                </div>
-                <div>
-                  <div className="flex items-center gap-2 flex-wrap">
-                    <h3 className="font-heading font-extrabold text-foreground text-sm sm:text-base">
-                      Simulateur de Location de Matériel &amp; Calcul de Chantiers
-                    </h3>
-                    <Badge variant="outline" className="border-amber-500/40 text-amber-800 dark:text-amber-300 text-[10px]">
-                      Inclus dans Achat &amp; Location
-                    </Badge>
-                  </div>
-                  <p className="text-xs text-muted-foreground mt-0.5 max-w-2xl">
-                    Estimez instantanément le coût d'un labour, hersage, semis, pulvérisation ou récolte selon vos hectares, le type de sol et le carburant, avec réservation directe sous séquestre garanti.
-                  </p>
-                </div>
-              </div>
-              <Button
-                onClick={() => setShowEstimator(false)}
-                variant="outline"
-                className="shrink-0 rounded-xl gap-2 font-bold text-xs h-9 border-amber-500/40 text-amber-800 dark:text-amber-300 hover:bg-amber-500/10"
-              >
-                <ChevronUp className="h-3.5 w-3.5" />
-                <span>Masquer le simulateur</span>
-              </Button>
-            </div>
-
-            <div className="mt-5 pt-4 border-t border-amber-500/20 space-y-4">
-              <div className="flex items-center gap-2">
-                <Button
-                  size="sm"
-                  variant={activeToolTab === "estimator" ? "default" : "outline"}
-                  onClick={() => setActiveToolTab("estimator")}
-                  className={`text-xs h-8 rounded-lg ${activeToolTab === "estimator" ? "bg-amber-600 text-white" : ""}`}
-                >
-                  <Tractor className="h-3.5 w-3.5 mr-1.5" /> Estimateur de chantiers (Hectares &amp; Sol)
-                </Button>
-                <Button
-                  size="sm"
-                  variant={activeToolTab === "ussd" ? "default" : "outline"}
-                  onClick={() => setActiveToolTab("ussd")}
-                  className={`text-xs h-8 rounded-lg ${activeToolTab === "ussd" ? "bg-amber-600 text-white" : ""}`}
-                >
-                  <Smartphone className="h-3.5 w-3.5 mr-1.5" /> Réservation rurale USSD (*226#)
-                </Button>
-              </div>
-
-              {activeToolTab === "estimator" ? (
-                <MechEstimatorCard
-                  onBookNow={(estimate) => {
-                    setMechEstimateData({
-                      service: estimate.service,
-                      areaHa: estimate.areaHa,
-                      totalCost: estimate.totalCost,
-                      depositAmount: estimate.depositAmount,
-                    });
-                    setMechModalOpen(true);
-                  }}
-                />
-              ) : (
-                <MechUssdSimulator />
-              )}
-            </div>
-          </CardContent>
-        </Card>
-      )}
 
       {/* ─── BLOC DES 6 FILTRES OBLIGATOIRES ─── */}
       <Card className="border-border shadow-xs">
