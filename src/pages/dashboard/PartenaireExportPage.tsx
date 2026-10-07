@@ -240,7 +240,14 @@ export default function PartenaireExportPage() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <ExportPreviewTable headers={previewHeaders} rows={previewRows} />
+            <ExportPreviewTable
+              headers={previewHeaders}
+              rows={previewRows}
+              title={exportOptions.find((o) => o.value === selected)?.label || selected}
+              filePrefix={`nafa_${selected}`}
+              headerColor={[40, 116, 166]}
+              onRowsChange={setPreviewRows}
+            />
           </CardContent>
         </Card>
       )}

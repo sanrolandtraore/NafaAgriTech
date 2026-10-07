@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
+import type { SupabaseClient } from "@supabase/supabase-js";
 import { useAuth } from "@/contexts/AuthContext";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -9,6 +10,10 @@ import { Progress } from "@/components/ui/progress";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { GraduationCap, Search, Clock, BookOpen, ArrowRight } from "lucide-react";
+
+// Les tables metier ne figurent pas dans les types Supabase generes (src/integrations/supabase/types.ts) :
+// on passe par une vue non typee du client pour ces requetes.
+const db = supabase as unknown as SupabaseClient;
 
 type Course = {
   id: string;
@@ -41,10 +46,10 @@ const EducationCatalogPage = () => {
   useEffect(() => {
     const load = async () => {
       const [cRes, lRes, pRes] = await Promise.all([
-        supabase.from("courses").select("*").eq("is_published", true).order("sort_order"),
-        supabase.from("course_lessons").select("id, course_id"),
+        db.from("courses").select("*").eq("is_published", true).order("sort_order"),
+        db.from("course_lessons").select("id, course_id"),
         user
-          ? supabase.from("course_progress").select("course_id, lesson_id").eq("user_id", user.id)
+          ? db.from("course_progress").select("course_id, lesson_id").eq("user_id", user.id)
           : Promise.resolve({ data: [] as any[] }),
       ]);
 

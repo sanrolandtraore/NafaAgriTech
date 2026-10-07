@@ -9,7 +9,7 @@ import {
   Beef, Heart, Baby, Utensils, Wallet, Building2, Compass, Handshake, ClipboardList,
   Award, Store, Eye, Microscope, FileText, BookOpen, Sparkles,
   Briefcase, ShieldCheck, Landmark, FolderKanban, FlaskConical, BadgeCheck,
-  Home, Activity, Megaphone,
+  Home, Activity, Megaphone, Camera,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useTranslation } from "react-i18next";
@@ -34,6 +34,7 @@ export const agriculteurNav: NavItem[] = [
 export const eleveurNav: NavItem[] = [
   { to: "/dashboard", labelKey: "Tableau de bord", icon: LayoutDashboard },
   { to: "/dashboard/animals", labelKey: "Cheptel & Animaux", icon: Beef },
+  { to: "/dashboard/animal-counting", labelKey: "Comptage Intelligent d'Animaux", icon: Camera },
   { to: "/dashboard/animal-health", labelKey: "Santé & Vaccinations", icon: Heart },
   { to: "/dashboard/animal-reproduction", labelKey: "Reproduction & Vêlage", icon: Baby },
   { to: "/dashboard/animal-feeding", labelKey: "Alimentation & Rations", icon: Utensils },
@@ -91,6 +92,7 @@ export const veterinaireNav: NavItem[] = [
   { to: "/dashboard", labelKey: "Tableau de bord", icon: LayoutDashboard },
   { to: "/dashboard/partner-space", labelKey: "Mon Espace Partenaire (Offres & Devis)", icon: Building2, section: "Visibilité & Gestion" },
   { to: "/dashboard/livestock-services", labelKey: "Catalogue & Réservations Vétérinaires", icon: ClipboardList, section: "Prestations Vétérinaires" },
+  { to: "/dashboard/animal-counting", labelKey: "Comptage & Densité d'Élevage", icon: Camera, section: "Prestations Vétérinaires" },
   { to: "/dashboard/partenaire-mes-offres", labelKey: "Mes Services & Prestations", icon: Store, section: "Prestations Vétérinaires" },
   { to: "/dashboard/interventions", labelKey: "Interventions & Soins terrain", icon: Activity, section: "Prestations Vétérinaires" },
   { to: "/dashboard/quote-requests", labelKey: "Demandes de devis & Réservations", icon: FileText, section: "Prestations Vétérinaires" },

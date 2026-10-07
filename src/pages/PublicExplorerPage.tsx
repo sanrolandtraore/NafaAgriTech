@@ -716,7 +716,7 @@ export default function PublicExplorerPage() {
                       </div>
                       <div className="flex justify-between">
                         <span>Rendement :</span>
-                        <span className="font-bold text-foreground">{crop.typical_yield_min_t_ha} - {crop.typical_yield_max_t_ha} T/ha</span>
+                        <span className="font-bold text-foreground">{crop.yield_potential_t_ha} T/ha</span>
                       </div>
                     </div>
                   </div>

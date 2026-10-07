@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
+import type { SupabaseClient } from "@supabase/supabase-js";
 import { useAuth } from "@/contexts/AuthContext";
 import { getEffectiveUserId } from "@/lib/deviceIdentity";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -47,6 +48,10 @@ import {
   PlantingPattern,
 } from "@/lib/agronomicEngine";
 import { BURKINA_ALL_CROPS_TECHNICAL_SHEETS } from "@/lib/cropLibraryData";
+
+// Les tables metier ne figurent pas dans les types Supabase generes (src/integrations/supabase/types.ts) :
+// on passe par une vue non typee du client pour ces requetes.
+const db = supabase as unknown as SupabaseClient;
 
 // Spécifications de prix de vente indicatifs au producteur au Burkina Faso (FCFA/kg)
 const getCropDefaultPrice = (name: string, category?: string): number => {
@@ -503,9 +508,9 @@ const CropPlanningPage = () => {
   // Load backend references
   useEffect(() => {
     Promise.all([
-      supabase.from("parcels").select("id, name, area_ha, calculated_area_ha, soil_type, irrigation_type, farms(id, name, climate_zone_id, climate_zones(id, name, climate_coefficient))"),
-      supabase.from("crop_references").select("*"),
-      supabase.from("climate_zones").select("*"),
+      db.from("parcels").select("id, name, area_ha, calculated_area_ha, soil_type, irrigation_type, farms(id, name, climate_zone_id, climate_zones(id, name, climate_coefficient))"),
+      db.from("crop_references").select("*"),
+      db.from("climate_zones").select("*"),
     ]).then(([pRes, cRes, czRes]) => {
       setParcels(pRes.data || []);
       const loadedCrops = (cRes.data && cRes.data.length > 0)
@@ -730,7 +735,7 @@ const CropPlanningPage = () => {
         try {
           let targetParcelId = parcel?.id;
           if (!targetParcelId) {
-            const { data: existingFarm } = await supabase
+            const { data: existingFarm } = await db
               .from("farms")
               .select("id")
               .eq("user_id", user.id)
@@ -739,7 +744,7 @@ const CropPlanningPage = () => {
 
             let farmId = existingFarm?.id;
             if (!farmId) {
-              const { data: newFarm } = await supabase
+              const { data: newFarm } = await db
                 .from("farms")
                 .insert({ user_id: user.id, name: "Mon Exploitation" })
                 .select("id")
@@ -748,7 +753,7 @@ const CropPlanningPage = () => {
             }
 
             if (farmId) {
-              const { data: newParcel } = await supabase
+              const { data: newParcel } = await db
                 .from("parcels")
                 .insert({
                   farm_id: farmId,
@@ -762,7 +767,7 @@ const CropPlanningPage = () => {
           }
 
           if (targetParcelId) {
-            const { data: cycleData } = await supabase
+            const { data: cycleData } = await db
               .from("crop_cycles")
               .insert({
                 parcel_id: targetParcelId,
@@ -778,7 +783,7 @@ const CropPlanningPage = () => {
               .single();
 
             if (cycleData?.id) {
-              await supabase.from("investment_plans").insert({
+              await db.from("investment_plans").insert({
                 crop_cycle_id: cycleData.id,
                 total_input_cost: totalInputCost,
                 total_labor_cost: totalLabourCost,
@@ -800,7 +805,7 @@ const CropPlanningPage = () => {
                   unit_price: i.unitPrice,
                   total_cost: Math.round(i.totalQty * i.unitPrice),
                 }));
-                await supabase.from("crop_cycle_inputs").insert(inputInserts);
+                await db.from("crop_cycle_inputs").insert(inputInserts);
               }
             }
           }

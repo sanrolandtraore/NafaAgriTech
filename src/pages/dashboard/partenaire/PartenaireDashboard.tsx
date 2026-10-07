@@ -191,9 +191,9 @@ export default function PartenaireDashboard() {
     const defaultCat =
       partnerType === "fournisseur_intrants"
         ? "intrants"
-        : partnerType === "sante_animale"
+        : partnerType === "elevage_veterinaire"
         ? "veterinaire"
-        : partnerType === "banque_microfinance"
+        : partnerType === "institution_agri"
         ? "financement"
         : "service";
     setOfferCategory(defaultCat);

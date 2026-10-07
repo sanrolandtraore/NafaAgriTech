@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import type { SupabaseClient } from "@supabase/supabase-js";
 import { useOfflineData } from "@/hooks/useOfflineData";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -10,6 +11,10 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { toast } from "sonner";
 import { Plus, Trash2, Users, Edit2, WifiOff } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+
+// Les tables metier ne figurent pas dans les types Supabase generes (src/integrations/supabase/types.ts) :
+// on passe par une vue non typee du client pour ces requetes.
+const db = supabase as unknown as SupabaseClient;
 
 const statusColors: Record<string, string> = { active: "bg-success/10 text-success", inactive: "bg-muted text-muted-foreground" };
 
@@ -24,7 +29,7 @@ const WorkersPage = () => {
   const [form, setForm] = useState({ farm_id: "", full_name: "", role: "ouvrier", phone: "", daily_rate: "", status: "active", notes: "" });
 
   useEffect(() => {
-    supabase.from("farms").select("id, name").then(({ data }) => setFarms(data || []));
+    db.from("farms").select("id, name").then(({ data }) => setFarms(data || []));
   }, []);
 
   const resetForm = () => {

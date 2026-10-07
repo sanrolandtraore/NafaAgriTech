@@ -30,7 +30,9 @@ const mockAuth = (role = "eleveur", userId = "user-eleveur-1") => {
       phone: "+226 70 12 34 56",
       city: "Bobo-Dioulasso",
     } as any,
-    role: role as any,
+    roles: [role],
+    primaryRole: role,
+    partnerType: role as any,
     loading: false,
     session: {} as any,
     isExpert: false,
@@ -38,7 +40,7 @@ const mockAuth = (role = "eleveur", userId = "user-eleveur-1") => {
     isPartner: false,
     isProducer: false,
     signOut: vi.fn(),
-  });
+  } as any);
 };
 
 describe("Module Services Vétérinaires — Catalogue Partenaires & Annuaire Officiel", () => {

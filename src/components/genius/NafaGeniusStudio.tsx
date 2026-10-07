@@ -333,9 +333,10 @@ export const NafaGeniusStudio: React.FC = () => {
       `Projet Aménagement Agro-Hydraulique & Élevage (${areaHa} ha)`,
       newUnified.billOfMaterials.map((m) => ({
         code: m.code,
+        category: (m.category as any) || "reseau_hydraulique",
         designation: `${m.designation} (${m.selectedSupplierId ? VERIFIED_NAFA_PARTNERS[m.selectedSupplierId]?.name || m.selectedSupplierId : "Fournisseur Agréé"})`,
         specifications: m.materialSpecification,
-        unit: m.unit,
+        unit: m.unit as any,
         quantity: m.expertQuantity,
         unitPriceFcfa: m.selectedPriceFcfa,
         totalPriceFcfa: m.totalPriceFcfa,
@@ -365,9 +366,10 @@ export const NafaGeniusStudio: React.FC = () => {
         ...engineeringQuote,
         items: updated.billOfMaterials.map((m) => ({
           code: m.code,
+          category: (m.category as any) || "reseau_hydraulique",
           designation: `${m.designation} (${m.selectedSupplierId ? VERIFIED_NAFA_PARTNERS[m.selectedSupplierId]?.name || m.selectedSupplierId : "Fournisseur Agréé"})`,
           specifications: m.materialSpecification,
-          unit: m.unit,
+          unit: m.unit as any,
           quantity: m.expertQuantity,
           unitPriceFcfa: m.selectedPriceFcfa,
           totalPriceFcfa: m.totalPriceFcfa,
@@ -426,7 +428,7 @@ export const NafaGeniusStudio: React.FC = () => {
         cropOrAnimal: selectedCrop,
         areaHa: surveyResult.areaHa,
         initialHmt: irrigationResult.totalHeadHmtM,
-      },
+      } as any,
       correctedValue: {
         certifiedHmt: certified.totalHeadHmtM,
         certifiedSolarWp: certified.solarPvWattPeak,

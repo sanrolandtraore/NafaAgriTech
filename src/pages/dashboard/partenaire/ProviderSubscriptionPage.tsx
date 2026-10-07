@@ -605,7 +605,7 @@ export default function ProviderSubscriptionPage() {
           title={`Abonnement ${selectedPlan.title} (${billingCycle === "annual" ? "1 An" : "1 Mois"})`}
           description={`Paiement sécurisé et activation immédiate de la formule ${selectedPlan.title} pour "${companyName || "Mon Entreprise"}".`}
           amount={billingCycle === "annual" ? selectedPlan.annualPriceFCFA : selectedPlan.monthlyPriceFCFA}
-          context="subscription"
+          context="partner_subscription"
           beneficiaryType="nafa_agritech"
           defaultPayerName={companyName}
           defaultPayerPhone={phone}

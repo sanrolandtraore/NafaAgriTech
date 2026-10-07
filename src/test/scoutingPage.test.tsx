@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
+﻿import { describe, it, expect, vi, beforeEach } from "vitest";
 import { render, screen, waitFor } from "@testing-library/react";
 import { BrowserRouter } from "react-router-dom";
 import ScoutingPage from "@/pages/dashboard/ScoutingPage";
@@ -20,12 +20,12 @@ describe("ScoutingPage - Suivi des Parcelles & Patrouille Agronomique", () => {
     expect(screen.getByText(/Scouting & Suivi des Parcelles/i)).toBeInTheDocument();
 
     // Bannière d'accès au module d'inspection avancée (contenant Sparkles et ArrowRight)
-    expect(screen.getByText(/NAFA Genius IA • Module d'Inspection Avancé/i)).toBeInTheDocument();
-    expect(screen.getByText(/Lancer l'Inspection IA/i)).toBeInTheDocument();
+    expect(screen.getByText(/NAFA Genius • Module d'Inspection Avancé/i)).toBeInTheDocument();
+    expect(screen.getByText(/Lancer l'Inspection/i)).toBeInTheDocument();
 
     // Boutons d'action
     expect(screen.getByRole("button", { name: /Relevé rapide/i })).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: /Inspection Intelligente IA/i })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /Inspection Intelligente/i })).toBeInTheDocument();
 
     // Cartes de statistiques
     expect(screen.getByText(/Total inspections/i)).toBeInTheDocument();

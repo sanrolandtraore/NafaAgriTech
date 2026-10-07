@@ -53,7 +53,8 @@ export type PathogenType =
   | "ravageur"
   | "carence"
   | "stress_hydrique"
-  | "degat_mecanique";
+  | "degat_mecanique"
+  | "sain";
 
 export type ConfidenceLevel = "Élevé" | "Moyen" | "Faible" | "Incertain";
 
@@ -2836,7 +2837,7 @@ export async function saveValidatedDiagnosisCase(caseData: Omit<ValidatedCase, "
   // 2. Synchronisation en arrière-plan vers Supabase si en ligne
   if (navigator.onLine) {
     try {
-      await supabase.from("validated_cases").insert({
+      await supabase.from("validated_cases" as any).insert({
         plant_species_id: newCase.plantSpeciesId,
         is_weed: newCase.isWeed,
         weed_species_id: newCase.weedSpeciesId,

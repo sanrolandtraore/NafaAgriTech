@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import PremiumGate from "@/components/PremiumGate";
 import { supabase } from "@/integrations/supabase/client";
+import type { SupabaseClient } from "@supabase/supabase-js";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
@@ -9,6 +10,10 @@ import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { BarChart3, TrendingUp, Calculator } from "lucide-react";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend } from "recharts";
+
+// Les tables metier ne figurent pas dans les types Supabase generes (src/integrations/supabase/types.ts) :
+// on passe par une vue non typee du client pour ces requetes.
+const db = supabase as unknown as SupabaseClient;
 
 const COLORS = ["hsl(var(--primary))", "hsl(var(--chart-2))", "hsl(var(--chart-3))", "hsl(var(--chart-4))", "hsl(var(--chart-5))"];
 
@@ -26,10 +31,10 @@ const AnalyticsPage = () => {
 
   useEffect(() => {
     Promise.all([
-      supabase.from("crop_cycles").select("id, season, expected_yield_kg, expected_revenue, actual_yield_kg, actual_revenue, plant_count, parcels(name, area_ha), crop_references(name)").order("created_at", { ascending: false }),
-      supabase.from("cost_entries").select("amount, category").then(r => r),
-      supabase.from("harvests").select("quantity_kg, unit_price_kg, sold, crop_cycles(season, crop_references(name))"),
-      supabase.from("crop_references").select("*"),
+      db.from("crop_cycles").select("id, season, expected_yield_kg, expected_revenue, actual_yield_kg, actual_revenue, plant_count, parcels(name, area_ha), crop_references(name)").order("created_at", { ascending: false }),
+      db.from("cost_entries").select("amount, category").then(r => r),
+      db.from("harvests").select("quantity_kg, unit_price_kg, sold, crop_cycles(season, crop_references(name))"),
+      db.from("crop_references").select("*"),
     ]).then(([cyclesRes, costsRes, harvestsRes, cropsRes]) => {
       setCycles(cyclesRes.data || []);
       setCosts(costsRes.data || []);

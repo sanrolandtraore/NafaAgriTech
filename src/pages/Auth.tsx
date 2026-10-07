@@ -131,7 +131,7 @@ export default function Auth() {
 
     setLoading(true);
     try {
-      const res = await signInWithPhoneOtp(fullPhone);
+      const res: { error: any; code?: string } = await signInWithPhoneOtp(fullPhone);
       if (res.error) {
         toast.error("Erreur lors de l'envoi du code : " + res.error.message);
       } else {
@@ -161,7 +161,7 @@ export default function Auth() {
     setLoading(true);
     try {
       // Tentative de validation
-      const res = await verifyPhoneOtp(fullPhone, otpToken.trim());
+      const res: { error: any; isNewUser?: boolean } = await verifyPhoneOtp(fullPhone, otpToken.trim());
       if (res.error) {
         toast.error(res.error.message || "Code incorrect.");
       } else if (res.isNewUser) {

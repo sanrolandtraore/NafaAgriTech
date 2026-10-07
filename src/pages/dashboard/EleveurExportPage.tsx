@@ -1,6 +1,7 @@
 import { useState } from "react";
 import PremiumGate from "@/components/PremiumGate";
 import { supabase } from "@/integrations/supabase/client";
+import type { SupabaseClient } from "@supabase/supabase-js";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -8,6 +9,10 @@ import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { Eye, Loader2 } from "lucide-react";
 import ExportPreviewTable from "@/components/ExportPreviewTable";
+
+// Les tables metier ne figurent pas dans les types Supabase generes (src/integrations/supabase/types.ts) :
+// on passe par une vue non typee du client pour ces requetes.
+const db = supabase as unknown as SupabaseClient;
 
 type ExportType = "animals" | "health" | "reproductions" | "feedings" | "feed_stocks" | "livestock_expenses" | "livestock_sales";
 
@@ -23,13 +28,13 @@ const exportOptions: { value: ExportType; label: string }[] = [
 
 const fetchData = async (type: ExportType) => {
   switch (type) {
-    case "animals": return supabase.from("animals").select("name, identification_number, species, breed, sex, status, birth_date, acquisition_date, acquisition_cost, weight_kg, farms(name)").order("created_at", { ascending: false });
-    case "health": return supabase.from("animal_health_events").select("event_date, event_type, description, medication, dosage, cost, vet_name, next_date, animals(name, species)").order("event_date", { ascending: false });
-    case "reproductions": return supabase.from("animal_reproductions").select("event_date, event_type, expected_birth_date, actual_birth_date, offspring_count, offspring_alive, cost, animals!animal_reproductions_animal_id_fkey(name, species)").order("event_date", { ascending: false });
-    case "feedings": return supabase.from("animal_feedings").select("feeding_date, feed_type, quantity_kg, cost, animals(name), farms(name)").order("feeding_date", { ascending: false });
-    case "feed_stocks": return supabase.from("feed_stocks").select("feed_name, quantity_kg, unit_price, supplier, last_purchase_date, farms(name)").order("feed_name");
-    case "livestock_expenses": return supabase.from("livestock_expenses").select("expense_date, category, description, amount, farms(name), animals(name)").order("expense_date", { ascending: false });
-    case "livestock_sales": return supabase.from("livestock_sales").select("sale_date, sale_type, description, quantity, unit_price, total_amount, buyer, farms(name), animals(name)").order("sale_date", { ascending: false });
+    case "animals": return db.from("animals").select("name, identification_number, species, breed, sex, status, birth_date, acquisition_date, acquisition_cost, weight_kg, farms(name)").order("created_at", { ascending: false });
+    case "health": return db.from("animal_health_events").select("event_date, event_type, description, medication, dosage, cost, vet_name, next_date, animals(name, species)").order("event_date", { ascending: false });
+    case "reproductions": return db.from("animal_reproductions").select("event_date, event_type, expected_birth_date, actual_birth_date, offspring_count, offspring_alive, cost, animals!animal_reproductions_animal_id_fkey(name, species)").order("event_date", { ascending: false });
+    case "feedings": return db.from("animal_feedings").select("feeding_date, feed_type, quantity_kg, cost, animals(name), farms(name)").order("feeding_date", { ascending: false });
+    case "feed_stocks": return db.from("feed_stocks").select("feed_name, quantity_kg, unit_price, supplier, last_purchase_date, farms(name)").order("feed_name");
+    case "livestock_expenses": return db.from("livestock_expenses").select("expense_date, category, description, amount, farms(name), animals(name)").order("expense_date", { ascending: false });
+    case "livestock_sales": return db.from("livestock_sales").select("sale_date, sale_type, description, quantity, unit_price, total_amount, buyer, farms(name), animals(name)").order("sale_date", { ascending: false });
   }
 };
 

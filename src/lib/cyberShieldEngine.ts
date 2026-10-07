@@ -643,7 +643,7 @@ export class CyberShieldSystem {
           autonomousAction: "HARD_QUARANTINE",
         });
         // Évasion immédiate du cadre
-        window.top.location = window.self.location;
+        window.top.location.href = window.self.location.href;
         return false;
       }
     } catch (e) {

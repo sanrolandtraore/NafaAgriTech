@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import type { SupabaseClient } from "@supabase/supabase-js";
 import { useOfflineData } from "@/hooks/useOfflineData";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -9,6 +10,10 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { toast } from "sonner";
 import { Plus, Trash2, DollarSign, WifiOff } from "lucide-react";
+
+// Les tables metier ne figurent pas dans les types Supabase generes (src/integrations/supabase/types.ts) :
+// on passe par une vue non typee du client pour ces requetes.
+const db = supabase as unknown as SupabaseClient;
 
 
 const categories = [
@@ -30,7 +35,7 @@ const CostsPage = () => {
   const [form, setForm] = useState({ crop_cycle_id: "", category: "intrant" as string, description: "", amount: "", date: new Date().toISOString().split("T")[0] });
 
   useEffect(() => {
-    supabase.from("crop_cycles").select("id, season, parcels(name), crop_references(name)").then(({ data }) => setCycles(data || []));
+    db.from("crop_cycles").select("id, season, parcels(name), crop_references(name)").then(({ data }) => setCycles(data || []));
   }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {

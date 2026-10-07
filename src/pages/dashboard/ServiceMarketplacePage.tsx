@@ -1,6 +1,7 @@
 import { useEffect, useState, useMemo } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
+import type { SupabaseClient } from "@supabase/supabase-js";
 import { useAuth } from "@/contexts/AuthContext";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -29,6 +30,10 @@ import MechUssdSimulator from "@/components/mechanization/MechanizationUssdSimul
 import { isPartnerSubscriptionActive } from "@/lib/providerSubscription";
 import BurkinaPaymentModal from "@/components/payment/BurkinaPaymentModal";
 import { PaymentTransaction } from "@/lib/burkinaPaymentAggregator";
+
+// Les tables metier ne figurent pas dans les types Supabase generes (src/integrations/supabase/types.ts) :
+// on passe par une vue non typee du client pour ces requetes.
+const db = supabase as unknown as SupabaseClient;
 
 // ─── Les 8 Catégories Réglementaires Obligatoires ───
 export const MARKETPLACE_CATEGORIES = [
@@ -306,7 +311,7 @@ export const ServiceMarketplacePage = () => {
       // Tentative de récupération des commandes utilisateur si connecté
       if (user) {
         try {
-          const { data: ordData } = await supabase
+          const { data: ordData } = await db
             .from("marketplace_orders")
             .select("*")
             .eq("client_id", user.id)
@@ -408,7 +413,7 @@ export const ServiceMarketplacePage = () => {
       : (orderNotes || null);
 
     try {
-      const { error } = await supabase.from("marketplace_orders").insert({
+      const { error } = await db.from("marketplace_orders").insert({
         service_id: selectedItem.id,
         client_id: user.id,
         provider_id: selectedItem.provider_id,
@@ -464,15 +469,19 @@ export const ServiceMarketplacePage = () => {
     ].filter(Boolean).join(" | ");
 
     if (user) {
-      await supabase.from("marketplace_orders").insert({
-        service_id: item.id,
-        client_id: user.id,
-        provider_id: item.provider_id,
-        amount: item.price,
-        client_notes: finalClientNotes,
-        status: "en_attente",
-        escrow_status: "bloque",
-      }).catch(() => {});
+      try {
+        await db.from("marketplace_orders").insert({
+          service_id: item.id,
+          client_id: user.id,
+          provider_id: item.provider_id,
+          amount: item.price,
+          client_notes: finalClientNotes,
+          status: "en_attente",
+          escrow_status: "bloque",
+        });
+      } catch {
+        // Persistance distante facultative : la commande locale ci-dessous fait foi.
+      }
     }
 
     const localOrder: MarketOrder = {

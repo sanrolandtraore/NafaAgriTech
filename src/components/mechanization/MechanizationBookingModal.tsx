@@ -100,7 +100,10 @@ export const MechBookingModal = ({
     if (error || !row) { console.error("Création chantier:", error); toast.error("Impossible d'enregistrer la demande."); setIsSubmitting(false); return; }
     const newJob: MechanizationJob = {
       id:row.id, serviceType:row.service_type, parcelName:row.parcel_name, areaHa:Number(row.area_ha), totalCost:Number(row.total_cost),
-      depositAmount:Number(row.deposit_amount), paymentMethod:row.payment_method, escrowStatus:row.escrow_status, jobStatus:row.job_status,
+      depositAmount:Number(row.deposit_amount),
+      paymentMethod:row.payment_method as MechanizationJob["paymentMethod"],
+      escrowStatus:row.escrow_status as MechanizationJob["escrowStatus"],
+      jobStatus:row.job_status as MechanizationJob["jobStatus"],
       operatorName:row.operator_name ?? "En attente d'affectation", operatorPhone:row.operator_phone ?? "",
       fieldAgentName:row.field_agent_name ?? "Non affecté", fieldAgentPhone:row.field_agent_phone ?? "",
       scheduledDate:row.scheduled_date, machineName:row.machine_name ?? "À affecter", notes:row.notes ?? ""

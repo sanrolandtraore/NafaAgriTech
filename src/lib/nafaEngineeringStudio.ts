@@ -645,7 +645,7 @@ export interface EngineeringDesignInput {
   clientName: string;
   clientPhone: string;
   location: string;
-  expertName: string;
+  expertName?: string;
   cropKey: string;
   season?: "saison_seche_chaude" | "saison_seche_froide" | "hivernage";
   soilType?: "sableux" | "limono_sableux" | "argileux";
@@ -666,7 +666,7 @@ export function generateUnifiedEngineeringProject(input: EngineeringDesignInput)
     clientName,
     clientPhone,
     location,
-    expertName,
+    expertName = "Ingénieur Agronome Référent",
     cropKey,
     season = "saison_seche_chaude",
     soilType = "limono_sableux",

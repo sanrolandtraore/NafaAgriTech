@@ -78,8 +78,8 @@ describe("NAFA Genius IA - Diagnostic Agronomique Scientifique (RAG)", () => {
       const context: AgronomicContext = {
         region: "hauts_bassins",
         season: "hivernage",
-        growthStage: "fructification",
-        soilType: "argilo_limoneux",
+        growthStage: "fructification_grossissement",
+        soilType: "argileux",
         affectedOrgans: ["feuilles", "tiges"],
         symptoms: "taches brunes nécrotiques foliaires duvet blanchâtre face inférieure par temps humide",
       };
@@ -101,8 +101,8 @@ describe("NAFA Genius IA - Diagnostic Agronomique Scientifique (RAG)", () => {
       const context: AgronomicContext = {
         region: "boucle_du_mouhoun",
         season: "hivernage",
-        growthStage: "vegetatif",
-        soilType: "limoneux",
+        growthStage: "vegetatif_tallage",
+        soilType: "limoneux_alluvial",
         affectedOrgans: ["feuilles", "tiges"],
         symptoms: "chenille perforant le cornet morsures régulières sciure et déjections larvaires",
       };
@@ -121,8 +121,8 @@ describe("NAFA Genius IA - Diagnostic Agronomique Scientifique (RAG)", () => {
       const context: AgronomicContext = {
         region: "centre_sud",
         season: "saison_seche_chaude",
-        growthStage: "fructification",
-        soilType: "sableux",
+        growthStage: "fructification_grossissement",
+        soilType: "sablonneux_dior",
         affectedOrgans: ["fruits"],
         symptoms: "pourriture apicale cul noir de la tomate nécrose noire circulaire extrémité distale du fruit",
       };
@@ -141,7 +141,7 @@ describe("NAFA Genius IA - Diagnostic Agronomique Scientifique (RAG)", () => {
       const context: AgronomicContext = {
         region: "centre_ouest",
         season: "hivernage",
-        growthStage: "floraison",
+        growthStage: "floraison_epiaison",
         soilType: "argileux",
         affectedOrgans: ["feuilles", "tiges"],
         symptoms: "flétrissement brutal soudain de la plante sans jaunissement préalable collapsus vasculaire",
@@ -160,8 +160,8 @@ describe("NAFA Genius IA - Diagnostic Agronomique Scientifique (RAG)", () => {
       const context: AgronomicContext = {
         region: "centre_nord",
         season: "hivernage",
-        growthStage: "floraison",
-        soilType: "sableux",
+        growthStage: "floraison_epiaison",
+        soilType: "sablonneux_dior",
         affectedOrgans: ["racines"],
         symptoms: "fleurs roses et violettes attachées aux racines du sorgho",
       };
@@ -178,9 +178,9 @@ describe("NAFA Genius IA - Diagnostic Agronomique Scientifique (RAG)", () => {
       const identification = identifyPlant({ cropKey: "mais" });
       const context: AgronomicContext = {
         region: "sahel",
-        season: "saison_seche_froide",
-        growthStage: "recolte",
-        soilType: "sableux",
+        season: "saison_seche_fraiche",
+        growthStage: "maturation_recolte",
+        soilType: "sablonneux_dior",
         affectedOrgans: ["fleurs"],
         symptoms: "poussière violette fluorescente bizarre sans précédent agronomique",
       };
@@ -206,8 +206,8 @@ describe("NAFA Genius IA - Diagnostic Agronomique Scientifique (RAG)", () => {
       const context: AgronomicContext = {
         region: "hauts_bassins",
         season: "hivernage",
-        growthStage: "fructification",
-        soilType: "limoneux",
+        growthStage: "fructification_grossissement",
+        soilType: "limoneux_alluvial",
         affectedOrgans: ["feuilles"],
         symptoms: "taches foliaires nécrotiques concentriques brun foncé flétrissement",
       };
@@ -236,8 +236,8 @@ describe("NAFA Genius IA - Diagnostic Agronomique Scientifique (RAG)", () => {
         pathogenType: "fongique",
         contextLocation: { region: "hauts_bassins" },
         contextSeason: "hivernage",
-        contextSoil: "argilo_limoneux",
-        contextGrowthStage: "fructification",
+        contextSoil: "argileux",
+        contextGrowthStage: "fructification_grossissement",
         contextHistory: "Précédent cultural solanacée",
         observedSymptoms: "Taches foliaires brunes nécrotiques avec duvet blanc",
         expertNotes: "Mildiou typique en vallée du Kou, traité à la bouillie bordelaise",
@@ -268,7 +268,7 @@ describe("NAFA Genius IA - Diagnostic Agronomique Scientifique (RAG)", () => {
         region: "hauts_bassins",
         season: "hivernage",
         growthStage: "vegetatif_tallage",
-        soilType: "limoneux",
+        soilType: "limoneux_alluvial",
         affectedOrgans: ["feuilles"],
         symptoms: "perforations des feuilles avec déjections",
       };
@@ -286,14 +286,17 @@ describe("NAFA Genius IA - Diagnostic Agronomique Scientifique (RAG)", () => {
         },
         detectedVisualLesions: ["Lésions nécrotiques foliaires", "Perforations et défoliation"],
         severityAssessment: "moyen" as const,
-        identifiedOrgan: "feuille" as const,
+        severityLevel: "moyen" as const,
+        identifiedOrgan: "feuilles" as const,
         confidence: 0.88,
+        imageDimensions: { width: 800, height: 600 },
+        visualDiagnosisRationale: "Lésions caractéristiques",
       };
 
       const result = executeScientificDiagnosisPipeline({
         identification,
         context,
-        imageAnalysis: mockImageAnalysis,
+        imageAnalysis: mockImageAnalysis as any,
       });
 
       // Vérification que le diagnostic est confirmé et non générique
@@ -323,7 +326,7 @@ describe("NAFA Genius IA - Diagnostic Agronomique Scientifique (RAG)", () => {
         region: "hauts_bassins",
         season: "contre_saison_irrigee",
         growthStage: "fructification_grossissement",
-        soilType: "limoneux",
+        soilType: "limoneux_alluvial",
         affectedOrgans: ["feuilles", "fruits"],
         symptoms: "taches nécrotiques concentriques brun foncé flétrissement",
       };

@@ -23,7 +23,9 @@ export interface FoliarImageAnalysisResult {
   };
   detectedVisualLesions: string[];
   identifiedOrgan: "feuilles" | "tiges" | "fruits" | "epis" | "racines";
-  severityLevel: "faible" | "moyen" | "forte";
+  severityLevel?: "faible" | "moyen" | "forte";
+  severityAssessment?: "faible" | "moyen" | "forte";
+  colorDistribution?: Record<string, number>;
   visualDiagnosisRationale: string;
 }
 

@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach } from "vitest";
+﻿import { describe, it, expect, beforeEach } from "vitest";
 import { render, screen, fireEvent } from "@testing-library/react";
 import { BrowserRouter } from "react-router-dom";
 import SmartInspectionPage from "@/pages/dashboard/SmartInspectionPage";
@@ -11,7 +11,7 @@ const renderPage = () => {
   );
 };
 
-describe("Smart Inspection UI - Workflow 5 Étapes NAFA Genius IA", () => {
+describe("Smart Inspection UI - Workflow 5 Étapes NAFA Genius", () => {
   beforeEach(() => {
     localStorage.clear();
     window.scrollTo = () => {};
@@ -20,7 +20,7 @@ describe("Smart Inspection UI - Workflow 5 Étapes NAFA Genius IA", () => {
   it("affiche l'écran initial de sélection de mission avec les catégories", () => {
     renderPage();
     expect(screen.getByText(/Inspection Intelligente/i)).toBeInTheDocument();
-    expect(screen.getAllByText(/NAFA Genius IA/i).length).toBeGreaterThanOrEqual(1);
+    expect(screen.getAllByText(/NAFA Genius/i).length).toBeGreaterThanOrEqual(1);
     expect(screen.getByText("Étape 1 : Choisissez la mission d'inspection")).toBeInTheDocument();
 
     // Catégories visibles

@@ -137,9 +137,10 @@ interface CropDiagnosisToolProps {
 }
 
 export function CropDiagnosisTool({ enforceRoleGate = false }: CropDiagnosisToolProps = {}) {
-  const { user, profile, primaryRole, partnerType } = useAuth();
+  const { primaryRole, partnerType } = useAuth();
 
-  // Les agriculteurs et éleveurs ne doivent en aucun cas accéder au banc de diagnostic si le verrou est activé
+  // Les agriculteurs et éleveurs ne doivent en aucun cas accéder au banc de diagnostic si le verrou est activé.
+  // Le contrôle est fait dans ce wrapper pour que le composant interne appelle toujours ses hooks dans le même ordre.
   if (enforceRoleGate && !canAccessDiagnosticTools(primaryRole, partnerType)) {
     return (
       <DiagnosticAccessGate>
@@ -147,6 +148,12 @@ export function CropDiagnosisTool({ enforceRoleGate = false }: CropDiagnosisTool
       </DiagnosticAccessGate>
     );
   }
+
+  return <CropDiagnosisToolInner />;
+}
+
+function CropDiagnosisToolInner() {
+  const { user, profile, primaryRole, partnerType } = useAuth();
 
   // ── Mode de sélection de l'espèce ──
   const [plantMode, setPlantMode] = useState<"culture" | "adventice">("culture");
@@ -264,7 +271,7 @@ export function CropDiagnosisTool({ enforceRoleGate = false }: CropDiagnosisTool
       setHistory(local);
       if (!navigator.onLine) return;
       const { data } = await supabase
-        .from("crop_diagnoses")
+        .from("crop_diagnoses" as any)
         .select("*")
         .eq("expert_id", user.id)
         .order("created_at", { ascending: false })
@@ -848,8 +855,8 @@ export function CropDiagnosisTool({ enforceRoleGate = false }: CropDiagnosisTool
     }
 
     try {
-      const { data, error } = await supabase
-        .from("crop_diagnoses")
+      const { data, error }: any = await supabase
+        .from("crop_diagnoses" as any)
         .insert({
           expert_id: user.id,
           image_path: imagePath,
@@ -1351,14 +1358,14 @@ export function CropDiagnosisTool({ enforceRoleGate = false }: CropDiagnosisTool
                         <Badge
                           variant="outline"
                           className={
-                            imageAnalysis.severityAssessment === "forte"
+                            (imageAnalysis.severityLevel || imageAnalysis.severityAssessment) === "forte"
                               ? "bg-red-500/10 text-red-700 dark:text-red-300 border-red-500/30 text-[10px]"
-                              : imageAnalysis.severityAssessment === "moyen"
+                              : (imageAnalysis.severityLevel || imageAnalysis.severityAssessment) === "moyen"
                               ? "bg-amber-500/10 text-amber-700 dark:text-amber-300 border-amber-500/30 text-[10px]"
                               : "bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border-emerald-500/30 text-[10px]"
                           }
                         >
-                          Sévérité visuelle : {imageAnalysis.severityAssessment.toUpperCase()}
+                          Sévérité visuelle : {(imageAnalysis.severityLevel || imageAnalysis.severityAssessment || "moyen").toUpperCase()}
                         </Badge>
                       </div>
 

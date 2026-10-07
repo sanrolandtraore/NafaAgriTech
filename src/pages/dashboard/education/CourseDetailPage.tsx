@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
+import type { SupabaseClient } from "@supabase/supabase-js";
 import { useAuth } from "@/contexts/AuthContext";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -12,6 +13,10 @@ import BackNavigationButton from "@/components/BackNavigationButton";
 import { CheckCircle2, Circle, Clock, GraduationCap, Lightbulb } from "lucide-react";
 
 import { isValidUuid, isMissingTableError, isInvalidUuidError } from "@/hooks/useOfflineData";
+
+// Les tables metier ne figurent pas dans les types Supabase generes (src/integrations/supabase/types.ts) :
+// on passe par une vue non typee du client pour ces requetes.
+const db = supabase as unknown as SupabaseClient;
 
 type Course = {
   id: string; slug: string; title: string; subtitle: string | null; summary: string | null;
@@ -36,12 +41,12 @@ const CourseDetailPage = () => {
     if (!slug) return;
     const load = async () => {
       setLoading(true);
-      const { data: c } = await supabase.from("courses").select("*").eq("slug", slug).maybeSingle();
+      const { data: c } = await db.from("courses").select("*").eq("slug", slug).maybeSingle();
       if (!c) { setLoading(false); return; }
       setCourse(c as Course);
 
       const [lRes] = await Promise.all([
-        supabase.from("course_lessons").select("*").eq("course_id", c.id).order("position"),
+        db.from("course_lessons").select("*").eq("course_id", c.id).order("position"),
       ]);
 
       const ls = (lRes.data as Lesson[]) || [];
@@ -50,7 +55,7 @@ const CourseDetailPage = () => {
       let remoteDone: string[] = [];
       if (user && isValidUuid(user.id)) {
         try {
-          const { data, error } = await supabase
+          const { data, error } = await db
             .from("course_progress")
             .select("lesson_id")
             .eq("user_id", user.id)
@@ -94,7 +99,7 @@ const CourseDetailPage = () => {
     if (isValidUuid(user.id)) {
       try {
         if (isDone) {
-          const { error } = await supabase
+          const { error } = await db
             .from("course_progress")
             .delete()
             .eq("user_id", user.id)
@@ -103,7 +108,7 @@ const CourseDetailPage = () => {
             console.warn("delete progress error:", error);
           }
         } else {
-          const { error } = await supabase.from("course_progress").insert({
+          const { error } = await db.from("course_progress").insert({
             user_id: user.id, course_id: course.id, lesson_id: lesson.id,
           });
           if (error && !isMissingTableError(error) && !isInvalidUuidError(error)) {

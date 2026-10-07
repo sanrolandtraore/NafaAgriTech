@@ -10,6 +10,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import { toast } from "sonner";
 import {
   partnerStorage,
+  MediaItem,
   PartnerOffer,
   PartnerProfile
 } from "@/lib/partnerStorage";
@@ -24,6 +25,19 @@ import { PartnerVerifiedBadge } from "@/components/partner/PartnerVerifiedBadge"
 import { getStoredPartnerKyc, PartnerKycDossier } from "@/lib/partnerKyc";
 import { useAuth } from "@/contexts/AuthContext";
 import { getEffectiveUserId } from "@/lib/deviceIdentity";
+
+/**
+ * Medias d'une offre : `media` structure en priorite, sinon conversion des
+ * anciens tableaux `images` / `videos` (ou `image_url`) au format MediaItem.
+ */
+const buildOfferMedia = (offer: PartnerOffer): MediaItem[] => {
+  if (offer.media && offer.media.length > 0) return offer.media;
+  const images = offer.images && offer.images.length > 0 ? offer.images : offer.image_url ? [offer.image_url] : [];
+  return [
+    ...images.map((url, i): MediaItem => ({ id: `${offer.id}-img-${i}`, type: "image", url, title: offer.title })),
+    ...(offer.videos || []).map((url, i): MediaItem => ({ id: `${offer.id}-vid-${i}`, type: "video", url, title: offer.title })),
+  ];
+};
 
 export default function PartnerStorefrontPage() {
   const { partnerId } = useParams<{ partnerId: string }>();
@@ -256,7 +270,7 @@ export default function PartnerStorefrontPage() {
                       {partner.name}
                     </h1>
                     <PartnerVerifiedBadge
-                      isVerified={partner.verified || kyc.status === "verifie"}
+                      isVerified={partner.is_verified || kyc.status === "verifie"}
                       kyc={kyc}
                       partnerName={partner.name}
                       size="sm"
@@ -310,7 +324,7 @@ export default function PartnerStorefrontPage() {
             </div>
 
             {/* Certification & Trust Banner */}
-            {(partner.verified || kyc.status === "verifie") && (
+            {(partner.is_verified || kyc.status === "verifie") && (
               <div className="p-3.5 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-between gap-3 text-xs">
                 <div className="flex items-center gap-2.5">
                   <div className="p-2 rounded-xl bg-emerald-600 text-white shrink-0">
@@ -425,9 +439,8 @@ export default function PartnerStorefrontPage() {
                   {/* Media Banner with Photos & Video Player */}
                   <ProductMediaViewer
                     title={offer.title}
-                    images={offer.images && offer.images.length > 0 ? offer.images : offer.image_url ? [offer.image_url] : []}
-                    videos={offer.videos || []}
-                    media={offer.media || []}
+                    media={buildOfferMedia(offer)}
+                    fallbackImage={offer.image_url}
                     className="h-48 w-full"
                   />
 

@@ -22,6 +22,8 @@ import {
   Store,
   Compass,
   FileCheck,
+  Wrench,
+  Building2,
 } from "lucide-react";
 
 import galleryPlantDiagnostic from "@/assets/gallery/plant-diagnostic.jpg";

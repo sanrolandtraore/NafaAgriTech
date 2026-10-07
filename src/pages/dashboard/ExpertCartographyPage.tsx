@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
+import type { SupabaseClient } from "@supabase/supabase-js";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -34,6 +35,10 @@ import {
 } from "@/lib/offlineDb";
 import { isMissingTableError, isInvalidUuidError } from "@/hooks/useOfflineData";
 import BackNavigationButton from "@/components/BackNavigationButton";
+
+// Les tables metier ne figurent pas dans les types Supabase generes (src/integrations/supabase/types.ts) :
+// on passe par une vue non typee du client pour ces requetes.
+const db = supabase as unknown as SupabaseClient;
 
 // ─── Types ───
 interface Coordinate { lat: number; lng: number; }
@@ -193,8 +198,8 @@ const ExpertCartographyPage = () => {
     if (navigator.onLine) {
       try {
         const [obsRes, parcelRes] = await Promise.all([
-          supabase.from("field_observations").select("*").order("created_at", { ascending: false }),
-          supabase.from("expert_parcels").select("*").order("created_at", { ascending: false }),
+          db.from("field_observations").select("*").order("created_at", { ascending: false }),
+          db.from("expert_parcels").select("*").order("created_at", { ascending: false }),
         ]);
         if (obsRes.error && (isMissingTableError(obsRes.error) || isInvalidUuidError(obsRes.error))) {
           const cachedObs = await getCachedData("field_observations", cacheKey);
@@ -478,7 +483,7 @@ const ExpertCartographyPage = () => {
     const center_lat = polygonPoints.reduce((s, c) => s + c.lat, 0) / polygonPoints.length;
     const center_lng = polygonPoints.reduce((s, c) => s + c.lng, 0) / polygonPoints.length;
 
-    const { error } = await supabase.from("expert_parcels").insert({
+    const { error } = await db.from("expert_parcels").insert({
       user_id: user.id,
       name: parcelForm.name || `Parcelle ${new Date().toLocaleDateString("fr-FR")}`,
       geometry,
@@ -540,7 +545,7 @@ const ExpertCartographyPage = () => {
       photoUrls.push(urlData.publicUrl);
     }
 
-    const { error } = await supabase.from("field_observations").insert({
+    const { error } = await db.from("field_observations").insert({
       user_id: user.id,
       latitude: newObsCoord.lat,
       longitude: newObsCoord.lng,
@@ -590,7 +595,7 @@ const ExpertCartographyPage = () => {
   // ─── Delete observation ───
   const deleteObservation = async (id: string) => {
     if (!id.startsWith("local-")) {
-      const { error } = await supabase.from("field_observations").delete().eq("id", id);
+      const { error } = await db.from("field_observations").delete().eq("id", id);
       if (error && !isMissingTableError(error) && !isInvalidUuidError(error)) {
         toast.error(error.message);
         return;
@@ -603,7 +608,7 @@ const ExpertCartographyPage = () => {
   // ─── Delete parcel ───
   const deleteParcel = async (id: string) => {
     if (!id.startsWith("local-")) {
-      const { error } = await supabase.from("expert_parcels").delete().eq("id", id);
+      const { error } = await db.from("expert_parcels").delete().eq("id", id);
       if (error && !isMissingTableError(error) && !isInvalidUuidError(error)) {
         toast.error(error.message);
         return;
