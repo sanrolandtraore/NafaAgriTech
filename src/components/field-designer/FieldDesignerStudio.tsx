@@ -32,6 +32,7 @@ import {
   fieldDesignerStorage,
   subscribeToSyncState,
 } from "@/lib/fieldDesignerStorage";
+import { syncAllDatastores, broadcastDataChange } from "@/lib/universalSyncEngine";
 import { FieldGpsMeasurer } from "./FieldGpsMeasurer";
 import { CropDesignerTool } from "./CropDesignerTool";
 import { IrrigationDesignerTool } from "./IrrigationDesignerTool";
@@ -226,57 +227,61 @@ export const FieldDesignerStudio: React.FC = () => {
   // Handlers de sauvegarde
   const handleSaveFarm = async (f: Farm) => {
     await fieldDesignerStorage.saveFarm(f);
+    broadcastDataChange("farms", f);
     await loadAllData();
     setActiveFarmId(f.id);
   };
 
   const handleSaveField = async (fld: Field) => {
     await fieldDesignerStorage.saveField(fld);
+    broadcastDataChange("fields", fld);
     setFields(await fieldDesignerStorage.getFields(activeFarmId));
     setActiveTab("dashboard");
   };
 
   const handleSaveCropPlan = async (plan: CropPlan) => {
     await fieldDesignerStorage.saveCropPlan(plan);
+    broadcastDataChange("crop_plans", plan);
     setCropPlans(await fieldDesignerStorage.getCropPlans(activeFarmId));
     setActiveTab("dashboard");
   };
 
   const handleSaveIrrigation = async (proj: IrrigationProject) => {
     await fieldDesignerStorage.saveIrrigationProject(proj);
+    broadcastDataChange("irrigation_projects", proj);
     setIrrigationProjects(await fieldDesignerStorage.getIrrigationProjects(activeFarmId));
     setActiveTab("dashboard");
   };
 
   const handleSaveBuilding = async (bld: FarmBuilding) => {
     await fieldDesignerStorage.saveBuilding(bld);
+    broadcastDataChange("buildings", bld);
     setBuildings(await fieldDesignerStorage.getBuildings(activeFarmId));
   };
 
   const handleDeleteBuilding = async (id: string) => {
     await fieldDesignerStorage.deleteBuilding(id);
+    broadcastDataChange("buildings", { id });
     setBuildings(await fieldDesignerStorage.getBuildings(activeFarmId));
   };
 
   const handleSaveFieldVisit = async (visit: FieldVisitReport) => {
     await fieldDesignerStorage.saveFieldVisit(visit);
+    broadcastDataChange("field_visits", visit);
     setFieldVisits(await fieldDesignerStorage.getFieldVisits(activeFarmId));
   };
 
   const handleSaveQuote = async (quote: EngineeringQuoteDoc) => {
     await fieldDesignerStorage.saveQuote(quote);
+    broadcastDataChange("quotes", quote);
     setQuotes(await fieldDesignerStorage.getQuotes(activeFarmId));
   };
 
-  // Synchronisation manuelle
+  // Synchronisation manuelle universelle
   const triggerManualSync = async () => {
-    toast.info("Synchronisation avec Supabase en cours...");
-    const res = await fieldDesignerStorage.processSyncQueue();
-    if (res.failed > 0) {
-      toast.warning(`${res.synced} éléments synchronisés, ${res.failed} en attente.`);
-    } else {
-      toast.success("Tous vos dossiers terrain sont parfaitement synchronisés !");
-    }
+    toast.info("Synchronisation globale en cours...");
+    const res = await syncAllDatastores({ silent: false });
+    await loadAllData();
   };
 
   return (

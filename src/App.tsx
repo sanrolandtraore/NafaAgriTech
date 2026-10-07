@@ -1,4 +1,4 @@
-import { lazy, Suspense } from "react";
+import React, { lazy, Suspense, useEffect } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -104,6 +104,7 @@ const PartnerMarketingPage = lazy(() => import("./pages/dashboard/partenaire/Par
 const PartnerDemandesPage = lazy(() => import("./pages/dashboard/partenaire/PartnerDemandesPage"));
 
 import PageLoader from "@/components/PageLoader";
+import { startUniversalSyncEngine } from "@/lib/universalSyncEngine";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -116,7 +117,14 @@ const queryClient = new QueryClient({
   },
 });
 
-const App = () => (
+const App = () => {
+  React.useEffect(() => {
+    // Démarrage du moteur de synchronisation universelle partout
+    const cleanup = startUniversalSyncEngine(60);
+    return cleanup;
+  }, []);
+
+  return (
   <ThemeProvider attribute="class" defaultTheme="light" enableSystem={false}>
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
@@ -236,6 +244,7 @@ const App = () => (
       </TooltipProvider>
     </QueryClientProvider>
   </ThemeProvider>
-);
+  );
+};
 
 export default App;
