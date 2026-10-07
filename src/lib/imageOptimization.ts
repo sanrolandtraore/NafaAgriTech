@@ -105,10 +105,11 @@ export async function optimizeAndCompressImage(
       safeRevokeObjectUrl(objectUrl);
       const reader = new FileReader();
       reader.onload = () => {
-        const rawBase64 = (reader.result as string).split(",")[1] || "";
+        const fullDataUrl = (reader.result as string) || "";
+        const rawBase64 = fullDataUrl.split(",")[1] || "";
         resolve({
           file,
-          previewUrl: objectUrl,
+          previewUrl: fullDataUrl || safeCreateObjectUrl(file),
           base64: rawBase64,
           mimeType: file.type || "image/jpeg",
           originalSize,

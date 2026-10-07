@@ -1,103 +1,115 @@
 /**
- * NAFA-AGRITECH — Contrôle d'Accès & Cloisonnement Métier des Outils de Diagnostic
+ * NAFA-AGRITECH — Contrôle d'Accès & Habilitations Métier des Outils de Diagnostic
  * 
- * RÈGLE FONDAMENTALE DE SÉCURITÉ ET DE DÉONTOLOGIE :
- * Les agriculteurs et éleveurs ne doivent en aucun cas avoir accès direct aux outils
- * d'établissement de diagnostic et de prescription.
- * Cette fonctionnalité est STRICTEMENT RÉSERVÉE aux partenaires prestataires de service
- * accrédités en agronomie et santé animale (Cabinets d'agronomie, Cliniques vétérinaires).
+ * RÈGLE D'ACCÈS ET D'AIDE À LA DÉCISION :
+ * - Le diagnostic phytosanitaire et l'identification visuelle IA sont AUTORISÉS
+ *   à l'ensemble des acteurs (agriculteurs, éleveurs, techniciens, experts et partenaires)
+ *   comme outil d'aide à la décision et d'auto-évaluation de terrain.
+ * - L'émission et la signature d'ordonnances et de prescriptions phytosanitaires
+ *   officielles avec engagement juridique restent réservées aux ingénieurs et cabinets agréés.
  */
 
 export interface RoleDiagnosticAccess {
   allowed: boolean;
+  tier: "official_prescription" | "advisory_field_diagnosis";
   reason?: string;
   recommendedRoute?: string;
+  canSignPrescription: boolean;
 }
 
 /**
- * Détermine si le profil actuel est autorisé à utiliser les bancs de diagnostic et de prescription.
+ * Détermine si le profil actuel est autorisé à utiliser les outils de diagnostic IA.
+ * Autorise les agriculteurs, éleveurs, experts, techniciens et partenaires.
  */
 export function canAccessDiagnosticTools(
+  role: string | null | undefined,
+  _partnerType?: string | null | undefined
+): boolean {
+  // L'outil de diagnostic IA est un outil universel d'aide à la décision agronomique de terrain
+  // Toute personne accédant à l'outil peut l'utiliser pour analyser ses cultures ou son cheptel.
+  if (!role) return true; // Permettre également l'essai découverte
+
+  const normalizedRole = role.trim().toLowerCase();
+  
+  // Tous les rôles de terrain ont accès au diagnostic IA
+  if (
+    normalizedRole === "agriculteur" ||
+    normalizedRole === "farmer" ||
+    normalizedRole === "eleveur" ||
+    normalizedRole === "agent_technique" ||
+    normalizedRole === "expert" ||
+    normalizedRole === "admin" ||
+    normalizedRole === "manager" ||
+    normalizedRole === "partenaire" ||
+    normalizedRole === "formation" ||
+    normalizedRole === "viewer"
+  ) {
+    return true;
+  }
+
+  return true;
+}
+
+/**
+ * Détermine si le profil est habilité à émettre et signer des ordonnances phytosanitaires officielles.
+ */
+export function canSignOfficialPrescriptions(
   role: string | null | undefined,
   partnerType?: string | null | undefined
 ): boolean {
   if (!role) return false;
-
   const normalizedRole = role.trim().toLowerCase();
 
-  // 1. Interdiction stricte et absolue pour les agriculteurs et exploitants végétaux
-  if (normalizedRole === "agriculteur" || normalizedRole === "farmer") {
-    return false;
-  }
-
-  // 2. Interdiction stricte et absolue pour les éleveurs et pasteurs
-  if (normalizedRole === "eleveur") {
-    return false;
-  }
-
-  // 3. Rôles d'experts techniques et administration
   if (
-    normalizedRole === "agent_technique" ||
     normalizedRole === "expert" ||
+    normalizedRole === "agent_technique" ||
     normalizedRole === "admin" ||
     normalizedRole === "manager"
   ) {
     return true;
   }
 
-  // 4. Comptes Partenaires : Uniquement les prestataires agréés en Agronomie ou Vétérinaire
   if (normalizedRole === "partenaire") {
     const pt = (partnerType || "").trim().toLowerCase();
-    if (
-      pt === "expert_agronome" ||
-      pt === "elevage_veterinaire" ||
-      pt === "polyvalent"
-    ) {
-      return true;
-    }
-    // Les autres partenaires (fournisseurs d'intrants, machinistes, banques/assurances) n'ont pas accès
-    return false;
+    return pt === "expert_agronome" || pt === "elevage_veterinaire" || pt === "polyvalent";
   }
 
   return false;
 }
 
 /**
- * Fournit une explication métier contextualisée en cas d'interdiction d'accès.
+ * Fournit une explication métier contextualisée sur le niveau d'habilitation.
  */
 export function getDiagnosticAccessInfo(
   role: string | null | undefined,
   partnerType?: string | null | undefined
 ): RoleDiagnosticAccess {
   const allowed = canAccessDiagnosticTools(role, partnerType);
-  if (allowed) {
-    return { allowed: true };
-  }
-
+  const canSign = canSignOfficialPrescriptions(role, partnerType);
   const normalizedRole = (role || "").trim().toLowerCase();
 
-  if (normalizedRole === "agriculteur" || normalizedRole === "farmer") {
+  if (canSign) {
     return {
-      allowed: false,
-      reason:
-        "Conformément à la déontologie et aux réglementations agronomiques (INERA / CIRAD), l'établissement de diagnostics phytosanitaires officiels et la prescription de molécules actives sont strictement réservés aux experts et cabinets d'agronomie agréés.",
-      recommendedRoute: "/dashboard/marketplace",
+      allowed: true,
+      tier: "official_prescription",
+      canSignPrescription: true,
+      reason: "Habilitation d'expert certifié : accès complet au diagnostic IA et génération d'ordonnances officielles signées.",
+      recommendedRoute: "/dashboard/expert-diagnosis",
     };
   }
 
-  if (normalizedRole === "eleveur") {
-    return {
-      allowed: false,
-      reason:
-        "Conformément aux normes vétérinaires nationales et sous-régionales, les outils de diagnostic clinique du bétail et d'émission d'ordonnances sont réservés exclusivement aux docteurs vétérinaires et techniciens de santé animale agréés.",
-      recommendedRoute: "/dashboard/livestock-services",
-    };
-  }
+  const isFarmer = normalizedRole === "agriculteur" || normalizedRole === "farmer";
+  const isBreeder = normalizedRole === "eleveur";
 
   return {
-    allowed: false,
-    reason:
-      "Ce banc de diagnostic est strictement réservé aux partenaires prestataires de services spécialisés en agronomie ou médecine vétérinaire.",
-    recommendedRoute: "/dashboard",
+    allowed,
+    tier: "advisory_field_diagnosis",
+    canSignPrescription: false,
+    reason: isFarmer
+      ? "Mode Aide à la décision & Diagnostic IA de terrain : vous pouvez analyser vos parcelles, identifier les maladies et consulter les recommandations agro-écologiques INERA / CSP-CILSS. Pour une ordonnance officielle certifiée, vous pouvez solliciter un cabinet d'agronomie partenaire."
+      : isBreeder
+      ? "Mode Conseil & Suivi d'élevage : analyse assistée par vision et recommandations zootechniques. Pour une prescription vétérinaire officielle, contactez un docteur vétérinaire partenaire."
+      : "Mode Découverte & Diagnostic IA : analyse végétale assistée par les référentiels scientifiques.",
+    recommendedRoute: "/dashboard/expert-diagnosis",
   };
 }

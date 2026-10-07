@@ -27,7 +27,36 @@ export const DiagnosticAccessGate: React.FC<DiagnosticAccessGateProps> = ({ chil
   const accessInfo = getDiagnosticAccessInfo(primaryRole, partnerType);
 
   if (accessInfo.allowed) {
-    return <>{children}</>;
+    return (
+      <div className="space-y-4">
+        {accessInfo.tier === "advisory_field_diagnosis" && (
+          <div className="rounded-2xl border border-emerald-500/30 bg-emerald-500/10 p-3.5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs text-foreground shadow-2xs">
+            <div className="flex items-center gap-2.5">
+              <CheckCircle2 className="h-4 w-4 text-emerald-600 shrink-0" />
+              <div>
+                <p className="font-bold text-emerald-950 dark:text-emerald-200">
+                  Mode Aide à la Décision & Auto-Diagnostic IA (Référentiels réels INERA Farako-Bâ • CSP-CILSS)
+                </p>
+                <p className="text-muted-foreground text-[11px]">
+                  Analyse biométrique foliaire et solutions agro-écologiques certifiées disponibles directement sur le terrain.
+                </p>
+              </div>
+            </div>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => navigate("/dashboard/partners-directory")}
+              className="h-8 text-[11px] rounded-xl shrink-0 gap-1.5 bg-background border-emerald-500/30 hover:border-emerald-500"
+            >
+              <Microscope className="h-3.5 w-3.5 text-emerald-600" />
+              <span>Besoin d'une ordonnance officielle ? Consulter un expert agréé</span>
+            </Button>
+          </div>
+        )}
+        {children}
+      </div>
+    );
   }
 
   const isFarmer = primaryRole === "agriculteur" || primaryRole === "farmer";
