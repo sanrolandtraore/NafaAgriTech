@@ -36,6 +36,9 @@ import {
   Upload,
   Download,
   Eye,
+  EyeOff,
+  Search,
+  X,
   ShieldCheck,
   ChevronRight,
   Sparkles,
@@ -61,6 +64,13 @@ import {
   exportToCsv,
   generateGpsSurveyPdf,
 } from "@/lib/gpsSurveyEngine";
+
+import {
+  BURKINA_TOPONYMS,
+  searchBurkinaToponyms,
+  findNearestToponym,
+  type BurkinaToponym,
+} from "@/lib/burkinaToponyms";
 
 import { partnerBrandingStorage } from "@/lib/partnerBrandingStorage";
 import { pdfExportHistory } from "@/lib/pdfExportHistory";
@@ -128,11 +138,17 @@ export default function GpsSurveyPage() {
   const polygonLayerRef = useRef<L.Polygon | null>(null);
   const polylineLayerRef = useRef<L.Polyline | null>(null);
   const markersLayerRef = useRef<L.LayerGroup | null>(null);
+  const toponymsLayerRef = useRef<L.LayerGroup | null>(null);
   const liveLocationMarkerRef = useRef<L.CircleMarker | null>(null);
   const liveAccuracyCircleRef = useRef<L.Circle | null>(null);
   const [mapLayerType, setMapLayerType] = useState<"satellite" | "streets">("satellite");
   const satelliteLayerRef = useRef<L.TileLayer | null>(null);
   const streetLayerRef = useRef<L.TileLayer | null>(null);
+
+  // Toponymes & Noms des lieux
+  const [showToponyms, setShowToponyms] = useState<boolean>(true);
+  const [toponymSearchQuery, setToponymSearchQuery] = useState<string>("");
+  const [isToponymDropdownOpen, setIsToponymDropdownOpen] = useState<boolean>(false);
 
   // ─── 5. DONNÉES LOCALES / SUPABASE ───
   const { data: farms } = useOfflineData({ table: "farms", select: "id, name" });
@@ -246,26 +262,31 @@ export default function GpsSurveyPage() {
       attributionControl: false,
     });
 
-    // Fond Satellite
+    // Fond Satellite avec noms des lieux et frontières à fort contraste
     const satLayer = L.tileLayer(
       "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
       { maxZoom: 19 }
     );
+    // Couche toponymique Esri World Boundaries and Places (labels des villes, routes, frontières à fort contraste)
     const satLabels = L.tileLayer(
-      "https://{s}.basemaps.cartocdn.com/light_only_labels/{z}/{x}/{y}{r}.png",
+      "https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}",
       { maxZoom: 19 }
     );
     const satGroup = L.layerGroup([satLayer, satLabels]).addTo(map);
     satelliteLayerRef.current = satGroup as any;
 
-    // Fond Rues OSM
+    // Fond Rues OSM (avec toponymes complets)
     const streetLayer = L.tileLayer(
       "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
       { maxZoom: 19 }
     );
     streetLayerRef.current = streetLayer;
 
-    // Couches géométriques
+    // Couche des toponymes des localités et pôles agricoles du Burkina Faso
+    const toponymsLayer = L.layerGroup().addTo(map);
+    toponymsLayerRef.current = toponymsLayer;
+
+    // Couches géométriques du levé
     const markersLayer = L.layerGroup().addTo(map);
     markersLayerRef.current = markersLayer;
 
@@ -420,7 +441,142 @@ export default function GpsSurveyPage() {
     }
   }, [waypoints, isPolygonClosed]);
 
-  // ─── 8. CALCULS GÉODÉSIQUES EN TEMPS RÉEL ───
+  // ─── 8. MARQUAGE DES NOMS DES LIEUX & TOPONYMES DU BURKINA FASO ───
+  useEffect(() => {
+    const layer = toponymsLayerRef.current;
+    if (!layer) return;
+
+    layer.clearLayers();
+    if (!showToponyms) return;
+
+    BURKINA_TOPONYMS.forEach((t) => {
+      let bg = "#1e293b";
+      let border = "#64748b";
+      let dotColor = "#94a3b8";
+      let badgeLabel = "Lieu";
+
+      if (t.category === "pole_agricole") {
+        bg = "#064e3b";
+        border = "#10b981";
+        dotColor = "#34d399";
+        badgeLabel = "Pôle";
+      } else if (t.category === "barrage_irrigation") {
+        bg = "#0c4a6e";
+        border = "#0284c7";
+        dotColor = "#38bdf8";
+        badgeLabel = "Barrage";
+      } else if (t.category === "station_recherche") {
+        bg = "#312e81";
+        border = "#6366f1";
+        dotColor = "#818cf8";
+        badgeLabel = "INERA";
+      } else if (t.category === "commune_rurale") {
+        bg = "#78350f";
+        border = "#d97706";
+        dotColor = "#fbbf24";
+        badgeLabel = "Commune";
+      } else if (t.category === "ville") {
+        bg = "#0f172a";
+        border = "#475569";
+        dotColor = "#cbd5e1";
+        badgeLabel = "Ville";
+      }
+
+      const html = `
+        <div style="
+          display: inline-flex;
+          align-items: center;
+          gap: 4px;
+          background: ${bg};
+          color: #ffffff;
+          border: 1.5px solid ${border};
+          border-radius: 9999px;
+          padding: 2px 7px 2px 5px;
+          font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+          font-size: 11px;
+          font-weight: 700;
+          line-height: 1.2;
+          white-space: nowrap;
+          box-shadow: 0 2px 6px rgba(0,0,0,0.4);
+          cursor: pointer;
+          user-select: none;
+        ">
+          <span style="display:inline-block; width:6px; height:6px; border-radius:50%; background:${dotColor};"></span>
+          <span>${t.name}</span>
+        </div>
+      `;
+
+      const icon = L.divIcon({
+        className: "custom-toponym-badge",
+        html,
+        iconSize: [120, 24],
+        iconAnchor: [12, 12],
+      });
+
+      const marker = L.marker([t.lat, t.lng], { icon });
+
+      const popupContent = `
+        <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; min-width: 200px; font-size: 12px; line-height: 1.45;">
+          <div style="display: flex; align-items: center; justify-content: space-between; gap: 6px; margin-bottom: 4px;">
+            <strong style="color: #0f172a; font-size: 13px;">${t.name}</strong>
+            <span style="background: ${border}25; color: ${border}; border: 1px solid ${border}; border-radius: 9999px; font-size: 9px; font-weight: 800; padding: 1px 6px;">
+              ${badgeLabel}
+            </span>
+          </div>
+          <div style="color: #64748b; font-size: 11px; margin-bottom: 4px;">
+            Province de <strong>${t.province}</strong> • Région <strong>${t.region}</strong>
+          </div>
+          ${t.description ? `<p style="margin: 4px 0 6px; color: #334155; font-size: 11px;">${t.description}</p>` : ""}
+          <div style="font-size: 10px; color: #64748b; font-family: monospace; margin-bottom: 8px;">
+            GPS : ${t.lat.toFixed(4)}°, ${t.lng.toFixed(4)}°
+          </div>
+          <button id="btn-toponym-${t.id}" style="
+            width: 100%;
+            background: #15803d;
+            color: #ffffff;
+            border: none;
+            border-radius: 6px;
+            padding: 5px 8px;
+            font-size: 11px;
+            font-weight: 700;
+            cursor: pointer;
+          ">
+            Définir comme localité du levé
+          </button>
+        </div>
+      `;
+
+      marker.bindPopup(popupContent);
+      marker.on("popupopen", () => {
+        const btn = document.getElementById(`btn-toponym-${t.id}`);
+        if (btn) {
+          btn.onclick = () => {
+            setLocality(`${t.name} (${t.province})`);
+            toast.success(`Localité du levé définie : ${t.name}`);
+            marker.closePopup();
+          };
+        }
+      });
+
+      layer.addLayer(marker);
+    });
+  }, [showToponyms]);
+
+  // Centrer et zoomer sur un toponyme du Burkina Faso
+  const handleFlyToToponym = (toponym: BurkinaToponym) => {
+    const map = mapInstanceRef.current;
+    if (map) {
+      map.flyTo([toponym.lat, toponym.lng], toponym.zoomLevel || 14, {
+        duration: 1.2,
+      });
+    }
+    setLocality(`${toponym.name} (${toponym.province})`);
+    setIsToponymDropdownOpen(false);
+    setToponymSearchQuery("");
+    toast.success(`Carte centrée sur ${toponym.name} (${toponym.region})`);
+  };
+
+  // ─── 9. CALCULS GÉODÉSIQUES EN TEMPS RÉEL ───
   const areaM2 = calculatePolygonAreaM2(waypoints);
   const areaHa = Math.round((areaM2 / 10000) * 1000) / 1000;
   const perimeterM = calculatePerimeterM(waypoints);
@@ -429,6 +585,12 @@ export default function GpsSurveyPage() {
     waypoints.length > 0
       ? Math.round((waypoints.reduce((s, w) => s + (w.accuracy || 0), 0) / waypoints.length) * 10) / 10
       : 0;
+
+  // Détection de la localité la plus proche et recherche toponymique
+  const nearestToponym = livePos ? findNearestToponym(livePos.lat, livePos.lng) : null;
+  const filteredToponyms = toponymSearchQuery.trim()
+    ? searchBurkinaToponyms(toponymSearchQuery)
+    : BURKINA_TOPONYMS.slice(0, 15);
 
   // ─── 9. ACTIONS DE LEVÉ DE POINTS ───
 
@@ -842,6 +1004,30 @@ export default function GpsSurveyPage() {
                 )}
               </div>
             )}
+
+            {livePos && nearestToponym && (
+              <div className="w-full pt-2.5 mt-2 border-t border-border/40 flex flex-wrap items-center justify-between gap-2 text-xs">
+                <div className="flex items-center gap-1.5 text-muted-foreground">
+                  <MapPin className="h-3.5 w-3.5 text-primary shrink-0" />
+                  <span>
+                    Localité détectée à proximité :{" "}
+                    <strong className="text-foreground">{nearestToponym.toponym.name}</strong>{" "}
+                    ({nearestToponym.toponym.province}) à <strong>{nearestToponym.distanceKm} km</strong>
+                  </span>
+                </div>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => {
+                    setLocality(`${nearestToponym.toponym.name} (${nearestToponym.toponym.province})`);
+                    toast.success(`Localité définie : ${nearestToponym.toponym.name}`);
+                  }}
+                  className="h-6 px-2.5 text-[11px] font-bold text-primary border-primary/30 hover:bg-primary/10"
+                >
+                  Fixer comme localité du levé
+                </Button>
+              </div>
+            )}
           </div>
         </CardContent>
       </Card>
@@ -911,8 +1097,144 @@ export default function GpsSurveyPage() {
 
       {/* ─── DISPOSITION PRINCIPALE (CARTE + CONTRÔLES + TABLEAU) ─── */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-        {/* COLONNE GAUCHE (7 COLONNES) : CARTE ET GRANDES ACTIONS TACTILES */}
-        <div className="lg:col-span-7 space-y-4">
+        {/* COLONNE GAUCHE (7 COLONNES) : RECHERCHE DE LIEUX, CARTE ET ACTIONS TACTILES */}
+        <div className="lg:col-span-7 space-y-3">
+          {/* ─── STYLE SPÉCIFIQUE DES BADGES TOPONYMES LEAFLET ─── */}
+          <style>{`
+            .custom-toponym-badge {
+              background: transparent !important;
+              border: none !important;
+              white-space: nowrap !important;
+            }
+          `}</style>
+
+          {/* ─── BARRE DE RECHERCHE TOPONYMIQUE & PÔLES AGRICOLES ─── */}
+          <Card className="border-primary/20 bg-card p-3 shadow-sm space-y-2.5">
+            <div className="flex items-center justify-between gap-2">
+              <div className="flex items-center gap-1.5 text-xs font-bold text-foreground">
+                <MapPin className="h-4 w-4 text-primary" />
+                <span>Noms des Lieux & Pôles Agricoles du Burkina Faso</span>
+              </div>
+              <Button
+                size="sm"
+                variant="ghost"
+                onClick={() => setShowToponyms(!showToponyms)}
+                className="h-7 px-2 text-xs font-semibold gap-1.5 text-muted-foreground hover:text-foreground"
+              >
+                {showToponyms ? <Eye className="h-3.5 w-3.5 text-primary" /> : <EyeOff className="h-3.5 w-3.5 text-muted-foreground" />}
+                <span>{showToponyms ? "Noms affichés" : "Noms masqués"}</span>
+              </Button>
+            </div>
+
+            {/* Champ de recherche avec autocomplétion */}
+            <div className="relative">
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
+                <Input
+                  value={toponymSearchQuery}
+                  onChange={(e) => {
+                    setToponymSearchQuery(e.target.value);
+                    setIsToponymDropdownOpen(true);
+                  }}
+                  onFocus={() => setIsToponymDropdownOpen(true)}
+                  placeholder="Rechercher une localité, pôle agricole, barrage ou commune (ex: Bama, Bagré, Sourou, Farako-Bâ...)"
+                  className="pl-8 pr-8 h-8 text-xs"
+                />
+                {toponymSearchQuery && (
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    onClick={() => {
+                      setToponymSearchQuery("");
+                      setIsToponymDropdownOpen(false);
+                    }}
+                    className="absolute right-1 top-1/2 -translate-y-1/2 h-6 w-6 p-0 text-muted-foreground hover:text-foreground"
+                  >
+                    <X className="h-3 w-3" />
+                  </Button>
+                )}
+              </div>
+
+              {/* Menu déroulant des résultats de recherche */}
+              {isToponymDropdownOpen && (
+                <div className="absolute left-0 right-0 top-full mt-1 z-50 bg-popover border border-border rounded-xl shadow-xl max-h-64 overflow-y-auto divide-y divide-border">
+                  {filteredToponyms.length === 0 ? (
+                    <div className="p-3 text-center text-xs text-muted-foreground">
+                      Aucun lieu trouvé pour « {toponymSearchQuery} »
+                    </div>
+                  ) : (
+                    filteredToponyms.map((toponym) => (
+                      <button
+                        key={toponym.id}
+                        type="button"
+                        onClick={() => handleFlyToToponym(toponym)}
+                        className="w-full text-left p-2.5 hover:bg-muted/50 transition-colors flex items-start justify-between gap-2 text-xs"
+                      >
+                        <div>
+                          <div className="font-bold text-foreground flex items-center gap-1.5">
+                            <MapPin className="h-3.5 w-3.5 text-primary shrink-0" />
+                            <span>{toponym.name}</span>
+                          </div>
+                          <div className="text-[11px] text-muted-foreground">
+                            Province de {toponym.province} • Région {toponym.region}
+                          </div>
+                          {toponym.description && (
+                            <div className="text-[10px] text-muted-foreground/80 line-clamp-1 mt-0.5">
+                              {toponym.description}
+                            </div>
+                          )}
+                        </div>
+                        <Badge variant="outline" className="text-[9px] font-bold shrink-0 mt-0.5">
+                          {toponym.category === "pole_agricole"
+                            ? "Pôle Agricole"
+                            : toponym.category === "barrage_irrigation"
+                            ? "Barrage"
+                            : toponym.category === "station_recherche"
+                            ? "INERA"
+                            : toponym.category === "commune_rurale"
+                            ? "Commune"
+                            : "Chef-Lieu"}
+                        </Badge>
+                      </button>
+                    ))
+                  )}
+                </div>
+              )}
+            </div>
+
+            {/* Raccourcis rapides des grands pôles agricoles */}
+            <div className="flex items-center gap-1.5 overflow-x-auto pb-0.5 text-[11px] no-scrollbar">
+              <span className="text-[10px] text-muted-foreground font-semibold shrink-0 uppercase tracking-wider">
+                Pôles :
+              </span>
+              {[
+                "bama",
+                "bagre",
+                "sourou_di",
+                "samendeni",
+                "kamboise_inera",
+                "farako_ba_inera",
+                "loumbila",
+                "koubri",
+                "bobo_dioulasso",
+                "ouagadougou",
+              ].map((id) => {
+                const top = BURKINA_TOPONYMS.find((t) => t.id === id);
+                if (!top) return null;
+                return (
+                  <button
+                    key={id}
+                    type="button"
+                    onClick={() => handleFlyToToponym(top)}
+                    className="shrink-0 px-2 py-0.5 rounded-full border border-primary/20 bg-background hover:bg-primary/10 text-foreground font-medium text-[10px] transition-colors"
+                  >
+                    {top.name.split(" ")[0]}
+                  </button>
+                );
+              })}
+            </div>
+          </Card>
+
           {/* CARTE LEAFLET */}
           <Card className="overflow-hidden border-2 border-primary/20 shadow-md">
             <div className="relative w-full h-[400px] sm:h-[480px]">
@@ -950,12 +1272,26 @@ export default function GpsSurveyPage() {
                 >
                   <Layers className="h-4 w-4 text-primary" />
                 </Button>
+
+                <Button
+                  size="sm"
+                  variant={showToponyms ? "secondary" : "outline"}
+                  onClick={() => setShowToponyms(!showToponyms)}
+                  className="h-9 w-9 p-0 rounded-xl shadow-md bg-background/90 hover:bg-background"
+                  title={showToponyms ? "Masquer les noms des lieux" : "Afficher les noms des lieux"}
+                >
+                  {showToponyms ? <Eye className="h-4 w-4 text-primary" /> : <EyeOff className="h-4 w-4 text-muted-foreground" />}
+                </Button>
               </div>
 
               {/* Indicateur de couche active */}
-              <div className="absolute bottom-3 left-3 z-10 bg-black/70 text-white text-[10px] font-bold px-2 py-1 rounded-md backdrop-blur-xs flex items-center gap-1.5">
-                <Globe className="h-3 w-3" />
-                {mapLayerType === "satellite" ? "Imagerie Satellite ArcGIS" : "Rues & Chemins OSM"}
+              <div className="absolute bottom-3 left-3 z-10 bg-black/75 text-white text-[10px] font-bold px-2.5 py-1 rounded-md backdrop-blur-xs flex items-center gap-2">
+                <Globe className="h-3 w-3 text-primary" />
+                <span>{mapLayerType === "satellite" ? "Imagerie Satellite ArcGIS" : "Rues & Chemins OSM"}</span>
+                <span className="text-white/40">•</span>
+                <span className={showToponyms ? "text-emerald-400 font-bold" : "text-white/60"}>
+                  {showToponyms ? "Noms des lieux actifs" : "Noms masqués"}
+                </span>
               </div>
             </div>
           </Card>
