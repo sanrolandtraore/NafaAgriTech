@@ -13,11 +13,13 @@ import {
   Layers, CheckCircle2, AlertTriangle, Download, RefreshCw, Cpu,
   Compass, ShieldCheck, HelpCircle, ArrowRight, Play, BookOpen,
   UserCheck, Edit3, Sprout, Beef, Building2, Globe, Languages, ShieldAlert,
-  Camera, Wrench, Store, Printer, Share2, Eye
+  Camera, Wrench, Store, Printer, Share2, Eye, Key
 } from "lucide-react";
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
 import { partnerBrandingStorage } from "@/lib/partnerBrandingStorage";
+import { realAiService, ChatMessage } from "@/lib/realAiService";
+import RealAiConfigModal from "@/components/ai/RealAiConfigModal";
 
 import {
   GeoPoint,
@@ -114,8 +116,23 @@ export const NafaGeniusStudio: React.FC = () => {
   const [inputText, setInputText] = useState<string>("");
   const [isListening, setIsListening] = useState<boolean>(false);
   const [nluResult, setNluResult] = useState<ParsedGeniusAction | null>(null);
-  const [lastActionResult, setLastActionResult] = useState<any>(null);
   const [activeTab, setActiveTab] = useState<string>("irris");
+  const [showAiModal, setShowAiModal] = useState<boolean>(false);
+  const [realAiConfigured, setRealAiConfigured] = useState<boolean>(realAiService.isConfigured());
+  const [isAiResponding, setIsAiResponding] = useState<boolean>(false);
+  const [conversation, setConversation] = useState<{ role: "user" | "assistant"; content: string; timestamp: string }[]>([
+    {
+      role: "assistant",
+      content: "Bonjour ! Je suis votre Copilote d'Ingénierie Agronomique NAFA. Posez-moi vos questions de terrain (irrigation FAO-56, dimensionnement de forage solaire, diagnostic foliaire, devis en FCFA, aviculture sahélienne). Comment puis-je vous aider ?",
+      timestamp: new Date().toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" }),
+    },
+  ]);
+
+  useEffect(() => {
+    const handleConfigChange = () => setRealAiConfigured(realAiService.isConfigured());
+    window.addEventListener("nafa_real_ai_config_updated", handleConfigChange);
+    return () => window.removeEventListener("nafa_real_ai_config_updated", handleConfigChange);
+  }, []);
 
   // Synchronisation avec l'URL (permet l'ouverture directe d'un outil)
   useEffect(() => {
@@ -466,31 +483,36 @@ export const NafaGeniusStudio: React.FC = () => {
     toast.success("Devis certifié conforme à la mercuriale officielle du Burkina Faso !");
   };
 
-  // Traitement d'une commande textuelle ou vocale
+  // Traitement d'une commande textuelle ou vocale avec IA Réelle (Claude) & Dispatcher
   const handleProcessCommand = async (text: string) => {
     if (!text.trim()) return;
+
+    const userMessageTime = new Date().toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" });
+    setConversation((prev) => [...prev, { role: "user", content: text, timestamp: userMessageTime }]);
+    setInputText("");
+    setIsAiResponding(true);
+
     const parsed = parseGeniusCommand(text, activeDomain);
     setNluResult(parsed);
 
     // Si violation de cloisonnement métier absolu
     if (parsed.isDomainViolation) {
       toast.error(parsed.explanation);
-      return;
-    }
-
-    // Si instruction non reconnue avec certitude : Règle stricte de vérité réelle
-    if (!parsed.isRecognized) {
-      toast.warning("Instruction non reconnue avec certitude : le calcul nécessite des données terrain certifiées.");
+      setIsAiResponding(false);
+      setConversation((prev) => [
+        ...prev,
+        {
+          role: "assistant",
+          content: `Violation de cloisonnement métier : ${parsed.explanation}`,
+          timestamp: new Date().toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" }),
+        },
+      ]);
       return;
     }
 
     // Si une entité est reconnue, adapter automatiquement l'état du studio
-    if (parsed.entities.clientName) {
-      setClientName(parsed.entities.clientName);
-    }
-    if (parsed.entities.crop) {
-      setSelectedCrop(parsed.entities.crop);
-    }
+    if (parsed.entities.clientName) setClientName(parsed.entities.clientName);
+    if (parsed.entities.crop) setSelectedCrop(parsed.entities.crop);
     if (parsed.entities.flockSize) {
       setIncludePoultry(true);
       setPoultryFlockSize(parsed.entities.flockSize);
@@ -515,14 +537,40 @@ export const NafaGeniusStudio: React.FC = () => {
     // Si action directe (ex: création de visite)
     if (parsed.actionRequired) {
       const res = await executeGeniusAction(parsed);
-      setLastActionResult(res);
-      if (res.success) {
-        toast.success(res.message);
-      } else {
-        toast.error(res.message);
-      }
-    } else {
-      toast.info(parsed.explanation);
+      if (res.success) toast.success(res.message);
+      else toast.error(res.message);
+    }
+
+    // Appel à l'IA Réelle (Claude 3.5 Sonnet / LLM) avec contexte agronomique complet
+    try {
+      const projectContext = `Client: ${clientName || "Non spécifié"}, Localisation: ${farmLocation}. Culture: ${selectedCrop}. Surface: ${surveyResult?.areaHa ?? 1} ha. Débit requis: ${((surveyResult?.areaHa ?? 1) * 3.6).toFixed(1)} m³/h. Élevage associé: ${includePoultry ? poultryFlockSize + " " + poultryBirdType : "Aucun"}. Région: ${selectedRegion}.`;
+
+      const chatHistory: ChatMessage[] = conversation
+        .slice(-6)
+        .map((c) => ({ role: c.role, content: c.content }));
+      chatHistory.push({ role: "user", content: text });
+
+      const aiReply = await realAiService.chat(chatHistory, projectContext);
+      setConversation((prev) => [
+        ...prev,
+        {
+          role: "assistant",
+          content: aiReply,
+          timestamp: new Date().toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" }),
+        },
+      ]);
+    } catch (e: any) {
+      console.error("Erreur Copilote IA:", e);
+      setConversation((prev) => [
+        ...prev,
+        {
+          role: "assistant",
+          content: `Réponse du référentiel technique INERA & FAO-56 : ${parsed.explanation}`,
+          timestamp: new Date().toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" }),
+        },
+      ]);
+    } finally {
+      setIsAiResponding(false);
     }
   };
 
@@ -728,6 +776,17 @@ export const NafaGeniusStudio: React.FC = () => {
 
           <Button
             size="sm"
+            variant="outline"
+            onClick={() => setShowAiModal(true)}
+            className="h-9 text-xs font-semibold bg-emerald-900/60 hover:bg-emerald-800 border-emerald-700 text-white gap-1.5 shadow-sm"
+          >
+            <Sparkles className="h-3.5 w-3.5 text-amber-400" />
+            <span className="hidden sm:inline">{realAiConfigured ? "IA Réelle (Claude)" : "Configurer IA (Claude)"}</span>
+            <span className="sm:hidden">IA</span>
+          </Button>
+
+          <Button
+            size="sm"
             onClick={handleExportPdf}
             className="h-9 text-xs font-semibold bg-emerald-600 hover:bg-emerald-500 text-white gap-1.5 shadow-sm"
           >
@@ -876,6 +935,77 @@ export const NafaGeniusStudio: React.FC = () => {
                   <span><strong>Règle de Vérité Réelle :</strong> Aucune valeur hallucinée n'est produite. Vous pouvez sélectionner directement les onglets ci-dessous pour renseigner les mesures réelles ou solliciter la certification d'un ingénieur de terrain.</span>
                 </div>
               )}
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Fil de Discussion Copilote avec l'IA Réelle (Claude / LLM) */}
+      <Card className="border-amber-500/20 bg-card/95 shadow-sm overflow-hidden">
+        <CardHeader className="py-2.5 px-4 border-b bg-gradient-to-r from-amber-500/5 via-primary/5 to-transparent flex flex-row items-center justify-between">
+          <div className="flex items-center gap-2">
+            <Sparkles className="h-4 w-4 text-amber-500" />
+            <CardTitle className="text-xs sm:text-sm font-bold flex items-center gap-2">
+              Copilote d'Ingénierie IA Réelle
+              <Badge variant="outline" className={realAiConfigured ? "bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border-emerald-500/30 text-[10px]" : "bg-amber-500/10 text-amber-700 dark:text-amber-400 border-amber-500/30 text-[10px]"}>
+                {realAiConfigured ? `Connecté à ${realAiService.getConfig().model}` : "Mode Local (Aucune clé API)"}
+              </Badge>
+            </CardTitle>
+          </div>
+          <div className="flex items-center gap-1.5">
+            <Button
+              size="sm"
+              variant="ghost"
+              className="h-7 text-xs text-muted-foreground hover:text-foreground"
+              onClick={() => setShowAiModal(true)}
+            >
+              <Key className="h-3.5 w-3.5 mr-1 text-amber-500" />
+              {realAiConfigured ? "Paramètres Modèle" : "Activer Claude"}
+            </Button>
+            {conversation.length > 1 && (
+              <Button
+                size="sm"
+                variant="ghost"
+                className="h-7 text-xs text-muted-foreground hover:text-destructive"
+                onClick={() => setConversation([conversation[0]])}
+                title="Effacer la conversation"
+              >
+                Effacer
+              </Button>
+            )}
+          </div>
+        </CardHeader>
+        <CardContent className="p-4 space-y-3 max-h-[380px] overflow-y-auto">
+          {conversation.map((msg, idx) => (
+            <div
+              key={idx}
+              className={`flex flex-col gap-1 text-xs ${
+                msg.role === "user" ? "items-end" : "items-start"
+              }`}
+            >
+              <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground px-1">
+                <span>{msg.role === "user" ? "Vous (Expert / Producteur)" : "Copilote IA Réelle (Claude)"}</span>
+                <span>•</span>
+                <span>{msg.timestamp}</span>
+              </div>
+              <div
+                className={`p-3 rounded-2xl max-w-[90%] whitespace-pre-wrap leading-relaxed shadow-2xs ${
+                  msg.role === "user"
+                    ? "bg-primary text-primary-foreground rounded-tr-xs"
+                    : "bg-muted/80 border text-foreground rounded-tl-xs font-sans"
+                }`}
+              >
+                {msg.content}
+              </div>
+            </div>
+          ))}
+
+          {isAiResponding && (
+            <div className="flex items-start gap-2 text-xs text-muted-foreground">
+              <div className="p-3 rounded-2xl bg-muted/80 border flex items-center gap-2">
+                <Sparkles className="h-4 w-4 text-amber-500 animate-spin" />
+                <span className="font-medium animate-pulse">L'IA Réelle analyse votre projet de terrain et formule ses recommandations techniques...</span>
+              </div>
             </div>
           )}
         </CardContent>
@@ -1283,6 +1413,15 @@ export const NafaGeniusStudio: React.FC = () => {
           </div>
         </div>
       </Card>
+
+      {/* Modal de Configuration de l'IA Réelle (Claude / OpenRouter / Gemini / OpenAI) */}
+      <RealAiConfigModal
+        open={showAiModal}
+        onOpenChange={(val) => {
+          setShowAiModal(val);
+          setRealAiConfigured(realAiService.isConfigured());
+        }}
+      />
     </div>
   );
 };

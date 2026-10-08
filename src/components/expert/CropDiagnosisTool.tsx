@@ -15,7 +15,7 @@ import {
   Clock, History, Trash2, MapPin, Navigation, BookOpen, CloudOff, FileText, ShieldCheck, Leaf,
   AlertTriangle, Edit3, UserCheck, Microscope, Search, Info, HelpCircle, Shield,
   Award, RefreshCw, Layers, CheckCheck, Eye, Key, ExternalLink, Database, Cpu,
-  UploadCloud, FileImage, Check, SwitchCamera, Video, X
+  UploadCloud, FileImage, Check, SwitchCamera, Video, X, Droplets
 } from "lucide-react";
 import {
   optimizeAndCompressImage,
@@ -81,6 +81,8 @@ import {
   REAL_CROP_BENCHMARKS,
 } from "@/lib/scientificAgronomicRAG";
 import { analyzePlantImage, type FoliarImageAnalysisResult } from "@/lib/plantVisionAnalyzer";
+import { realAiService, type PlantDiagnosisAiOutput } from "@/lib/realAiService";
+import RealAiConfigModal from "@/components/ai/RealAiConfigModal";
 
 export interface Diagnosis {
   diagnosis_summary: string;
@@ -92,7 +94,7 @@ export interface Diagnosis {
   treatment_chemical: string;
   preventive_actions: string[];
   inera_reference?: string;
-  engine_source?: "cloud_vision" | "inera_expert" | "expert_field_validated" | "scientific_rag";
+  engine_source?: "cloud_vision" | "inera_expert" | "expert_field_validated" | "scientific_rag" | "real_ai_claude";
   is_unrecognized?: boolean;
   requires_expert_validation?: boolean;
   expert_certified?: boolean;
@@ -191,6 +193,15 @@ function CropDiagnosisToolInner() {
   const [pending, setPending] = useState<PendingDiagnosis[]>([]);
   const [history, setHistory] = useState<LocalDiagnosis[]>([]);
   const [validatedCases, setValidatedCases] = useState<ValidatedCase[]>(() => getStoredValidatedCases());
+  const [showAiModal, setShowAiModal] = useState<boolean>(false);
+  const [realAiConfigured, setRealAiConfigured] = useState<boolean>(realAiService.isConfigured());
+  const [realAiDiagnosis, setRealAiDiagnosis] = useState<PlantDiagnosisAiOutput | null>(null);
+
+  useEffect(() => {
+    const handleConfigChange = () => setRealAiConfigured(realAiService.isConfigured());
+    window.addEventListener("nafa_real_ai_config_updated", handleConfigChange);
+    return () => window.removeEventListener("nafa_real_ai_config_updated", handleConfigChange);
+  }, []);
 
   // Regroupement des cultures du catalogue par filières agronomiques du Burkina Faso
   const groupedSpeciesCatalog = useMemo(() => {
@@ -733,6 +744,93 @@ function CropDiagnosisToolInner() {
         setImageAnalysis(visionResult);
       }
 
+      // ── PRIORITÉ IA RÉELLE (CLAUDE / MULTIMODAL VISION) SI CLÉ CONFIGURÉE ──
+      if (realAiService.isConfigured() && navigator.onLine) {
+        try {
+          const aiRes = await realAiService.diagnosePlantWithVision({
+            imageBase64,
+            mimeType,
+            crop: plantMode === "culture" ? cropLabel(cropKey) : weedKey,
+            symptoms,
+            location: parcelName || realRegion,
+            season: realSeason,
+            soilType: realSoil,
+          });
+          setRealAiDiagnosis(aiRes);
+
+          const primAi = {
+            diseaseId: `claude_${Date.now()}`,
+            name: aiRes.pathogenCommonName,
+            scientificName: aiRes.pathogenScientificName,
+            pathogenType: (aiRes.causeType.includes("fongique")
+              ? "fongique"
+              : aiRes.causeType.includes("bacter")
+              ? "bacterienne"
+              : aiRes.causeType.includes("vir")
+              ? "virale"
+              : aiRes.causeType.includes("ravageur")
+              ? "ravageur"
+              : "carence") as PathogenType,
+            score: aiRes.confidenceScore,
+            confidenceLevel: (aiRes.confidenceScore >= 80 ? "Élevé" : "Moyen") as ConfidenceLevel,
+            rationale: `${aiRes.diagnosisSummary}\n\nObservations visuelles : ${aiRes.visualObservations.join(" • ")}\nConseil sol & irrigation : ${aiRes.soilAndIrrigationAdvice}`,
+            officialReferences: [
+              `Modèle ${realAiService.getConfig().model} (IA Réelle)`,
+              "Référentiel INERA Farako-Bâ & Homologations CSP-CILSS",
+            ],
+            treatmentBio: `${aiRes.treatmentBio.protocol}\nDosage : ${aiRes.treatmentBio.dosage} (${aiRes.treatmentBio.applicationFrequency})`,
+            treatmentChemical: `Matière active : ${aiRes.treatmentChemical.activeSubstance}\nProduits homologués Burkina : ${aiRes.treatmentChemical.commercialProductsBurkina.join(", ")}\nDosage/ha : ${aiRes.treatmentChemical.dosageHa}\nDAR : ${aiRes.treatmentChemical.preHarvestIntervalDays} jours`,
+            preventiveActions: aiRes.preventiveMeasures,
+          };
+
+          setIsExpertEditing(false);
+          setExpertCauseName(primAi.name);
+          setExpertCauseType(primAi.pathogenType);
+          setExpertSeverity(aiRes.severityLevel === "critique" || aiRes.severityLevel === "severe" ? "forte" : aiRes.severityLevel === "moderee" ? "moyen" : "faible");
+          setExpertTreatmentBio(primAi.treatmentBio);
+          setExpertTreatmentChemical(primAi.treatmentChemical);
+          setExpertPreventive(primAi.preventiveActions.join("\n"));
+          setExpertIneraRef(primAi.officialReferences[0]);
+
+          const realAiLegacy: Diagnosis = {
+            diagnosis_summary: aiRes.diagnosisSummary,
+            cause_type: primAi.pathogenType,
+            cause_name: primAi.name,
+            confidence: aiRes.confidenceScore / 100,
+            severity: aiRes.severityLevel === "critique" || aiRes.severityLevel === "severe" ? "forte" : aiRes.severityLevel === "moderee" ? "moyen" : "faible",
+            treatment_bio: primAi.treatmentBio,
+            treatment_chemical: primAi.treatmentChemical,
+            preventive_actions: primAi.preventiveActions,
+            inera_reference: `IA Réelle (${realAiService.getConfig().provider.toUpperCase()}) • Homologation CSP`,
+            engine_source: "real_ai_claude",
+            is_unrecognized: false,
+          };
+          setResult(realAiLegacy);
+
+          const syntheticPipelineOutput = executeScientificDiagnosisPipeline({
+            identification,
+            context,
+            localValidatedCases: validatedCases,
+            imageAnalysis: visionResult || undefined,
+            botanicalIdentification: nafaBotanicalResult || undefined,
+            plantnetIdentification: nafaBotanicalResult || undefined,
+          });
+          syntheticPipelineOutput.step4Validation.primaryDiagnosis = primAi;
+          syntheticPipelineOutput.step4Validation.isConfirmed = true;
+          syntheticPipelineOutput.step4Validation.agronomicExplanation = aiRes.diagnosisSummary;
+          setScientificResult(syntheticPipelineOutput);
+
+          toast({
+            title: "Diagnostic Analysé par IA Réelle",
+            description: `Identification certifiée par ${realAiService.getConfig().model} (${aiRes.confidenceScore}% de confiance).`,
+          });
+          setLoading(false);
+          return;
+        } catch (aiErr: any) {
+          console.warn("Bascule vers le RAG local:", aiErr);
+        }
+      }
+
       // ÉTAPES 3 & 4 : Recherche RAG Scientifique + Référentiel Pathologique Sahélien (54 306 images foliaires, 38 classes étalons)
       const pipelineOutput = executeScientificDiagnosisPipeline({
         identification,
@@ -1123,9 +1221,26 @@ function CropDiagnosisToolInner() {
               <ShieldCheck className="h-4 w-4 text-emerald-600" />
               Référentiels & Sources Scientifiques RAG Actives :
             </span>
-            <Badge variant="outline" className="text-[10px] border-emerald-500/30 text-emerald-700 bg-emerald-500/10 font-bold">
-              Vérité Réelle Certifiée
-            </Badge>
+            <div className="flex items-center gap-2">
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => setShowAiModal(true)}
+                className={`h-7 text-[11px] rounded-xl gap-1.5 font-bold ${
+                  realAiConfigured
+                    ? "border-emerald-500/50 text-emerald-800 dark:text-emerald-300 bg-emerald-500/10 hover:bg-emerald-500/20"
+                    : "border-amber-500/50 text-amber-800 dark:text-amber-300 bg-amber-500/10 hover:bg-amber-500/20"
+                }`}
+                title="Configurer le modèle d'IA Réelle (Claude 3.5 Sonnet / Vision)"
+              >
+                <Sparkles className="h-3.5 w-3.5 text-amber-500" />
+                <span>{realAiConfigured ? `IA Réelle Active (${realAiService.getConfig().model})` : "Activer l'IA Réelle (Claude)"}</span>
+              </Button>
+              <Badge variant="outline" className="text-[10px] border-emerald-500/30 text-emerald-700 bg-emerald-500/10 font-bold">
+                Vérité Réelle Certifiée
+              </Badge>
+            </div>
           </div>
           <div className="flex flex-wrap items-center gap-1.5 text-[11px] font-medium text-foreground/80">
             <span className="px-2 py-0.5 rounded-md bg-muted">INERA</span>
@@ -1813,6 +1928,54 @@ function CropDiagnosisToolInner() {
                   <span>INERA Farako-Bâ • CILSS • Yara</span>
                 </div>
               </div>
+
+              {/* ── DIAGNOSTIC CERTIFIÉ PAR IA RÉELLE MULTIMODALE (CLAUDE VISION) ── */}
+              {realAiDiagnosis && (
+                <div className="p-4 sm:p-5 rounded-2xl bg-gradient-to-r from-amber-500/15 via-emerald-500/10 to-teal-500/10 border-2 border-amber-500/40 space-y-3 shadow-xs">
+                  <div className="flex items-start justify-between gap-3 flex-wrap">
+                    <div className="flex items-center gap-2.5">
+                      <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-amber-500 to-amber-700 text-white flex items-center justify-center font-extrabold text-sm shadow-xs">
+                        <Sparkles className="h-5 w-5" />
+                      </div>
+                      <div>
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <span className="text-xs font-extrabold uppercase tracking-wider text-amber-800 dark:text-amber-300">
+                            Diagnostic Spécialiste IA Réelle ({realAiService.getConfig().model})
+                          </span>
+                          <Badge className="bg-amber-600 text-white text-[10px] font-mono py-0 px-2 font-bold">
+                            {realAiDiagnosis.confidenceScore}% certitude
+                          </Badge>
+                          <Badge variant="outline" className="text-[10px] uppercase font-bold border-amber-500/40 text-amber-800 dark:text-amber-300">
+                            Sévérité : {realAiDiagnosis.severityLevel}
+                          </Badge>
+                        </div>
+                        <p className="text-sm sm:text-base font-extrabold text-foreground mt-0.5">
+                          {realAiDiagnosis.pathogenCommonName} — <em className="text-muted-foreground font-normal">{realAiDiagnosis.pathogenScientificName}</em>
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="text-xs text-foreground/90 leading-relaxed bg-background/80 p-3.5 rounded-xl border border-amber-500/20 whitespace-pre-wrap">
+                    {realAiDiagnosis.diagnosisSummary}
+                  </div>
+                  {realAiDiagnosis.visualObservations && realAiDiagnosis.visualObservations.length > 0 && (
+                    <div className="space-y-1 text-xs pt-1">
+                      <span className="font-bold text-muted-foreground">Signes et lésions foliaires identifiés par la Vision :</span>
+                      <ul className="list-disc list-inside space-y-0.5 text-foreground/80 text-[11px]">
+                        {realAiDiagnosis.visualObservations.map((obs, idx) => (
+                          <li key={idx}>{obs}</li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+                  {realAiDiagnosis.soilAndIrrigationAdvice && (
+                    <div className="p-2.5 rounded-xl bg-sky-500/10 border border-sky-500/20 text-sky-950 dark:text-sky-200 text-xs flex items-start gap-2">
+                      <Droplets className="h-4 w-4 text-sky-600 shrink-0 mt-0.5" />
+                      <span><strong>Recommandation Sol & Irrigation :</strong> {realAiDiagnosis.soilAndIrrigationAdvice}</span>
+                    </div>
+                  )}
+                </div>
+              )}
 
               {/* ── FILTRE 2 : MODÈLE IA & RÉFÉRENTIEL PATHOLOGIQUE SAHÉLIEN (SCORE 90% À 100%) ── */}
               {scientificResult.openAgroBenchmarking && (
@@ -2531,6 +2694,15 @@ function CropDiagnosisToolInner() {
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* Modal de Configuration de l'IA Réelle (Claude 3.5 Sonnet Vision) */}
+      <RealAiConfigModal
+        open={showAiModal}
+        onOpenChange={(val) => {
+          setShowAiModal(val);
+          setRealAiConfigured(realAiService.isConfigured());
+        }}
+      />
     </Tabs>
   );
 }
