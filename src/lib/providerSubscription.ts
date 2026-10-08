@@ -50,7 +50,7 @@ export const SUBSCRIPTION_PLANS: SubscriptionPlan[] = [
       "Support communautaire",
     ],
     toolsIncluded: [
-      { name: "Marketplace publique", description: "Consulter les offres et prestataires", route: "/dashboard/marketplace" },
+      { name: "Marché public", description: "Consulter les offres et prestataires", route: "/dashboard/marketplace" },
       { name: "Fiches techniques de base", description: "Cultures sahéliennes", route: "/dashboard/crop-library" },
     ],
   },
@@ -64,13 +64,13 @@ export const SUBSCRIPTION_PLANS: SubscriptionPlan[] = [
     features: [
       "Publication illimitée de produits (intrants, semences, petit matériel)",
       "Réception directe des demandes de devis clients",
-      "Visibilité prioritaire sur le Marketplace NAFA - AGRITECH",
+      "Visibilité prioritaire sur le Marché NAFA - AGRITECH",
       "Calculatrice de doses pour conseiller les clients au comptoir",
       "Factures et bons de commande PDF",
     ],
     toolsIncluded: [
       { name: "Gestion de mes offres & catalogue", description: "Gérer stock, prix et visibilité", route: "/dashboard/partenaire-mes-offres" },
-      { name: "Marketplace NAFA - AGRITECH", description: "Présence auprès des producteurs", route: "/dashboard/marketplace" },
+      { name: "Marché NAFA - AGRITECH", description: "Présence auprès des producteurs", route: "/dashboard/marketplace" },
       { name: "Calculatrice agronomique", description: "Aide au calcul de doses et fertilisation", route: "/dashboard/expert-calculator" },
       { name: "Fiches techniques 12 cultures", description: "Conseil client certifié", route: "/dashboard/crop-library" },
     ],
@@ -87,7 +87,7 @@ export const SUBSCRIPTION_PLANS: SubscriptionPlan[] = [
       "Toute la suite d'aide à la décision NAFA - AGRITECH débloquée",
       "Diagnostic avancé illimité (maladies, ravageurs, carences)",
       "Générateur d'ordonnances agronomiques certifiées PDF",
-      "Scouting terrain géolocalisé avec relevé GPS et export de rapports",
+      "Observation terrain géolocalisée avec relevé GPS et export de rapports",
       "Gestion de la flotte de matériel en location & réservations avec acompte séquestre",
       "Carnet de suivi des exploitations clientes et tournées",
       "Export PDF/CSV des diagnostics et comptes-rendus d'intervention",
@@ -96,7 +96,7 @@ export const SUBSCRIPTION_PLANS: SubscriptionPlan[] = [
     toolsIncluded: [
       { name: "Diagnostic Végétal", description: "Analyse instantanée et précise", route: "/dashboard/expert-diagnosis" },
       { name: "Ordonnances Agros PDF", description: "Génération signée et QR-code", route: "/dashboard/expert-prescriptions" },
-      { name: "Scouting terrain GPS", description: "Patrouilles parcellaires et relevés", route: "/dashboard/scouting" },
+      { name: "Observation terrain GPS", description: "Patrouilles parcellaires et relevés", route: "/dashboard/scouting" },
       { name: "Matériel & Intrants (Vente & Location)", description: "Offres matériel, semences et intrants", route: "/dashboard/marketplace?cat=machinisme" },
       { name: "Calculatrice Agro & Doses", description: "Semis, fractionnement NPK, eau ETc", route: "/dashboard/expert-calculator" },
       { name: "Cartographie GPS Polygone", description: "Mesure de surface et limites", route: "/dashboard/expert-cartography" },

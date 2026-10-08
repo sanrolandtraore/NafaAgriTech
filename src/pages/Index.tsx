@@ -444,7 +444,7 @@ const Index = () => {
               className="rounded-full bg-[#111827] dark:bg-white text-white dark:text-[#111827] hover:bg-[#F97316] dark:hover:bg-[#F97316] hover:text-white dark:hover:text-white font-bold text-xs sm:text-sm px-6 py-5 shadow-md flex items-center gap-2 transition-all active:scale-95"
             >
               <Compass className="h-4 w-4 text-[#F97316]" />
-              <span>Accéder à la suite complète NAFA FIELD DESIGNER</span>
+              <span>Accéder à la suite complète NAFA FIELD DESIGNER (Conception de Parcelles)</span>
               <ArrowRight className="h-4 w-4 ml-1" />
             </Button>
           </div>

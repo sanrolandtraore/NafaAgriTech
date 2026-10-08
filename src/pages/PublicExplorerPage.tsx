@@ -238,7 +238,7 @@ export default function PublicExplorerPage() {
               </TabsTrigger>
               <TabsTrigger value="copilot" className="rounded-xl text-xs font-bold gap-2 py-2.5 px-4 data-[state=active]:bg-card data-[state=active]:shadow-xs">
                 <Bot className="h-4 w-4 text-emerald-600" />
-                <span>2. AI Copilote NAFA</span>
+                <span>2. Copilote d'Assistance NAFA</span>
               </TabsTrigger>
               <TabsTrigger value="cartographie" className="rounded-xl text-xs font-bold gap-2 py-2.5 px-4 data-[state=active]:bg-card data-[state=active]:shadow-xs">
                 <MapPin className="h-4 w-4 text-sky-600" />
@@ -246,7 +246,7 @@ export default function PublicExplorerPage() {
               </TabsTrigger>
               <TabsTrigger value="irrigation" className="rounded-xl text-xs font-bold gap-2 py-2.5 px-4 data-[state=active]:bg-card data-[state=active]:shadow-xs">
                 <Droplets className="h-4 w-4 text-blue-600" />
-                <span>4. Irrigation Designer</span>
+                <span>4. Concepteur d'Irrigation</span>
               </TabsTrigger>
               <TabsTrigger value="elevage" className="rounded-xl text-xs font-bold gap-2 py-2.5 px-4 data-[state=active]:bg-card data-[state=active]:shadow-xs">
                 <Beef className="h-4 w-4 text-amber-600" />

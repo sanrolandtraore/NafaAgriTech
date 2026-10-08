@@ -17,7 +17,7 @@ describe("Studio 3D & Prix Réels Burkina Faso Marketplace", () => {
     // Le composant doit s'afficher sans erreur grâce au fallback automatique 2.5D universel
     render(<Studio3DFarmModeler />);
     expect(screen.getByText(/Modélisation 3D — Aménagement, Irrigation & Élevage/i)).toBeInTheDocument();
-    expect(screen.getByText(/Prix Réels Marketplace \(BF\)/i)).toBeInTheDocument();
+    expect(screen.getByText(/Prix Réels (Marché|Marketplace) \(BF\)/i)).toBeInTheDocument();
     expect(screen.getByText(/Budget Aménagement Estimé/i)).toBeInTheDocument();
   });
 

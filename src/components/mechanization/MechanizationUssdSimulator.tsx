@@ -120,7 +120,7 @@ export const MechUssdSimulator = () => {
               {ussdStep === 0 && (
                 <div className="text-center py-6 space-y-3">
                   <Smartphone className="h-10 w-10 mx-auto text-emerald-400 opacity-80" />
-                  <p className="text-xs font-bold text-emerald-200">NAFA - AGRITECH Offline Engine</p>
+                  <p className="text-xs font-bold text-emerald-200">Moteur local NAFA - AGRITECH</p>
                   <p className="text-[10px] text-emerald-400/90 leading-relaxed">
                     Simulation de parcours USSD. Aucun appel réseau USSD réel n’est déclenché depuis cette interface.
                   </p>

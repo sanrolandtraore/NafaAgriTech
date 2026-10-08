@@ -82,7 +82,7 @@ export const NafaGeniusHeroCard: React.FC<NafaGeniusHeroCardProps> = ({
         <div className="space-y-3 max-w-xl">
           <div>
             <h2 className="text-2xl sm:text-3xl font-heading font-black tracking-tight flex items-center gap-2.5 flex-wrap">
-              <span>NAFA FIELD DESIGNER</span>
+              <span>NAFA FIELD DESIGNER — Conception de Parcelles</span>
             </h2>
           </div>
 
@@ -101,7 +101,7 @@ export const NafaGeniusHeroCard: React.FC<NafaGeniusHeroCardProps> = ({
             className="h-12 px-6 rounded-[20px] bg-[#F97316] hover:bg-[#ea580c] text-white font-black text-sm tracking-wide shadow-lg shadow-orange-500/30 gap-2 transition-transform active:scale-95"
           >
             <Compass className="h-4 w-4" />
-            <span>Ouvrir Field Designer</span>
+            <span>Ouvrir la Conception de Parcelles</span>
             <ArrowRight className="h-4 w-4" />
           </Button>
         </div>

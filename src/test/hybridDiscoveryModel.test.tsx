@@ -43,9 +43,9 @@ describe("Modèle Hybride Découvrir avant de s'inscrire (NAFA-AGRITECH)", () =>
 
     // Onglets des modules majeurs
     expect(screen.getByText(/1\. Calculateur de Projet/i)).toBeInTheDocument();
-    expect(screen.getByText(/2\. AI Copilote NAFA/i)).toBeInTheDocument();
+    expect(screen.getByText(/2\. (Copilote d'Assistance|AI Copilote) NAFA/i)).toBeInTheDocument();
     expect(screen.getByText(/3\. Cartographie & GPS/i)).toBeInTheDocument();
-    expect(screen.getByText(/4\. Irrigation Designer/i)).toBeInTheDocument();
+    expect(screen.getByText(/4\. (Concepteur d'Irrigation|Irrigation Designer)/i)).toBeInTheDocument();
     expect(screen.getByText(/5\. Élevage & Zootechnie/i)).toBeInTheDocument();
     expect(screen.getByText(/6\. Fiches Techniques/i)).toBeInTheDocument();
     expect(screen.getByText(/7\. (Marché|Marketplace) & Services/i)).toBeInTheDocument();

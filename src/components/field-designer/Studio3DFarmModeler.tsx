@@ -3159,7 +3159,7 @@ export function Studio3DFarmModeler({
           <div className="flex flex-wrap items-center gap-2">
             <div className="inline-flex items-center gap-2 px-3 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 text-xs font-bold">
               <Sparkles className="h-3.5 w-3.5" />
-              <span>Studio de Conception • NAFA Field Designer</span>
+              <span>Atelier de Conception • Modélisation de Parcelles</span>
             </div>
             {renderMode === "webgl" ? (
               <Badge className="bg-emerald-500/20 text-emerald-300 border-emerald-500/40 text-[11px] font-bold flex items-center gap-1">
@@ -4348,7 +4348,7 @@ export function Studio3DFarmModeler({
               className="w-full rounded-xl border-emerald-500/40 hover:bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 text-xs font-bold flex items-center justify-center gap-2 py-2"
             >
               <ShoppingBag className="h-3.5 w-3.5 text-[#F97316]" />
-              <span>Prix Réels Marketplace (BF)</span>
+              <span>Prix Réels Marché (BF)</span>
             </Button>
           </div>
         </Card>

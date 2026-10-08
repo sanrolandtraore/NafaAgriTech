@@ -540,7 +540,7 @@ const ExpertCartographyPage = () => {
       const ext = file.name.split(".").pop();
       const path = `${user.id}/${Date.now()}_${Math.random().toString(36).slice(2)}.${ext}`;
       const { error: uploadErr } = await supabase.storage.from("field-observations").upload(path, file);
-      if (uploadErr) { toast.error("Erreur upload photo"); continue; }
+      if (uploadErr) { toast.error("Erreur lors du téléversement de la photo"); continue; }
       const { data: urlData } = supabase.storage.from("field-observations").getPublicUrl(path);
       photoUrls.push(urlData.publicUrl);
     }
@@ -744,10 +744,10 @@ const ExpertCartographyPage = () => {
                 className="h-10 px-4 rounded-xl gap-2 font-bold text-xs border-amber-500/40 hover:bg-amber-500/10 text-stone-800 dark:text-amber-300 shadow-sm"
                 onClick={() => setShowDownloadDialog(true)}
                 data-testid="download-map-area-btn"
-                title="Download Map Area for offline use"
+                title="Télécharger la zone de carte pour utilisation hors-ligne"
               >
                 <HardDriveDownload className="h-4 w-4 text-amber-500" />
-                <span>Download Map Area</span>
+                <span>Télécharger la zone de carte</span>
               </Button>
             </div>
           </div>

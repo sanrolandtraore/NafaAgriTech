@@ -112,7 +112,7 @@ export const AboutPage: React.FC = () => {
                     <CheckCircle2 className="h-4 w-4" />
                   </div>
                   <div>
-                    <h3 className="font-heading font-bold text-sm">Disponibilité sans connexion (Offline-First)</h3>
+                    <h3 className="font-heading font-bold text-sm">Disponibilité sans connexion (Priorité au local)</h3>
                     <p className="text-xs text-muted-foreground">
                       Collecte de données parcellaires, fiches d'inspection et relevés GPS opérationnels en zone blanche avec synchronisation intelligente.
                     </p>

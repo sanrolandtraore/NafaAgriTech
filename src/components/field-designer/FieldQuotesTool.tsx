@@ -354,7 +354,7 @@ export const FieldQuotesTool: React.FC<FieldQuotesToolProps> = ({
                 <span className="col-span-5">Désignation &amp; Fourniture</span>
                 <span className="col-span-1 text-center">Unité</span>
                 <span className="col-span-1 text-center">Qté</span>
-                <span className="col-span-3 text-right">P.U. &amp; Marketplace</span>
+                <span className="col-span-3 text-right">P.U. &amp; Marché</span>
                 <span className="col-span-2 text-right">Total (FCFA)</span>
               </div>
 
@@ -364,11 +364,11 @@ export const FieldQuotesTool: React.FC<FieldQuotesToolProps> = ({
                   <ShoppingBag className="h-8 w-8 mx-auto opacity-40 text-primary" />
                   <p className="font-semibold text-foreground">Aucun article dans ce métré</p>
                   <p className="text-[11px]">
-                    Sélectionnez des matériaux certifiés sur le marketplace ou ajoutez une ligne personnalisée.
+                    Sélectionnez des matériaux certifiés sur le marché ou ajoutez une ligne personnalisée.
                   </p>
                   <Button size="sm" onClick={openMarketplaceToAdd} className="text-xs gap-1.5 gradient-primary text-primary-foreground">
                     <ShoppingBag className="h-3.5 w-3.5" />
-                    Parcourir les prix du Marketplace
+                    Parcourir les prix du Marché
                   </Button>
                 </div>
               ) : (
@@ -415,7 +415,7 @@ export const FieldQuotesTool: React.FC<FieldQuotesToolProps> = ({
                         size="sm"
                         onClick={() => openMarketplaceForLine(item.id, item.designation)}
                         className="h-7 px-1.5 text-[10px] font-semibold gap-1 text-emerald-700 dark:text-emerald-400 hover:bg-emerald-500/10 shrink-0"
-                        title="Choisir et appliquer le prix réel du Marketplace"
+                        title="Choisir et appliquer le prix réel du Marché"
                       >
                         <Tag className="h-3 w-3" />
                         Prix Réel

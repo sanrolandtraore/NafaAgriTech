@@ -1,4 +1,4 @@
-﻿import { describe, it, expect, vi, beforeEach } from "vitest";
+import { describe, it, expect, vi, beforeEach } from "vitest";
 import { render, screen, waitFor } from "@testing-library/react";
 import { BrowserRouter } from "react-router-dom";
 import ScoutingPage from "@/pages/dashboard/ScoutingPage";
@@ -40,7 +40,7 @@ describe("ScoutingPage - Suivi des Parcelles & Patrouille Agronomique", () => {
     );
 
     await waitFor(() => {
-      expect(screen.getByText(/Aucune session de scouting trouvée/i)).toBeInTheDocument();
+      expect(screen.getByText(/Aucune session (d'observation terrain|de scouting) trouvée/i)).toBeInTheDocument();
     }, { timeout: 10000 });
   });
 });

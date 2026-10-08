@@ -140,7 +140,7 @@ export default function ServicesPage() {
           <div>
             <h1 className="text-2xl sm:text-3xl font-heading font-black text-foreground flex items-center gap-2.5">
               <Compass className="h-7 w-7 text-[#F97316]" />
-              <span>NAFA FIELD DESIGNER</span>
+              <span>NAFA FIELD DESIGNER — Conception de Parcelles</span>
             </h1>
 
             <p className="text-xs sm:text-sm text-muted-foreground mt-1 max-w-2xl font-medium">
@@ -151,7 +151,7 @@ export default function ServicesPage() {
 
         <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-muted border border-border text-xs font-bold text-muted-foreground self-start md:self-auto">
           <CheckCircle2 className="h-3.5 w-3.5 text-emerald-600" />
-          <span>{allToolsCount} outils NAFA Field Designer opérationnels</span>
+          <span>{allToolsCount} outils de conception opérationnels</span>
         </div>
       </div>
 
@@ -279,7 +279,7 @@ export default function ServicesPage() {
         <div className="flex items-center justify-between">
           <h2 className="text-base sm:text-lg font-heading font-black text-foreground flex items-center gap-2">
             <Compass className="h-5 w-5 text-[#F97316]" />
-            <span>Outils NAFA FIELD DESIGNER</span>
+            <span>Outils de Conception de Parcelles NAFA</span>
             <span className="text-xs text-muted-foreground font-semibold">
               ({filteredTools.length} outil{filteredTools.length > 1 ? "s" : ""})
             </span>

@@ -295,7 +295,7 @@ export default function ProviderSubscriptionPage() {
             className="p-3 bg-background rounded-xl border border-border hover:border-primary transition-all flex items-center gap-2 text-xs font-semibold shadow-xs"
           >
             <Eye className="h-4 w-4 text-blue-600 shrink-0" />
-            <span className="truncate">Scouting Terrain GPS</span>
+            <span className="truncate">Observation Terrain GPS</span>
           </Link>
           <Link
             to="/dashboard/marketplace?cat=machinisme"

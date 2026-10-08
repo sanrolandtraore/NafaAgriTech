@@ -57,10 +57,10 @@ export interface ToolkitCategoryConfig {
 export const TOOLKIT_CATEGORIES: ToolkitCategoryConfig[] = [
   {
     id: "all",
-    label: "Tous les outils NAFA Field Designer",
+    label: "Tous les outils de Conception de Parcelles",
     shortLabel: "Tous",
     iconName: "Layers",
-    description: "Ensemble des outils professionnels de conception et intervention terrain NAFA Field Designer.",
+    description: "Ensemble des outils professionnels de conception et d'intervention terrain NAFA.",
   },
   {
     id: "terrain_carto",
@@ -88,7 +88,7 @@ export const TOOLKIT_CATEGORIES: ToolkitCategoryConfig[] = [
     label: "Bâtiments & Modélisation",
     shortLabel: "Bâtiments",
     iconName: "PencilRuler",
-    description: "Conception bioclimatique d'élevage, Farm Builder 2D et métrés réels.",
+    description: "Conception bioclimatique d'élevage, plan de ferme 2D et métrés réels.",
   },
   {
     id: "gestion_analyse",
@@ -141,7 +141,7 @@ export const AGRONOMIC_TOOLS_CATALOG: AgronomicToolItem[] = [
   },
   {
     id: "tool-farm-map-sig",
-    title: "Farm Map & SIG Parcellaire",
+    title: "Carte de l'Exploitation & SIG Parcellaire",
     category: "terrain_carto",
     categoryLabel: "Mesure GPS & Cartographie SIG",
     description: "Carte interactive SIG ArcGIS/John Deere : dessin polygone, lignes, points d'eau, forages, routes et clôtures.",
@@ -161,7 +161,7 @@ export const AGRONOMIC_TOOLS_CATALOG: AgronomicToolItem[] = [
   // ─── 2. CULTURES & DIAGNOSTIC (NAFA FIELD DESIGNER) ───
   {
     id: "tool-crop-designer",
-    title: "Crop Designer — Lignes de Plantation",
+    title: "Conception des Cultures — Lignes de Plantation",
     category: "agronomie",
     categoryLabel: "Cultures & Diagnostic",
     description: "Conception automatique des lignes de semis, interlignes, espacement, calcul de densité (plants/ha), semences et besoin journalier en eau.",
@@ -237,7 +237,7 @@ export const AGRONOMIC_TOOLS_CATALOG: AgronomicToolItem[] = [
   // ─── 4. BÂTIMENTS & INGÉNIERIE (NAFA FIELD DESIGNER) ───
   {
     id: "tool-farm-builder",
-    title: "Farm Builder — Concepteur de Ferme 2D",
+    title: "Concepteur de Ferme 2D",
     category: "ingenierie",
     categoryLabel: "Bâtiments & Modélisation",
     description: "Canvas vectoriel 2D avec grille métrique : disposition, rotation, redimensionnement et duplication des infrastructures et bâtiments.",
@@ -255,7 +255,7 @@ export const AGRONOMIC_TOOLS_CATALOG: AgronomicToolItem[] = [
   },
   {
     id: "tool-livestock-designer",
-    title: "Livestock Designer — Bâtiments d'Élevage",
+    title: "Conception d'Élevage — Bâtiments Bioclimatiques",
     category: "ingenierie",
     categoryLabel: "Bâtiments & Modélisation",
     description: "Modélisation de bâtiments d'élevage bioclimatiques sahéliens (poulaillers, étables bovines, bergeries, porcheries, pisciculture) et métrés.",

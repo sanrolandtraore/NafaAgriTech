@@ -222,7 +222,7 @@ export default function ScoutingPage() {
       try {
         const { data, error } = await db.from("scouting_sessions").insert(payload as any).select();
         if (error) throw error;
-        toast.success("Rapport de scouting enregistré et synchronisé !");
+        toast.success("Rapport d'observation terrain enregistré et synchronisé !");
         setShowForm(false);
         resetForm();
         fetchSessions();
@@ -470,7 +470,7 @@ export default function ScoutingPage() {
       ) : filtered.length === 0 ? (
         <Card><CardContent className="py-12 text-center text-muted-foreground">
           <Eye className="h-12 w-12 mx-auto mb-4 opacity-30" />
-          <p>Aucune session de scouting trouvée</p>
+          <p>Aucune session d'observation terrain trouvée</p>
           <p className="text-sm">Créez votre première inspection terrain</p>
         </CardContent></Card>
       ) : (

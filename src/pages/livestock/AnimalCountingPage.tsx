@@ -226,7 +226,7 @@ export default function AnimalCountingPage() {
           },
         });
         setManualAdjustment(0);
-        toast.success(`Vidéo traitée avec succès : ${totalUnique} individus uniques identifiés via tracking.`);
+        toast.success(`Vidéo traitée avec succès : ${totalUnique} individus uniques identifiés via suivi vidéo.`);
       } catch (err) {
         toast.error("Erreur lors de l'analyse vidéo séquentielle.");
       } finally {
@@ -621,7 +621,7 @@ export default function AnimalCountingPage() {
                   </CardTitle>
                   <CardDescription className="text-xs">
                     Détecté par IA : <strong className="text-foreground">{analysisResult.detectedCount}</strong> • Méthode :{" "}
-                    {analysisResult.method === "detection_tracking" ? "Tracking Vidéo anti-doublons" : "Reconnaissance d'amas HD"}
+                    {analysisResult.method === "detection_tracking" ? "Suivi Vidéo anti-doublons" : "Reconnaissance d'amas HD"}
                   </CardDescription>
                 </CardHeader>
 

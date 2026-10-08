@@ -327,7 +327,7 @@ export const LivestockDesignerTool: React.FC<LivestockDesignerToolProps> = ({
                 className="h-8 text-xs font-semibold gap-1.5 border-emerald-500/40 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-500/10 rounded-xl"
               >
                 <ShoppingBag className="h-3.5 w-3.5 text-emerald-600" />
-                <span>Sélectionner Prix Réels Marketplace (BF)</span>
+                <span>Sélectionner Prix Réels Marché (BF)</span>
               </Button>
             </div>
 
@@ -336,7 +336,7 @@ export const LivestockDesignerTool: React.FC<LivestockDesignerToolProps> = ({
                 <span className="col-span-5">Désignation du matériau</span>
                 <span className="col-span-1 text-center">Unité</span>
                 <span className="col-span-1 text-center">Qté</span>
-                <span className="col-span-3 text-right">P.U. Marketplace</span>
+                <span className="col-span-3 text-right">P.U. Marché</span>
                 <span className="col-span-2 text-right">Montant (F)</span>
               </div>
               <div className="divide-y divide-border/60 max-h-64 overflow-y-auto bg-card text-xs">
@@ -355,7 +355,7 @@ export const LivestockDesignerTool: React.FC<LivestockDesignerToolProps> = ({
                         size="sm"
                         onClick={() => handleOpenPickerForLine(item.id, item.designation)}
                         className="h-6 px-1.5 text-[10px] font-semibold gap-1 text-emerald-700 dark:text-emerald-400 hover:bg-emerald-500/10 shrink-0"
-                        title="Choisir le prix réel certifié sur le Marketplace"
+                        title="Choisir le prix réel certifié sur le Marché"
                       >
                         <Tag className="h-3 w-3" />
                         Prix Réel

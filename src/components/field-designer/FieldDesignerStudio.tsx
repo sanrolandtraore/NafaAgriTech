@@ -562,7 +562,7 @@ export const FieldDesignerStudio: React.FC = () => {
                   <Layers className="h-6 w-6 text-purple-600" />
                 </div>
                 <div>
-                  <h4 className="font-extrabold text-sm text-foreground">Carte & Farm Builder</h4>
+                  <h4 className="font-extrabold text-sm text-foreground">Carte & Plan de Ferme</h4>
                   <p className="text-xs text-muted-foreground mt-0.5">Plan 2D et agencement</p>
                 </div>
               </button>
