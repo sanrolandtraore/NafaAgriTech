@@ -61,11 +61,22 @@ describe('Audit Plateforme & Élimination des Données Fictives', () => {
     });
 
     it('fournit des profils partenaires réels avec des coordonnées officielles réelles', async () => {
-      const profile = await partnerStorage.getPartnerProfile('pe-fourn-1');
+      const saved = await partnerStorage.saveEntry({
+        id: 'partner-real-1',
+        name: 'Cabinet Agronomique Partenaire Réel',
+        category: 'fournisseur',
+        phone: '+226 25 30 15 45',
+        location: 'Bobo-Dioulasso',
+        email: 'contact@partenaire-reel.bf',
+        website: 'https://partenaire-reel.bf',
+        description: 'Fournisseur réel certifié',
+        contact_name: 'Direction Commerciale',
+      });
+      const profile = await partnerStorage.getPartnerProfile(saved.id);
       expect(profile).toBeDefined();
-      expect(profile.name).toContain('SAPHYTO');
-      expect(profile.phone).toMatch(/^\+226/);
-      expect(profile.phone).not.toContain('XX');
+      expect(profile?.name).toContain('Cabinet Agronomique Partenaire Réel');
+      expect(profile?.phone).toMatch(/^\+226/);
+      expect(profile?.phone).not.toContain('XX');
     });
   });
 

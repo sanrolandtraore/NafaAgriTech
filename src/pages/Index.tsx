@@ -158,17 +158,15 @@ const Index = () => {
     };
   }, []);
 
-  // Attribution d'une distance réaliste et photo authentique par partenaire
+  // Partenaires réels certifiés enregistrés
   const partnerDistanceMap = useMemo(() => {
-    const distances = ["1.8 km", "2.4 km", "3.2 km", "4.6 km", "5.1 km", "7.8 km", "9.2 km", "12.0 km"];
-    return partners.slice(0, 8).map((p, idx) => {
+    return partners.slice(0, 8).map((p) => {
       const city = p.location ? p.location.split(",")[0].split("(")[0].trim() : "Burkina Faso";
-      const dist = distances[idx % distances.length];
       
       let img = galleryFormation;
       if (p.category === "fournisseur") {
         if (p.name.toLowerCase().includes("irrigation") || p.name.toLowerCase().includes("agrodia")) img = galleryIrrigation;
-        else if (p.name.toLowerCase().includes("semences") || p.name.toLowerCase().includes("tropicasem")) img = galleryFreshHarvest;
+        else if (p.name.toLowerCase().includes("semences")) img = galleryFreshHarvest;
         else img = galleryPartnerWarehouse;
       } else if (p.category === "banque") {
         img = galleryAgriFinance;
@@ -178,7 +176,7 @@ const Index = () => {
 
       return {
         ...p,
-        distanceStr: `${city} • ${dist}`,
+        distanceStr: city,
         photo: img,
       };
     });
@@ -524,75 +522,77 @@ const Index = () => {
       {/* ══════════════════════════════════════════════════════
           5. CINQUIÈME ÉCRAN — PARTENAIRES PROCHES (Cartes Épurées)
       ══════════════════════════════════════════════════════ */}
-      <section className="py-16 sm:py-24 bg-muted/20 border-t border-border/60">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 space-y-8">
-          <div className="space-y-2">
-            <h2 className="text-2xl sm:text-4xl font-heading font-extrabold text-foreground tracking-tight">
-              Partenaires proches
-            </h2>
-            <p className="text-xs sm:text-sm text-muted-foreground font-medium">
-              Distributeurs agréés, provenderies et institutions certifiées à proximité.
-            </p>
-          </div>
-
-          {/* Cartes Partenaires : Photo, Nom, Distance, Bouton "Voir" (Aucune description longue) */}
-          {loading ? (
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-5">
-              {[1, 2, 3, 4].map((i) => (
-                <div key={i} className="h-64 rounded-[24px] bg-card border animate-pulse" />
-              ))}
+      {partnerDistanceMap.length > 0 && (
+        <section className="py-16 sm:py-24 bg-muted/20 border-t border-border/60">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 space-y-8">
+            <div className="space-y-2">
+              <h2 className="text-2xl sm:text-4xl font-heading font-extrabold text-foreground tracking-tight">
+                Partenaires certifiés
+              </h2>
+              <p className="text-xs sm:text-sm text-muted-foreground font-medium">
+                Distributeurs agréés, provenderies et institutions certifiées partenaires.
+              </p>
             </div>
-          ) : (
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6">
-              {partnerDistanceMap.map((partner) => (
-                <div
-                  key={partner.id}
-                  className="rounded-[24px] overflow-hidden bg-card border border-border/80 hover:border-[#F97316]/50 shadow-sm hover:shadow-2xl transition-all duration-500 hover:-translate-y-2 flex flex-col justify-between group"
-                >
-                  {/* Photo */}
-                  <div className="relative h-36 sm:h-44 overflow-hidden bg-muted">
-                    <img
-                      src={partner.photo}
-                      alt={partner.name}
-                      loading="lazy"
-                      className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 ease-out"
-                    />
-                    {/* Effet shimmer lumineux */}
-                    <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000 pointer-events-none" />
-                    {partner.is_verified && (
-                      <div className="absolute top-3 right-3 bg-white/90 text-emerald-700 px-2 py-0.5 rounded-full text-[10px] font-bold flex items-center gap-1 backdrop-blur-md shadow-xs animate-float-slow">
-                        <ShieldCheck className="h-3 w-3 text-emerald-600" />
-                        <span>Agréé</span>
-                      </div>
-                    )}
-                  </div>
 
-                  {/* Nom, Distance, Bouton Voir */}
-                  <div className="p-4 sm:p-5 flex flex-col justify-between flex-1 gap-3">
-                    <div className="space-y-1">
-                      <h4 className="font-heading font-bold text-sm sm:text-base text-foreground line-clamp-1 group-hover:text-[#F97316] transition-colors">
-                        {partner.name.split(" (")[0]}
-                      </h4>
-                      <p className="text-xs text-muted-foreground flex items-center gap-1 font-medium">
-                        <MapPin className="h-3.5 w-3.5 text-[#F97316] shrink-0" />
-                        <span className="truncate">{partner.distanceStr}</span>
-                      </p>
+            {/* Cartes Partenaires : Photo, Nom, Localisation, Bouton "Voir" (Aucune description longue) */}
+            {loading ? (
+              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-5">
+                {[1, 2, 3, 4].map((i) => (
+                  <div key={i} className="h-64 rounded-[24px] bg-card border animate-pulse" />
+                ))}
+              </div>
+            ) : (
+              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6">
+                {partnerDistanceMap.map((partner) => (
+                  <div
+                    key={partner.id}
+                    className="rounded-[24px] overflow-hidden bg-card border border-border/80 hover:border-[#F97316]/50 shadow-sm hover:shadow-2xl transition-all duration-500 hover:-translate-y-2 flex flex-col justify-between group"
+                  >
+                    {/* Photo */}
+                    <div className="relative h-36 sm:h-44 overflow-hidden bg-muted">
+                      <img
+                        src={partner.photo}
+                        alt={partner.name}
+                        loading="lazy"
+                        className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 ease-out"
+                      />
+                      {/* Effet shimmer lumineux */}
+                      <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000 pointer-events-none" />
+                      {partner.is_verified && (
+                        <div className="absolute top-3 right-3 bg-white/90 text-emerald-700 px-2 py-0.5 rounded-full text-[10px] font-bold flex items-center gap-1 backdrop-blur-md shadow-xs animate-float-slow">
+                          <ShieldCheck className="h-3 w-3 text-emerald-600" />
+                          <span>Agréé</span>
+                        </div>
+                      )}
                     </div>
 
-                    <Button
-                      size="sm"
-                      onClick={() => navigate(`/partenaire/${partner.id}`)}
-                      className="w-full rounded-[24px] bg-[#111827] dark:bg-white text-white dark:text-[#111827] hover:bg-[#F97316] dark:hover:bg-[#F97316] hover:text-white dark:hover:text-white text-xs font-bold transition-colors"
-                    >
-                      Voir
-                    </Button>
+                    {/* Nom, Distance, Bouton Voir */}
+                    <div className="p-4 sm:p-5 flex flex-col justify-between flex-1 gap-3">
+                      <div className="space-y-1">
+                        <h4 className="font-heading font-bold text-sm sm:text-base text-foreground line-clamp-1 group-hover:text-[#F97316] transition-colors">
+                          {partner.name.split(" (")[0]}
+                        </h4>
+                        <p className="text-xs text-muted-foreground flex items-center gap-1 font-medium">
+                          <MapPin className="h-3.5 w-3.5 text-[#F97316] shrink-0" />
+                          <span className="truncate">{partner.distanceStr}</span>
+                        </p>
+                      </div>
+
+                      <Button
+                        size="sm"
+                        onClick={() => navigate(`/partenaire/${partner.id}`)}
+                        className="w-full rounded-[24px] bg-[#111827] dark:bg-white text-white dark:text-[#111827] hover:bg-[#F97316] dark:hover:bg-[#F97316] hover:text-white dark:hover:text-white text-xs font-bold transition-colors"
+                      >
+                        Voir
+                      </Button>
+                    </div>
                   </div>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-      </section>
+                ))}
+              </div>
+            )}
+          </div>
+        </section>
+      )}
 
       {/* ══════════════════════════════════════════════════════
           6. BANNIÈRE D'INSCRIPTION & REJOINDRE L'ÉCOSYSTÈME

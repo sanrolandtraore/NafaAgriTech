@@ -18,6 +18,7 @@ import { testimonialsStorage } from "@/lib/testimonialsStorage";
 import { PartnerLogoTicker } from "@/components/landing/PartnerLogoTicker";
 import { UserTestimonialsSection } from "@/components/landing/UserTestimonialsSection";
 import { RealPlatformMetricsCounter } from "@/components/landing/RealPlatformMetricsCounter";
+import { partnerStorage } from "@/lib/partnerStorage";
 
 describe("Compteurs Réels & Zéro Donnée Fictive", () => {
   beforeEach(() => {
@@ -28,8 +29,8 @@ describe("Compteurs Réels & Zéro Donnée Fictive", () => {
   it("calcule avec exactitude les entreprises partenaires sans gonfler artificiellement les chiffres", async () => {
     const metrics = await calculatePlatformMetrics();
     expect(metrics.isRealData).toBe(true);
-    // Les entreprises partenaires réelles de base sont répertoriées dans partnerStorage (au moins 8 partenaires)
-    expect(metrics.partnersCount).toBeGreaterThanOrEqual(8);
+    // Les entreprises partenaires reflètent fidèlement les inscriptions réelles (zéro partenaire fictif)
+    expect(metrics.partnersCount).toBeGreaterThanOrEqual(0);
     // Les chiffres d'agriculteurs et éleveurs reflètent les données locales/distantes réelles
     expect(metrics.farmersCount).toBeGreaterThanOrEqual(0);
     expect(metrics.breedersCount).toBeGreaterThanOrEqual(0);
@@ -72,7 +73,7 @@ describe("Compteurs Réels & Zéro Donnée Fictive", () => {
     const cached = getCachedPlatformMetrics();
     expect(cached).not.toBeNull();
     expect(cached?.isRealData).toBe(true);
-    expect(cached?.partnersCount).toBeGreaterThanOrEqual(8);
+    expect(cached?.partnersCount).toBeGreaterThanOrEqual(0);
   });
 });
 
@@ -95,6 +96,17 @@ describe("Composant RealPlatformMetricsCounter", () => {
 
 describe("Bande Défilante des Partenaires (PartnerLogoTicker)", () => {
   it("affiche la bande défilante avec les entreprises partenaires réelles", async () => {
+    await partnerStorage.saveEntry({
+      name: "Entreprise Partenaire Agréée",
+      category: "fournisseur",
+      location: "Ouagadougou",
+      phone: "+226 25 30 00 00",
+      email: "contact@partenaire.bf",
+      description: "Entreprise certifiée",
+      contact_name: "Responsable Partenaire",
+      website: "https://partenaire.bf",
+    });
+
     render(
       <BrowserRouter>
         <PartnerLogoTicker />
@@ -107,9 +119,9 @@ describe("Bande Défilante des Partenaires (PartnerLogoTicker)", () => {
       ).toBeInTheDocument();
     });
 
-    // Vérifier la présence d'au moins un grand partenaire officiel
-    const saphytoElements = screen.getAllByText(/SAPHYTO/i);
-    expect(saphytoElements.length).toBeGreaterThan(0);
+    // Vérifier la présence du partenaire certifié enregistré
+    const partnerElements = screen.getAllByText(/Entreprise Partenaire Agréée/i);
+    expect(partnerElements.length).toBeGreaterThan(0);
   });
 });
 

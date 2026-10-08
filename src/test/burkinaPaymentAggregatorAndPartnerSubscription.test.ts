@@ -118,10 +118,10 @@ describe("Exigence d'Abonnement Réel Partenaire pour Visibilité Marketplace", 
     localStorage.clear();
   });
 
-  it("maintient l'accès actif garanti pour les partenaires institutionnels certifiés", () => {
-    expect(isPartnerSubscriptionActive("pe-fourn-1")).toBe(true);
-    expect(isPartnerSubscriptionActive("pe-bank-1")).toBe(true);
-    expect(isPartnerSubscriptionActive("prov-1")).toBe(true);
+  it("refuse l'accès actif aux partenaires sans abonnement payant réel", () => {
+    expect(isPartnerSubscriptionActive("pe-fourn-1")).toBe(false);
+    expect(isPartnerSubscriptionActive("pe-bank-1")).toBe(false);
+    expect(isPartnerSubscriptionActive("prov-1")).toBe(false);
   });
 
   it("refuse la visibilité publique d'un nouveau partenaire tant qu'il n'a pas souscrit à un abonnement payant", () => {

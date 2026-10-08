@@ -146,184 +146,9 @@ export interface ProviderClient {
   location?: string;
 }
 
-// ─── Données pré-chargées réalistes : Écosystème Agro & Finance Burkina Faso ───
-const INITIAL_PARTNER_ENTRIES: PartnerEntry[] = [
-  // Fournisseurs
-  {
-    id: "pe-fourn-1",
-    category: "fournisseur",
-    name: "SAPHYTO SA (Société Africaine de Phytosanitaire)",
-    contact_name: "Direction Commerciale",
-    phone: "+226 20 97 15 45",
-    email: "contact@saphyto-bf.com",
-    location: "Bobo-Dioulasso & Agence Ouagadougou",
-    website: "https://www.saphyto-bf.com",
-    description: "Leader national dans la formulation et distribution de produits phytosanitaires homologués CSP, engrais foliaires et pulvérisateurs professionnels.",
-    badge: "Agréé CSP",
-    is_verified: true,
-    created_at: "2026-01-10T10:00:00Z",
-  },
-  {
-    id: "pe-fourn-2",
-    category: "fournisseur",
-    name: "Tropicasem Burkina",
-    contact_name: "Service Semences Certifiées",
-    phone: "+226 25 37 42 18",
-    email: "semences@tropicasem.bf",
-    location: "Kamboinsin, Ouagadougou",
-    website: "https://tropicasem.com",
-    description: "Semences potagères et vivrières certifiées à haut rendement adaptées au climat sahélien (oignon Violet de Galmi, maïs FBC6, niébé KVX).",
-    badge: "Certifié INERA",
-    is_verified: true,
-    created_at: "2026-01-12T11:30:00Z",
-  },
-  {
-    id: "pe-fourn-3",
-    category: "fournisseur",
-    name: "Yara West Africa - Distribution Burkina",
-    contact_name: "M. Traoré Ousmane",
-    phone: "+226 70 25 80 00",
-    email: "burkina.info@yara.com",
-    location: "Zone Industrielle de Gounghin, Ouagadougou",
-    website: "https://www.yara.com",
-    description: "Engrais minéraux de haute précision (YaraMila Cereal, NPK 14-23-14, Urée perlée 46% N, YaraLiva Nitrabor).",
-    badge: "Qualité Certifiée",
-    is_verified: true,
-    created_at: "2026-01-15T09:00:00Z",
-  },
-  {
-    id: "pe-fourn-4",
-    category: "fournisseur",
-    name: "AGRODIA (Agro-Distribution & Irrigation)",
-    contact_name: "Ibrahim Sanfo",
-    phone: "+226 78 50 12 12",
-    email: "commercial@agrodia.bf",
-    location: "Koudougou / Komsilga",
-    website: "https://agrodia.bf",
-    description: "Kits complets d'irrigation goutte-à-goutte basse pression, pompes solaires immergées et tuyaux polyéthylène.",
-    badge: "Énergie Solaire",
-    is_verified: true,
-    created_at: "2026-02-01T14:00:00Z",
-  },
-
-  // Assurances
-  {
-    id: "pe-assur-1",
-    category: "assurance",
-    name: "SONAR Assurances (Assurance Agricole Indicielle)",
-    contact_name: "Département Micro-assurance & Risques Agricoles",
-    phone: "+226 25 30 65 37",
-    email: "agricole@sonar.bf",
-    location: "Siège Avenue Kwamé N'Krumah, Ouagadougou",
-    website: "https://www.sonar.bf",
-    description: "Assurance indicielle sécheresse satellite pour céréales et coton. Indemnisation automatique en cas de déficit pluviométrique constaté par satellite.",
-    badge: "Partenaire Bailleurs",
-    is_verified: true,
-    created_at: "2026-01-20T08:00:00Z",
-  },
-  {
-    id: "pe-assur-2",
-    category: "assurance",
-    name: "UAB Assurances IARD",
-    contact_name: "Pôle Risques Ruraux & Élevage",
-    phone: "+226 25 49 05 00",
-    email: "rural@uab-assurances.bf",
-    location: "Bobo-Dioulasso, Koudougou, Fada",
-    website: "https://www.uab.bf",
-    description: "Couverture mortalité bétail (embouche bovine, ovine), assurance engins agricoles (tracteurs, moissonneuses) et incendie de stocks d'aliments.",
-    badge: "Bétail & Matériel",
-    is_verified: true,
-    created_at: "2026-01-22T08:00:00Z",
-  },
-
-  // Banques
-  {
-    id: "pe-bank-1",
-    category: "banque",
-    name: "Coris Bank International - Pôle Agri-Business",
-    contact_name: "Direction de l'Exploitation Agricole",
-    phone: "+226 25 30 73 00",
-    email: "agribusiness@coris-bank.com",
-    location: "Réseau national (Ouaga, Bobo, Dédougou, Banfora)",
-    website: "https://www.coris.bank",
-    description: "Financement des campagnes agricoles, crédit équipement tracteur/remorque, avance sur récolte (warrantage) et facilités de caisse pour groupements.",
-    badge: "Leader Financement Agricole",
-    is_verified: true,
-    created_at: "2026-01-05T08:00:00Z",
-  },
-  {
-    id: "pe-bank-2",
-    category: "banque",
-    name: "RCPB (Faîtière des Caisses Populaires du Burkina)",
-    contact_name: "Service Crédit Rural Solidaire",
-    phone: "+226 25 33 22 28",
-    email: "creditrural@rcpb.bf",
-    location: "Présence dans plus de 200 communes rurales",
-    website: "https://www.rcpb.bf",
-    description: "Microcrédit adapté aux petits exploitants maraîchers et éleveurs. Prêts de groupe sans garantie hypothécaire, taux préférentiels pour femmes rurales.",
-    badge: "Microfinance Paysanne",
-    is_verified: true,
-    created_at: "2026-01-07T08:00:00Z",
-  },
-  {
-    id: "pe-bank-3",
-    category: "banque",
-    name: "Ecobank Burkina - Chaînes de Valeurs Agricoles",
-    contact_name: "Desk Agro-Industrie",
-    phone: "+226 25 32 83 28",
-    email: "ecobf-agri@ecobank.com",
-    location: "Ouagadougou & Bobo-Dioulasso",
-    website: "https://www.ecobank.com",
-    description: "Financement de l'exportation (anacarde, sésame, mangue séchée), crédits de campagne structurés et solutions de paiement digitalisées pour producteurs.",
-    badge: "Export & Transformation",
-    is_verified: true,
-    created_at: "2026-01-18T08:00:00Z",
-  },
-
-  // Programmes & Projets
-  {
-    id: "pe-prog-1",
-    category: "programme",
-    name: "SONAGESS (Société Nationale de Gestion du Stock de Sécurité)",
-    contact_name: "Direction des Achats & Collectes",
-    phone: "+226 25 37 40 40",
-    email: "achats@sonagess.bf",
-    location: "Ouagadougou - Silos régionaux",
-    website: "https://www.sonagess.bf",
-    description: "Achats institutionnels de céréales locales (maïs, mil, sorgho) à prix rémunérateur garanti pour la constitution de la réserve nationale de sécurité.",
-    badge: "Achat Institutionnel Garanti",
-    is_verified: true,
-    created_at: "2026-01-02T08:00:00Z",
-  },
-  {
-    id: "pe-prog-2",
-    category: "programme",
-    name: "Projet PADAAM (Projet d'Appui au Développement Agricole)",
-    contact_name: "Unité de Coordination",
-    phone: "+226 25 39 12 00",
-    email: "contact@padaam.gov.bf",
-    location: "Régions de la Boucle du Mouhoun, Hauts-Bassins, Cascades",
-    website: "https://www.agriculture.gov.bf",
-    description: "Subventions à coûts partagés pour acquisition de motopompes solaires, aménagements de bas-fonds rizicoles et distribution d'intrants certifiés.",
-    badge: "Subvention d'État & FIDA",
-    is_verified: true,
-    created_at: "2026-01-08T08:00:00Z",
-  },
-  {
-    id: "pe-prog-3",
-    category: "programme",
-    name: "Chambre Nationale d'Agriculture (CNA) du Burkina Faso",
-    contact_name: "Secrétariat Permanent",
-    phone: "+226 25 31 16 02",
-    email: "contact@cna-burkina.bf",
-    location: "13 Chambres Régionales d'Agriculture (CRA)",
-    website: "https://cna-burkina.bf",
-    description: "Accompagnement institutionnel, délivrance des cartes professionnelles d'exploitant agricole, appui aux coopératives et plaidoyer pour le monde rural.",
-    badge: "Organe Consulaire",
-    is_verified: true,
-    created_at: "2026-01-14T08:00:00Z",
-  },
-];
+// ─── Partenaires réels : AUCUN PARTENAIRE FICTIF OU MOCKÉ ───
+// L'annuaire et la plateforme affichent exclusivement les entreprises partenaires réelles inscrites et certifiées.
+const INITIAL_PARTNER_ENTRIES: PartnerEntry[] = [];
 
 // ─── Offres partenaires réelles : AUCUNE OFFRE FICTIVE OU MOCKÉE ───
 // La Marketplace affiche exclusivement les offres réelles publiées par les partenaires enregistrés.
@@ -366,22 +191,34 @@ export const partnerStorage = {
   // ── ENTRIES (Fournisseurs, Assurances, Banques, Programmes) ──
   getEntriesSync(category?: PartnerCategory): PartnerEntry[] {
     const list = readLocal<PartnerEntry[]>(KEYS.ENTRIES, INITIAL_PARTNER_ENTRIES);
+    const sanitizedList = list.filter((e) => {
+      if (!e || !e.id) return false;
+      if (e.id.startsWith("pe-fourn-") || e.id.startsWith("pe-assur-") || e.id.startsWith("pe-bank-") || e.id.startsWith("pe-prog-")) return false;
+      if (e.id.startsWith("mock-") || e.id.startsWith("demo-")) return false;
+      return true;
+    });
     if (category) {
-      return list.filter((e) => e.category === category);
+      return sanitizedList.filter((e) => e.category === category);
     }
-    return list;
+    return sanitizedList;
   },
 
   async getEntries(category?: PartnerCategory): Promise<PartnerEntry[]> {
     const list = readLocal<PartnerEntry[]>(KEYS.ENTRIES, INITIAL_PARTNER_ENTRIES);
-    // Sauvegarder l'état initial s'il n'existait pas encore
-    if (!localStorage.getItem(KEYS.ENTRIES)) {
-      writeLocal(KEYS.ENTRIES, INITIAL_PARTNER_ENTRIES);
+    // Assainissement strict : suppression automatique de tout partenaire fictif hérité du cache
+    const sanitizedList = list.filter((e) => {
+      if (!e || !e.id) return false;
+      if (e.id.startsWith("pe-fourn-") || e.id.startsWith("pe-assur-") || e.id.startsWith("pe-bank-") || e.id.startsWith("pe-prog-")) return false;
+      if (e.id.startsWith("mock-") || e.id.startsWith("demo-")) return false;
+      return true;
+    });
+    if (sanitizedList.length !== list.length || !localStorage.getItem(KEYS.ENTRIES)) {
+      writeLocal(KEYS.ENTRIES, sanitizedList);
     }
     if (category) {
-      return list.filter((e) => e.category === category);
+      return sanitizedList.filter((e) => e.category === category);
     }
-    return list;
+    return sanitizedList;
   },
 
   async getPartners(category?: PartnerCategory): Promise<PartnerEntry[]> {
@@ -710,7 +547,7 @@ export const partnerStorage = {
   },
 
   // ── PARTNER STOREFRONT & UNIQUE SUBPAGE ──
-  async getPartnerProfile(partnerIdOrSlug: string): Promise<PartnerProfile> {
+  async getPartnerProfile(partnerIdOrSlug: string): Promise<PartnerProfile | null> {
     const offers = await this.getOffers();
     const entries = await this.getEntries();
     const sub = getStoredProviderSubscription();
@@ -814,24 +651,8 @@ export const partnerStorage = {
       };
     }
 
-    // Fallback default profile
-    const fallbackName = decodeURIComponent(partnerIdOrSlug).replace(/-/g, " ");
-    return {
-      id: partnerIdOrSlug,
-      name: fallbackName,
-      category: "Partenaire Agro-Pastoral",
-      description: "Partenaire officiel NAFA - AGRITECH. Retrouvez ci-dessous nos produits, matériels et services certifiés.",
-      location: "Burkina Faso",
-      phone: "+226 25 00 00 00",
-      whatsapp: "+226 25 00 00 00",
-      email: "nafaagritech@gmail.com",
-      website: "https://nafaagritech.app",
-      logo: "https://images.unsplash.com/photo-1560493676-04071c5f467b?w=200&auto=format&fit=crop&q=80",
-      cover: "https://images.unsplash.com/photo-1495107334309-fcf20504a5ab?w=1200&auto=format&fit=crop&q=80",
-      badge: "Partenaire Agréé NAFA - AGRITECH",
-      is_verified: true,
-      offersCount: 0,
-    };
+    // Aucun profil fictif de substitution : si le partenaire n'existe pas
+    return null;
   },
 
   async getOffersByPartner(partnerIdOrSlug: string): Promise<PartnerOffer[]> {

@@ -2,6 +2,7 @@ import { describe, it, expect, beforeEach } from "vitest";
 import { render, screen, fireEvent, within } from "@testing-library/react";
 import { BrowserRouter } from "react-router-dom";
 import Index from "@/pages/Index";
+import { partnerStorage } from "@/lib/partnerStorage";
 
 const renderIndex = () => {
   return render(
@@ -77,17 +78,28 @@ describe("Landing Page Premium - Architecture UX Fulcrum", () => {
     expect(screen.getByText("Finance & Assurance")).toBeInTheDocument();
   });
 
-  it("affiche le cinquième écran Partenaires proches avec distance et bouton Voir", async () => {
+  it("affiche le cinquième écran Partenaires avec distance et bouton Voir", async () => {
+    await partnerStorage.saveEntry({
+      name: "Distributeur Agricole Partenaire",
+      category: "fournisseur",
+      location: "Ouagadougou",
+      phone: "+226 25 30 00 00",
+      email: "contact@distributeur.bf",
+      description: "Distribution certifiée d'intrants",
+      website: "https://distributeur.bf",
+      contact_name: "Responsable Commercial",
+    });
+
     renderIndex();
 
-    expect(screen.getByText("Partenaires proches")).toBeInTheDocument();
+    expect(screen.getByText("Partenaires certifiés")).toBeInTheDocument();
 
     // Attente du chargement asynchrone des partenaires
     const voirButtons = await screen.findAllByRole("button", { name: "Voir" });
     expect(voirButtons.length).toBeGreaterThanOrEqual(1);
 
-    // Vérification de la présence d'au moins un nom de partenaire certifié
-    expect(screen.getByText(/SAPHYTO/i)).toBeInTheDocument();
+    // Vérification de la présence du partenaire certifié enregistré
+    expect(screen.getByText(/Distributeur Agricole Partenaire/i)).toBeInTheDocument();
   }, 20000);
 
   it("intègre la navigation inférieure fixe avec le bouton central action principale", () => {

@@ -128,14 +128,7 @@ export const SUBSCRIPTION_PLANS: SubscriptionPlan[] = [
 
 const LOCAL_STORAGE_KEY = "nafa_provider_subscription";
 
-export const CERTIFIED_DEFAULT_PARTNERS = [
-  "pe-fourn-1", "pe-fourn-2", "pe-fourn-3", "pe-fourn-4",
-  "pe-assur-1", "pe-assur-2", "pe-assur-3",
-  "pe-bank-1", "pe-bank-2", "pe-bank-3",
-  "pe-prog-1", "pe-prog-2", "pe-prog-3",
-  "prov-1", "prov-2", "prov-3", "prov-4", "prov-5",
-  "partner-sncitec", "partner-1"
-];
+export const CERTIFIED_DEFAULT_PARTNERS: string[] = [];
 
 export function isSubscriptionActive(sub?: ProviderSubscription | null): boolean {
   if (!sub || !sub.isActive) return false;
@@ -158,8 +151,7 @@ export function getSubscriptionDaysRemaining(sub?: ProviderSubscription | null):
  */
 export function isPartnerSubscriptionActive(partnerId?: string | null): boolean {
   if (!partnerId) return false;
-  // Les partenaires institutionnels et officiels certifiés pré-intégrés ont un abonnement permanent garanti
-  if (CERTIFIED_DEFAULT_PARTNERS.some((id) => partnerId.startsWith(id) || partnerId.includes(id))) {
+  if (CERTIFIED_DEFAULT_PARTNERS.length > 0 && CERTIFIED_DEFAULT_PARTNERS.some((id) => partnerId.startsWith(id) || partnerId.includes(id))) {
     return true;
   }
 

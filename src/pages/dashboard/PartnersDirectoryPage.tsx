@@ -119,8 +119,15 @@ export default function PartnersDirectoryPage() {
         </div>
       ) : filteredItems.length === 0 ? (
         <Card className="border-dashed rounded-2xl">
-          <CardContent className="py-12 text-center text-muted-foreground text-base">
-            Aucun partenaire trouvé pour ces critères de recherche.
+          <CardContent className="py-12 text-center text-muted-foreground space-y-2">
+            <p className="text-base font-semibold text-foreground">
+              {items.length === 0 ? "Aucun partenaire enregistré pour le moment" : "Aucun partenaire trouvé pour ces critères"}
+            </p>
+            <p className="text-sm max-w-md mx-auto">
+              {items.length === 0
+                ? "L'annuaire national répertorie uniquement les entreprises et institutions réelles inscrites et agréées."
+                : "Essayez de modifier votre recherche ou de sélectionner une autre catégorie."}
+            </p>
           </CardContent>
         </Card>
       ) : (
