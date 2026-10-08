@@ -322,7 +322,7 @@ export const FieldQuotesTool: React.FC<FieldQuotesToolProps> = ({
 
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
             <div>
-              <Label className="text-xs font-bold">Titre du Devis / Métré</Label>
+              <Label className="text-xs font-bold">Titre du Devis • Métré</Label>
               <Input
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
@@ -330,7 +330,7 @@ export const FieldQuotesTool: React.FC<FieldQuotesToolProps> = ({
               />
             </div>
             <div>
-              <Label className="text-xs font-bold">Nom du Client / Exploitant</Label>
+              <Label className="text-xs font-bold">Nom du Client • Exploitant</Label>
               <Input
                 value={clientName}
                 onChange={(e) => setClientName(e.target.value)}
@@ -348,14 +348,15 @@ export const FieldQuotesTool: React.FC<FieldQuotesToolProps> = ({
           </div>
 
           {/* ── TABLEAU ÉDITABLE DES ARTICLES ── */}
-          <div className="rounded-2xl border overflow-hidden">
-            <div className="bg-muted/70 p-2.5 text-xs font-bold grid grid-cols-12 gap-2 text-foreground">
-              <span className="col-span-5">Désignation &amp; Fourniture</span>
-              <span className="col-span-1 text-center">Unité</span>
-              <span className="col-span-1 text-center">Qté</span>
-              <span className="col-span-3 text-right">P.U. &amp; Marketplace</span>
-              <span className="col-span-2 text-right">Total (FCFA)</span>
-            </div>
+          <div className="rounded-2xl border overflow-x-auto">
+            <div className="min-w-[600px]">
+              <div className="bg-muted/70 p-2.5 text-xs font-bold grid grid-cols-12 gap-2 text-foreground">
+                <span className="col-span-5">Désignation &amp; Fourniture</span>
+                <span className="col-span-1 text-center">Unité</span>
+                <span className="col-span-1 text-center">Qté</span>
+                <span className="col-span-3 text-right">P.U. &amp; Marketplace</span>
+                <span className="col-span-2 text-right">Total (FCFA)</span>
+              </div>
 
             <div className="divide-y divide-border/60 max-h-80 overflow-y-auto bg-card text-xs">
               {items.length === 0 ? (
@@ -469,6 +470,7 @@ export const FieldQuotesTool: React.FC<FieldQuotesToolProps> = ({
               </div>
             </div>
           </div>
+        </div>
 
           <div className="flex flex-wrap gap-3 pt-2">
             <Button

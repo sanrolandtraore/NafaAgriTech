@@ -71,6 +71,7 @@ import {
   WifiOff,
   Microscope,
   Box,
+  Settings2,
 } from "lucide-react";
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
@@ -348,7 +349,8 @@ export const FieldDesignerStudio: React.FC = () => {
                 : "bg-white/10 text-white/90 border-white/20 hover:bg-white/20"
             }`}
           >
-            <span>{modeExpert ? "Mode Expert ⚙" : "Mode Simple"}</span>
+            {modeExpert && <Settings2 className="h-3.5 w-3.5 shrink-0" />}
+            <span>{modeExpert ? "Mode Expert" : "Mode Simple"}</span>
           </button>
 
           {/* Bouton Historique PDF */}
@@ -398,49 +400,49 @@ export const FieldDesignerStudio: React.FC = () => {
       {/* ── NAVIGATION PAR ONGLETS MÉTIER ── */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
         <TabsList className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-11 h-auto p-1.5 gap-1 rounded-2xl bg-muted/70">
-          <TabsTrigger value="dashboard" className="h-10 text-xs font-bold rounded-xl flex items-center justify-center gap-1">
-            <Compass className="h-3.5 w-3.5" />
-            <span>Mon Terrain</span>
+          <TabsTrigger value="dashboard" className="h-10 text-xs font-bold rounded-xl flex items-center justify-center gap-1 min-w-0">
+            <Compass className="h-3.5 w-3.5 shrink-0" />
+            <span className="truncate">Mon Terrain</span>
           </TabsTrigger>
-          <TabsTrigger value="gps" className="h-10 text-xs font-bold rounded-xl flex items-center justify-center gap-1">
-            <Navigation className="h-3.5 w-3.5" />
-            <span>Mesure GPS</span>
+          <TabsTrigger value="gps" className="h-10 text-xs font-bold rounded-xl flex items-center justify-center gap-1 min-w-0">
+            <Navigation className="h-3.5 w-3.5 shrink-0" />
+            <span className="truncate">Mesure GPS</span>
           </TabsTrigger>
-          <TabsTrigger value="crop" className="h-10 text-xs font-bold rounded-xl flex items-center justify-center gap-1">
-            <Sprout className="h-3.5 w-3.5" />
-            <span>Culture</span>
+          <TabsTrigger value="crop" className="h-10 text-xs font-bold rounded-xl flex items-center justify-center gap-1 min-w-0">
+            <Sprout className="h-3.5 w-3.5 shrink-0" />
+            <span className="truncate">Culture</span>
           </TabsTrigger>
-          <TabsTrigger value="irrigation" className="h-10 text-xs font-bold rounded-xl flex items-center justify-center gap-1" aria-label="1. Modèle IRRIS — Conception">
-            <Droplets className="h-3.5 w-3.5" />
-            <span>Irrigation</span>
+          <TabsTrigger value="irrigation" className="h-10 text-xs font-bold rounded-xl flex items-center justify-center gap-1 min-w-0" aria-label="1. Modèle IRRIS — Conception">
+            <Droplets className="h-3.5 w-3.5 shrink-0" />
+            <span className="truncate">Irrigation</span>
           </TabsTrigger>
-          <TabsTrigger value="batiment" className="h-10 text-xs font-bold rounded-xl flex items-center justify-center gap-1">
-            <Home className="h-3.5 w-3.5" />
-            <span>Bâtiment</span>
+          <TabsTrigger value="batiment" className="h-10 text-xs font-bold rounded-xl flex items-center justify-center gap-1 min-w-0">
+            <Home className="h-3.5 w-3.5 shrink-0" />
+            <span className="truncate">Bâtiment</span>
           </TabsTrigger>
-          <TabsTrigger value="builder" className="h-10 text-xs font-bold rounded-xl flex items-center justify-center gap-1">
-            <Layers className="h-3.5 w-3.5" />
-            <span>Carte 2D</span>
+          <TabsTrigger value="builder" className="h-10 text-xs font-bold rounded-xl flex items-center justify-center gap-1 min-w-0">
+            <Layers className="h-3.5 w-3.5 shrink-0" />
+            <span className="truncate">Carte 2D</span>
           </TabsTrigger>
-          <TabsTrigger value="modeler3d" className="h-10 text-xs font-bold rounded-xl flex items-center justify-center gap-1" aria-label="Modélisation 3D">
-            <Box className="h-3.5 w-3.5" />
-            <span>Modèle 3D</span>
+          <TabsTrigger value="modeler3d" className="h-10 text-xs font-bold rounded-xl flex items-center justify-center gap-1 min-w-0" aria-label="Modélisation 3D">
+            <Box className="h-3.5 w-3.5 shrink-0" />
+            <span className="truncate">Modèle 3D</span>
           </TabsTrigger>
-          <TabsTrigger value="interventions" className="h-10 text-xs font-bold rounded-xl flex items-center justify-center gap-1">
-            <FileText className="h-3.5 w-3.5" />
-            <span>Visites</span>
+          <TabsTrigger value="interventions" className="h-10 text-xs font-bold rounded-xl flex items-center justify-center gap-1 min-w-0">
+            <FileText className="h-3.5 w-3.5 shrink-0" />
+            <span className="truncate">Visites</span>
           </TabsTrigger>
-          <TabsTrigger value="devis" className="h-10 text-xs font-bold rounded-xl flex items-center justify-center gap-1" aria-label="2. Devis Express en FCFA">
-            <Wallet className="h-3.5 w-3.5" />
-            <span>Devis FCFA</span>
+          <TabsTrigger value="devis" className="h-10 text-xs font-bold rounded-xl flex items-center justify-center gap-1 min-w-0" aria-label="2. Devis Express en FCFA">
+            <Wallet className="h-3.5 w-3.5 shrink-0" />
+            <span className="truncate">Devis FCFA</span>
           </TabsTrigger>
-          <TabsTrigger value="copilot" className="h-10 text-xs font-bold rounded-xl flex items-center justify-center gap-1">
-            <Sparkles className="h-3.5 w-3.5" />
-            <span>AI Copilot</span>
+          <TabsTrigger value="copilot" className="h-10 text-xs font-bold rounded-xl flex items-center justify-center gap-1 min-w-0">
+            <Sparkles className="h-3.5 w-3.5 shrink-0" />
+            <span className="truncate">AI Copilot</span>
           </TabsTrigger>
-          <TabsTrigger value="diagnostic" className="h-10 text-xs font-bold rounded-xl flex items-center justify-center gap-1" aria-label="4. Diagnostic Végétal">
-            <Microscope className="h-3.5 w-3.5" />
-            <span>Diagnostic</span>
+          <TabsTrigger value="diagnostic" className="h-10 text-xs font-bold rounded-xl flex items-center justify-center gap-1 min-w-0" aria-label="4. Diagnostic Végétal">
+            <Microscope className="h-3.5 w-3.5 shrink-0" />
+            <span className="truncate">Diagnostic</span>
           </TabsTrigger>
         </TabsList>
 

@@ -47,7 +47,6 @@ import {
 } from "@/components/ui/dialog";
 import InspectionInteractiveSketch from "./InspectionInteractiveSketch";
 import InspectionSignaturePad from "./InspectionSignaturePad";
-import InspectionVoiceRecorder from "./InspectionVoiceRecorder";
 
 interface InspectionDynamicCollectorProps {
   inspection: Inspection;
@@ -563,7 +562,7 @@ export default function InspectionDynamicCollector({
           </DialogHeader>
           <div className="space-y-3.5 py-2">
             <div className="space-y-1.5">
-              <Label className="text-xs font-semibold">Intitulé du paramètre / question *</Label>
+              <Label className="text-xs font-semibold">Intitulé du paramètre • question *</Label>
               <Input
                 placeholder="Ex: Type de paillage, Taux de reprise, État clôture…"
                 value={newFieldLabel}
@@ -581,9 +580,9 @@ export default function InspectionDynamicCollector({
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="text">Texte libre</SelectItem>
-                    <SelectItem value="number">Nombre / Mesure</SelectItem>
+                    <SelectItem value="number">Nombre • Mesure</SelectItem>
                     <SelectItem value="select">Liste déroulante</SelectItem>
-                    <SelectItem value="boolean">Oui / Non (Bascule)</SelectItem>
+                    <SelectItem value="boolean">Oui ou Non (Bascule)</SelectItem>
                     <SelectItem value="textarea">Observations longues</SelectItem>
                   </SelectContent>
                 </Select>
@@ -592,7 +591,7 @@ export default function InspectionDynamicCollector({
               <div className="space-y-1.5">
                 <Label className="text-xs font-semibold">Unité (optionnel)</Label>
                 <Input
-                  placeholder="Ex: kg, ha, m³/h, %"
+                  placeholder="Ex: kg, ha, m³.h, %"
                   value={newFieldUnit}
                   onChange={(e) => setNewFieldUnit(e.target.value)}
                   className="text-xs font-mono"
@@ -693,7 +692,7 @@ export default function InspectionDynamicCollector({
 
                   {matchingPhoto ? (
                     <div className="mt-3 relative rounded-lg overflow-hidden border border-border group">
-                      <img src={matchingPhoto.photo_url} alt={rule.label} className="w-full h-24 object-cover" />
+                      <img src={matchingPhoto.photo_url} alt={rule.label} className="w-full max-w-full h-24 object-cover" />
                       <button
                         type="button"
                         onClick={() => removePhoto(matchingPhoto.id)}
@@ -747,7 +746,7 @@ export default function InspectionDynamicCollector({
           <CardTitle className="text-sm font-bold flex items-center justify-between">
             <span className="flex items-center gap-2 text-foreground">
               <ShieldCheck className="h-4 w-4 text-primary" />
-              4. Mesures Techniques & Plages de Tolérance (Normes CIRAD/FAO)
+              4. Mesures Techniques & Plages de Tolérance (Normes CIRAD • FAO)
             </span>
             <Button
               type="button"
@@ -814,20 +813,33 @@ export default function InspectionDynamicCollector({
         </CardContent>
       </Card>
 
-      {/* ── 5. Notes Vocales & Croquis de Terrain ── */}
+      {/* ── 5. Notes de Terrain & Croquis ── */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {/* Notes vocales */}
-        <InspectionVoiceRecorder
-          initialTranscription={voiceNotes}
-          onSaveTranscription={(t) => {
-            setVoiceNotes(t);
-            persistChanges({ voice_notes_transcription: t });
-          }}
-          onVoiceRecorded={(has) => {
-            setHasVoice(has);
-            persistChanges({ has_voice_recording: has });
-          }}
-        />
+        {/* Notes et observations textuelles de terrain */}
+        <Card className="border-border">
+          <CardHeader className="py-3 px-4 border-b">
+            <CardTitle className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
+              <FileCheck className="h-4 w-4 text-primary" />
+              <span>Notes & Remarques de Terrain</span>
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="p-4 space-y-2">
+            <Textarea
+              placeholder="Consignez vos remarques qualitatives, observations météo, état du feuillage ou consignes spécifiques..."
+              value={voiceNotes}
+              onChange={(e) => {
+                const val = e.target.value;
+                setVoiceNotes(val);
+                persistChanges({ voice_notes_transcription: val });
+              }}
+              rows={5}
+              className="text-xs w-full resize-none"
+            />
+            <p className="text-[10px] text-muted-foreground">
+              Enregistrement direct dans le rapport officiel d'inspection.
+            </p>
+          </CardContent>
+        </Card>
 
         {/* Croquis de terrain tactile */}
         <InspectionInteractiveSketch

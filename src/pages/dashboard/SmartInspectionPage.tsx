@@ -425,7 +425,7 @@ export default function SmartInspectionPage() {
                         {inspType?.name}
                       </p>
                       <p className="text-[11px] text-muted-foreground mt-1">
-                        {insp.client_location || "Burkina Faso"} • {new Date(insp.inspection_date).toLocaleDateString("fr-FR")}
+                        {insp.client_location || "Burkina Faso"} • {new Date(insp.inspection_date).toLocaleDateString("fr-FR").replace(/\//g, ".")}
                       </p>
                     </div>
                   </div>

@@ -63,40 +63,40 @@ export const LIVESTOCK_DENSITY_STANDARDS: Record<AnimalSpeciesType, {
   unit: string;
 }> = {
   volaille: {
-    label: "Volaille (Poulets de chair / Pondeuses)",
-    standardMaxDensityPerM2: 10, // Max 8 à 10 sujets/m² sous climat chaud sahélien
+    label: "Volaille (Poulets de chair • Pondeuses)",
+    standardMaxDensityPerM2: 10, // Max 8 à 10 sujets.m² sous climat chaud sahélien
     alertThresholdPerM2: 12,
-    unit: "sujets/m²",
+    unit: "sujets.m²",
   },
   bovin: {
-    label: "Bovin (Embouche / Stabulation)",
+    label: "Bovin (Embouche • Stabulation)",
     standardMaxDensityPerM2: 0.25, // Env 4 m² par bête en stabulation
     alertThresholdPerM2: 0.35,
-    unit: "têtes/m²",
+    unit: "têtes.m²",
   },
   ovin: {
     label: "Ovin (Moutons du Sahel)",
     standardMaxDensityPerM2: 0.8, // Env 1.2 à 1.5 m² par ovin
     alertThresholdPerM2: 1.2,
-    unit: "têtes/m²",
+    unit: "têtes.m²",
   },
   caprin: {
     label: "Caprin (Chèvres)",
     standardMaxDensityPerM2: 1.0, // Env 1 m² par chèvre
     alertThresholdPerM2: 1.4,
-    unit: "têtes/m²",
+    unit: "têtes.m²",
   },
   porcin: {
     label: "Porcin",
     standardMaxDensityPerM2: 0.7, // Env 1.5 m² par porc charcutier
     alertThresholdPerM2: 1.0,
-    unit: "têtes/m²",
+    unit: "têtes.m²",
   },
   autre: {
     label: "Autre élevage",
     standardMaxDensityPerM2: 5,
     alertThresholdPerM2: 8,
-    unit: "animaux/m²",
+    unit: "animaux.m²",
   },
 };
 

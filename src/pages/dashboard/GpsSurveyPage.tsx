@@ -90,7 +90,7 @@ const CATEGORY_LABELS: Record<WaypointCategory, string> = {
   sommet: "Sommet de parcelle",
   forage: "Forage hydraulique",
   puits: "Puits maraîcher",
-  batiment: "Bâtiment / Hangar",
+  batiment: "Bâtiment • Hangar",
   magasin: "Magasin de stockage",
   cloture: "Angle de clôture",
   arbre_repere: "Arbre repère",
@@ -1744,7 +1744,7 @@ export default function GpsSurveyPage() {
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <Label className="text-[11px] font-bold">Client / Producteur</Label>
+                  <Label className="text-[11px] font-bold">Client • Producteur</Label>
                   <Input
                     value={clientName}
                     onChange={(e) => setClientName(e.target.value)}
@@ -1753,7 +1753,7 @@ export default function GpsSurveyPage() {
                   />
                 </div>
                 <div>
-                  <Label className="text-[11px] font-bold">Localité / Commune</Label>
+                  <Label className="text-[11px] font-bold">Localité • Commune</Label>
                   <Input
                     value={locality}
                     onChange={(e) => setLocality(e.target.value)}
@@ -1914,7 +1914,7 @@ export default function GpsSurveyPage() {
 
           <div className="space-y-3.5 py-2">
             <div>
-              <Label className="text-xs font-bold">Identifiant / Nom de la Borne</Label>
+              <Label className="text-xs font-bold">Identifiant • Nom de la Borne</Label>
               <Input
                 placeholder={`Borne P${waypoints.length + 1}`}
                 value={manualForm.label}
@@ -1937,7 +1937,7 @@ export default function GpsSurveyPage() {
                   <SelectItem value="sommet">Sommet de parcelle</SelectItem>
                   <SelectItem value="forage">Forage hydraulique</SelectItem>
                   <SelectItem value="puits">Puits maraîcher</SelectItem>
-                  <SelectItem value="batiment">Bâtiment / Hangar</SelectItem>
+                  <SelectItem value="batiment">Bâtiment • Hangar</SelectItem>
                   <SelectItem value="magasin">Magasin de stockage</SelectItem>
                   <SelectItem value="cloture">Angle de clôture</SelectItem>
                   <SelectItem value="arbre_repere">Arbre repère</SelectItem>
@@ -2041,7 +2041,7 @@ export default function GpsSurveyPage() {
                       Parcelle : <strong>{s.parcelName}</strong> • {s.areaHa} ha ({s.areaM2} m²) • {s.waypoints.length} bornes
                     </p>
                     <p className="text-[10px] text-muted-foreground mt-0.5">
-                      {new Date(s.surveyDate).toLocaleDateString("fr-FR")} • {s.locality}
+                      {new Date(s.surveyDate).toLocaleDateString("fr-FR").replace(/\//g, ".")} • {s.locality}
                     </p>
                   </div>
 

@@ -210,12 +210,12 @@ export const LivestockDesignerTool: React.FC<LivestockDesignerToolProps> = ({
                     <>
                       <SelectItem value="chair">Poulets de chair (gavage)</SelectItem>
                       <SelectItem value="pondeuses">Poules pondeuses</SelectItem>
-                      <SelectItem value="poussins">Poussinière / Démarrage</SelectItem>
+                      <SelectItem value="poussins">Poussinière • Démarrage</SelectItem>
                     </>
                   )}
                   {buildingType === "etable" && (
                     <>
-                      <SelectItem value="engraissement">Bovins engraissement / embouche</SelectItem>
+                      <SelectItem value="engraissement">Bovins engraissement • embouche</SelectItem>
                       <SelectItem value="laitieres">Vaches laitières</SelectItem>
                     </>
                   )}
@@ -227,7 +227,7 @@ export const LivestockDesignerTool: React.FC<LivestockDesignerToolProps> = ({
             </div>
 
             <div>
-              <Label className="text-xs font-bold">Capacité / Effectif animaux</Label>
+              <Label className="text-xs font-bold">Capacité • Effectif animaux</Label>
               <Input
                 type="number"
                 value={targetCapacity}

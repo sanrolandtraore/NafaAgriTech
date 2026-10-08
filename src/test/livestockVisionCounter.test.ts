@@ -68,7 +68,7 @@ describe("Module de Vision & Comptage Intelligent d'Animaux", () => {
       const volailleStandard = LIVESTOCK_DENSITY_STANDARDS.volaille;
       expect(volailleStandard.standardMaxDensityPerM2).toBe(10);
       expect(volailleStandard.alertThresholdPerM2).toBe(12);
-      expect(volailleStandard.unit).toBe("sujets/m²");
+      expect(volailleStandard.unit).toBe("sujets.m²");
     });
 
     it("fournit des seuils de densité adaptés pour les bovins en stabulation", () => {

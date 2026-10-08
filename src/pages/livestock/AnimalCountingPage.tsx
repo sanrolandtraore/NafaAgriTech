@@ -335,7 +335,7 @@ export default function AnimalCountingPage() {
       module: "livestock",
       categoryLabel: "Comptage Zootechnique",
       doc: pdf,
-      summary: `Dénombrement assisté : ${count} ${species}. Densité : ${density} têtes/m² (${status}).`,
+      summary: `Dénombrement assisté : ${count} ${species}. Densité : ${density} têtes.m² (${status}).`,
       dataSnapshot: {
         species,
         totalCount: count,
@@ -422,7 +422,7 @@ export default function AnimalCountingPage() {
           </div>
 
           <div>
-            <Label className="text-xs font-bold text-muted-foreground uppercase">Surface du bâtiment / enclos (m²)</Label>
+            <Label className="text-xs font-bold text-muted-foreground uppercase">Surface du bâtiment • enclos (m²)</Label>
             <Input
               type="number"
               min={1}
@@ -693,7 +693,7 @@ export default function AnimalCountingPage() {
                       <div className="text-xl font-bold flex items-baseline gap-1">
                         {analysisResult.densityAnalysis.densityPerM2}
                         <span className="text-xs font-normal text-muted-foreground">
-                          {LIVESTOCK_DENSITY_STANDARDS[species]?.unit || "sujets/m²"}
+                          {LIVESTOCK_DENSITY_STANDARDS[species]?.unit || "sujets.m²"}
                         </span>
                       </div>
                       <p className="text-[11px] text-muted-foreground">

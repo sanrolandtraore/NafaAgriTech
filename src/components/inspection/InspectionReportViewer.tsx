@@ -196,13 +196,13 @@ export default function InspectionReportViewer({
           <span className={`text-2xl font-heading font-extrabold ${report.conformity_score >= 80 ? "text-emerald-600 dark:text-emerald-400" : "text-amber-600"}`}>
             {report.conformity_score}%
           </span>
-          <span className="text-[10px] text-muted-foreground block">Tolérances CIRAD/FAO respectées</span>
+          <span className="text-[10px] text-muted-foreground block">Tolérances CIRAD • FAO respectées</span>
         </div>
 
         <div className="p-4 rounded-xl bg-card border border-border text-center space-y-1">
           <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider block">Mesures Relevées</span>
           <span className="text-2xl font-heading font-extrabold text-foreground">
-            {measurements.filter((m) => m.is_conforming).length} / {measurements.length}
+            {measurements.filter((m) => m.is_conforming).length} sur {measurements.length}
           </span>
           <span className="text-[10px] text-muted-foreground block">Paramètres conformes</span>
         </div>
@@ -283,7 +283,7 @@ export default function InspectionReportViewer({
           </CardHeader>
           <CardContent className="p-4 space-y-4">
             <div className="overflow-x-auto">
-              <table className="w-full text-xs text-left">
+              <table className="w-full min-w-[550px] text-xs text-left">
                 <thead className="bg-muted text-muted-foreground uppercase text-[10px]">
                   <tr>
                     <th className="p-2.5 rounded-l-lg">Désignation</th>

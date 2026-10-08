@@ -1483,38 +1483,38 @@ function CropDiagnosisToolInner() {
                     <img
                       src={imagePreview}
                       alt="Échantillon végétal chargé"
-                      className="object-contain max-h-64 rounded-xl shadow-md"
+                      className="object-contain max-w-full w-auto max-h-64 rounded-xl shadow-md"
                     />
 
                     {/* Badge d'optimisation */}
                     {imageMeta && (
-                      <div className="absolute bottom-4 left-4 px-2.5 py-1 rounded-full bg-slate-900/80 backdrop-blur-md border border-white/20 text-white text-[10px] font-semibold flex items-center gap-1.5">
+                      <div className="absolute bottom-3 left-3 px-2.5 py-1 rounded-full bg-slate-900/80 backdrop-blur-md border border-white/20 text-white text-[10px] font-semibold flex items-center gap-1.5">
                         <CheckCircle2 className="h-3 w-3 text-emerald-400" />
                         <span>Optimisée ({(imageMeta.compressedSize / 1024).toFixed(0)} Ko)</span>
                       </div>
                     )}
 
                     {/* Actions sur l'image */}
-                    <div className="absolute top-4 right-4 flex items-center gap-2">
+                    <div className="absolute top-3 right-3 flex flex-wrap items-center justify-end gap-1.5 max-w-[85%] z-10">
                       <Button
                         type="button"
                         variant="secondary"
                         size="sm"
                         onClick={() => startLiveCamera("environment")}
-                        className="h-8 px-2.5 text-xs font-bold rounded-xl shadow-md bg-white/90 dark:bg-card/90 hover:bg-white gap-1"
+                        className="h-7 sm:h-8 px-2 sm:px-2.5 text-xs font-bold rounded-xl shadow-md bg-white/90 dark:bg-card/90 hover:bg-white gap-1"
                       >
                         <Camera className="h-3.5 w-3.5 text-primary" />
-                        Reprendre
+                        <span className="hidden xs:inline">Reprendre</span>
                       </Button>
                       <Button
                         type="button"
                         variant="secondary"
                         size="sm"
                         onClick={() => galleryRef.current?.click()}
-                        className="h-8 px-2.5 text-xs font-bold rounded-xl shadow-md bg-white/90 dark:bg-card/90 hover:bg-white gap-1"
+                        className="h-7 sm:h-8 px-2 sm:px-2.5 text-xs font-bold rounded-xl shadow-md bg-white/90 dark:bg-card/90 hover:bg-white gap-1"
                       >
                         <ImageIcon className="h-3.5 w-3.5 text-emerald-600" />
-                        Changer
+                        <span className="hidden xs:inline">Changer</span>
                       </Button>
                       <Button
                         type="button"
@@ -1527,10 +1527,10 @@ function CropDiagnosisToolInner() {
                           setImageAnalysis(null);
                           setNafaBotanicalResult(null);
                         }}
-                        className="h-8 px-2.5 text-xs font-bold rounded-xl shadow-md"
+                        className="h-7 sm:h-8 px-2 sm:px-2.5 text-xs font-bold rounded-xl shadow-md"
                       >
-                        <Trash2 className="h-3.5 w-3.5 mr-1" />
-                        Supprimer
+                        <Trash2 className="h-3.5 w-3.5 sm:mr-1" />
+                        <span className="hidden xs:inline">Supprimer</span>
                       </Button>
                     </div>
                   </div>
@@ -1556,21 +1556,21 @@ function CropDiagnosisToolInner() {
                     onClick={() => handleLoadSample("tomate")}
                     className="px-2.5 py-1 rounded-xl bg-background border border-border/80 hover:border-emerald-500 text-[11px] font-semibold transition-all hover:text-emerald-700"
                   >
-                    🍅 Tomate (Mildiou)
+                    Tomate (Mildiou)
                   </button>
                   <button
                     type="button"
                     onClick={() => handleLoadSample("mais")}
                     className="px-2.5 py-1 rounded-xl bg-background border border-border/80 hover:border-emerald-500 text-[11px] font-semibold transition-all hover:text-emerald-700"
                   >
-                    🌽 Maïs (Chenille)
+                    Maïs (Chenille)
                   </button>
                   <button
                     type="button"
                     onClick={() => handleLoadSample("oignon")}
                     className="px-2.5 py-1 rounded-xl bg-background border border-border/80 hover:border-emerald-500 text-[11px] font-semibold transition-all hover:text-emerald-700"
                   >
-                    🧅 Oignon (Pourriture)
+                    Oignon (Pourriture)
                   </button>
                 </div>
               </div>

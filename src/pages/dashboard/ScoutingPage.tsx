@@ -60,7 +60,7 @@ const GROWTH_STAGES = ["Germination", "Levée", "Tallage", "Montaison", "Florais
 const CONDITIONS = ["Excellent", "Bon", "Moyen", "Faible", "Critique"];
 const PROBLEM_TYPES = [
   { value: "maladie", label: "Maladie", icon: Bug },
-  { value: "ravageur", label: "Ravageur/Insecte", icon: Bug },
+  { value: "ravageur", label: "Ravageur • Insecte", icon: Bug },
   { value: "carence", label: "Carence nutritive", icon: Leaf },
   { value: "stress_hydrique", label: "Stress hydrique", icon: Droplets },
   { value: "stress_thermique", label: "Stress thermique", icon: ThermometerSun },
@@ -297,7 +297,8 @@ export default function ScoutingPage() {
     doc.setFontSize(18);
     doc.text("Rapport Agronomique - Inspection Terrain", 14, 18);
     doc.setFontSize(10);
-    doc.text(`Date de visite: ${new Date(session.visit_date).toLocaleDateString("fr-FR")}`, 14, 28);
+    const visitDateFormatted = new Date(session.visit_date).toLocaleDateString("fr-FR").replace(/\//g, ".");
+    doc.text(`Date de visite: ${visitDateFormatted}`, 14, 28);
 
     doc.setTextColor(0, 0, 0);
     let y = 45;
@@ -309,7 +310,7 @@ export default function ScoutingPage() {
     doc.setFontSize(10);
     doc.setFont("helvetica", "normal");
     const info = [
-      ["Client / Ferme", session.client_name || "-"],
+      ["Client • Ferme", session.client_name || "-"],
       ["Parcelle", session.parcel_name || "-"],
       ["Culture", session.crop_type || "-"],
       ["Stade de croissance", session.growth_stage || "-"],
@@ -538,7 +539,7 @@ export default function ScoutingPage() {
           <DialogHeader><DialogTitle className="flex items-center gap-2"><Eye className="h-5 w-5 text-primary" /> Nouvelle inspection terrain</DialogTitle></DialogHeader>
           <div className="space-y-4">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div><Label>Client / Ferme *</Label><Input value={form.client_name} onChange={e => setForm(f => ({ ...f, client_name: e.target.value }))} placeholder="Nom du client" /></div>
+              <div><Label>Client • Ferme *</Label><Input value={form.client_name} onChange={e => setForm(f => ({ ...f, client_name: e.target.value }))} placeholder="Nom du client" /></div>
               <div><Label>Parcelle *</Label><Input value={form.parcel_name} onChange={e => setForm(f => ({ ...f, parcel_name: e.target.value }))} placeholder="Nom de la parcelle" /></div>
               <div><Label>Culture</Label><Input value={form.crop_type} onChange={e => setForm(f => ({ ...f, crop_type: e.target.value }))} placeholder="ex: Maïs, Riz..." /></div>
               <div><Label>Date de visite</Label><Input type="date" value={form.visit_date} onChange={e => setForm(f => ({ ...f, visit_date: e.target.value }))} /></div>

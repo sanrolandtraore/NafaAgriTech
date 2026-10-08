@@ -640,16 +640,17 @@ export function generateGpsSurveyPdf(session: GpsSurveySession, branding?: Partn
 
   doc.setFont("helvetica", "normal");
   doc.setFontSize(8.5);
-  doc.text(`Parcelle / Chantier : ${session.parcelName || "Parcelle Principale"}`, 20, y + 16);
-  doc.text(`Propriétaire / Client : ${session.clientName || "Non spécifié"}`, 20, y + 22);
-  doc.text(`Localité / Commune : ${session.locality || "Non spécifiée"}`, 20, y + 28);
-  doc.text(`Date d'intervention : ${new Date(session.surveyDate).toLocaleDateString("fr-FR")}`, 20, y + 34);
+  const surveyDateFormatted = new Date(session.surveyDate).toLocaleDateString("fr-FR").replace(/\//g, ".");
+  doc.text(`Parcelle • Chantier : ${session.parcelName || "Parcelle Principale"}`, 20, y + 16);
+  doc.text(`Propriétaire • Client : ${session.clientName || "Non spécifié"}`, 20, y + 22);
+  doc.text(`Localité • Commune : ${session.locality || "Non spécifiée"}`, 20, y + 28);
+  doc.text(`Date d'intervention : ${surveyDateFormatted}`, 20, y + 34);
 
   const col2X = pageWidth / 2 + 10;
   doc.text(`Opérateur : ${expertName} (${expertTitle})`, col2X, y + 16);
-  doc.text(`Système Géodésique : WGS84 (EPSG:4326) / UTM 30N`, col2X, y + 22);
+  doc.text(`Système Géodésique : WGS84 (EPSG:4326) • UTM 30N`, col2X, y + 22);
   doc.text(`Précision Satellite Moyenne : ±${session.averageAccuracyM.toFixed(1)} mètres`, col2X, y + 28);
-  doc.text(`Mode de levé : ${session.mode === "polygon" ? "Arpentage Polygonal" : "Points isolés / Waypoints"}`, col2X, y + 34);
+  doc.text(`Mode de levé : ${session.mode === "polygon" ? "Arpentage Polygonal" : "Points isolés • Waypoints"}`, col2X, y + 34);
 
   y += 44;
 
@@ -704,7 +705,7 @@ export function generateGpsSurveyPdf(session: GpsSurveySession, branding?: Partn
       wp.category.replace("_", " "),
       `${wp.lat.toFixed(6)}°\n${dmsLat}`,
       `${wp.lng.toFixed(6)}°\n${dmsLng}`,
-      `${utm.easting} / ${utm.northing}`,
+      `${utm.easting} • ${utm.northing}`,
       wp.altitude ? `${wp.altitude} m` : "-",
       wp.accuracy ? `±${wp.accuracy}m` : "-",
       wp.distanceToNextM ? `${wp.distanceToNextM} m` : "-",
@@ -720,7 +721,7 @@ export function generateGpsSurveyPdf(session: GpsSurveySession, branding?: Partn
         "Nature",
         "Latitude (DD & DMS)",
         "Longitude (DD & DMS)",
-        "UTM 30N (X / Y)",
+        "UTM 30N (X • Y)",
         "Alt.",
         "Préc.",
         "Dist. suiv.",
@@ -792,7 +793,8 @@ export function generateGpsSurveyPdf(session: GpsSurveySession, branding?: Partn
   );
 
   doc.setFont("helvetica", "bold");
-  doc.text(`Fait à ${session.locality || "Ouagadougou"}, le ${new Date().toLocaleDateString("fr-FR")}`, 20, signatureY + 26);
+  const todayFormatted = new Date().toLocaleDateString("fr-FR").replace(/\//g, ".");
+  doc.text(`Fait à ${session.locality || "Ouagadougou"}, le ${todayFormatted}`, 20, signatureY + 26);
   doc.text("Cachet & Signature de l'Opérateur :", pageWidth - 70, signatureY + 26);
 
   // Pied de page

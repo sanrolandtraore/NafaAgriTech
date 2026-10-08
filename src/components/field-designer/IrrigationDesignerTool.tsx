@@ -135,7 +135,7 @@ export const IrrigationDesignerTool: React.FC<IrrigationDesignerToolProps> = ({
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="goutte_a_goutte">Goutte-à-goutte régulé</SelectItem>
-                  <SelectItem value="aspersion">Aspersion basse/moyenne pression</SelectItem>
+                  <SelectItem value="aspersion">Aspersion basse ou moyenne pression</SelectItem>
                   <SelectItem value="micro_aspersion">Micro-aspersion sous frondaison</SelectItem>
                   <SelectItem value="pivot">Pivot d'irrigation circulaire</SelectItem>
                   <SelectItem value="gravitaire">Réseau gravitaire californien</SelectItem>
@@ -152,8 +152,8 @@ export const IrrigationDesignerTool: React.FC<IrrigationDesignerToolProps> = ({
                 <SelectContent>
                   <SelectItem value="forage">Forage profond</SelectItem>
                   <SelectItem value="puits">Puits maraîcher grand diamètre</SelectItem>
-                  <SelectItem value="cours_deau">Cours d'eau / Fleuve</SelectItem>
-                  <SelectItem value="barrage">Barrage / Retenue d'eau</SelectItem>
+                  <SelectItem value="cours_deau">Cours d'eau • Fleuve</SelectItem>
+                  <SelectItem value="barrage">Barrage • Retenue d'eau</SelectItem>
                   <SelectItem value="reseau">Réseau d'adduction</SelectItem>
                 </SelectContent>
               </Select>
@@ -199,7 +199,7 @@ export const IrrigationDesignerTool: React.FC<IrrigationDesignerToolProps> = ({
             </div>
 
             <div>
-              <Label className="text-xs font-bold">Débit disponible de la source (m³/h)</Label>
+              <Label className="text-xs font-bold">Débit disponible de la source (m³.h)</Label>
               <Input
                 type="number"
                 step="0.5"
@@ -260,7 +260,7 @@ export const IrrigationDesignerTool: React.FC<IrrigationDesignerToolProps> = ({
             </div>
 
             <div className="p-3.5 rounded-2xl bg-card border shadow-2xs">
-              <span className="text-[10px] font-bold text-muted-foreground uppercase block">Réservoir / Château d'eau</span>
+              <span className="text-[10px] font-bold text-muted-foreground uppercase block">Réservoir • Château d'eau</span>
               <div className="h-8 font-mono font-black text-base flex items-center text-primary mt-1">
                 {result.tankVolumeM3} m³
               </div>

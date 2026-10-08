@@ -399,7 +399,7 @@ export default function PhytosanitaryLibraryExplorer({
                       {activeCaseModal.category}
                     </Badge>
                     <Badge variant="outline" className="border-emerald-500/40 text-emerald-800 dark:text-emerald-300 font-bold text-xs">
-                      Statut : Validé INERA / CILSS
+                      Statut : Validé INERA • CILSS
                     </Badge>
                   </div>
                   <Button
@@ -431,18 +431,18 @@ export default function PhytosanitaryLibraryExplorer({
               {/* Contenu à Onglets */}
               <div className="p-5 space-y-4">
                 <Tabs value={activeTabDetail} onValueChange={setActiveTabDetail}>
-                  <TabsList className="grid grid-cols-4 w-full h-10 rounded-xl">
-                    <TabsTrigger value="symptomes" className="text-xs font-bold">
-                      Symptômes
+                  <TabsList className="grid grid-cols-2 sm:grid-cols-4 w-full h-auto p-1 gap-1 rounded-xl">
+                    <TabsTrigger value="symptomes" className="text-xs font-bold min-w-0 py-2">
+                      <span className="truncate">Symptômes</span>
                     </TabsTrigger>
-                    <TabsTrigger value="differentiel" className="text-xs font-bold">
-                      Diagnostic Différentiel
+                    <TabsTrigger value="differentiel" className="text-xs font-bold min-w-0 py-2">
+                      <span className="truncate">Différentiel</span>
                     </TabsTrigger>
-                    <TabsTrigger value="traitements" className="text-xs font-bold">
-                      Protocoles IPM
+                    <TabsTrigger value="traitements" className="text-xs font-bold min-w-0 py-2">
+                      <span className="truncate">Protocoles IPM</span>
                     </TabsTrigger>
-                    <TabsTrigger value="validation" className="text-xs font-bold">
-                      Validation Expert
+                    <TabsTrigger value="validation" className="text-xs font-bold min-w-0 py-2">
+                      <span className="truncate">Validation</span>
                     </TabsTrigger>
                   </TabsList>
 

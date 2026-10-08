@@ -255,7 +255,7 @@ export function generateTechnicalDossierPdf(input: PdfDossierInput): jsPDF {
   doc.setFont("helvetica", "normal");
   doc.setFontSize(7.5);
   doc.setTextColor(217, 119, 6);
-  doc.text("DÉNIVELÉ / PENTE", 110, y + 6);
+  doc.text("DÉNIVELÉ • PENTE", 110, y + 6);
   doc.setFont("helvetica", "bold");
   doc.setFontSize(11);
   doc.setTextColor(146, 64, 14);
@@ -339,17 +339,17 @@ export function generateTechnicalDossierPdf(input: PdfDossierInput): jsPDF {
     y += 5;
 
     const agroParams = [
-      ["Évapotranspiration de référence (ETo)", `${ir.dailyEtoMm} mm/jour`, "Saison sèche sahélienne (Penman-Monteith)"],
-      ["Coefficient cultural de pointe (Kc)", `${ir.kcUsed}`, "Stade critique floraison / fructification"],
-      ["Besoin net de la culture (ETc = ETo × Kc)", `${ir.dailyEtcMm} mm/jour`, "Évaporation sol + Transpiration plante"],
+      ["Évapotranspiration de référence (ETo)", `${ir.dailyEtoMm} mm.jour`, "Saison sèche sahélienne (Penman-Monteith)"],
+      ["Coefficient cultural de pointe (Kc)", `${ir.kcUsed}`, "Stade critique floraison - fructification"],
+      ["Besoin net de la culture (ETc = ETo × Kc)", `${ir.dailyEtcMm} mm.jour`, "Évaporation sol + Transpiration plante"],
       ["Efficience globale du réseau d'irrigation", `${ir.irrigationEfficiency * 100} %`, "Goutte-à-goutte régulé anti-évaporation"],
-      ["Besoin brut journalier de pointe", `${ir.dailyGrossMm} mm/jour`, "Dose d'arrosage globale au champ"],
-      ["Volume d'eau journalier nécessaire", `${ir.dailyVolumeM3} m³/jour`, `Pour l'ensemble de la sole irriguée (${input.survey.areaHa} ha)`],
+      ["Besoin brut journalier de pointe", `${ir.dailyGrossMm} mm.jour`, "Dose d'arrosage globale au champ"],
+      ["Volume d'eau journalier nécessaire", `${ir.dailyVolumeM3} m³.jour`, `Pour l'ensemble de la sole irriguée (${input.survey.areaHa} ha)`],
     ];
 
     autoTable(doc, {
       startY: y,
-      head: [["Grandeur Agronomique", "Valeur Calculée", "Norme / Justification Technique"]],
+      head: [["Grandeur Agronomique", "Valeur Calculée", "Norme • Justification Technique"]],
       body: agroParams,
       theme: "striped",
       headStyles: { fillColor: [2, 132, 199], fontSize: 8.5 },
@@ -366,11 +366,11 @@ export function generateTechnicalDossierPdf(input: PdfDossierInput): jsPDF {
     y += 5;
 
     const hydParams = [
-      ["Débit de pointe global requis", `${ir.peakHourlyFlowM3h} m³/h`, "Dimensionné sur 6 heures solaires utiles"],
+      ["Débit de pointe global requis", `${ir.peakHourlyFlowM3h} m³.h`, "Dimensionné sur 6 heures solaires utiles"],
       ["Découpage en secteurs d'arrosage", `${ir.recommendedSectors} secteur(s)`, "Répartition homogène de la pression"],
-      ["Débit par secteur opérationnel", `${ir.flowPerSectorM3h} m³/h (${ir.flowPerSectorLs} L/s)`, "Alimentation simultanée d'un secteur"],
+      ["Débit par secteur opérationnel", `${ir.flowPerSectorM3h} m³.h (${ir.flowPerSectorLs} L.s)`, "Alimentation simultanée d'un secteur"],
       ["Conduite principale (PEHD PN10)", `Ø ${ir.mainPipeDiameterMm} mm (Long : ${ir.mainPipeLengthM} m)`, "Qualité PE100 alimentaire traité UV"],
-      ["Vitesse d'écoulement calculée", `${ir.mainPipeVelocityMs} m/s`, "Conforme aux recommandations (1.0 à 1.8 m/s)"],
+      ["Vitesse d'écoulement calculée", `${ir.mainPipeVelocityMs} m.s`, "Conforme aux recommandations (1.0 à 1.8 m.s)"],
       ["Perte de charge linéaire estimée", `${ir.mainPipeHeadLossM} mCE`, "Formule Hazen-Williams (C=145)"],
       ["Rampe de goutte-à-goutte Ø16", `${ir.totalDripTapeLengthM.toLocaleString()} ml`, "Gaines avec goutteurs autorégulants intégrés"],
     ];
@@ -395,7 +395,7 @@ export function generateTechnicalDossierPdf(input: PdfDossierInput): jsPDF {
 
     const solarParams = [
       ["Niveau dynamique forage (aspiration)", `${ir.suctionHeadM} m`, "Profondeur de rabattement nappe"],
-      ["Refoulement géométrique (Château / Cuve)", `${ir.staticLiftM} m`, "Dénivelé total sol + bac de stockage"],
+      ["Refoulement géométrique (Château - Cuve)", `${ir.staticLiftM} m`, "Dénivelé total sol + bac de stockage"],
       ["Pression de service nominale requise", `${ir.pressureHeadM} mCE (1.2 bar)`, "Pour ouverture des goutteurs labyrinthes"],
       ["Hauteur Manométrique Totale (HMT)", `${ir.totalHeadHmtM} mCE`, "HMT = Hgeo + Hpertes + Hservice"],
       ["Puissance hydraulique utile (Phyd)", `${ir.hydraulicPowerKw} kW`, "Phyd = (Q × HMT × 9.81) / 3600"],
@@ -406,7 +406,7 @@ export function generateTechnicalDossierPdf(input: PdfDossierInput): jsPDF {
 
     autoTable(doc, {
       startY: y,
-      head: [["Élément Électromécanique", "Spécification Retenue", "Formule / Norme"]],
+      head: [["Élément Électromécanique", "Spécification Retenue", "Formule • Norme"]],
       body: solarParams,
       theme: "striped",
       headStyles: { fillColor: [217, 119, 6], fontSize: 8.5 },
@@ -434,11 +434,11 @@ export function generateTechnicalDossierPdf(input: PdfDossierInput): jsPDF {
 
     const poultryData = [
       ["Effectif du cheptel", `${p.flockSize} sujets`, p.birdType],
-      ["Densité d'élevage préconisée", `${p.densityPerM2} sujets/m²`, "Norme Sahel anti-stress thermique (>38°C)"],
-      ["Surface au sol utile du bâtiment", `${p.floorAreaM2} m²`, "Dallage béton armé lissé 350 kg/m³"],
+      ["Densité d'élevage préconisée", `${p.densityPerM2} sujets.m²`, "Norme Sahel anti-stress thermique (>38°C)"],
+      ["Surface au sol utile du bâtiment", `${p.floorAreaM2} m²`, "Dallage béton armé lissé 350 kg.m³"],
       ["Dimensions du bâtiment (L x l)", `${p.lengthM} m × ${p.widthM} m`, "Largeur stricte <= 10m pour ventilation naturelle"],
       ["Hauteur sous sablière (évent)", `${p.eaveHeightM} m`, "Aération latérale maximale"],
-      ["Hauteur au faîtage", `${p.ridgeHeightM} m`, "Crée l'effet cheminée / thermosiphon"],
+      ["Hauteur au faîtage", `${p.ridgeHeightM} m`, "Crée l'effet cheminée • thermosiphon"],
       ["Lanterneau d'aération faîtière", `Largeur ${p.lanternWidthM} m`, "Évacuation continue de l'ammoniac et de la chaleur"],
       ["Débord de toiture anti-insolation", `${p.overhangM} m`, "Protection contre la pluie battante et rayonnement"],
       ["Orientation bioclimatique", `${p.orientationLabel}`, "Minimise l'échauffement sur les longs-pans grillagés"],
@@ -473,7 +473,7 @@ export function generateTechnicalDossierPdf(input: PdfDossierInput): jsPDF {
 
     autoTable(doc, {
       startY: y,
-      head: [["Équipement / Installation", "Dotation Prévue", "Rationnement / Biosécurité"]],
+      head: [["Équipement • Installation", "Dotation Prévue", "Rationnement • Biosécurité"]],
       body: equipData,
       theme: "striped",
       headStyles: { fillColor: [194, 65, 12], fontSize: 8.5 },
@@ -501,7 +501,9 @@ export function generateTechnicalDossierPdf(input: PdfDossierInput): jsPDF {
 
   doc.setFont("helvetica", "normal");
   doc.setFontSize(8.5);
-  doc.text(`Date d'émission : ${q.date}  |  Validité de l'offre : 30 jours (jusqu'au ${q.validUntil})`, 14, y + 5);
+  const formattedDate = (q.date || "").replace(/\//g, ".");
+  const formattedValidUntil = (q.validUntil || "").replace(/\//g, ".");
+  doc.text(`Date d'émission : ${formattedDate}  |  Validité de l'offre : 30 jours (jusqu'au ${formattedValidUntil})`, 14, y + 5);
 
   y += 11;
 

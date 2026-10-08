@@ -9,7 +9,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
 import {
-  Sparkles, Mic, MicOff, Send, MapPin, Droplets, Home, FileText,
+  Sparkles, Send, MapPin, Droplets, Home, FileText,
   Layers, CheckCircle2, AlertTriangle, Download, RefreshCw, Cpu,
   Compass, ShieldCheck, HelpCircle, ArrowRight, Play, BookOpen,
   UserCheck, Edit3, Sprout, Beef, Building2, Globe, Languages, ShieldAlert,
@@ -112,7 +112,6 @@ export const NafaGeniusStudio: React.FC = () => {
   const [selectedLanguage, setSelectedLanguage] = useState<GeniusLanguage>("fr");
   const [activeDomain, setActiveDomain] = useState<GeniusDomain>("agronomie");
   const [inputText, setInputText] = useState<string>("");
-  const [isListening, setIsListening] = useState<boolean>(false);
   const [nluResult, setNluResult] = useState<ParsedGeniusAction | null>(null);
   const [activeTab, setActiveTab] = useState<string>("irris");
   const [isAiResponding, setIsAiResponding] = useState<boolean>(false);
@@ -271,8 +270,6 @@ export const NafaGeniusStudio: React.FC = () => {
 
   const [isExpertEditingQuote, setIsExpertEditingQuote] = useState<boolean>(false);
   const [expertQuoteNotes, setExpertQuoteNotes] = useState<string>("");
-
-  const recognitionRef = useRef<any>(null);
 
   // Recalcul géodésique automatique dès que les points changent
   useEffect(() => {
@@ -546,43 +543,6 @@ export const NafaGeniusStudio: React.FC = () => {
     }
   };
 
-  // Reconnaissance vocale Web Speech API
-  const toggleListening = () => {
-    if (isListening) {
-      recognitionRef.current?.stop();
-      setIsListening(false);
-      return;
-    }
-
-    if (!("webkitSpeechRecognition" in window) && !("SpeechRecognition" in window)) {
-      toast.error("La reconnaissance vocale n'est pas supportée par ce navigateur.");
-      return;
-    }
-
-    const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
-    const recognition = new SpeechRecognition();
-    recognition.lang = selectedLanguage === "fr" ? "fr-FR" : "fr-FR";
-    recognition.continuous = false;
-    recognition.interimResults = false;
-
-    recognition.onstart = () => setIsListening(true);
-    recognition.onresult = (event: any) => {
-      const transcript = event.results[0][0].transcript;
-      setInputText(transcript);
-      handleProcessCommand(transcript);
-      setIsListening(false);
-    };
-    recognition.onerror = (err: any) => {
-      console.warn("Erreur micro :", err);
-      setIsListening(false);
-      toast.error("Écoute interrompue. Veuillez réessayer.");
-    };
-    recognition.onend = () => setIsListening(false);
-
-    recognitionRef.current = recognition;
-    recognition.start();
-  };
-
   // Capture GPS en temps réel sur le terrain
   const captureGpsPosition = () => {
     if (!navigator.geolocation) {
@@ -771,24 +731,13 @@ export const NafaGeniusStudio: React.FC = () => {
                     ? "Gomde bɩ sebre (ex: Maan kaogo kambre koob soba Issa yĩnga...)"
                     : selectedLanguage === "ful"
                     ? "Haaldu walla windu (ex: Hiisu ndiyam ngesa 2ha tomaat...)"
-                    : "Parlez ou écrivez (ex: Crée une visite pour Issa, calcule l'irrigation pour 2ha de tomate...)"
+                    : "Saisissez votre commande (ex: Crée une visite pour Issa, calcule l'irrigation pour 2ha de tomate...)"
                 }
                 value={inputText}
                 onChange={(e) => setInputText(e.target.value)}
                 onKeyDown={(e) => e.key === "Enter" && handleProcessCommand(inputText)}
-                className="pr-10 h-11 text-sm bg-background/80"
+                className="h-11 text-sm bg-background/80"
               />
-              <Button
-                size="icon"
-                variant="ghost"
-                onClick={toggleListening}
-                className={`absolute right-1 top-1 h-9 w-9 rounded-lg transition-all ${
-                  isListening ? "bg-red-500 text-white animate-pulse" : "text-emerald-600 hover:bg-emerald-500/10"
-                }`}
-                title="Microphone (Appuyez pour parler)"
-              >
-                {isListening ? <MicOff className="h-4 w-4" /> : <Mic className="h-4 w-4" />}
-              </Button>
             </div>
 
             <Button
