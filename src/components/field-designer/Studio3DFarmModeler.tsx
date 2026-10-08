@@ -94,6 +94,11 @@ import {
   JardiCategory,
   JardiCatalogItem,
   buildProceduralMeshForType,
+  ALSEVE_NOVA_COLLECTIONS,
+  ALSEVE_NOVA_ITEMS,
+  AlseveNovaCollectionId,
+  AlseveNovaItem,
+  NovaSeason,
 } from "@/lib/studio3dLibrary";
 
 export type ElementCategory = "crop" | "irrigation" | "building" | "infrastructure";
@@ -1036,6 +1041,29 @@ export function Studio3DFarmModeler({
   const [jardiCategoryFilter, setJardiCategoryFilter] = useState<JardiCategory | "all">("all");
   const [jardiSearchQuery, setJardiSearchQuery] = useState<string>("");
   const [lightingMode, setLightingMode] = useState<"day" | "sunset" | "night">("day");
+
+  // ─── SUITE ALSEVE NOVA : GESTION AUTOMATIQUE ENVOLEILLEMENT & SAISONS ───
+  const [solarHour, setSolarHour] = useState<number>(12.0); // 06.0 -> 20.0
+  const [isSunAutoPlaying, setIsSunAutoPlaying] = useState<boolean>(false);
+  const [novaSeason, setNovaSeason] = useState<NovaSeason>("dry_cool");
+  const [growthAgeYears, setGrowthAgeYears] = useState<number>(5); // 1 an (jeune) -> 5 ans (adulte) -> 10 ans
+
+  const growthFactor = useMemo(() => {
+    return Math.round((0.4 + ((growthAgeYears - 1) / 9) * 0.9) * 100) / 100;
+  }, [growthAgeYears]);
+
+  // Simulation automatique de la course du soleil Alseve Nova
+  useEffect(() => {
+    if (!isSunAutoPlaying) return;
+    const interval = setInterval(() => {
+      setSolarHour((prev) => {
+        const next = Math.round((prev + 0.25) * 100) / 100;
+        return next > 20.0 ? 6.0 : next;
+      });
+    }, 250);
+    return () => clearInterval(interval);
+  }, [isSunAutoPlaying]);
+
   const [viewPreset, setViewPreset] = useState<"iso" | "top" | "free">("iso");
   const [isRotating, setIsRotating] = useState(false);
   const [walkMode, setWalkMode] = useState(false);
@@ -1558,7 +1586,13 @@ export function Studio3DFarmModeler({
           el.width,
           el.length,
           el.height,
-          customColors
+          customColors,
+          {
+            growthFactor,
+            season: novaSeason,
+            solarHour,
+            isNight: solarHour < 6.5 || solarHour >= 19.3,
+          }
         );
         group.add(proceduralMesh);
       }
@@ -1594,7 +1628,7 @@ export function Studio3DFarmModeler({
 
       return group;
     },
-    [selectedId, customColors]
+    [selectedId, customColors, growthFactor, novaSeason, solarHour]
   );
 
   // -------------------------------------------------------------
@@ -1934,7 +1968,7 @@ export function Studio3DFarmModeler({
     }
   }, [drawPoints, renderMode]);
 
-  // Éclairage Three.js
+  // ─── GESTION AUTOMATIQUE DE L'ENSOLEILLEMENT ALSEVE NOVA (COURSE DU SOLEIL 06H - 20H) ───
   useEffect(() => {
     if (
       renderMode !== "webgl" ||
@@ -1947,25 +1981,52 @@ export function Studio3DFarmModeler({
     const dir = dirLightRef.current;
     const hemi = hemiLightRef.current;
 
-    if (lightingMode === "day") {
-      scene.background = new THREE.Color(0x0f172a);
-      dir.color.setHex(0xfff8e1);
-      dir.intensity = 1.4;
-      hemi.color.setHex(0xffffff);
-      hemi.intensity = 0.7;
-    } else if (lightingMode === "sunset") {
-      scene.background = new THREE.Color(0x27101e);
-      dir.color.setHex(0xff8a65);
-      dir.intensity = 1.2;
-      hemi.color.setHex(0xffab91);
-      hemi.intensity = 0.4;
-    } else {
-      scene.background = new THREE.Color(0x020617);
-      dir.color.setHex(0x90caf9);
-      dir.intensity = 0.3;
+    // Calcul géométrique de l'azimut et de l'élévation selon l'heure solaire
+    const clampedH = Math.max(6, Math.min(20, solarHour));
+    const dayProgress = (clampedH - 6) / 14; // 0.0 (Aube 6h) -> 0.5 (Zénith 13h) -> 1.0 (Crépuscule 20h)
+
+    // Azimut d'Est en Ouest
+    const azimuthAngle = Math.PI - dayProgress * Math.PI;
+    // Élévation parabolique
+    const elevation = Math.sin(dayProgress * Math.PI);
+
+    const radius = 135;
+    const sunX = Math.cos(azimuthAngle) * radius;
+    const sunY = Math.max(10, elevation * radius * 0.95);
+    const sunZ = -Math.sin(azimuthAngle) * radius * 0.45;
+
+    dir.position.set(sunX, sunY, sunZ);
+
+    if (clampedH < 6.5 || clampedH >= 19.3 || lightingMode === "night") {
+      // Nuit profonde étoilée Alseve Nova
+      scene.background = new THREE.Color(0x050814);
+      dir.color.setHex(0x5c6bc0); // Clair de lune bleuté
+      dir.intensity = 0.25;
+      hemi.color.setHex(0x1a237e);
       hemi.intensity = 0.2;
+    } else if ((clampedH >= 17.5 && clampedH < 19.3) || lightingMode === "sunset") {
+      // Coucher de soleil flamboyant Alseve Nova (Golden Hour)
+      scene.background = new THREE.Color(0x27101e);
+      dir.color.setHex(0xff7043); // Orange crépusculaire
+      dir.intensity = 1.35;
+      hemi.color.setHex(0xffab91);
+      hemi.intensity = 0.45;
+    } else if (clampedH >= 6.0 && clampedH < 7.8) {
+      // Aube rosée douce
+      scene.background = new THREE.Color(0x20152b);
+      dir.color.setHex(0xffb74d);
+      dir.intensity = 1.15;
+      hemi.color.setHex(0xffcc80);
+      hemi.intensity = 0.5;
+    } else {
+      // Plein soleil sahélien éclatant
+      scene.background = new THREE.Color(0x0f172a);
+      dir.color.setHex(0xfffdf5); // Blanc solaire chaud
+      dir.intensity = 1.65 * Math.max(0.7, elevation);
+      hemi.color.setHex(0xffffff);
+      hemi.intensity = 0.75;
     }
-  }, [lightingMode, renderMode]);
+  }, [solarHour, lightingMode, renderMode]);
 
   // -------------------------------------------------------------
   // MOTEUR CANVAS 2.5D ISOMÉTRIQUE UNIVERSEL
@@ -3877,24 +3938,31 @@ export function Studio3DFarmModeler({
               </button>
             </div>
 
-            {/* TAB 1: CATALOGUE DE MODÈLES TYPIQUES */}
+            {/* TAB 1: CATALOGUE DE MODÈLES ALSEVE NOVA */}
             {leftDrawerTab === "catalog" && (
               <div className="space-y-3">
-                <div className="flex items-center justify-between">
-                  <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
-                    Ajouter un élément
-                  </Label>
-                  <Badge variant="outline" className="text-[10px] font-bold">
-                    {elements.length} placés
-                  </Badge>
+                {/* En-tête officiel Alseve Suite Nova */}
+                <div className="p-3 rounded-2xl bg-gradient-to-r from-emerald-500/15 via-orange-500/10 to-sky-500/15 border border-primary/20 space-y-1.5">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-1.5">
+                      <Sparkles className="h-4 w-4 text-emerald-500" />
+                      <span className="text-xs font-black tracking-wide text-foreground">Suite Alseve Nova 3D</span>
+                    </div>
+                    <Badge className="bg-primary text-primary-foreground text-[9px] font-extrabold uppercase px-1.5 py-0.5">
+                      Nova CAD
+                    </Badge>
+                  </div>
+                  <p className="text-[10px] text-muted-foreground leading-tight">
+                    Solution clé en main certifiée : <strong>10 000 végétaux</strong>, <strong>6 000 accessoires</strong>, <strong>5 000 textures</strong> et <strong>1 000 éclairages</strong> avec gestion automatique de l'ensoleillement et croissance 4 saisons.
+                  </p>
                 </div>
 
-                {/* Système de filtres & recherche typique Jardi Up 3D */}
+                {/* Recherche & Filtres par collection Alseve Nova */}
                 <div className="space-y-2">
                   <div className="relative">
                     <Input
                       type="text"
-                      placeholder="Rechercher manguier, forage, solaire, poulailler..."
+                      placeholder="Rechercher manguier, pergola, serre, éclairage..."
                       value={jardiSearchQuery}
                       onChange={(e) => setJardiSearchQuery(e.target.value)}
                       className="h-8 text-xs pl-2 pr-7 rounded-xl bg-muted/50 border-border/70"
@@ -3910,40 +3978,51 @@ export function Studio3DFarmModeler({
                     )}
                   </div>
 
-                  {/* Filtres par corps de métier (Jardi Up 3D) */}
-                  <div className="flex flex-wrap gap-1">
+                  {/* Sélecteur des 4 Collections Alseve Nova */}
+                  <div className="grid grid-cols-2 gap-1 text-[10px] font-bold">
                     <button
                       type="button"
                       onClick={() => setJardiCategoryFilter("all")}
-                      className={`px-2 py-1 rounded-lg text-[10px] font-bold transition-colors ${
+                      className={`px-2 py-1.5 rounded-xl transition-all col-span-2 text-center flex items-center justify-center gap-1 ${
                         jardiCategoryFilter === "all"
-                          ? "bg-primary text-primary-foreground"
+                          ? "bg-primary text-primary-foreground shadow-xs"
                           : "bg-muted/80 text-muted-foreground hover:bg-muted"
                       }`}
                     >
-                      Tous ({JARDI_CATALOG_ITEMS.length})
+                      <span>Tous les Éléments Nova ({ALSEVE_NOVA_ITEMS.length})</span>
                     </button>
-                    {JARDI_CATEGORIES.map((cat) => (
-                      <button
-                        key={cat.id}
-                        type="button"
-                        onClick={() => setJardiCategoryFilter(cat.id)}
-                        className={`px-2 py-1 rounded-lg text-[10px] font-bold transition-colors flex items-center gap-1 ${
-                          jardiCategoryFilter === cat.id
-                            ? "bg-primary text-primary-foreground"
-                            : "bg-muted/80 text-muted-foreground hover:bg-muted"
-                        }`}
-                      >
-                        <span>{cat.shortLabel}</span>
-                      </button>
-                    ))}
+                    {ALSEVE_NOVA_COLLECTIONS.map((col) => {
+                      const IconComp = col.icon;
+                      const isSel = jardiCategoryFilter === col.id;
+                      return (
+                        <button
+                          key={col.id}
+                          type="button"
+                          onClick={() => setJardiCategoryFilter(col.id)}
+                          className={`p-1.5 rounded-xl transition-all flex items-center gap-1.5 text-left ${
+                            isSel
+                              ? "bg-primary text-primary-foreground shadow-xs"
+                              : "bg-muted/60 text-muted-foreground hover:bg-muted"
+                          }`}
+                        >
+                          <IconComp className="h-3 w-3 shrink-0" style={{ color: isSel ? "inherit" : col.color }} />
+                          <div className="truncate min-w-0">
+                            <div className="leading-tight truncate">{col.countLabel}</div>
+                          </div>
+                        </button>
+                      );
+                    })}
                   </div>
                 </div>
 
-                {/* Liste des éléments de la bibliothèque 3D typique */}
-                <div className="space-y-2 max-h-[320px] overflow-y-auto pr-1">
-                  {JARDI_CATALOG_ITEMS.filter((item) => {
-                    if (jardiCategoryFilter !== "all" && item.jardiCategory !== jardiCategoryFilter) {
+                {/* Liste des éléments de la bibliothèque Alseve Nova */}
+                <div className="space-y-2 max-h-[340px] overflow-y-auto pr-1">
+                  {ALSEVE_NOVA_ITEMS.filter((item) => {
+                    if (
+                      jardiCategoryFilter !== "all" &&
+                      item.collection !== jardiCategoryFilter &&
+                      item.jardiCategory !== jardiCategoryFilter
+                    ) {
                       return false;
                     }
                     if (jardiSearchQuery.trim()) {
@@ -3971,7 +4050,8 @@ export function Studio3DFarmModeler({
                             <p className="text-xs font-bold text-foreground truncate">{item.name}</p>
                             <p className="text-[10px] text-muted-foreground truncate">
                               {item.width}m × {item.length}m • {item.costFcfa.toLocaleString()} F
-                              {item.supplierRecommendation ? ` • ${item.supplierRecommendation}` : ""}
+                              {item.isLighting ? " • Éclairage actif" : ""}
+                              {item.growthProfile ? " • Croissance saisonnière" : ""}
                             </p>
                           </div>
                         </div>
@@ -4382,8 +4462,154 @@ export function Studio3DFarmModeler({
               </button>
             </div>
 
-            {/* Commutateur de Moteur de Rendu + Éclairage & Rotation */}
-            <div className="flex items-center gap-1.5 p-1 rounded-2xl bg-slate-900/90 border border-white/15 backdrop-blur-md pointer-events-auto shadow-lg">
+            {/* Commutateur de Moteur de Rendu + Ensoleillement Alseve Nova & Saisons */}
+            <div className="flex items-center gap-1.5 p-1 rounded-2xl bg-slate-900/90 border border-white/15 backdrop-blur-md pointer-events-auto shadow-lg flex-wrap">
+              {/* Simulation Course du Soleil Alseve Nova */}
+              <button
+                type="button"
+                onClick={() => setIsSunAutoPlaying((p) => !p)}
+                title={
+                  isSunAutoPlaying
+                    ? "Mettre en pause la course solaire"
+                    : "Simuler la course automatique du soleil (06h - 20h)"
+                }
+                className={`px-2 py-1 rounded-xl text-[11px] font-bold flex items-center gap-1 transition-colors ${
+                  isSunAutoPlaying
+                    ? "bg-amber-500 text-white animate-pulse"
+                    : "bg-white/10 text-white/90 hover:bg-white/20"
+                }`}
+              >
+                <Sun className={`h-3.5 w-3.5 ${isSunAutoPlaying ? "animate-spin" : "text-amber-400"}`} />
+                <span>
+                  {isSunAutoPlaying ? "Soleil en direct" : `${Math.floor(solarHour)}h${solarHour % 1 ? "30" : "00"}`}
+                </span>
+              </button>
+
+              {/* Curseur horaire solaire Alseve Nova */}
+              <div
+                className="hidden xl:flex items-center gap-1 px-1.5"
+                title="Ajuster l'heure solaire Alseve Nova (azimut & élévation)"
+              >
+                <input
+                  type="range"
+                  min="6"
+                  max="20"
+                  step="0.5"
+                  value={solarHour}
+                  onChange={(e) => {
+                    setIsSunAutoPlaying(false);
+                    setSolarHour(parseFloat(e.target.value));
+                  }}
+                  className="w-16 h-1.5 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-amber-500"
+                />
+              </div>
+
+              <div className="w-px h-5 bg-white/20 mx-0.5" />
+
+              {/* Sélecteur de Saisons Alseve Nova */}
+              <button
+                type="button"
+                onClick={() => {
+                  const seasons: NovaSeason[] = ["dry_cool", "dry_hot", "rainy", "harvest"];
+                  const idx = seasons.indexOf(novaSeason);
+                  setNovaSeason(seasons[(idx + 1) % seasons.length]);
+                }}
+                title="Changer de saison Alseve Nova (Harmattan -> Sèche chaude -> Hivernage -> Récolte)"
+                className="px-2 py-1 rounded-xl bg-white/10 hover:bg-white/20 text-white text-[11px] font-bold flex items-center gap-1 transition-colors"
+              >
+                <Trees className="h-3 w-3 text-emerald-400" />
+                <span className="hidden md:inline">
+                  {novaSeason === "dry_cool"
+                    ? "Harmattan"
+                    : novaSeason === "dry_hot"
+                    ? "Sèche Chaude"
+                    : novaSeason === "rainy"
+                    ? "Hivernage"
+                    : "Récolte"}
+                </span>
+                <span className="md:hidden">
+                  {novaSeason === "dry_cool"
+                    ? "Frais"
+                    : novaSeason === "dry_hot"
+                    ? "Chaud"
+                    : novaSeason === "rainy"
+                    ? "Pluie"
+                    : "Récolte"}
+                </span>
+              </button>
+
+              {/* Sélecteur Croissance des Végétaux Alseve Nova */}
+              <button
+                type="button"
+                onClick={() => {
+                  const ages = [1, 3, 5, 10];
+                  const idx = ages.indexOf(growthAgeYears);
+                  setGrowthAgeYears(ages[(idx + 1) % ages.length]);
+                }}
+                title="Simuler l'âge et la croissance des végétaux Alseve Nova (1 an, 3 ans, 5 ans, 10 ans)"
+                className="px-2 py-1 rounded-xl bg-white/10 hover:bg-white/20 text-white text-[11px] font-bold flex items-center gap-1 transition-colors"
+              >
+                <Sprout className="h-3 w-3 text-lime-400" />
+                <span>
+                  {growthAgeYears} an{growthAgeYears > 1 ? "s" : ""}
+                </span>
+              </button>
+
+              <div className="w-px h-5 bg-white/20 mx-0.5" />
+
+              {/* Préréglages rapides Jour / Coucher / Nuit */}
+              <button
+                type="button"
+                onClick={() => {
+                  setIsSunAutoPlaying(false);
+                  setSolarHour(12.0);
+                  setLightingMode("day");
+                }}
+                title="Plein soleil sahélien (12h)"
+                className={`p-1.5 rounded-xl transition-colors ${
+                  solarHour >= 10 && solarHour <= 15
+                    ? "bg-amber-500 text-white"
+                    : "text-white/70 hover:bg-white/10"
+                }`}
+              >
+                <Sun className="h-4 w-4" />
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setIsSunAutoPlaying(false);
+                  setSolarHour(18.0);
+                  setLightingMode("sunset");
+                }}
+                title="Coucher de soleil doré (18h)"
+                className={`p-1.5 rounded-xl transition-colors ${
+                  solarHour >= 17.5 && solarHour <= 19
+                    ? "bg-orange-500 text-white"
+                    : "text-white/70 hover:bg-white/10"
+                }`}
+              >
+                <Sunset className="h-4 w-4" />
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setIsSunAutoPlaying(false);
+                  setSolarHour(20.0);
+                  setLightingMode("night");
+                }}
+                title="Vue de nuit (Éclairages Nova actifs)"
+                className={`p-1.5 rounded-xl transition-colors ${
+                  solarHour > 19 || solarHour < 6.5
+                    ? "bg-indigo-600 text-white"
+                    : "text-white/70 hover:bg-white/10"
+                }`}
+              >
+                <Moon className="h-4 w-4" />
+              </button>
+
+              <div className="w-px h-5 bg-white/20 mx-0.5" />
+
+              {/* Commutateur 3D GPU / 2.5D */}
               {isWebGLAvail && (
                 <button
                   type="button"
@@ -4393,59 +4619,20 @@ export function Studio3DFarmModeler({
                       ? "Passer en mode Isométrique 2.5D Universel"
                       : "Passer en mode 3D WebGL Accéléré"
                   }
-                  className="px-2.5 py-1 rounded-xl bg-white/10 hover:bg-white/20 text-white text-[11px] font-bold flex items-center gap-1.5 transition-colors mr-1"
+                  className="px-2 py-1 rounded-xl bg-white/10 hover:bg-white/20 text-white text-[11px] font-bold flex items-center gap-1 transition-colors"
                 >
                   <RefreshCw className="h-3 w-3 text-emerald-400" />
                   <span>{renderMode === "webgl" ? "3D GPU" : "2.5D"}</span>
                 </button>
               )}
 
-              {/* Éclairage solaire */}
-              <button
-                type="button"
-                onClick={() => setLightingMode("day")}
-                title="Plein soleil sahélien"
-                className={`p-1.5 rounded-xl transition-colors ${
-                  lightingMode === "day"
-                    ? "bg-amber-500 text-white"
-                    : "text-white/70 hover:bg-white/10"
-                }`}
-              >
-                <Sun className="h-4 w-4" />
-              </button>
-              <button
-                type="button"
-                onClick={() => setLightingMode("sunset")}
-                title="Coucher de soleil doré"
-                className={`p-1.5 rounded-xl transition-colors ${
-                  lightingMode === "sunset"
-                    ? "bg-orange-500 text-white"
-                    : "text-white/70 hover:bg-white/10"
-                }`}
-              >
-                <Sunset className="h-4 w-4" />
-              </button>
-              <button
-                type="button"
-                onClick={() => setLightingMode("night")}
-                title="Vue de nuit"
-                className={`p-1.5 rounded-xl transition-colors ${
-                  lightingMode === "night"
-                    ? "bg-indigo-600 text-white"
-                    : "text-white/70 hover:bg-white/10"
-                }`}
-              >
-                <Moon className="h-4 w-4" />
-              </button>
-              <div className="w-px h-5 bg-white/20 mx-0.5" />
+              {/* Rotation 360° */}
               <button
                 type="button"
                 onClick={() => setIsRotating((r) => !r)}
                 title={isRotating ? "Arrêter la rotation" : "Rotation automatique 360°"}
                 className={`p-1.5 rounded-xl transition-colors ${
-                  isRotating
-                    ? "bg-emerald-500 text-white animate-spin"
-                    : "text-white/70 hover:bg-white/10"
+                  isRotating ? "bg-emerald-500 text-white animate-spin" : "text-white/70 hover:bg-white/10"
                 }`}
               >
                 <RotateCw className="h-4 w-4" />
