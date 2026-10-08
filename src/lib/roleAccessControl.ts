@@ -93,8 +93,8 @@ export function getDiagnosticAccessInfo(
       allowed: true,
       tier: "official_prescription",
       canSignPrescription: true,
-      reason: "Habilitation d'expert certifié : accès complet au diagnostic IA et génération d'ordonnances officielles signées.",
-      recommendedRoute: "/dashboard/expert-diagnosis",
+      reason: "Habilitation d'expert certifié : émission et signature d'ordonnances agronomiques officielles.",
+      recommendedRoute: "/dashboard/expert-prescriptions",
     };
   }
 
@@ -106,10 +106,10 @@ export function getDiagnosticAccessInfo(
     tier: "advisory_field_diagnosis",
     canSignPrescription: false,
     reason: isFarmer
-      ? "Mode Aide à la décision & Diagnostic IA de terrain : vous pouvez analyser vos parcelles, identifier les maladies et consulter les recommandations agro-écologiques INERA / CSP-CILSS. Pour une ordonnance officielle certifiée, vous pouvez solliciter un cabinet d'agronomie partenaire."
+      ? "Mode Aide à la décision de terrain : fiches techniques et recommandations agro-écologiques INERA / CSP-CILSS. Pour une ordonnance officielle certifiée, vous pouvez solliciter un cabinet d'agronomie partenaire."
       : isBreeder
-      ? "Mode Conseil & Suivi d'élevage : analyse assistée par vision et recommandations zootechniques. Pour une prescription vétérinaire officielle, contactez un docteur vétérinaire partenaire."
-      : "Mode Découverte & Diagnostic IA : analyse végétale assistée par les référentiels scientifiques.",
-    recommendedRoute: "/dashboard/expert-diagnosis",
+      ? "Mode Conseil & Suivi d'élevage : recommandations zootechniques. Pour une prescription vétérinaire officielle, contactez un docteur vétérinaire partenaire."
+      : "Mode Découverte : fiches techniques et référentiels scientifiques.",
+    recommendedRoute: "/dashboard/crop-library",
   };
 }

@@ -16,7 +16,7 @@ import {
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import {
   ShieldCheck, Check, Sparkles, Tractor, Store, Wrench, Microscope, FileText,
-  Eye, Calculator, MapPin, Users, ArrowRight, Zap, Phone, CheckCircle2, Clock
+  Eye, Calculator, MapPin, Users, ArrowRight, Zap, Phone, CheckCircle2, Clock, BookOpen
 } from "lucide-react";
 import { toast } from "sonner";
 import BackNavigationButton from "@/components/BackNavigationButton";
@@ -277,11 +277,11 @@ export default function ProviderSubscriptionPage() {
         </div>
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
           <Link
-            to="/dashboard/expert-diagnosis"
+            to="/dashboard/crop-library"
             className="p-3 bg-background rounded-xl border border-border hover:border-primary transition-all flex items-center gap-2 text-xs font-semibold shadow-xs"
           >
-            <Microscope className="h-4 w-4 text-primary shrink-0" />
-            <span className="truncate">Diagnostic Végétal</span>
+            <BookOpen className="h-4 w-4 text-primary shrink-0" />
+            <span className="truncate">Fiches Techniques Cultures</span>
           </Link>
           <Link
             to="/dashboard/expert-prescriptions"

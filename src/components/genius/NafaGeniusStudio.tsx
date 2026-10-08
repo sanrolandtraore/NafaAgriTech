@@ -61,7 +61,6 @@ import {
 
 import { generateTechnicalDossierPdf } from "@/lib/nafaGeniusPdf";
 import { SmartQuoteComparator } from "./SmartQuoteComparator";
-import { CropDiagnosisTool } from "@/components/expert/CropDiagnosisTool";
 import { IrrisModelStudio } from "./IrrisModelStudio";
 import {
   calculateIrrisModel,
@@ -118,7 +117,7 @@ export const NafaGeniusStudio: React.FC = () => {
   const [conversation, setConversation] = useState<{ role: "user" | "assistant"; content: string; timestamp: string }[]>([
     {
       role: "assistant",
-      content: "Bonjour ! Je suis votre Copilote d'Ingénierie Agronomique NAFA. Posez-moi vos questions de terrain (irrigation FAO-56, dimensionnement de forage solaire, diagnostic foliaire, devis en FCFA, aviculture sahélienne). Comment puis-je vous aider ?",
+      content: "Bonjour ! Je suis votre Copilote d'Ingénierie Agronomique NAFA. Posez-moi vos questions de terrain (irrigation FAO-56, dimensionnement de forage solaire, devis en FCFA, aviculture sahélienne). Comment puis-je vous aider ?",
       timestamp: new Date().toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" }),
     },
   ]);
@@ -134,8 +133,6 @@ export const NafaGeniusStudio: React.FC = () => {
         setActiveTab("validation_devis");
       } else if (["export", "export_pro", "pdf", "dossier"].includes(lower)) {
         setActiveTab("export_pro");
-      } else if (["diagnostic", "crop", "maladie", "adventice"].includes(lower)) {
-        setActiveTab("diagnostic");
       } else {
         setActiveTab("irris");
       }
@@ -508,7 +505,6 @@ export const NafaGeniusStudio: React.FC = () => {
     // Basculer vers l'onglet pertinent
     if (parsed.intent === "CAPTURE_GPS" || parsed.intent === "CALCULATE_IRRIGATION" || parsed.intent === "DESIGN_POULTRY") setActiveTab("irris");
     if (parsed.intent === "GENERATE_QUOTE") setActiveTab("validation_devis");
-    if (parsed.intent === "DIAGNOSE_CROP") setActiveTab("diagnostic");
 
     const lower = text.toLowerCase();
     if (lower.includes("gps") || lower.includes("surface") || lower.includes("arpentage") || lower.includes("terrain") || lower.includes("borne") || lower.includes("eau") || lower.includes("pompe") || lower.includes("irrigation") || lower.includes("solaire") || lower.includes("irris")) {
@@ -517,8 +513,6 @@ export const NafaGeniusStudio: React.FC = () => {
       setActiveTab("validation_devis");
     } else if (lower.includes("pdf") || lower.includes("export") || lower.includes("dossier")) {
       setActiveTab("export_pro");
-    } else if (lower.includes("diagnostic") || lower.includes("maladie") || lower.includes("plante") || lower.includes("feuille") || lower.includes("adventice")) {
-      setActiveTab("diagnostic");
     }
 
     // Si action directe (ex: création de visite)
@@ -779,15 +773,6 @@ export const NafaGeniusStudio: React.FC = () => {
               <Download className="h-3 w-3 mr-1 text-teal-600" />
               « 3. Dossier & Devis PDF »
             </Button>
-            <Button
-              size="sm"
-              variant="outline"
-              className="h-7 text-xs rounded-full shrink-0 border-emerald-500/30 text-emerald-800 dark:text-emerald-300"
-              onClick={() => setActiveTab("diagnostic")}
-            >
-              <Sprout className="h-3 w-3 mr-1 text-emerald-600" />
-              « 4. Diagnostic Végétal »
-            </Button>
           </div>
 
           {/* Affichage de la compréhension */}
@@ -928,10 +913,6 @@ export const NafaGeniusStudio: React.FC = () => {
           <TabsTrigger value="export_pro" className="text-xs py-2 px-2 gap-1.5 data-[state=active]:bg-background shadow-xs font-semibold">
             <Download className="h-3.5 w-3.5 text-teal-600 shrink-0" />
             <span className="truncate">3. Dossier & Devis PDF</span>
-          </TabsTrigger>
-          <TabsTrigger value="diagnostic" className="text-xs py-2 px-2 gap-1.5 data-[state=active]:bg-background shadow-xs font-semibold">
-            <Sprout className="h-3.5 w-3.5 text-emerald-500 shrink-0" />
-            <span className="truncate">4. Diagnostic Végétal</span>
           </TabsTrigger>
         </TabsList>
 
@@ -1250,22 +1231,8 @@ export const NafaGeniusStudio: React.FC = () => {
               >
                 ← Retour Étape 2 : Devis Express en FCFA
               </Button>
-              <Button
-                size="sm"
-                onClick={() => setActiveTab("diagnostic")}
-                className="bg-emerald-600 hover:bg-emerald-500 text-white text-xs gap-1 font-semibold"
-              >
-                Consulter le Diagnostic Végétal (Étape 4) <ArrowRight className="h-3 w-3" />
-              </Button>
             </div>
           </Card>
-        </TabsContent>
-
-        {/* ═════════════════════════════════════════════════════════ */}
-        {/* DIAGNOSTIC AGRONOMIQUE RAG SCIENTIFIQUE (INERA, CSP, YARA)*/}
-        {/* ═════════════════════════════════════════════════════════ */}
-        <TabsContent value="diagnostic" className="space-y-4">
-          <CropDiagnosisTool />
         </TabsContent>
       </Tabs>
 

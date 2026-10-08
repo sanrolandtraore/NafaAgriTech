@@ -42,7 +42,6 @@ import { FieldVisitReportTool } from "./FieldVisitReportTool";
 import { FieldQuotesTool } from "./FieldQuotesTool";
 import { NafaAiCopilot } from "./NafaAiCopilot";
 import { NewFarmModal } from "./NewFarmModal";
-import { CropDiagnosisTool } from "@/components/expert/CropDiagnosisTool";
 import { Studio3DFarmModeler } from "./Studio3DFarmModeler";
 import { WcadiIrrigationStudio } from "./WcadiIrrigationStudio";
 import PdfExportHistoryModal from "@/components/export/PdfExportHistoryModal";
@@ -69,7 +68,6 @@ import {
   AlertTriangle,
   Wifi,
   WifiOff,
-  Microscope,
   Box,
   Settings2,
 } from "lucide-react";
@@ -207,8 +205,6 @@ export const FieldDesignerStudio: React.FC = () => {
         setActiveTab("devis");
       } else if (["export", "export_pro", "pdf", "dossier"].includes(lower)) {
         setActiveTab("devis");
-      } else if (["diagnostic", "crop", "maladie"].includes(lower)) {
-        setActiveTab("diagnostic");
       } else if (["gps", "mesure", "arpentage"].includes(lower)) {
         setActiveTab("gps");
       } else if (["crop_designer", "culture"].includes(lower)) {
@@ -439,10 +435,6 @@ export const FieldDesignerStudio: React.FC = () => {
           <TabsTrigger value="copilot" className="h-10 text-xs font-bold rounded-xl flex items-center justify-center gap-1 min-w-0">
             <Sparkles className="h-3.5 w-3.5 shrink-0" />
             <span className="truncate">AI Copilot</span>
-          </TabsTrigger>
-          <TabsTrigger value="diagnostic" className="h-10 text-xs font-bold rounded-xl flex items-center justify-center gap-1 min-w-0" aria-label="4. Diagnostic Végétal">
-            <Microscope className="h-3.5 w-3.5 shrink-0" />
-            <span className="truncate">Diagnostic</span>
           </TabsTrigger>
         </TabsList>
 
@@ -762,11 +754,6 @@ export const FieldDesignerStudio: React.FC = () => {
             irrigation={irrigationProjects[0]}
             buildings={buildings}
           />
-        </TabsContent>
-
-        {/* ── 10. DIAGNOSTIC VÉGÉTAL SCIENTIFIQUE ── */}
-        <TabsContent value="diagnostic">
-          <CropDiagnosisTool />
         </TabsContent>
       </Tabs>
 

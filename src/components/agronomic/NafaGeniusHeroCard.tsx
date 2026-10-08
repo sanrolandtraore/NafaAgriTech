@@ -7,7 +7,7 @@ import {
   BarChart3,
   PencilRuler,
   Calculator,
-  Microscope,
+  BookOpen,
   FileSpreadsheet,
   Wallet,
   FileText,
@@ -46,10 +46,10 @@ export const NafaGeniusHeroCard: React.FC<NafaGeniusHeroCardProps> = ({
       desc: "Débits, Semis & NPK",
     },
     {
-      label: "Diagnostiquer",
-      route: "/dashboard/expert-diagnosis",
-      icon: Microscope,
-      desc: "Diagnostic & Pathologies",
+      label: "Fiches Cultures",
+      route: "/dashboard/crop-library",
+      icon: BookOpen,
+      desc: "Référentiels & Espèces",
     },
     {
       label: "Générer un plan",
