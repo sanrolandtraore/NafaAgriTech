@@ -121,6 +121,25 @@ export const AGRONOMIC_TOOLS_CATALOG: AgronomicToolItem[] = [
     },
   },
   {
+    id: "tool-leve-gps-bornage",
+    title: "Levé de Coordonnées GPS & Bornage",
+    category: "terrain_carto",
+    categoryLabel: "Mesure GPS & Cartographie SIG",
+    description: "Levé complet des bornes et sommets (WGS84 / UTM 30N), mode marche continue, conversion DD/DMS, export SIG (GeoJSON, GPX, KML, CSV) et procès-verbal officiel PDF.",
+    route: "/dashboard/gps-survey",
+    iconName: "Navigation",
+    isOffline: true,
+    badges: ["GPS", "WGS84", "PDF", "Hors ligne"],
+    keywords: ["levé gps", "lever des coordonnées", "bornage", "coordonnées gps", "utm", "wgs84", "arpentage", "gpx", "kml", "procès-verbal", "borne"],
+    contextualAi: {
+      roleDescription: "Ingénieur topographe et géomètre expert sahélien.",
+      suggestedActions: [
+        { label: "Démarrer le relevé des bornes", prompt: "Assiste-moi pour le relevé GPS précis des bornes de la parcelle." },
+        { label: "Générer le procès-verbal", prompt: "Prépare le procès-verbal officiel de levé avec les coordonnées UTM et WGS84." },
+      ],
+    },
+  },
+  {
     id: "tool-farm-map-sig",
     title: "Farm Map & SIG Parcellaire",
     category: "terrain_carto",

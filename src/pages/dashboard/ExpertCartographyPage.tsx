@@ -725,8 +725,19 @@ const ExpertCartographyPage = () => {
               )}
             </div>
 
-            {/* Offline Caching Action Button */}
+            {/* Actions complémentaires & Levé GPS */}
             <div className="flex items-center gap-2">
+              <Button
+                size="sm"
+                variant="outline"
+                className="h-10 px-3 sm:px-4 rounded-xl gap-2 font-bold text-xs border-primary/40 hover:bg-primary/10 text-primary shadow-sm"
+                onClick={() => window.location.href = "/dashboard/gps-survey"}
+                title="Ouvrir l'outil complet de Levé de Coordonnées GPS (multisommets, WGS84 & UTM)"
+              >
+                <Navigation className="h-4 w-4" />
+                <span>Levé GPS Complet</span>
+              </Button>
+
               <Button
                 size="sm"
                 variant="outline"

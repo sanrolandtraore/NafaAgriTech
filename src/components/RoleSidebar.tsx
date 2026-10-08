@@ -9,7 +9,7 @@ import {
   Beef, Heart, Baby, Utensils, Wallet, Building2, Compass, Handshake, ClipboardList,
   Award, Store, Eye, Microscope, FileText, BookOpen, Sparkles,
   Briefcase, ShieldCheck, Landmark, FolderKanban, FlaskConical, BadgeCheck,
-  Home, Activity, Megaphone, Camera,
+  Home, Activity, Megaphone, Camera, Navigation,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useTranslation } from "react-i18next";
@@ -77,6 +77,7 @@ export const agronomeNav: NavItem[] = [
   { to: "/dashboard/expert-prescriptions", labelKey: "Prescriptions", icon: FileText, section: "Expertise Agronomique" },
   { to: "/dashboard/expert-calculator", labelKey: "Calculateur agricole", icon: Calculator, section: "Expertise Agronomique" },
   { to: "/dashboard/expert-cartography", labelKey: "Cartographie GPS", icon: MapPin, section: "Expertise Agronomique" },
+  { to: "/dashboard/gps-survey", labelKey: "Levé de coordonnées GPS", icon: Navigation, section: "Expertise Agronomique" },
   { to: "/dashboard/crop-library", labelKey: "Fiches techniques", icon: BookOpen, section: "Expertise Agronomique" },
   { to: "/dashboard/education", labelKey: "Formation professionnelle", icon: GraduationCap, section: "Expertise Agronomique" },
   { to: "/dashboard/expert-clients", labelKey: "Portefeuille Clients", icon: Users, section: "Clients & Conseils" },
@@ -240,6 +241,7 @@ export const getNavLabel = (item: NavItem, t?: (key: string) => string): string 
     "Demandes de Financement": "Demandes de Financement",
     "Programmes & Subventions": "Programmes & Subventions",
     "Vérification KYC & Agrément": "Vérification KYC & Agrément",
+    "Levé de coordonnées GPS": "Levé de coordonnées GPS",
   };
 
   if (dictionary[key]) {

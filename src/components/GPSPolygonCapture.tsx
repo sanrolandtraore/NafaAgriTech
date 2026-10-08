@@ -14,7 +14,7 @@ interface GPSPolygonCaptureProps {
   onCenterDetected?: (lat: number, lng: number) => void;
 }
 
-const MAX_POINTS = 4;
+const MAX_POINTS = 100;
 
 // Haversine area calculation (client-side preview & offline calculation)
 export function computeAreaHa(coords: Coordinate[]): number {
@@ -90,7 +90,7 @@ export const GPSPolygonCapture = React.forwardRef<HTMLDivElement, GPSPolygonCapt
 
   const areaHa = computeAreaHa(value);
   const perimeterM = computePerimeterM(value);
-  const cornerLabels = ["Coin 1", "Coin 2", "Coin 3", "Coin 4"];
+  const getPointLabel = (i: number) => (i < 4 ? ["Coin 1", "Coin 2", "Coin 3", "Coin 4"][i] : `Sommet P${i + 1}`);
 
   return (
     <div ref={ref} className="space-y-3">
@@ -105,7 +105,7 @@ export const GPSPolygonCapture = React.forwardRef<HTMLDivElement, GPSPolygonCapt
             disabled={capturing || value.length >= MAX_POINTS}
           >
             {capturing ? <Navigation className="h-4 w-4 mr-1 animate-pulse" /> : <MapPin className="h-4 w-4 mr-1" />}
-            {capturing ? "Capture..." : value.length >= MAX_POINTS ? "Complet" : `Capturer ${cornerLabels[value.length]}`}
+            {capturing ? "Capture..." : value.length >= MAX_POINTS ? "Complet" : `Capturer ${getPointLabel(value.length)}`}
           </Button>
           {value.length > 0 && (
             <Button type="button" variant="ghost" size="sm" onClick={() => onChange([])}>
@@ -115,16 +115,22 @@ export const GPSPolygonCapture = React.forwardRef<HTMLDivElement, GPSPolygonCapt
         </div>
       </div>
 
-      <div className="rounded-lg bg-muted/30 border p-3 text-xs text-muted-foreground">
-        Placez-vous successivement aux 4 coins de la parcelle et capturez un point à chaque coin pour déterminer la superficie.
+      <div className="flex items-center justify-between flex-wrap gap-2 rounded-lg bg-muted/30 border p-2.5 text-xs text-muted-foreground">
+        <span>Placez-vous successivement aux bornes/coins de la parcelle pour délimiter le polygone.</span>
+        <a
+          href="/dashboard/gps-survey"
+          className="font-bold text-primary hover:underline inline-flex items-center gap-1 shrink-0"
+        >
+          Ouvrir l'outil de Levé GPS complet &rarr;
+        </a>
       </div>
 
       {value.length > 0 && (
-        <div className="rounded-lg border bg-muted/30 p-2 space-y-1">
+        <div className="rounded-lg border bg-muted/30 p-2 space-y-1 max-h-[160px] overflow-y-auto">
           {value.map((coord, i) => (
             <div key={i} className="flex items-center justify-between text-xs">
               <span className="font-mono">
-                {cornerLabels[i]}: {coord.lat}, {coord.lng}
+                {getPointLabel(i)}: {coord.lat}, {coord.lng}
               </span>
               <Button type="button" variant="ghost" size="icon" className="h-6 w-6" onClick={() => removePoint(i)}>
                 <Trash2 className="h-3 w-3 text-destructive" />
@@ -137,7 +143,7 @@ export const GPSPolygonCapture = React.forwardRef<HTMLDivElement, GPSPolygonCapt
       {value.length >= 3 && (
         <div className="rounded-lg bg-primary/5 border border-primary/10 p-3 space-y-1">
           <p className="text-sm font-medium text-primary flex items-center gap-1">
-            <Plus className="h-3 w-3" /> Polygone — {value.length} coins
+            <Plus className="h-3 w-3" /> Polygone — {value.length} sommets
           </p>
           <div className="flex gap-4 text-sm">
             <span><strong>{areaHa}</strong> ha</span>

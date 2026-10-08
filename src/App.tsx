@@ -102,6 +102,7 @@ const PartnerMarketplacePage = lazy(() => import("./pages/provider/PartnerMarket
 const InstitutionFinanceDashboard = lazy(() => import("./pages/dashboard/partenaire/InstitutionFinanceDashboard"));
 const PartnerMarketingPage = lazy(() => import("./pages/dashboard/partenaire/PartnerMarketingPage"));
 const PartnerDemandesPage = lazy(() => import("./pages/dashboard/partenaire/PartnerDemandesPage"));
+const GpsSurveyPage = lazy(() => import("./pages/dashboard/GpsSurveyPage"));
 
 import PageLoader from "@/components/PageLoader";
 import { startUniversalSyncEngine } from "@/lib/universalSyncEngine";
@@ -199,6 +200,8 @@ const App = () => {
                 </Route>
                 <Route path="marketplace" element={<Suspense fallback={<PageLoader />}><ServiceMarketplacePage /></Suspense>} />
                 <Route path="expert-cartography" element={<Suspense fallback={<PageLoader />}><ExpertCartographyPage /></Suspense>} />
+                <Route path="gps-survey" element={<Suspense fallback={<PageLoader />}><GpsSurveyPage /></Suspense>} />
+                <Route path="leve-gps" element={<Suspense fallback={<PageLoader />}><GpsSurveyPage /></Suspense>} />
                 <Route path="scouting" element={<Suspense fallback={<PageLoader />}><ScoutingPage /></Suspense>} />
                 <Route path="inspections" element={<Suspense fallback={<PageLoader />}><SmartInspectionPage /></Suspense>} />
                 <Route path="smart-inspection" element={<Suspense fallback={<PageLoader />}><SmartInspectionPage /></Suspense>} />

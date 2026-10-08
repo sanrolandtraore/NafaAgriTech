@@ -1,4 +1,5 @@
 import { useState, lazy, Suspense } from "react";
+import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -31,6 +32,7 @@ const parcelStatuses = [
 ];
 
 const ParcelsPage = () => {
+  const navigate = useNavigate();
   const { data: parcels, loading, isOffline, refetch, insertRow, updateRow, deleteRow } = useOfflineData({
     table: 'parcels',
     select: '*, farms(name)',
@@ -175,12 +177,22 @@ const ParcelsPage = () => {
             {isOffline && <Badge variant="outline" className="ml-2 text-xs"><WifiOff className="h-3 w-3 mr-1" />Hors-ligne</Badge>}
           </p>
         </div>
-        <Dialog open={open} onOpenChange={(o) => { setOpen(o); if (!o) resetForm(); }}>
-          <DialogTrigger asChild>
-            <Button className="gradient-primary text-primary-foreground" disabled={farms.length === 0}>
-              <Plus className="h-4 w-4 mr-2" />Nouvelle parcelle
-            </Button>
-          </DialogTrigger>
+        <div className="flex items-center gap-2">
+          <Button
+            variant="outline"
+            onClick={() => navigate("/dashboard/gps-survey")}
+            className="gap-1.5 border-primary/30 text-primary hover:bg-primary/10"
+          >
+            <Navigation className="h-4 w-4" />
+            Levé GPS de Terrain
+          </Button>
+
+          <Dialog open={open} onOpenChange={(o) => { setOpen(o); if (!o) resetForm(); }}>
+            <DialogTrigger asChild>
+              <Button className="gradient-primary text-primary-foreground" disabled={farms.length === 0}>
+                <Plus className="h-4 w-4 mr-2" />Nouvelle parcelle
+              </Button>
+            </DialogTrigger>
           <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-lg">
             <DialogHeader><DialogTitle>{editing ? "Modifier" : "Nouvelle"} parcelle</DialogTitle></DialogHeader>
             <form onSubmit={handleSubmit} className="space-y-4">
@@ -247,6 +259,7 @@ const ParcelsPage = () => {
             </form>
           </DialogContent>
         </Dialog>
+        </div>
       </div>
 
       {loading ? (
