@@ -45,8 +45,6 @@ import { pdfExportHistory } from "@/lib/pdfExportHistory";
 import PdfExportHistoryModal from "@/components/export/PdfExportHistoryModal";
 import BackNavigationButton from "@/components/BackNavigationButton";
 import { useOfflineData } from "@/hooks/useOfflineData";
-import { realAiService, type LivestockAuditAiOutput } from "@/lib/realAiService";
-import RealAiConfigModal from "@/components/ai/RealAiConfigModal";
 
 export default function AnimalCountingPage() {
   const [species, setSpecies] = useState<AnimalSpeciesType>("volaille");
@@ -54,10 +52,7 @@ export default function AnimalCountingPage() {
   const [surfaceAreaM2, setSurfaceAreaM2] = useState<number>(100);
   const [technicianNotes, setTechnicianNotes] = useState<string>("");
   const [showPdfHistory, setShowPdfHistory] = useState(false);
-  const [showAiModal, setShowAiModal] = useState(false);
-  const [realAiConfigured, setRealAiConfigured] = useState<boolean>(realAiService.isConfigured());
-  const [realAiAudit, setRealAiAudit] = useState<LivestockAuditAiOutput | null>(null);
-  const [isAuditingWithAi, setIsAuditingWithAi] = useState<boolean>(false);
+
 
   // Médias et flux
   const [imageSrc, setImageSrc] = useState<string | null>(null);
@@ -99,14 +94,7 @@ export default function AnimalCountingPage() {
     };
   }, []);
 
-  // Écouter les mises à jour de configuration d'IA Réelle
-  useEffect(() => {
-    const handleAiConfigChange = () => {
-      setRealAiConfigured(realAiService.isConfigured());
-    };
-    window.addEventListener("nafa_real_ai_config_updated", handleAiConfigChange);
-    return () => window.removeEventListener("nafa_real_ai_config_updated", handleAiConfigChange);
-  }, []);
+
 
   const stopCameraStream = () => {
     if (videoRef.current && videoRef.current.srcObject) {
@@ -275,36 +263,7 @@ export default function AnimalCountingPage() {
   // Calcul de l'effectif final corrigé
   const finalCount = Math.max(0, (analysisResult?.detectedCount || 0) + manualAdjustment);
 
-  // Exécution de l'audit vétérinaire et zootechnique par IA Réelle
-  const handleRunRealAiAudit = async () => {
-    if (!analysisResult) return;
-    setIsAuditingWithAi(true);
-    try {
-      let imageBase64: string | undefined = undefined;
-      let mimeType = "image/jpeg";
-      if (imageSrc && imageSrc.startsWith("data:")) {
-        imageBase64 = imageSrc;
-        const match = imageSrc.match(/^data:(image\/[a-zA-Z0-9.+-]+);base64,/);
-        if (match) mimeType = match[1];
-      }
 
-      const audit = await realAiService.analyzeLivestockWithVision({
-        imageBase64,
-        mimeType,
-        species,
-        headCount: finalCount,
-        surfaceAreaM2,
-        observations: technicianNotes,
-      });
-
-      setRealAiAudit(audit);
-      toast.success("Audit zootechnique et vétérinaire IA réalisé avec succès !");
-    } catch (err: any) {
-      toast.error(err?.message || "Erreur lors de l'audit zootechnique IA");
-    } finally {
-      setIsAuditingWithAi(false);
-    }
-  };
 
   // Sauvegarde dans l'élevage
   const handleSaveToLivestock = async () => {
@@ -404,23 +363,7 @@ export default function AnimalCountingPage() {
           </div>
         </div>
         <div className="flex items-center gap-2 flex-wrap">
-          <Button
-            size="sm"
-            variant="outline"
-            onClick={() => setShowAiModal(true)}
-            className={`text-xs font-semibold gap-1.5 ${
-              realAiConfigured
-                ? "border-emerald-500/40 text-emerald-700 dark:text-emerald-300 bg-emerald-500/5 hover:bg-emerald-500/10"
-                : "border-primary/30 hover:bg-primary/10"
-            }`}
-            title="Configurer le moteur d'IA réelle (Claude 3.5 Sonnet / Vision)"
-          >
-            <Cpu className="h-4 w-4 text-primary" />
-            IA Réelle (Claude)
-            {realAiConfigured && (
-              <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 inline-block ml-0.5" />
-            )}
-          </Button>
+
           <Button
             size="sm"
             variant="outline"
@@ -772,83 +715,7 @@ export default function AnimalCountingPage() {
                     </div>
                   )}
 
-                  {/* Audit Vétérinaire & Zootechnique par IA Réelle */}
-                  <div className="space-y-2 pt-1">
-                    <Button
-                      type="button"
-                      variant="outline"
-                      onClick={handleRunRealAiAudit}
-                      disabled={isAuditingWithAi}
-                      className="w-full gap-2 text-xs font-bold border-primary/40 bg-primary/5 hover:bg-primary/10 text-primary"
-                    >
-                      <Sparkles className="h-4 w-4" />
-                      {isAuditingWithAi ? "Audit Vétérinaire IA en cours..." : "Lancer l'Audit Vétérinaire IA Réelle (Claude)"}
-                    </Button>
 
-                    {realAiAudit && (
-                      <div className="p-3 rounded-lg border-2 border-emerald-500/30 bg-emerald-500/5 space-y-2.5 text-xs">
-                        <div className="flex items-center justify-between">
-                          <span className="font-bold text-emerald-800 dark:text-emerald-300 flex items-center gap-1.5">
-                            <Sparkles className="h-4 w-4 text-emerald-600" />
-                            Audit Vétérinaire IA (Claude Vision)
-                          </span>
-                          <Badge
-                            variant="outline"
-                            className={
-                              realAiAudit.densityEvaluation === "optimale"
-                                ? "border-emerald-500 text-emerald-700 bg-emerald-500/10"
-                                : realAiAudit.densityEvaluation === "acceptable"
-                                ? "border-blue-500 text-blue-700 bg-blue-500/10"
-                                : "border-amber-500 text-amber-700 bg-amber-500/10"
-                            }
-                          >
-                            Densité : {realAiAudit.densityEvaluation}
-                          </Badge>
-                        </div>
-
-                        <div className="grid grid-cols-2 gap-2 text-[11px] pt-1">
-                          <div className="p-2 rounded bg-background/80 border">
-                            <span className="text-muted-foreground block text-[10px]">Hygiène ambiante</span>
-                            <span className="font-bold capitalize">{realAiAudit.hygieneStatus}</span>
-                          </div>
-                          <div className="p-2 rounded bg-background/80 border">
-                            <span className="text-muted-foreground block text-[10px]">Stress thermique</span>
-                            <span className={`font-bold ${realAiAudit.heatStressSigns ? "text-red-600" : "text-emerald-600"}`}>
-                              {realAiAudit.heatStressSigns ? "Risque élevé" : "Sous contrôle"}
-                            </span>
-                          </div>
-                        </div>
-
-                        {realAiAudit.healthObservations?.length > 0 && (
-                          <div className="space-y-1">
-                            <span className="font-semibold text-muted-foreground block text-[11px]">Observations cliniques :</span>
-                            <ul className="list-disc pl-4 space-y-0.5 text-muted-foreground text-[11px]">
-                              {realAiAudit.healthObservations.map((obs, idx) => (
-                                <li key={idx}>{obs}</li>
-                              ))}
-                            </ul>
-                          </div>
-                        )}
-
-                        {realAiAudit.veterinaryRecommendations?.length > 0 && (
-                          <div className="space-y-1">
-                            <span className="font-semibold text-emerald-800 dark:text-emerald-300 block text-[11px]">Recommandations sanitaires :</span>
-                            <ul className="list-disc pl-4 space-y-0.5 text-[11px] text-foreground">
-                              {realAiAudit.veterinaryRecommendations.map((rec, idx) => (
-                                <li key={idx}>{rec}</li>
-                              ))}
-                            </ul>
-                          </div>
-                        )}
-
-                        {realAiAudit.feedingAdvice && (
-                          <p className="text-[11px] text-muted-foreground bg-background/60 p-2 rounded border">
-                            <strong className="text-foreground">Conseil nutritionnel & abreuvement :</strong> {realAiAudit.feedingAdvice}
-                          </p>
-                        )}
-                      </div>
-                    )}
-                  </div>
 
                   {/* Notes d'observation */}
                   <div>
@@ -928,11 +795,6 @@ export default function AnimalCountingPage() {
         title="Historique des Rapports de Comptage & Zootechnie"
       />
 
-      {/* Modal de configuration de l'IA Réelle (Claude / OpenRouter / Gemini) */}
-      <RealAiConfigModal
-        open={showAiModal}
-        onOpenChange={setShowAiModal}
-      />
     </div>
   );
 }

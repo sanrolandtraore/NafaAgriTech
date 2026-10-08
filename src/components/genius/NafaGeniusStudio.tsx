@@ -18,8 +18,6 @@ import {
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
 import { partnerBrandingStorage } from "@/lib/partnerBrandingStorage";
-import { realAiService, ChatMessage } from "@/lib/realAiService";
-import RealAiConfigModal from "@/components/ai/RealAiConfigModal";
 
 import {
   GeoPoint,
@@ -117,8 +115,6 @@ export const NafaGeniusStudio: React.FC = () => {
   const [isListening, setIsListening] = useState<boolean>(false);
   const [nluResult, setNluResult] = useState<ParsedGeniusAction | null>(null);
   const [activeTab, setActiveTab] = useState<string>("irris");
-  const [showAiModal, setShowAiModal] = useState<boolean>(false);
-  const [realAiConfigured, setRealAiConfigured] = useState<boolean>(realAiService.isConfigured());
   const [isAiResponding, setIsAiResponding] = useState<boolean>(false);
   const [conversation, setConversation] = useState<{ role: "user" | "assistant"; content: string; timestamp: string }[]>([
     {
@@ -127,12 +123,6 @@ export const NafaGeniusStudio: React.FC = () => {
       timestamp: new Date().toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" }),
     },
   ]);
-
-  useEffect(() => {
-    const handleConfigChange = () => setRealAiConfigured(realAiService.isConfigured());
-    window.addEventListener("nafa_real_ai_config_updated", handleConfigChange);
-    return () => window.removeEventListener("nafa_real_ai_config_updated", handleConfigChange);
-  }, []);
 
   // Synchronisation avec l'URL (permet l'ouverture directe d'un outil)
   useEffect(() => {
@@ -543,29 +533,11 @@ export const NafaGeniusStudio: React.FC = () => {
 
     // Appel à l'IA Réelle (Claude 3.5 Sonnet / LLM) avec contexte agronomique complet
     try {
-      const projectContext = `Client: ${clientName || "Non spécifié"}, Localisation: ${farmLocation}. Culture: ${selectedCrop}. Surface: ${surveyResult?.areaHa ?? 1} ha. Débit requis: ${((surveyResult?.areaHa ?? 1) * 3.6).toFixed(1)} m³/h. Élevage associé: ${includePoultry ? poultryFlockSize + " " + poultryBirdType : "Aucun"}. Région: ${selectedRegion}.`;
-
-      const chatHistory: ChatMessage[] = conversation
-        .slice(-6)
-        .map((c) => ({ role: c.role, content: c.content }));
-      chatHistory.push({ role: "user", content: text });
-
-      const aiReply = await realAiService.chat(chatHistory, projectContext);
       setConversation((prev) => [
         ...prev,
         {
           role: "assistant",
-          content: aiReply,
-          timestamp: new Date().toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" }),
-        },
-      ]);
-    } catch (e: any) {
-      console.error("Erreur Copilote IA:", e);
-      setConversation((prev) => [
-        ...prev,
-        {
-          role: "assistant",
-          content: `Réponse du référentiel technique INERA & FAO-56 : ${parsed.explanation}`,
+          content: parsed.explanation,
           timestamp: new Date().toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" }),
         },
       ]);
@@ -774,16 +746,7 @@ export const NafaGeniusStudio: React.FC = () => {
             </SelectContent>
           </Select>
 
-          <Button
-            size="sm"
-            variant="outline"
-            onClick={() => setShowAiModal(true)}
-            className="h-9 text-xs font-semibold bg-emerald-900/60 hover:bg-emerald-800 border-emerald-700 text-white gap-1.5 shadow-sm"
-          >
-            <Sparkles className="h-3.5 w-3.5 text-amber-400" />
-            <span className="hidden sm:inline">{realAiConfigured ? "IA Réelle (Claude)" : "Configurer IA (Claude)"}</span>
-            <span className="sm:hidden">IA</span>
-          </Button>
+
 
           <Button
             size="sm"
@@ -940,28 +903,19 @@ export const NafaGeniusStudio: React.FC = () => {
         </CardContent>
       </Card>
 
-      {/* Fil de Discussion Copilote avec l'IA Réelle (Claude / LLM) */}
-      <Card className="border-amber-500/20 bg-card/95 shadow-sm overflow-hidden">
-        <CardHeader className="py-2.5 px-4 border-b bg-gradient-to-r from-amber-500/5 via-primary/5 to-transparent flex flex-row items-center justify-between">
+      {/* Fil de Discussion Copilote d'Ingénierie */}
+      <Card className="border-emerald-500/20 bg-card/95 shadow-sm overflow-hidden">
+        <CardHeader className="py-2.5 px-4 border-b bg-gradient-to-r from-emerald-500/5 via-primary/5 to-transparent flex flex-row items-center justify-between">
           <div className="flex items-center gap-2">
-            <Sparkles className="h-4 w-4 text-amber-500" />
+            <Sparkles className="h-4 w-4 text-emerald-600" />
             <CardTitle className="text-xs sm:text-sm font-bold flex items-center gap-2">
-              Copilote d'Ingénierie IA Réelle
-              <Badge variant="outline" className={realAiConfigured ? "bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border-emerald-500/30 text-[10px]" : "bg-amber-500/10 text-amber-700 dark:text-amber-400 border-amber-500/30 text-[10px]"}>
-                {realAiConfigured ? `Connecté à ${realAiService.getConfig().model}` : "Mode Local (Aucune clé API)"}
+              Copilote d'Ingénierie Agronomique
+              <Badge variant="outline" className="bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border-emerald-500/30 text-[10px]">
+                Référentiel Certifié INERA & FAO-56
               </Badge>
             </CardTitle>
           </div>
           <div className="flex items-center gap-1.5">
-            <Button
-              size="sm"
-              variant="ghost"
-              className="h-7 text-xs text-muted-foreground hover:text-foreground"
-              onClick={() => setShowAiModal(true)}
-            >
-              <Key className="h-3.5 w-3.5 mr-1 text-amber-500" />
-              {realAiConfigured ? "Paramètres Modèle" : "Activer Claude"}
-            </Button>
             {conversation.length > 1 && (
               <Button
                 size="sm"
@@ -984,7 +938,7 @@ export const NafaGeniusStudio: React.FC = () => {
               }`}
             >
               <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground px-1">
-                <span>{msg.role === "user" ? "Vous (Expert / Producteur)" : "Copilote IA Réelle (Claude)"}</span>
+                <span>{msg.role === "user" ? "Vous (Expert / Producteur)" : "Copilote NAFA (INERA / FAO-56)"}</span>
                 <span>•</span>
                 <span>{msg.timestamp}</span>
               </div>
@@ -1414,14 +1368,6 @@ export const NafaGeniusStudio: React.FC = () => {
         </div>
       </Card>
 
-      {/* Modal de Configuration de l'IA Réelle (Claude / OpenRouter / Gemini / OpenAI) */}
-      <RealAiConfigModal
-        open={showAiModal}
-        onOpenChange={(val) => {
-          setShowAiModal(val);
-          setRealAiConfigured(realAiService.isConfigured());
-        }}
-      />
     </div>
   );
 };

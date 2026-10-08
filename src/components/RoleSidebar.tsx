@@ -16,8 +16,6 @@ import { useTranslation } from "react-i18next";
 import { PartnerProfileType, PARTNER_PROFILES } from "@/lib/partnerProfiles";
 import { RealModuleIcon } from "@/components/ui/RealModuleIcon";
 import { prefetchRoute } from "@/lib/routePrefetcher";
-import RealAiConfigModal from "@/components/ai/RealAiConfigModal";
-import { realAiService } from "@/lib/realAiService";
 
 export type NavItem = {
   to: string;
@@ -303,8 +301,6 @@ export const SidebarNavContent = ({ onNavigate }: SidebarContentProps) => {
   const { profile, signOut, primaryRole, partnerType } = useAuth();
   const { t } = useTranslation();
   const location = useLocation();
-  const [showAiModal, setShowAiModal] = useState(false);
-  const [isAiConfigured, setIsAiConfigured] = useState(realAiService.isConfigured());
 
   const effectiveRole = primaryRole;
   const nav = getNavForRole(effectiveRole, partnerType);
@@ -418,19 +414,6 @@ export const SidebarNavContent = ({ onNavigate }: SidebarContentProps) => {
           </div>
         </Link>
 
-        <button
-          type="button"
-          onClick={() => setShowAiModal(true)}
-          className="w-full flex items-center justify-between gap-2 px-3 py-2 text-xs font-semibold text-sidebar-foreground/85 hover:text-sidebar-foreground hover:bg-sidebar-accent/70 rounded-xl transition-colors border border-amber-500/20 bg-amber-500/5 text-left"
-          title="Configurer le modèle d'IA Réelle (Claude 3.5 Sonnet / OpenAI / Gemini)"
-        >
-          <span className="flex items-center gap-2">
-            <Sparkles className="h-4 w-4 text-amber-500 shrink-0" />
-            <span>Moteur IA Réelle (Claude)</span>
-          </span>
-          <span className={cn("h-2 w-2 rounded-full", isAiConfigured ? "bg-emerald-500" : "bg-amber-500")} />
-        </button>
-
         <Link
           to="/"
           onClick={onNavigate}
@@ -450,14 +433,6 @@ export const SidebarNavContent = ({ onNavigate }: SidebarContentProps) => {
           Déconnexion
         </Button>
       </div>
-
-      <RealAiConfigModal
-        open={showAiModal}
-        onOpenChange={(open) => {
-          setShowAiModal(open);
-          setIsAiConfigured(realAiService.isConfigured());
-        }}
-      />
     </div>
   );
 };
