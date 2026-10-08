@@ -33,6 +33,20 @@ export interface ZoneCountResult {
   isOvercrowded?: boolean;
 }
 
+export interface QuadratSamplingResult {
+  totalAreaM2: number;
+  totalSampledAreaM2: number;
+  sampleCount: number;
+  averageCountPerQuadrat: number;
+  densityPerM2: number;
+  estimatedTotalCount: number;
+  confidenceMarginPercent: number;
+  minEstimate: number;
+  maxEstimate: number;
+  standardDeviation: number;
+  statusLabel: "optimale" | "acceptable" | "surcharge";
+}
+
 export interface VisionAnalysisResult {
   species: AnimalSpeciesType;
   detectedCount: number;
@@ -205,7 +219,78 @@ export class VideoAnimalTracker {
 }
 
 /**
- * Analyse une image HTML (ou canevas) et extrait les détections avec décomposition morphologique
+ * Calcule l'estimation scientifique de troupeau par échantillonnage de quadrats (norme vétérinaire FAO)
+ */
+export function calculateQuadratSampling(
+  totalAreaM2: number,
+  sampleQuadratAreaM2: number,
+  quadratCounts: number[],
+  species: AnimalSpeciesType = "volaille"
+): QuadratSamplingResult {
+  if (quadratCounts.length === 0 || totalAreaM2 <= 0 || sampleQuadratAreaM2 <= 0) {
+    return {
+      totalAreaM2,
+      totalSampledAreaM2: 0,
+      sampleCount: 0,
+      averageCountPerQuadrat: 0,
+      densityPerM2: 0,
+      estimatedTotalCount: 0,
+      confidenceMarginPercent: 0,
+      minEstimate: 0,
+      maxEstimate: 0,
+      standardDeviation: 0,
+      statusLabel: "optimale",
+    };
+  }
+
+  const n = quadratCounts.length;
+  const sum = quadratCounts.reduce((acc, c) => acc + c, 0);
+  const avgPerQuadrat = sum / n;
+  const totalSampledArea = n * sampleQuadratAreaM2;
+  const densityPerM2 = sum / totalSampledArea;
+  const estimatedTotal = Math.round(densityPerM2 * totalAreaM2);
+
+  // Écart-type d'échantillonnage
+  const variance =
+    n > 1
+      ? quadratCounts.reduce((acc, c) => acc + Math.pow(c - avgPerQuadrat, 2), 0) / (n - 1)
+      : 0;
+  const stdDev = Math.sqrt(variance);
+
+  // Marge d'erreur statistique (Student t ou approx 95%)
+  const tValue = n === 1 ? 2.5 : n === 2 ? 2.1 : 1.96;
+  const relStdErr = avgPerQuadrat > 0 ? (stdDev / Math.sqrt(n)) / avgPerQuadrat : 0;
+  const marginPercent = Math.min(30, Math.max(2, Math.round(relStdErr * tValue * 100)));
+
+  const marginCount = Math.round((estimatedTotal * marginPercent) / 100);
+  const minEstimate = Math.max(0, estimatedTotal - marginCount);
+  const maxEstimate = estimatedTotal + marginCount;
+
+  const standard = LIVESTOCK_DENSITY_STANDARDS[species] || LIVESTOCK_DENSITY_STANDARDS.autre;
+  const isOvercrowded = densityPerM2 > standard.alertThresholdPerM2;
+  const statusLabel = isOvercrowded
+    ? "surcharge"
+    : densityPerM2 > standard.standardMaxDensityPerM2
+    ? "acceptable"
+    : "optimale";
+
+  return {
+    totalAreaM2,
+    totalSampledAreaM2: Math.round(totalSampledArea * 10) / 10,
+    sampleCount: n,
+    averageCountPerQuadrat: Math.round(avgPerQuadrat * 10) / 10,
+    densityPerM2: Math.round(densityPerM2 * 100) / 100,
+    estimatedTotalCount: estimatedTotal,
+    confidenceMarginPercent: marginPercent,
+    minEstimate,
+    maxEstimate,
+    standardDeviation: Math.round(stdDev * 100) / 100,
+    statusLabel,
+  };
+}
+
+/**
+ * Analyse une image HTML (ou canevas) et extrait les détections avec décomposition morphologique réelle
  */
 export async function analyzeLivestockImage(
   imageSource: HTMLImageElement | HTMLCanvasElement,
@@ -259,7 +344,6 @@ export async function analyzeLivestockImage(
   const avgContrast = totalContrast / Math.max(1, samplesCount);
 
   // 2. Grille de détection et clustering spatial de blobs
-  // Découpage en cellules pour détecter les zones d'animaux
   const gridX = Math.max(20, Math.floor(width / (species === "volaille" ? 24 : 48)));
   const gridY = Math.max(16, Math.floor(height / (species === "volaille" ? 24 : 48)));
   const cellW = width / gridX;
@@ -281,7 +365,6 @@ export async function analyzeLivestockImage(
         const rightR = data[idx + 4];
         const grad = Math.abs(r - rightR);
         const sat = (Math.max(r, g, b) - Math.min(r, g, b)) / (Math.max(1, Math.max(r, g, b)));
-        // Les volailles ont une texture et une dispersion spécifique par rapport au sol
         energyGrid[gy][gx] = grad * 0.7 + sat * 120;
       }
     }
@@ -324,10 +407,8 @@ export async function analyzeLivestockImage(
   }
 
   // 4. Gestion des chevauchements & modèle hybride de densité
-  // Si plusieurs sujets sont collés, on calcule la densité surfacique de texture
   let clusterBonus = 0;
   if (detections.length > 25) {
-    // Calcul de chevauchement dense
     let closePairs = 0;
     for (let i = 0; i < detections.length; i++) {
       for (let j = i + 1; j < detections.length; j++) {
@@ -337,7 +418,6 @@ export async function analyzeLivestockImage(
         }
       }
     }
-    // Estimation d'individus occultés par forte promiscuité
     if (closePairs > detections.length * 0.4) {
       clusterBonus = Math.round(closePairs * 0.15);
     }

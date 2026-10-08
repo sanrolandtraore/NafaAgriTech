@@ -470,7 +470,7 @@ export const NafaGeniusStudio: React.FC = () => {
     toast.success("Devis certifié conforme à la mercuriale officielle du Burkina Faso !");
   };
 
-  // Traitement d'une commande textuelle ou vocale avec IA Réelle (Claude) & Dispatcher
+  // Traitement d'une commande textuelle ou vocale avec Moteur analytique & Dispatcher
   const handleProcessCommand = async (text: string) => {
     if (!text.trim()) return;
 
@@ -528,7 +528,7 @@ export const NafaGeniusStudio: React.FC = () => {
       else toast.error(res.message);
     }
 
-    // Appel à l'IA Réelle (Claude 3.5 Sonnet / LLM) avec contexte agronomique complet
+    // Traitement analytique avec contexte agronomique complet
     try {
       setConversation((prev) => [
         ...prev,
@@ -907,7 +907,7 @@ export const NafaGeniusStudio: React.FC = () => {
             <div className="flex items-start gap-2 text-xs text-muted-foreground">
               <div className="p-3 rounded-2xl bg-muted/80 border flex items-center gap-2">
                 <Sparkles className="h-4 w-4 text-amber-500 animate-spin" />
-                <span className="font-medium animate-pulse">L'IA Réelle analyse votre projet de terrain et formule ses recommandations techniques...</span>
+                <span className="font-medium animate-pulse">Le moteur d'analyse examine votre projet de terrain et formule ses recommandations techniques...</span>
               </div>
             </div>
           )}

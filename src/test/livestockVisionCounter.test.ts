@@ -5,6 +5,7 @@ import {
   LIVESTOCK_DENSITY_STANDARDS,
   DetectionBox,
   AnimalSpeciesType,
+  calculateQuadratSampling,
 } from "../lib/livestockVisionCounter";
 import { livestockCountStorage } from "../lib/livestockCountStorage";
 import { generateLivestockCountPdf } from "../lib/livestockCountPdf";
@@ -133,6 +134,25 @@ describe("Module de Vision & Comptage Intelligent d'Animaux", () => {
 
       expect(doc).toBeDefined();
       expect(doc.internal.pageSize.getWidth()).toBeCloseTo(210, 0); // A4 portrait
+    });
+  });
+
+  describe("6. Échantillonnage Scientifique par Quadrats (Norme FAO)", () => {
+    it("calcule avec précision l'effectif global extrapolée et la densité", () => {
+      // 3 quadrats témoins de 1 m² mesurés dans un poulailler de 100 m²
+      // Comptages réels : 12, 10, 11 sujets -> Somme = 33 sujets sur 3 m² -> 11 sujets.m²
+      // Total estimé = 11 * 100 = 1 100 sujets
+      const result = calculateQuadratSampling(100, 1, [12, 10, 11], "volaille");
+
+      expect(result.totalSampledAreaM2).toBe(3);
+      expect(result.sampleCount).toBe(3);
+      expect(result.averageCountPerQuadrat).toBe(11);
+      expect(result.densityPerM2).toBe(11);
+      expect(result.estimatedTotalCount).toBe(1100);
+      expect(result.minEstimate).toBeLessThanOrEqual(1100);
+      expect(result.maxEstimate).toBeGreaterThanOrEqual(1100);
+      expect(result.confidenceMarginPercent).toBeGreaterThan(0);
+      expect(result.statusLabel).toBe("acceptable");
     });
   });
 });

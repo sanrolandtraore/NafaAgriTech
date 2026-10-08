@@ -15,7 +15,7 @@ export default function ExpertToolboxPage() {
       <div>
         <h2 className="text-sm font-semibold text-muted-foreground mb-2 uppercase tracking-wide">Diagnostic & Conseil</h2>
         <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-          <ToolboxTile to="/dashboard/expert-diagnosis" icon={Microscope} title="Diagnostic Avancé" description="Photo de plante → maladie, ravageur ou carence" accent="primary" />
+          <ToolboxTile to="/dashboard/expert-diagnosis" icon={Microscope} title="Santé des Cultures & Phyto" description="Fiches INERA & identification par symptômes réels" accent="primary" />
           <ToolboxTile to="/dashboard/expert-prescriptions" icon={FileText} title="Ordonnances" description="Générer une ordonnance PDF signée" accent="accent" />
           <ToolboxTile to="/dashboard/scouting" icon={Eye} title="Observation terrain" description="Observations géolocalisées + rapport" accent="secondary" />
         </div>

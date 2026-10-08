@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import {
@@ -97,16 +97,20 @@ export function useOfflineData<T = any>({
 }: UseOfflineDataOptions) {
   const [data, setData] = useState<T[]>([]);
   const [loading, setLoading] = useState(true);
-  const [isOffline, setIsOffline] = useState(!navigator.onLine);
+  const [isOffline, setIsOffline] = useState(typeof navigator !== 'undefined' ? !navigator.onLine : false);
+  const isMounted = useRef(true);
   const stableFilter = JSON.stringify(filter ?? []);
   const cacheKey = queryKey || `${select}|${orderBy}|${ascending}|${limit}|${stableFilter}`;
 
   useEffect(() => {
-    const goOnline = () => setIsOffline(false);
-    const goOffline = () => setIsOffline(true);
+    isMounted.current = true;
+    if (typeof window === 'undefined') return;
+    const goOnline = () => { if (isMounted.current) setIsOffline(false); };
+    const goOffline = () => { if (isMounted.current) setIsOffline(true); };
     window.addEventListener('online', goOnline);
     window.addEventListener('offline', goOffline);
     return () => {
+      isMounted.current = false;
       window.removeEventListener('online', goOnline);
       window.removeEventListener('offline', goOffline);
     };
@@ -138,6 +142,7 @@ export function useOfflineData<T = any>({
   const fetchData = useCallback(async () => {
     // Populate immediately with cached data if available (stale-while-revalidate)
     const cached = await getCachedData(table, cacheKey);
+    if (!isMounted.current) return;
     if (cached && cached.length > 0) {
       setData(cached as T[]);
       setLoading(false);
@@ -147,10 +152,11 @@ export function useOfflineData<T = any>({
 
     const parsedFilter: { column: string; value: any }[] = JSON.parse(stableFilter);
 
-    if (navigator.onLine) {
+    if (typeof navigator !== 'undefined' && navigator.onLine) {
       try {
         // If there is no remote Supabase session, avoid failing network requests
         const sessionInfo = await resolveActiveSession();
+        if (!isMounted.current) return;
         if (!sessionInfo?.isRemote) {
           if (cached) {
             setData(cached as T[]);
@@ -166,10 +172,12 @@ export function useOfflineData<T = any>({
         query = query.order(orderBy, { ascending }).limit(limit);
 
         const { data: result, error } = await query;
+        if (!isMounted.current) return;
         if (error) throw error;
 
         // Preserve and merge locally created or pending items so they are never wiped
         const currentCached = await getCachedData(table, cacheKey);
+        if (!isMounted.current) return;
         const localPending = (currentCached || []).filter(
           (r: any) => r && (r._offline || (typeof r.id === 'string' && (r.id.startsWith('local-') || r.id.startsWith('offline-'))))
         );
@@ -179,29 +187,36 @@ export function useOfflineData<T = any>({
         setData(merged);
         await cacheData(table, cacheKey, merged);
       } catch (err: any) {
+        if (!isMounted.current) return;
         if (isMissingTableError(err) || isInvalidUuidError(err)) {
           console.warn(`Table ou filtre "${table}" non résolu sur le serveur (${err.code || err.message}). Utilisation du cache local.`);
           const fallbackCached = await getCachedData(table, cacheKey);
-          setData((fallbackCached as T[]) || []);
-          setLoading(false);
+          if (isMounted.current) {
+            setData((fallbackCached as T[]) || []);
+            setLoading(false);
+          }
           return;
         }
         console.warn('Fetch error, falling back to cache:', err);
         const fallbackCached = await getCachedData(table, cacheKey);
-        if (fallbackCached) {
+        if (isMounted.current && fallbackCached) {
           setData(fallbackCached as T[]);
         }
       }
     } else {
       const fallbackCached = await getCachedData(table, cacheKey);
-      if (fallbackCached) {
-        setData(fallbackCached as T[]);
-      } else {
-        toast.warning('Aucune donnée en cache pour le mode hors-ligne');
+      if (isMounted.current) {
+        if (fallbackCached) {
+          setData(fallbackCached as T[]);
+        } else {
+          toast.warning('Aucune donnée en cache pour le mode hors-ligne');
+        }
       }
     }
 
-    setLoading(false);
+    if (isMounted.current) {
+      setLoading(false);
+    }
   }, [table, cacheKey, select, orderBy, ascending, stableFilter, limit, resolveActiveSession]);
 
   useEffect(() => {
