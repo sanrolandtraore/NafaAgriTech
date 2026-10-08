@@ -102,6 +102,7 @@ const PartnerMarketplacePage = lazy(() => import("./pages/provider/PartnerMarket
 const InstitutionFinanceDashboard = lazy(() => import("./pages/dashboard/partenaire/InstitutionFinanceDashboard"));
 const PartnerMarketingPage = lazy(() => import("./pages/dashboard/partenaire/PartnerMarketingPage"));
 const PartnerDemandesPage = lazy(() => import("./pages/dashboard/partenaire/PartnerDemandesPage"));
+const PartnerInvoicesPage = lazy(() => import("./pages/dashboard/partenaire/PartnerInvoicesPage"));
 const GpsSurveyPage = lazy(() => import("./pages/dashboard/GpsSurveyPage"));
 
 import PageLoader from "@/components/PageLoader";
@@ -235,6 +236,8 @@ const App = () => {
                 <Route path="partenaire-kyc" element={<Suspense fallback={<PageLoader />}><PartnerKycPage /></Suspense>} />
                 <Route path="partenaire-verification" element={<Suspense fallback={<PageLoader />}><PartnerKycPage /></Suspense>} />
                 <Route path="identite-professionnelle" element={<Suspense fallback={<PageLoader />}><PartnerBrandingPage /></Suspense>} />
+                <Route path="partenaire-factures" element={<Suspense fallback={<PageLoader />}><PartnerInvoicesPage /></Suspense>} />
+                <Route path="factures" element={<Suspense fallback={<PageLoader />}><PartnerInvoicesPage /></Suspense>} />
                 <Route path="partner-space" element={<Suspense fallback={<PageLoader />}><PartnerDedicatedSpace /></Suspense>} />
                 <Route path="cyber-defense" element={<Suspense fallback={<PageLoader />}><CyberDefenseDashboard /></Suspense>} />
                 </Route>

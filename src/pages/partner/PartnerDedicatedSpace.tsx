@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { useSearchParams } from "react-router-dom";
+import { useSearchParams, Link } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { getEffectiveUserId } from "@/lib/deviceIdentity";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -34,7 +34,8 @@ import {
   ShieldCheck,
   TrendingUp,
   ShoppingCart,
-  Target
+  Target,
+  Receipt,
 } from "lucide-react";
 import { toast } from "sonner";
 import {
@@ -344,7 +345,7 @@ export const PartnerDedicatedSpace: React.FC = () => {
                 <div>
                   <p className="text-xs text-muted-foreground font-medium">Satisfaction Clients</p>
                   <p className="text-lg font-bold text-foreground mt-1 flex items-center gap-1">
-                    <Star className="h-4 w-4 fill-amber-400 text-amber-400" /> {averageRating} / 5
+                    <Star className="h-4 w-4 fill-amber-400 text-amber-400" /> {averageRating} sur 5
                   </p>
                 </div>
                 <div className="h-10 w-10 rounded-xl bg-rose-500/10 text-rose-600 flex items-center justify-center">
@@ -353,6 +354,31 @@ export const PartnerDedicatedSpace: React.FC = () => {
               </CardContent>
             </Card>
           </div>
+
+          {/* Raccourci Facturation & Proformas */}
+          <Card className="border-2 border-primary/20 bg-gradient-to-r from-primary/5 via-primary/10 to-transparent">
+            <CardContent className="p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+              <div className="flex items-center gap-3">
+                <div className="h-10 w-10 rounded-xl bg-primary/20 text-primary flex items-center justify-center shrink-0">
+                  <Receipt className="h-5 w-5" />
+                </div>
+                <div>
+                  <h4 className="text-sm font-bold text-foreground">
+                    Module de Facturation & Factures Proforma
+                  </h4>
+                  <p className="text-xs text-muted-foreground">
+                    Émettez des devis proformas chiffrés et des factures définitives au format PDF officiel pour vos clients.
+                  </p>
+                </div>
+              </div>
+              <Link to="/dashboard/partenaire-factures">
+                <Button size="sm" className="gradient-primary text-primary-foreground gap-2 shrink-0">
+                  <Receipt className="h-4 w-4" />
+                  Accéder à la Facturation
+                </Button>
+              </Link>
+            </CardContent>
+          </Card>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <Card>
