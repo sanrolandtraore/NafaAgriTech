@@ -81,6 +81,7 @@ import {
   REAL_CROP_BENCHMARKS,
 } from "@/lib/scientificAgronomicRAG";
 import { analyzePlantImage, type FoliarImageAnalysisResult } from "@/lib/plantVisionAnalyzer";
+import { reverseGeocodeWithMapApi } from "@/lib/mapApiService";
 
 export interface Diagnosis {
   diagnosis_summary: string;
@@ -180,6 +181,7 @@ function CropDiagnosisToolInner() {
   const [parcelHistory, setParcelHistory] = useState("");
   const [affectedOrgans, setAffectedOrgans] = useState<("feuilles" | "tiges" | "collet" | "racines" | "fruits" | "epis")[]>(["feuilles"]);
   const [coords, setCoords] = useState<{ lat: number; lng: number } | null>(null);
+  const [gpsResolvedPlace, setGpsResolvedPlace] = useState<string>("");
   const [gpsLoading, setGpsLoading] = useState(false);
 
   // ── États d'Exécution & Résultats ──
@@ -252,7 +254,7 @@ function CropDiagnosisToolInner() {
     };
   }, []);
 
-  // ── Géolocalisation GPS Terrain ──
+  // ── Géolocalisation GPS Terrain avec Map API ──
   const captureGPS = () => {
     if (!navigator.geolocation) {
       toast({ title: "GPS non supporté", description: "Ce navigateur ne supporte pas la géolocalisation.", variant: "destructive" });
@@ -260,10 +262,25 @@ function CropDiagnosisToolInner() {
     }
     setGpsLoading(true);
     navigator.geolocation.getCurrentPosition(
-      (pos) => {
-        setCoords({ lat: pos.coords.latitude, lng: pos.coords.longitude });
+      async (pos) => {
+        const lat = pos.coords.latitude;
+        const lng = pos.coords.longitude;
+        setCoords({ lat, lng });
         setGpsLoading(false);
-        toast({ title: "Position GPS acquise", description: `${pos.coords.latitude.toFixed(5)}, ${pos.coords.longitude.toFixed(5)}` });
+
+        try {
+          const geo = await reverseGeocodeWithMapApi(lat, lng);
+          if (geo.region) {
+            setRegion(geo.region);
+          }
+          setGpsResolvedPlace(geo.placeName);
+          toast({
+            title: "Position GPS acquise via Map API",
+            description: `${geo.placeName} (${lat.toFixed(5)}°, ${lng.toFixed(5)}°)`,
+          });
+        } catch {
+          toast({ title: "Position GPS acquise", description: `${lat.toFixed(5)}, ${lng.toFixed(5)}` });
+        }
       },
       (err) => {
         setGpsLoading(false);
@@ -1712,26 +1729,39 @@ function CropDiagnosisToolInner() {
             </div>
 
             {/* Coordonnées GPS in-situ et référence parcelle (Optionnel & direct) */}
-            <div className="flex items-center justify-between gap-2 flex-wrap pt-2">
-              <div className="flex-1 min-w-[200px]">
-                <Input
-                  value={parcelName}
-                  onChange={(e) => setParcelName(e.target.value)}
-                  placeholder="Référence ou nom de parcelle (optionnel)"
-                  className="h-9 text-xs rounded-xl"
-                />
+            <div className="space-y-1.5 pt-2">
+              <div className="flex items-center justify-between gap-2 flex-wrap">
+                <div className="flex-1 min-w-[200px]">
+                  <Input
+                    value={parcelName}
+                    onChange={(e) => setParcelName(e.target.value)}
+                    placeholder="Référence ou nom de parcelle (optionnel)"
+                    className="h-9 text-xs rounded-xl"
+                  />
+                </div>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={captureGPS}
+                  disabled={gpsLoading}
+                  className="h-9 gap-1.5 text-xs rounded-xl shrink-0"
+                >
+                  {gpsLoading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Navigation className="h-3.5 w-3.5 text-sky-600" />}
+                  {coords ? `GPS : ${coords.lat.toFixed(4)}, ${coords.lng.toFixed(4)}` : "Localisation GPS (Map API)"}
+                </Button>
               </div>
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={captureGPS}
-                disabled={gpsLoading}
-                className="h-9 gap-1.5 text-xs rounded-xl shrink-0"
-              >
-                {gpsLoading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Navigation className="h-3.5 w-3.5 text-sky-600" />}
-                {coords ? `GPS : ${coords.lat.toFixed(4)}, ${coords.lng.toFixed(4)}` : "Localisation GPS (Optionnel)"}
-              </Button>
+
+              {coords && (
+                <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground bg-muted/40 px-2.5 py-1 rounded-lg border border-border/60">
+                  <MapPin className="h-3.5 w-3.5 text-primary shrink-0" />
+                  <span>
+                    Coordonnées validées par Map API :{" "}
+                    <strong className="text-foreground">{gpsResolvedPlace || `${coords.lat.toFixed(5)}°, ${coords.lng.toFixed(5)}°`}</strong>
+                    {" "}(Région {region})
+                  </span>
+                </div>
+              )}
             </div>
 
             {/* Notification de Contexte Automatique IA basé sur Données Réelles */}

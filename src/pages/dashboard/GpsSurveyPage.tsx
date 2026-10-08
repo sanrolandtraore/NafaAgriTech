@@ -72,6 +72,13 @@ import {
   type BurkinaToponym,
 } from "@/lib/burkinaToponyms";
 
+import {
+  reverseGeocodeWithMapApi,
+  searchPlacesWithMapApi,
+  fetchElevationForCoordinates,
+  type MapGeocodingResult,
+  type MapPlaceSearchResult,
+} from "@/lib/mapApiService";
 import { partnerBrandingStorage } from "@/lib/partnerBrandingStorage";
 import { pdfExportHistory } from "@/lib/pdfExportHistory";
 import PdfExportHistoryModal from "@/components/export/PdfExportHistoryModal";
@@ -149,6 +156,20 @@ export default function GpsSurveyPage() {
   const [showToponyms, setShowToponyms] = useState<boolean>(true);
   const [toponymSearchQuery, setToponymSearchQuery] = useState<string>("");
   const [isToponymDropdownOpen, setIsToponymDropdownOpen] = useState<boolean>(false);
+
+  // ─── 4bis. MAP API POUR COORDONNÉES GPS (CLIC & GÉOCODAGE INVERSE) ───
+  const [isMapClickAddMode, setIsMapClickAddMode] = useState<boolean>(false);
+  const [clickedMapPoint, setClickedMapPoint] = useState<MapGeocodingResult | null>(null);
+  const [isResolvingGeocode, setIsResolvingGeocode] = useState<boolean>(false);
+  const [mapApiSearchResults, setMapApiSearchResults] = useState<MapPlaceSearchResult[]>([]);
+  const [isSearchingMapApi, setIsSearchingMapApi] = useState<boolean>(false);
+
+  const isMapClickAddModeRef = useRef(isMapClickAddMode);
+  isMapClickAddModeRef.current = isMapClickAddMode;
+  const waypointsRef = useRef(waypoints);
+  waypointsRef.current = waypoints;
+  const isPolygonClosedRef = useRef(isPolygonClosed);
+  isPolygonClosedRef.current = isPolygonClosed;
 
   // ─── 5. DONNÉES LOCALES / SUPABASE ───
   const { data: farms } = useOfflineData({ table: "farms", select: "id, name" });
@@ -290,6 +311,46 @@ export default function GpsSurveyPage() {
     const markersLayer = L.layerGroup().addTo(map);
     markersLayerRef.current = markersLayer;
 
+    // Écouteur Clic Carte : Utilisation de la Map API pour capturer les coordonnées GPS
+    map.on("click", async (e: L.LeafletMouseEvent) => {
+      const lat = e.latlng.lat;
+      const lng = e.latlng.lng;
+      setIsResolvingGeocode(true);
+
+      try {
+        const geocode = await reverseGeocodeWithMapApi(lat, lng);
+        const elevation = await fetchElevationForCoordinates(lat, lng);
+        if (elevation !== null) {
+          geocode.altitudeM = elevation;
+        }
+        setClickedMapPoint(geocode);
+
+        if (isMapClickAddModeRef.current) {
+          const nextIdx = waypointsRef.current.length + 1;
+          const newPoint: SurveyWaypoint = {
+            id: `wp_${Date.now()}_${nextIdx}`,
+            index: nextIdx,
+            label: `Borne P${nextIdx}`,
+            category: "borne",
+            lat,
+            lng,
+            altitude: elevation ?? undefined,
+            accuracy: 0,
+            timestamp: Date.now(),
+            notes: `Pointé via Map API à ${geocode.placeName} (${geocode.province || ""})`,
+          };
+          setWaypoints((prev) => enrichWaypoints([...prev, newPoint], isPolygonClosedRef.current));
+          toast.success(`Point P${nextIdx} ajouté via Map API : ${geocode.placeName} (${lat.toFixed(5)}°, ${lng.toFixed(5)}°)`);
+        } else {
+          toast.info(`Coordonnées GPS Map API : ${lat.toFixed(5)}°, ${lng.toFixed(5)}° — ${geocode.placeName}`);
+        }
+      } catch (err) {
+        console.warn("Erreur clic Map API:", err);
+      } finally {
+        setIsResolvingGeocode(false);
+      }
+    });
+
     mapInstanceRef.current = map;
 
     return () => {
@@ -405,7 +466,47 @@ export default function GpsSurveyPage() {
       });
 
       const utm = toApproximateUtmZone30N(wp.lat, wp.lng);
-      const marker = L.marker([wp.lat, wp.lng], { icon: customIcon });
+      const marker = L.marker([wp.lat, wp.lng], {
+        icon: customIcon,
+        draggable: true,
+        title: `${wp.label} (Faites glisser pour ajuster la position GPS)`,
+      });
+
+      // Écouteur de glisser-déposer de borne : mise à jour des coordonnées GPS via Map API
+      marker.on("dragend", async (e: any) => {
+        const targetLatLng = e.target.getLatLng();
+        const updatedLat = Math.round(targetLatLng.lat * 1000000) / 1000000;
+        const updatedLng = Math.round(targetLatLng.lng * 1000000) / 1000000;
+
+        let placeInfo = "";
+        try {
+          const geo = await reverseGeocodeWithMapApi(updatedLat, updatedLng);
+          placeInfo = geo.placeName;
+        } catch {
+          // ignore
+        }
+
+        setWaypoints((prev) => {
+          const updated = prev.map((item) => {
+            if (item.id === wp.id) {
+              return {
+                ...item,
+                lat: updatedLat,
+                lng: updatedLng,
+                notes: placeInfo
+                  ? `Coordonnées ajustées via Map API (${placeInfo})`
+                  : item.notes,
+              };
+            }
+            return item;
+          });
+          return enrichWaypoints(updated, isPolygonClosedRef.current);
+        });
+
+        toast.success(
+          `Position de ${wp.label} ajustée via Map API (${updatedLat.toFixed(5)}°, ${updatedLng.toFixed(5)}°)${placeInfo ? ` — ${placeInfo}` : ""}`
+        );
+      });
 
       const popupContent = `
         <div style="font-family: sans-serif; font-size: 12px; line-height: 1.4;">
@@ -414,7 +515,8 @@ export default function GpsSurveyPage() {
           <strong>Lng :</strong> ${wp.lng.toFixed(6)}° (${toDMS(wp.lng, false)})<br/>
           <strong>UTM 30N :</strong> X=${utm.easting} Y=${utm.northing}<br/>
           <strong>Précision :</strong> ±${wp.accuracy ?? 0}m | <strong>Alt :</strong> ${wp.altitude ?? 0}m<br/>
-          ${wp.distanceToNextM ? `<strong>Vers point suivant :</strong> ${wp.distanceToNextM} m (Cap ${wp.bearingToNextDeg}°)` : ""}
+          ${wp.distanceToNextM ? `<strong>Vers point suivant :</strong> ${wp.distanceToNextM} m (Cap ${wp.bearingToNextDeg}°)<br/>` : ""}
+          <span style="font-size: 10px; color: #64748b; font-style: italic;">Déplaçable : glissez pour repositionner</span>
         </div>
       `;
 
@@ -576,6 +678,59 @@ export default function GpsSurveyPage() {
     toast.success(`Carte centrée sur ${toponym.name} (${toponym.region})`);
   };
 
+  // Centrer sur un lieu résolu via Map API
+  const handleFlyToMapApiPlace = (place: MapPlaceSearchResult) => {
+    const map = mapInstanceRef.current;
+    if (map) {
+      map.flyTo([place.lat, place.lng], 15, { duration: 1.2 });
+    }
+    setLocality(place.name);
+    setClickedMapPoint({
+      lat: place.lat,
+      lng: place.lng,
+      placeName: place.name,
+      country: "Burkina Faso",
+      formattedAddress: place.description,
+      source: place.source === "api_osm" ? "map_api_nominatim" : "burkina_toponyms_local",
+    });
+    setIsToponymDropdownOpen(false);
+    setToponymSearchQuery("");
+    toast.success(`Carte centrée sur ${place.name} via Map API (${place.lat.toFixed(5)}°, ${place.lng.toFixed(5)}°)`);
+  };
+
+  // Effet de recherche asynchrone Map API avec debounce
+  useEffect(() => {
+    const trimmed = toponymSearchQuery.trim();
+    if (trimmed.length < 2) {
+      setMapApiSearchResults([]);
+      setIsSearchingMapApi(false);
+      return;
+    }
+
+    let isMounted = true;
+    setIsSearchingMapApi(true);
+
+    const timer = setTimeout(async () => {
+      try {
+        const results = await searchPlacesWithMapApi(trimmed);
+        if (isMounted) {
+          setMapApiSearchResults(results);
+        }
+      } catch (err) {
+        console.warn("Erreur recherche Map API:", err);
+      } finally {
+        if (isMounted) {
+          setIsSearchingMapApi(false);
+        }
+      }
+    }, 300);
+
+    return () => {
+      isMounted = false;
+      clearTimeout(timer);
+    };
+  }, [toponymSearchQuery]);
+
   // ─── 9. CALCULS GÉODÉSIQUES EN TEMPS RÉEL ───
   const areaM2 = calculatePolygonAreaM2(waypoints);
   const areaHa = Math.round((areaM2 / 10000) * 1000) / 1000;
@@ -618,6 +773,33 @@ export default function GpsSurveyPage() {
     setWaypoints(nextWaypoints);
 
     toast.success(`Point P${nextIdx} capturé (Précision ±${livePos.accuracy}m).`);
+  };
+
+  // Résoudre le toponyme et l'altitude d'un point saisi manuellement via Map API
+  const handleResolveManualWithMapApi = async () => {
+    const lat = parseDMSToDD(manualForm.latStr);
+    const lng = parseDMSToDD(manualForm.lngStr);
+    if (lat === null || lng === null) {
+      toast.error("Veuillez d'abord saisir une latitude et une longitude valides.");
+      return;
+    }
+    setIsResolvingGeocode(true);
+    try {
+      const geo = await reverseGeocodeWithMapApi(lat, lng);
+      const elevation = await fetchElevationForCoordinates(lat, lng);
+      setManualForm((prev) => ({
+        ...prev,
+        altitudeStr: elevation !== null ? String(elevation) : prev.altitudeStr,
+        notes: prev.notes
+          ? `${prev.notes} • Localisé à ${geo.placeName}`
+          : `Localité résolue par Map API : ${geo.placeName} (${geo.province || geo.region || ""})`,
+      }));
+      toast.success(`Map API : ${geo.placeName}${elevation !== null ? ` • Alt: ${elevation}m` : ""}`);
+    } catch {
+      toast.error("Erreur de géocodage par Map API.");
+    } finally {
+      setIsResolvingGeocode(false);
+    }
   };
 
   // Ajout manuel d'un point par coordonnées
@@ -1157,8 +1339,47 @@ export default function GpsSurveyPage() {
 
               {/* Menu déroulant des résultats de recherche */}
               {isToponymDropdownOpen && (
-                <div className="absolute left-0 right-0 top-full mt-1 z-50 bg-popover border border-border rounded-xl shadow-xl max-h-64 overflow-y-auto divide-y divide-border">
-                  {filteredToponyms.length === 0 ? (
+                <div className="absolute left-0 right-0 top-full mt-1 z-50 bg-popover border border-border rounded-xl shadow-xl max-h-72 overflow-y-auto divide-y divide-border">
+                  {isSearchingMapApi && (
+                    <div className="p-2.5 text-center text-xs text-primary font-semibold flex items-center justify-center gap-2">
+                      <Search className="h-3.5 w-3.5 animate-spin" />
+                      <span>Interrogation de la Map API en direct...</span>
+                    </div>
+                  )}
+
+                  {mapApiSearchResults.length > 0 ? (
+                    mapApiSearchResults.map((place) => (
+                      <button
+                        key={place.id}
+                        type="button"
+                        onClick={() => handleFlyToMapApiPlace(place)}
+                        className="w-full text-left p-2.5 hover:bg-muted/50 transition-colors flex items-start justify-between gap-2 text-xs"
+                      >
+                        <div>
+                          <div className="font-bold text-foreground flex items-center gap-1.5">
+                            <MapPin className="h-3.5 w-3.5 text-primary shrink-0" />
+                            <span>{place.name}</span>
+                          </div>
+                          <div className="text-[11px] text-muted-foreground line-clamp-1">
+                            {place.description}
+                          </div>
+                          <div className="text-[10px] text-muted-foreground/80 font-mono mt-0.5">
+                            GPS : {place.lat.toFixed(5)}°, {place.lng.toFixed(5)}°
+                          </div>
+                        </div>
+                        <Badge
+                          variant="outline"
+                          className={`text-[9px] font-bold shrink-0 mt-0.5 ${
+                            place.source === "api_osm"
+                              ? "border-sky-500/40 text-sky-700 bg-sky-500/10"
+                              : "border-emerald-500/40 text-emerald-700 bg-emerald-500/10"
+                          }`}
+                        >
+                          {place.source === "api_osm" ? "Map API (OSM)" : "Référentiel BF"}
+                        </Badge>
+                      </button>
+                    ))
+                  ) : filteredToponyms.length === 0 && !isSearchingMapApi ? (
                     <div className="p-3 text-center text-xs text-muted-foreground">
                       Aucun lieu trouvé pour « {toponymSearchQuery} »
                     </div>
@@ -1242,6 +1463,29 @@ export default function GpsSurveyPage() {
 
               {/* CONTRÔLES FLOTTANTS SUR LA CARTE */}
               <div className="absolute top-3 right-3 z-10 flex flex-col gap-2">
+                {/* Bouton Mode Pointeur Carte (Clic pour ajouter une borne via Map API) */}
+                <Button
+                  size="sm"
+                  variant={isMapClickAddMode ? "default" : "secondary"}
+                  onClick={() => {
+                    setIsMapClickAddMode(!isMapClickAddMode);
+                    toast.info(
+                      !isMapClickAddMode
+                        ? "Mode Pointeur Carte activé : cliquez sur la carte pour déposer une borne GPS via Map API."
+                        : "Mode Pointeur Carte désactivé (clic pour inspection seule)."
+                    );
+                  }}
+                  className={`h-9 px-2.5 rounded-xl shadow-md gap-1.5 text-[11px] font-bold ${
+                    isMapClickAddMode
+                      ? "bg-emerald-600 text-white hover:bg-emerald-700 ring-2 ring-emerald-400"
+                      : "bg-background/90 hover:bg-background text-foreground"
+                  }`}
+                  title={isMapClickAddMode ? "Désactiver le mode pointeur" : "Activer le mode pointeur carte (Map API)"}
+                >
+                  <MapPin className="h-4 w-4 text-emerald-500" />
+                  <span className="hidden sm:inline">{isMapClickAddMode ? "Pointeur Actif" : "Pointer"}</span>
+                </Button>
+
                 <Button
                   size="sm"
                   variant="secondary"
@@ -1284,6 +1528,14 @@ export default function GpsSurveyPage() {
                 </Button>
               </div>
 
+              {/* Indicateur de statut Map API en haut à gauche */}
+              {isResolvingGeocode && (
+                <div className="absolute top-3 left-3 z-10 bg-black/80 text-white text-[11px] font-bold px-3 py-1.5 rounded-xl backdrop-blur-xs flex items-center gap-2 border border-white/20 animate-pulse">
+                  <Crosshair className="h-3.5 w-3.5 text-primary animate-spin" />
+                  <span>Résolution coordonnées Map API...</span>
+                </div>
+              )}
+
               {/* Indicateur de couche active */}
               <div className="absolute bottom-3 left-3 z-10 bg-black/75 text-white text-[10px] font-bold px-2.5 py-1 rounded-md backdrop-blur-xs flex items-center gap-2">
                 <Globe className="h-3 w-3 text-primary" />
@@ -1292,9 +1544,86 @@ export default function GpsSurveyPage() {
                 <span className={showToponyms ? "text-emerald-400 font-bold" : "text-white/60"}>
                   {showToponyms ? "Noms des lieux actifs" : "Noms masqués"}
                 </span>
+                {isMapClickAddMode && (
+                  <>
+                    <span className="text-white/40">•</span>
+                    <span className="text-amber-400 font-bold">Clic = Ajouter borne</span>
+                  </>
+                )}
               </div>
             </div>
           </Card>
+
+          {/* BANDEAU INTERACTIF DU DERNIER POINT SÉLECTIONNÉ VIA MAP API */}
+          {clickedMapPoint && (
+            <Card className="border-2 border-emerald-500/40 bg-emerald-500/5 p-3.5 rounded-2xl shadow-xs">
+              <div className="flex items-center justify-between flex-wrap gap-2.5">
+                <div className="flex items-start gap-2.5">
+                  <div className="h-8 w-8 rounded-xl bg-emerald-600 text-white flex items-center justify-center shrink-0 mt-0.5">
+                    <MapPin className="h-4 w-4" />
+                  </div>
+                  <div>
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span className="text-xs font-black text-foreground">
+                        Coordonnées Map API : {clickedMapPoint.lat.toFixed(6)}°, {clickedMapPoint.lng.toFixed(6)}°
+                      </span>
+                      <Badge variant="outline" className="text-[9px] font-bold border-emerald-500/40 text-emerald-700 bg-background">
+                        {clickedMapPoint.source === "map_api_nominatim" ? "API OSM Nominatim" : "Référentiel Toponymique"}
+                      </Badge>
+                      {clickedMapPoint.altitudeM !== undefined && (
+                        <Badge variant="outline" className="text-[9px] font-mono border-sky-500/40 text-sky-700 bg-background">
+                          Alt : {clickedMapPoint.altitudeM} m
+                        </Badge>
+                      )}
+                    </div>
+                    <p className="text-[11px] text-muted-foreground mt-0.5">
+                      Lieu : <strong>{clickedMapPoint.placeName}</strong>
+                      {clickedMapPoint.province ? ` • Province de ${clickedMapPoint.province}` : ""}
+                      {clickedMapPoint.region ? ` (Région ${clickedMapPoint.region})` : ""}
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => {
+                      setLocality(`${clickedMapPoint.placeName} (${clickedMapPoint.province || clickedMapPoint.region || "Burkina Faso"})`);
+                      toast.success(`Localité fixée : ${clickedMapPoint.placeName}`);
+                    }}
+                    className="h-8 px-2.5 text-xs font-semibold border-primary/30 hover:bg-primary/10"
+                  >
+                    Fixer Localité
+                  </Button>
+                  <Button
+                    size="sm"
+                    onClick={() => {
+                      const nextIdx = waypoints.length + 1;
+                      const newPoint: SurveyWaypoint = {
+                        id: `wp_${Date.now()}_${nextIdx}`,
+                        index: nextIdx,
+                        label: `Borne P${nextIdx}`,
+                        category: "borne",
+                        lat: clickedMapPoint.lat,
+                        lng: clickedMapPoint.lng,
+                        altitude: clickedMapPoint.altitudeM,
+                        accuracy: 0,
+                        timestamp: Date.now(),
+                        notes: `Positionnée via Map API (${clickedMapPoint.placeName})`,
+                      };
+                      setWaypoints(enrichWaypoints([...waypoints, newPoint], isPolygonClosed));
+                      toast.success(`Borne P${nextIdx} ajoutée aux coordonnées Map API.`);
+                    }}
+                    className="h-8 px-3 text-xs font-bold gap-1.5 gradient-primary text-primary-foreground shadow-xs"
+                  >
+                    <Plus className="h-3.5 w-3.5" />
+                    Ajouter Borne P{waypoints.length + 1}
+                  </Button>
+                </div>
+              </div>
+            </Card>
+          )}
 
           {/* ─── BOUTONS D'ACTION TACTILE PLEIN SOLEIL (TRÈS GRANDS BOUTONS TERRAIN) ─── */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -1637,6 +1966,19 @@ export default function GpsSurveyPage() {
                 />
               </div>
             </div>
+
+            {/* Résolution Map API pour les coordonnées saisies */}
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              disabled={isResolvingGeocode || !manualForm.latStr.trim() || !manualForm.lngStr.trim()}
+              onClick={handleResolveManualWithMapApi}
+              className="w-full text-xs font-bold gap-2 border-primary/30 hover:bg-primary/10 text-primary h-8"
+            >
+              <MapPin className="h-3.5 w-3.5 text-primary" />
+              {isResolvingGeocode ? "Résolution Map API..." : "Résoudre lieu & altitude par Map API"}
+            </Button>
 
             <div>
               <Label className="text-xs font-bold">Altitude en mètres (Optionnel)</Label>
