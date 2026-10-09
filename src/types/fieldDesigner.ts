@@ -254,6 +254,8 @@ export interface QuoteItem {
   quantity: number;
   unitPriceFCFA: number;
   totalFCFA: number;
+  supplier?: string;
+  notes?: string;
 }
 
 export interface EngineeringQuoteDoc {

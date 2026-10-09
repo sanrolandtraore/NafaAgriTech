@@ -108,7 +108,7 @@ export function exportQuotePdf(
   // Tableau des articles
   const tableData = quote.items.map((item, idx) => [
     (idx + 1).toString(),
-    item.designation,
+    item.supplier ? `${item.designation}\nFournisseur : ${item.supplier}` : item.designation,
     item.unit,
     item.quantity.toString(),
     item.unitPriceFCFA.toLocaleString("fr-FR") + " F",
