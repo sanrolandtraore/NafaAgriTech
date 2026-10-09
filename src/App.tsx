@@ -74,7 +74,6 @@ const SmartInspectionPage = lazy(() => import("./pages/dashboard/SmartInspection
 const UserProfilePage = lazy(() => import("./pages/dashboard/UserProfilePage"));
 const PublicExplorerPage = lazy(() => import("./pages/PublicExplorerPage"));
 const ExpertToolboxPage = lazy(() => import("./pages/dashboard/expert/ExpertToolboxPage"));
-const ExpertDiagnosisPage = lazy(() => import("./pages/dashboard/expert/ExpertDiagnosisPage"));
 const ExpertCalculatorPage = lazy(() => import("./pages/dashboard/expert/ExpertCalculatorPage"));
 const ExpertPrescriptionsPage = lazy(() => import("./pages/dashboard/expert/ExpertPrescriptionsPage"));
 const CropLibraryPage = lazy(() => import("./pages/dashboard/expert/CropLibraryPage"));
@@ -102,6 +101,8 @@ const PartnerMarketplacePage = lazy(() => import("./pages/provider/PartnerMarket
 const InstitutionFinanceDashboard = lazy(() => import("./pages/dashboard/partenaire/InstitutionFinanceDashboard"));
 const PartnerMarketingPage = lazy(() => import("./pages/dashboard/partenaire/PartnerMarketingPage"));
 const PartnerDemandesPage = lazy(() => import("./pages/dashboard/partenaire/PartnerDemandesPage"));
+const PartnerInvoicesPage = lazy(() => import("./pages/dashboard/partenaire/PartnerInvoicesPage"));
+const GpsSurveyPage = lazy(() => import("./pages/dashboard/GpsSurveyPage"));
 
 import PageLoader from "@/components/PageLoader";
 import { startUniversalSyncEngine } from "@/lib/universalSyncEngine";
@@ -199,11 +200,13 @@ const App = () => {
                 </Route>
                 <Route path="marketplace" element={<Suspense fallback={<PageLoader />}><ServiceMarketplacePage /></Suspense>} />
                 <Route path="expert-cartography" element={<Suspense fallback={<PageLoader />}><ExpertCartographyPage /></Suspense>} />
+                <Route path="gps-survey" element={<Suspense fallback={<PageLoader />}><GpsSurveyPage /></Suspense>} />
+                <Route path="leve-gps" element={<Suspense fallback={<PageLoader />}><GpsSurveyPage /></Suspense>} />
                 <Route path="scouting" element={<Suspense fallback={<PageLoader />}><ScoutingPage /></Suspense>} />
                 <Route path="inspections" element={<Suspense fallback={<PageLoader />}><SmartInspectionPage /></Suspense>} />
                 <Route path="smart-inspection" element={<Suspense fallback={<PageLoader />}><SmartInspectionPage /></Suspense>} />
                 <Route path="expert-toolbox" element={<Suspense fallback={<PageLoader />}><ExpertToolboxPage /></Suspense>} />
-                <Route path="expert-diagnosis" element={<Suspense fallback={<PageLoader />}><ExpertDiagnosisPage /></Suspense>} />
+                <Route path="expert-diagnosis" element={<Navigate to="/dashboard" replace />} />
                 <Route path="expert-calculator" element={<Suspense fallback={<PageLoader />}><ExpertCalculatorPage /></Suspense>} />
                 <Route path="expert-prescriptions" element={<Suspense fallback={<PageLoader />}><ExpertPrescriptionsPage /></Suspense>} />
                 <Route path="crop-library" element={<Suspense fallback={<PageLoader />}><CropLibraryPage /></Suspense>} />
@@ -232,6 +235,8 @@ const App = () => {
                 <Route path="partenaire-kyc" element={<Suspense fallback={<PageLoader />}><PartnerKycPage /></Suspense>} />
                 <Route path="partenaire-verification" element={<Suspense fallback={<PageLoader />}><PartnerKycPage /></Suspense>} />
                 <Route path="identite-professionnelle" element={<Suspense fallback={<PageLoader />}><PartnerBrandingPage /></Suspense>} />
+                <Route path="partenaire-factures" element={<Suspense fallback={<PageLoader />}><PartnerInvoicesPage /></Suspense>} />
+                <Route path="factures" element={<Suspense fallback={<PageLoader />}><PartnerInvoicesPage /></Suspense>} />
                 <Route path="partner-space" element={<Suspense fallback={<PageLoader />}><PartnerDedicatedSpace /></Suspense>} />
                 <Route path="cyber-defense" element={<Suspense fallback={<PageLoader />}><CyberDefenseDashboard /></Suspense>} />
                 </Route>

@@ -40,6 +40,6 @@ describe("Module Vétérinaire & Élevage — Comptage & Densité d'Élevage (An
     // Paramètres d'analyse
     expect(screen.getByText(/Espèce animale/i)).toBeInTheDocument();
     expect(screen.getByText(/Rattacher à un lot du cheptel/i)).toBeInTheDocument();
-    expect(screen.getByText(/Surface du bâtiment \/ enclos \(m²\)/i)).toBeInTheDocument();
+    expect(screen.getByText(/Surface du bâtiment (•|\/) enclos \(m²\)/i)).toBeInTheDocument();
   });
 });

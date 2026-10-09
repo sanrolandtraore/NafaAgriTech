@@ -165,7 +165,7 @@ describe("Studio 3D — Suite CAO & Tracé Sur-Mesure Professionnel", () => {
     expect(screen.getByText(/Superficie Totale du Domaine \(Hectares\)/i)).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /Nouveau Plan Vierge Sur-Mesure/i })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /Exporter Plan CAO \(JSON\)/i })).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: /Exporter GeoJSON \(SIG \/ QGIS\)/i })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /Exporter GeoJSON \(Standard SIG\)/i })).toBeInTheDocument();
     expect(screen.getByText(/Importer Plan CAO/i)).toBeInTheDocument();
   });
 });

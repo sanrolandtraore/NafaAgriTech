@@ -138,7 +138,7 @@ export default function CartographieAgricolePage() {
                   <div>
                     <h3 className="text-sm font-bold text-foreground">Export standardisé KML &amp; GeoJSON</h3>
                     <p className="text-xs text-muted-foreground mt-0.5">
-                      Compatible Google Earth, QGIS, ArcGIS et les systèmes d'information des ministères et agences de développement rural.
+                      Compatible avec les systèmes d'information géographiques des ministères et agences de développement rural.
                     </p>
                   </div>
                 </div>

@@ -89,7 +89,7 @@ export const DiagnosticAccessGate: React.FC<DiagnosticAccessGateProps> = ({ chil
 
             <div className="flex items-center gap-1.5 text-xs font-semibold text-muted-foreground bg-muted/60 px-3 py-1.5 rounded-xl border border-border/60 self-start sm:self-auto">
               <ShieldAlert className="h-4 w-4 text-amber-500 shrink-0" />
-              Normes INERA • CIRAD • Vétérinaires
+              Normes Techniques & Vétérinaires Certifiées
             </div>
           </div>
         </CardHeader>

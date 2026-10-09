@@ -11,7 +11,6 @@ const PRELOAD_MAP: Record<string, RouteLoader> = {
   "/dashboard/scouting": () => import("@/pages/dashboard/ScoutingPage"),
   "/dashboard/smart-inspection": () => import("@/pages/dashboard/SmartInspectionPage"),
   "/dashboard/inspections": () => import("@/pages/dashboard/SmartInspectionPage"),
-  "/dashboard/expert-diagnosis": () => import("@/pages/dashboard/expert/ExpertDiagnosisPage"),
   "/dashboard/parcels": () => import("@/pages/dashboard/ParcelsPage"),
   "/dashboard/crop-planning": () => import("@/pages/dashboard/CropPlanningPage"),
   "/dashboard/crop-library": () => import("@/pages/dashboard/expert/CropLibraryPage"),

@@ -540,7 +540,7 @@ const ExpertCartographyPage = () => {
       const ext = file.name.split(".").pop();
       const path = `${user.id}/${Date.now()}_${Math.random().toString(36).slice(2)}.${ext}`;
       const { error: uploadErr } = await supabase.storage.from("field-observations").upload(path, file);
-      if (uploadErr) { toast.error("Erreur upload photo"); continue; }
+      if (uploadErr) { toast.error("Erreur lors du téléversement de la photo"); continue; }
       const { data: urlData } = supabase.storage.from("field-observations").getPublicUrl(path);
       photoUrls.push(urlData.publicUrl);
     }
@@ -725,18 +725,29 @@ const ExpertCartographyPage = () => {
               )}
             </div>
 
-            {/* Offline Caching Action Button */}
+            {/* Actions complémentaires & Levé GPS */}
             <div className="flex items-center gap-2">
+              <Button
+                size="sm"
+                variant="outline"
+                className="h-10 px-3 sm:px-4 rounded-xl gap-2 font-bold text-xs border-primary/40 hover:bg-primary/10 text-primary shadow-sm"
+                onClick={() => window.location.href = "/dashboard/gps-survey"}
+                title="Ouvrir l'outil complet de Levé de Coordonnées GPS (multisommets, WGS84 & UTM)"
+              >
+                <Navigation className="h-4 w-4" />
+                <span>Levé GPS Complet</span>
+              </Button>
+
               <Button
                 size="sm"
                 variant="outline"
                 className="h-10 px-4 rounded-xl gap-2 font-bold text-xs border-amber-500/40 hover:bg-amber-500/10 text-stone-800 dark:text-amber-300 shadow-sm"
                 onClick={() => setShowDownloadDialog(true)}
                 data-testid="download-map-area-btn"
-                title="Download Map Area for offline use"
+                title="Télécharger la zone de carte pour utilisation hors-ligne"
               >
                 <HardDriveDownload className="h-4 w-4 text-amber-500" />
-                <span>Download Map Area</span>
+                <span>Télécharger la zone de carte</span>
               </Button>
             </div>
           </div>

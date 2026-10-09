@@ -105,13 +105,13 @@ export function AgroCalculator() {
     const summary = `FICHE TECHNIQUE AGRONOMIQUE — NAFA-AGRITECH
 Culture : ${selectedCrop.name} (${selectedCrop.scientificName})
 Superficie : ${results.areaHa} ha (${results.areaM2.toLocaleString()} m²)
-Densité : ${results.plantDensity.toLocaleString()} poquets (${(results.plantDensity / (results.areaM2 || 1)).toFixed(1)} plants/m²)
+Densité : ${results.plantDensity.toLocaleString()} poquets (${(results.plantDensity / (results.areaM2 || 1)).toFixed(1)} plants.m²)
 Semences requises : ${results.seedWeightKg} kg (~${results.seedsCount.toLocaleString()} graines) — ${results.seedCostFcfa.toLocaleString()} FCFA
 Programme phytosanitaire : ${results.phytoTreatments.length} interventions (${results.totalSprayersCount} pulvérisateurs 16L) — ${results.totalPhytoCostFcfa.toLocaleString()} FCFA
 Fertilisation : ${results.manureTons} T fumier + ${results.npkBags50kg} sacs NPK + ${results.ureaBags50kg} sacs Urée — ${results.fertilizerCostFcfa.toLocaleString()} FCFA
 Rendement prévisionnel : ${(results.expectedYieldKg / 1000).toFixed(1)} Tonnes (${results.potentialRevenueFcfa.toLocaleString()} FCFA)
 Marge brute prévisionnelle : ${results.grossMarginFcfa.toLocaleString()} FCFA
-Normes de calcul : INERA / FAO-56`;
+Normes de calcul : INERA • FAO-56`;
 
     navigator.clipboard.writeText(summary);
     toast.success("Fiche agronomique copiée dans le presse-papier !");
@@ -131,7 +131,7 @@ Normes de calcul : INERA / FAO-56`;
             <span>Calculatrice Agronomique Avancée</span>
           </h2>
           <p className="text-xs sm:text-sm text-emerald-100/80">
-            Calcul de haute précision : semences au kg/sachet, programme phytosanitaire, pulvérisateurs 16L, engrais fractionnés et rentabilité prévisionnelle.
+            Calcul de haute précision : semences au kg.sachet, programme phytosanitaire, pulvérisateurs 16L, engrais fractionnés et rentabilité prévisionnelle.
           </p>
         </div>
 
@@ -329,7 +329,7 @@ Normes de calcul : INERA / FAO-56`;
                     {results.seedWeightKg} kg
                   </span>
                   <span className="text-[10px] text-muted-foreground block">
-                    Dose standard : {selectedCrop.seedRateKgHa} kg/ha
+                    Dose standard : {selectedCrop.seedRateKgHa} kg.ha
                   </span>
                 </div>
 
@@ -341,7 +341,7 @@ Normes de calcul : INERA / FAO-56`;
                     {results.plantDensity.toLocaleString()}
                   </span>
                   <span className="text-[10px] text-muted-foreground block">
-                    ~{(results.plantDensity / (results.areaM2 || 1)).toFixed(1)} poquets/m²
+                    ~{(results.plantDensity / (results.areaM2 || 1)).toFixed(1)} poquets.m²
                   </span>
                 </div>
 
@@ -385,7 +385,7 @@ Normes de calcul : INERA / FAO-56`;
                     {results.seedCostFcfa.toLocaleString()} FCFA
                   </span>
                   <span className="text-[10px] text-muted-foreground block">
-                    Prix réf : {selectedCrop.seedPricePerKgFcfa.toLocaleString()} F/kg
+                    Prix réf : {selectedCrop.seedPricePerKgFcfa.toLocaleString()} FCFA.kg
                   </span>
                 </div>
               </div>
@@ -542,7 +542,7 @@ Normes de calcul : INERA / FAO-56`;
               <div className="space-y-2.5 text-xs">
                 <div className="p-3 sm:p-3.5 rounded-2xl bg-card border border-border/80 flex flex-col sm:flex-row sm:items-center justify-between gap-1">
                   <span className="text-muted-foreground">Consommation journalière moyenne :</span>
-                  <span className="font-black text-foreground">{results.dailyWaterM3} m³ / jour</span>
+                  <span className="font-black text-foreground">{results.dailyWaterM3} m³.jour</span>
                 </div>
                 <div className="p-3 sm:p-3.5 rounded-2xl bg-card border border-border/80 flex flex-col sm:flex-row sm:items-center justify-between gap-1">
                   <span className="text-muted-foreground">Consommation totale sur le cycle ({selectedCrop.cycleDays}j) :</span>
@@ -551,13 +551,13 @@ Normes de calcul : INERA / FAO-56`;
                 <div className="p-3 sm:p-3.5 rounded-2xl bg-card border border-border/80 flex flex-col sm:flex-row sm:items-center justify-between gap-1">
                   <span className="text-muted-foreground">Débit pompe conseillé (sur 6h de soleil) :</span>
                   <span className="font-black text-foreground">
-                    {(results.dailyWaterM3 / 6).toFixed(1)} m³ / heure
+                    {(results.dailyWaterM3 / 6).toFixed(1)} m³.h
                   </span>
                 </div>
               </div>
 
               <p className="text-[11px] text-muted-foreground italic">
-                * Calcul basé sur l'évapotranspiration sahélienne moyenne (ETo = 5.5 mm/j) et le coefficient cultural Kc de la culture.
+                * Calcul basé sur l'évapotranspiration sahélienne moyenne (ETo = 5.5 mm.j) et le coefficient cultural Kc de la culture.
               </p>
             </Card>
           </div>
@@ -593,7 +593,7 @@ Normes de calcul : INERA / FAO-56`;
                   {results.potentialRevenueFcfa.toLocaleString()} FCFA
                 </span>
                 <span className="text-[10px] text-muted-foreground block">
-                  Prix : {selectedCrop.marketPriceKgFcfa} F/kg
+                  Prix : {selectedCrop.marketPriceKgFcfa} FCFA.kg
                 </span>
               </div>
 

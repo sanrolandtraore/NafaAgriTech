@@ -293,7 +293,7 @@ export function findBestNaturalVoice(): SpeechSynthesisVoice | null {
 
   // 1. Voix francophones locales ou régionales (Afrique / France / Canada)
   const naturalKeywords = [
-    "natural", "neural", "online", "google français", "claudia", "henri", "julie", "hortense", "audrey", "thomas", "celine"
+    "natural", "neural", "online", "google français", "henri", "julie", "hortense", "audrey", "thomas", "celine"
   ];
 
   // Priorité 1 : Voix française avec tag "natural" ou "neural"

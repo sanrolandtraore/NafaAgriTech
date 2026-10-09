@@ -126,7 +126,7 @@ export const CropDesignerTool: React.FC<CropDesignerToolProps> = ({
               </p>
             </div>
             <Badge variant="outline" className="text-xs font-bold text-primary border-primary/30">
-              Référentiel INERA / FAO-56
+              Référentiel INERA • FAO-56
             </Badge>
           </div>
 
@@ -233,7 +233,7 @@ export const CropDesignerTool: React.FC<CropDesignerToolProps> = ({
                   <SelectContent>
                     <SelectItem value="90">Est-Ouest (90° - Recommandé Sahel)</SelectItem>
                     <SelectItem value="0">Nord-Sud (0°)</SelectItem>
-                    <SelectItem value="45">Nord-Est / Sud-Ouest (45°)</SelectItem>
+                    <SelectItem value="45">Nord-Est - Sud-Ouest (45°)</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -264,7 +264,7 @@ export const CropDesignerTool: React.FC<CropDesignerToolProps> = ({
                 className="h-9 font-mono font-black text-lg p-1 border-0 shadow-none text-primary"
               />
               <span className="text-[10px] text-muted-foreground block mt-0.5">
-                Densité : {densityHa.toLocaleString()} plants/ha
+                Densité : {densityHa.toLocaleString()} plants.ha
               </span>
             </div>
 
@@ -283,7 +283,7 @@ export const CropDesignerTool: React.FC<CropDesignerToolProps> = ({
             <div className="p-3.5 rounded-2xl bg-card border shadow-2xs">
               <span className="text-[10px] font-bold text-muted-foreground uppercase block">Besoin en eau journalier</span>
               <div className="h-9 font-mono font-black text-lg flex items-center text-sky-600">
-                {computed.waterNeedsM3Day} m³/j
+                {computed.waterNeedsM3Day} m³.j
               </div>
               <span className="text-[10px] text-muted-foreground block mt-0.5">
                 Rendement est. : {computed.estimatedYieldTonnes} t

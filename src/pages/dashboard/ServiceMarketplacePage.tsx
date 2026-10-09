@@ -433,7 +433,7 @@ export const ServiceMarketplacePage = () => {
           item_title: selectedItem.title,
         };
         setMyOrders((prev) => [localOrder, ...prev]);
-        toast.success("Commande enregistrée localement (Mode Offline-First). Fonds bloqués.");
+        toast.success("Commande enregistrée localement (Mode hors-ligne). Fonds bloqués.");
       } else {
         toast.success("Commande transmise avec succès ! Le paiement est sécurisé par séquestre NAFA.");
       }

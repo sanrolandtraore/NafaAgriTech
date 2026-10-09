@@ -87,7 +87,11 @@ export function generateLivestockCountPdf(input: GenerateCountPdfInput): jsPDF {
       ],
       [
         { content: "Source de mesure", styles: { fontStyle: "bold" } },
-        record.sourceType === "photo" ? "Cliché haute définition" : "Analyse vidéo séquentielle",
+        record.sourceType === "photo"
+          ? "Cliché et pointage précis"
+          : record.sourceType === "video"
+          ? "Analyse vidéo séquentielle"
+          : "Comptage en couloir de contention",
         { content: "Identifiant audit", styles: { fontStyle: "bold" } },
         record.id,
       ],
@@ -96,11 +100,11 @@ export function generateLivestockCountPdf(input: GenerateCountPdfInput): jsPDF {
 
   currentY = (doc as any).lastAutoTable.finalY + 10;
 
-  // 3. Résultat du Dénombrement par Vision IA
+  // 3. Résultat du Dénombrement et validation
   doc.setFont("helvetica", "bold");
   doc.setFontSize(12);
   doc.setTextColor(30, 41, 59);
-  doc.text("2. RÉSULTATS DU DÉNOMBREMENT & CONFIANCE IA", 14, currentY);
+  doc.text("2. RÉSULTATS DU DÉNOMBREMENT & VALIDATION TERRAIN", 14, currentY);
 
   currentY += 6;
 
@@ -114,10 +118,10 @@ export function generateLivestockCountPdf(input: GenerateCountPdfInput): jsPDF {
     headStyles: { fillColor: [21, 128, 61], textColor: [255, 255, 255], fontStyle: "bold" },
     styles: { fontSize: 9, cellPadding: 3.5 },
     body: [
-      ["Effectif détecté par l'IA", `${record.detectedCount} ${record.species}`, "Reconnaissance automatisée des silhouettes"],
-      ["Effectif validé (Correction humaine)", `${record.correctedCount} ${record.species}`, countDiffText],
+      ["Effectif initial dénombré", `${record.detectedCount} ${record.species}`, "Reconnaissance et pointage des sujets"],
+      ["Effectif validé (Terrain)", `${record.correctedCount} ${record.species}`, countDiffText],
       ["Niveau de confiance estimé", `${record.confidenceScore} % (${record.confidenceLevel.toUpperCase()})`, record.qualityWarning || "Condition lumineuse et contraste optimaux"],
-      ["Suites détectés individuellement", `${record.detectionsSnapshot.length} détections`, "Positions géolocalisées sur le cliché source"],
+      ["Sujets répertoriés", `${record.detectionsSnapshot.length} détections`, "Positions identifiées sur le document source"],
     ],
   });
 

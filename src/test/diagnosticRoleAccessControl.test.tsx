@@ -3,7 +3,6 @@ import { render, screen } from '@testing-library/react';
 import { BrowserRouter } from 'react-router-dom';
 import { canAccessDiagnosticTools, getDiagnosticAccessInfo } from '@/lib/roleAccessControl';
 import { DiagnosticAccessGate } from '@/components/security/DiagnosticAccessGate';
-import ExpertDiagnosisPage from '@/pages/dashboard/expert/ExpertDiagnosisPage';
 import * as AuthContextModule from '@/contexts/AuthContext';
 
 describe('Autorisation et Habilitations Métier des Outils de Diagnostic Réel', () => {

@@ -19,6 +19,10 @@ vi.mock("@/components/marketplace/ProviderMap", () => ({
   default: () => <div data-testid="provider-map">Carte Prestataires</div>,
 }));
 
+vi.mock("@/lib/providerSubscription", () => ({
+  isPartnerSubscriptionActive: () => true,
+}));
+
 vi.mock("@/lib/partnerStorage", () => ({
   partnerStorage: {
     getOffers: vi.fn().mockResolvedValue([

@@ -43,11 +43,11 @@ describe("NafaGeniusPage & NafaGeniusStudio", () => {
     // Titre principal NAFA Genius
     expect(screen.getByRole("heading", { name: /NAFA Genius/i })).toBeInTheDocument();
 
-    // Les 4 onglets principaux
+    // Les 3 onglets principaux d'ingénierie
     expect(screen.getByRole("tab", { name: /1\. Modèle IRRIS/i })).toBeInTheDocument();
     expect(screen.getByRole("tab", { name: /2\. Devis Express en FCFA/i })).toBeInTheDocument();
     expect(screen.getByRole("tab", { name: /3\. Dossier & Devis PDF/i })).toBeInTheDocument();
-    expect(screen.getByRole("tab", { name: /4\. Diagnostic Végétal/i })).toBeInTheDocument();
+    expect(screen.queryByRole("tab", { name: /Diagnostic/i })).not.toBeInTheDocument();
 
     // Vérifie le contenu de l'onglet 1 (Modèle IRRIS)
     expect(screen.getByText(/Modèle IRRIS — Conception/i)).toBeInTheDocument();
@@ -75,7 +75,7 @@ describe("NafaGeniusPage & NafaGeniusStudio", () => {
     expect(screen.getByRole("tab", { name: /3\. Dossier & Devis PDF/i })).toHaveAttribute("data-state", "active");
   });
 
-  it("ouvre et affiche l'onglet Diagnostic Végétal via le paramètre URL tab=diagnostic", () => {
+  it("gère de manière sécurisée les paramètres URL sans onglet diagnostic", () => {
     render(
       <MemoryRouter initialEntries={["/dashboard/genius?tab=diagnostic"]}>
         <NafaGeniusPage />
@@ -83,7 +83,8 @@ describe("NafaGeniusPage & NafaGeniusStudio", () => {
     );
 
     expect(screen.getByRole("heading", { name: /NAFA Genius/i })).toBeInTheDocument();
-    expect(screen.getByRole("tab", { name: /4\. Diagnostic Végétal/i })).toHaveAttribute("data-state", "active");
+    expect(screen.getByRole("tab", { name: /1\. Modèle IRRIS/i })).toHaveAttribute("data-state", "active");
+    expect(screen.queryByRole("tab", { name: /Diagnostic/i })).not.toBeInTheDocument();
   });
 
   it("exécute le recalcul IRRIS et met à jour le projet et le devis sans crash", () => {

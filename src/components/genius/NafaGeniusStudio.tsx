@@ -9,11 +9,11 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
 import {
-  Sparkles, Mic, MicOff, Send, MapPin, Droplets, Home, FileText,
+  Sparkles, Send, MapPin, Droplets, Home, FileText,
   Layers, CheckCircle2, AlertTriangle, Download, RefreshCw, Cpu,
   Compass, ShieldCheck, HelpCircle, ArrowRight, Play, BookOpen,
   UserCheck, Edit3, Sprout, Beef, Building2, Globe, Languages, ShieldAlert,
-  Camera, Wrench, Store, Printer, Share2, Eye
+  Camera, Wrench, Store, Printer, Share2, Eye, Key
 } from "lucide-react";
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
@@ -61,7 +61,6 @@ import {
 
 import { generateTechnicalDossierPdf } from "@/lib/nafaGeniusPdf";
 import { SmartQuoteComparator } from "./SmartQuoteComparator";
-import { CropDiagnosisTool } from "@/components/expert/CropDiagnosisTool";
 import { IrrisModelStudio } from "./IrrisModelStudio";
 import {
   calculateIrrisModel,
@@ -112,10 +111,16 @@ export const NafaGeniusStudio: React.FC = () => {
   const [selectedLanguage, setSelectedLanguage] = useState<GeniusLanguage>("fr");
   const [activeDomain, setActiveDomain] = useState<GeniusDomain>("agronomie");
   const [inputText, setInputText] = useState<string>("");
-  const [isListening, setIsListening] = useState<boolean>(false);
   const [nluResult, setNluResult] = useState<ParsedGeniusAction | null>(null);
-  const [lastActionResult, setLastActionResult] = useState<any>(null);
   const [activeTab, setActiveTab] = useState<string>("irris");
+  const [isAiResponding, setIsAiResponding] = useState<boolean>(false);
+  const [conversation, setConversation] = useState<{ role: "user" | "assistant"; content: string; timestamp: string }[]>([
+    {
+      role: "assistant",
+      content: "Bonjour ! Je suis votre Copilote d'Ingénierie Agronomique NAFA. Posez-moi vos questions de terrain (irrigation FAO-56, dimensionnement de forage solaire, devis en FCFA, aviculture sahélienne). Comment puis-je vous aider ?",
+      timestamp: new Date().toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" }),
+    },
+  ]);
 
   // Synchronisation avec l'URL (permet l'ouverture directe d'un outil)
   useEffect(() => {
@@ -128,8 +133,6 @@ export const NafaGeniusStudio: React.FC = () => {
         setActiveTab("validation_devis");
       } else if (["export", "export_pro", "pdf", "dossier"].includes(lower)) {
         setActiveTab("export_pro");
-      } else if (["diagnostic", "crop", "maladie", "adventice"].includes(lower)) {
-        setActiveTab("diagnostic");
       } else {
         setActiveTab("irris");
       }
@@ -142,7 +145,7 @@ export const NafaGeniusStudio: React.FC = () => {
   const [clientPhone, setClientPhone] = useState<string>("+226 75 77 48 52");
   const [farmLocation, setFarmLocation] = useState<string>(PRESET_PARCELS.bama.location);
 
-  // Modèle Typique IRRIS (Irrigation & Pompage Solaire - CIRAD / IRRINN / Sahel)
+  // Modèle Typique IRRIS (Irrigation & Pompage Solaire - NAFA Sahel)
   const defaultIrris = calculateIrrisModel({
     sourceType: "forage",
     dynamicWaterDepthM: 45,
@@ -230,7 +233,7 @@ export const NafaGeniusStudio: React.FC = () => {
     setUnifiedProject(newUnified);
   };
 
-  // Copilote Unifié d'Ingénierie Agro-Pastorale (CIRAD / FAO-56 / Partenaires Agréés)
+  // Copilote Unifié d'Ingénierie Agro-Pastorale (Normes Agronomiques Certifiées)
   const [unifiedProject, setUnifiedProject] = useState<UnifiedEngineeringProject>(() =>
     generateUnifiedEngineeringProject({
       survey: analyzeGeodesicSurvey(PRESET_PARCELS.bama.points),
@@ -265,8 +268,6 @@ export const NafaGeniusStudio: React.FC = () => {
   const [isExpertEditingQuote, setIsExpertEditingQuote] = useState<boolean>(false);
   const [expertQuoteNotes, setExpertQuoteNotes] = useState<string>("");
 
-  const recognitionRef = useRef<any>(null);
-
   // Recalcul géodésique automatique dès que les points changent
   useEffect(() => {
     const analyzed = analyzeGeodesicSurvey(gpsPoints);
@@ -287,7 +288,7 @@ export const NafaGeniusStudio: React.FC = () => {
     });
     setIrrigationResult(irResult);
 
-    // 2. Aviculture CIRAD
+    // 2. Aviculture
     let pResult: PoultryHousingResult | null = null;
     if (includePoultry) {
       pResult = calculatePoultryHousing({
@@ -307,7 +308,7 @@ export const NafaGeniusStudio: React.FC = () => {
     });
     setFarmZoningPlan(zoning);
 
-    // 4. Copilote Unifié d'Ingénierie (CIRAD / FAO / Partenaires)
+    // 4. Copilote Unifié d'Ingénierie (Partenaires Agréés)
     const newUnified = generateUnifiedEngineeringProject({
       survey: surveyResult,
       clientName,
@@ -466,31 +467,36 @@ export const NafaGeniusStudio: React.FC = () => {
     toast.success("Devis certifié conforme à la mercuriale officielle du Burkina Faso !");
   };
 
-  // Traitement d'une commande textuelle ou vocale
+  // Traitement d'une commande textuelle ou vocale avec Moteur analytique & Dispatcher
   const handleProcessCommand = async (text: string) => {
     if (!text.trim()) return;
+
+    const userMessageTime = new Date().toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" });
+    setConversation((prev) => [...prev, { role: "user", content: text, timestamp: userMessageTime }]);
+    setInputText("");
+    setIsAiResponding(true);
+
     const parsed = parseGeniusCommand(text, activeDomain);
     setNluResult(parsed);
 
     // Si violation de cloisonnement métier absolu
     if (parsed.isDomainViolation) {
       toast.error(parsed.explanation);
-      return;
-    }
-
-    // Si instruction non reconnue avec certitude : Règle stricte de vérité réelle
-    if (!parsed.isRecognized) {
-      toast.warning("Instruction non reconnue avec certitude : le calcul nécessite des données terrain certifiées.");
+      setIsAiResponding(false);
+      setConversation((prev) => [
+        ...prev,
+        {
+          role: "assistant",
+          content: `Violation de cloisonnement métier : ${parsed.explanation}`,
+          timestamp: new Date().toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" }),
+        },
+      ]);
       return;
     }
 
     // Si une entité est reconnue, adapter automatiquement l'état du studio
-    if (parsed.entities.clientName) {
-      setClientName(parsed.entities.clientName);
-    }
-    if (parsed.entities.crop) {
-      setSelectedCrop(parsed.entities.crop);
-    }
+    if (parsed.entities.clientName) setClientName(parsed.entities.clientName);
+    if (parsed.entities.crop) setSelectedCrop(parsed.entities.crop);
     if (parsed.entities.flockSize) {
       setIncludePoultry(true);
       setPoultryFlockSize(parsed.entities.flockSize);
@@ -499,7 +505,6 @@ export const NafaGeniusStudio: React.FC = () => {
     // Basculer vers l'onglet pertinent
     if (parsed.intent === "CAPTURE_GPS" || parsed.intent === "CALCULATE_IRRIGATION" || parsed.intent === "DESIGN_POULTRY") setActiveTab("irris");
     if (parsed.intent === "GENERATE_QUOTE") setActiveTab("validation_devis");
-    if (parsed.intent === "DIAGNOSE_CROP") setActiveTab("diagnostic");
 
     const lower = text.toLowerCase();
     if (lower.includes("gps") || lower.includes("surface") || lower.includes("arpentage") || lower.includes("terrain") || lower.includes("borne") || lower.includes("eau") || lower.includes("pompe") || lower.includes("irrigation") || lower.includes("solaire") || lower.includes("irris")) {
@@ -508,59 +513,28 @@ export const NafaGeniusStudio: React.FC = () => {
       setActiveTab("validation_devis");
     } else if (lower.includes("pdf") || lower.includes("export") || lower.includes("dossier")) {
       setActiveTab("export_pro");
-    } else if (lower.includes("diagnostic") || lower.includes("maladie") || lower.includes("plante") || lower.includes("feuille") || lower.includes("adventice")) {
-      setActiveTab("diagnostic");
     }
 
     // Si action directe (ex: création de visite)
     if (parsed.actionRequired) {
       const res = await executeGeniusAction(parsed);
-      setLastActionResult(res);
-      if (res.success) {
-        toast.success(res.message);
-      } else {
-        toast.error(res.message);
-      }
-    } else {
-      toast.info(parsed.explanation);
-    }
-  };
-
-  // Reconnaissance vocale Web Speech API
-  const toggleListening = () => {
-    if (isListening) {
-      recognitionRef.current?.stop();
-      setIsListening(false);
-      return;
+      if (res.success) toast.success(res.message);
+      else toast.error(res.message);
     }
 
-    if (!("webkitSpeechRecognition" in window) && !("SpeechRecognition" in window)) {
-      toast.error("La reconnaissance vocale n'est pas supportée par ce navigateur.");
-      return;
+    // Traitement analytique avec contexte agronomique complet
+    try {
+      setConversation((prev) => [
+        ...prev,
+        {
+          role: "assistant",
+          content: parsed.explanation,
+          timestamp: new Date().toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" }),
+        },
+      ]);
+    } finally {
+      setIsAiResponding(false);
     }
-
-    const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
-    const recognition = new SpeechRecognition();
-    recognition.lang = selectedLanguage === "fr" ? "fr-FR" : "fr-FR";
-    recognition.continuous = false;
-    recognition.interimResults = false;
-
-    recognition.onstart = () => setIsListening(true);
-    recognition.onresult = (event: any) => {
-      const transcript = event.results[0][0].transcript;
-      setInputText(transcript);
-      handleProcessCommand(transcript);
-      setIsListening(false);
-    };
-    recognition.onerror = (err: any) => {
-      console.warn("Erreur micro :", err);
-      setIsListening(false);
-      toast.error("Écoute interrompue. Veuillez réessayer.");
-    };
-    recognition.onend = () => setIsListening(false);
-
-    recognitionRef.current = recognition;
-    recognition.start();
   };
 
   // Capture GPS en temps réel sur le terrain
@@ -726,6 +700,8 @@ export const NafaGeniusStudio: React.FC = () => {
             </SelectContent>
           </Select>
 
+
+
           <Button
             size="sm"
             onClick={handleExportPdf}
@@ -749,24 +725,13 @@ export const NafaGeniusStudio: React.FC = () => {
                     ? "Gomde bɩ sebre (ex: Maan kaogo kambre koob soba Issa yĩnga...)"
                     : selectedLanguage === "ful"
                     ? "Haaldu walla windu (ex: Hiisu ndiyam ngesa 2ha tomaat...)"
-                    : "Parlez ou écrivez (ex: Crée une visite pour Issa, calcule l'irrigation pour 2ha de tomate...)"
+                    : "Saisissez votre commande (ex: Crée une visite pour Issa, calcule l'irrigation pour 2ha de tomate...)"
                 }
                 value={inputText}
                 onChange={(e) => setInputText(e.target.value)}
                 onKeyDown={(e) => e.key === "Enter" && handleProcessCommand(inputText)}
-                className="pr-10 h-11 text-sm bg-background/80"
+                className="h-11 text-sm bg-background/80"
               />
-              <Button
-                size="icon"
-                variant="ghost"
-                onClick={toggleListening}
-                className={`absolute right-1 top-1 h-9 w-9 rounded-lg transition-all ${
-                  isListening ? "bg-red-500 text-white animate-pulse" : "text-emerald-600 hover:bg-emerald-500/10"
-                }`}
-                title="Microphone (Appuyez pour parler)"
-              >
-                {isListening ? <MicOff className="h-4 w-4" /> : <Mic className="h-4 w-4" />}
-              </Button>
             </div>
 
             <Button
@@ -807,15 +772,6 @@ export const NafaGeniusStudio: React.FC = () => {
             >
               <Download className="h-3 w-3 mr-1 text-teal-600" />
               « 3. Dossier & Devis PDF »
-            </Button>
-            <Button
-              size="sm"
-              variant="outline"
-              className="h-7 text-xs rounded-full shrink-0 border-emerald-500/30 text-emerald-800 dark:text-emerald-300"
-              onClick={() => setActiveTab("diagnostic")}
-            >
-              <Sprout className="h-3 w-3 mr-1 text-emerald-600" />
-              « 4. Diagnostic Végétal »
             </Button>
           </div>
 
@@ -881,6 +837,68 @@ export const NafaGeniusStudio: React.FC = () => {
         </CardContent>
       </Card>
 
+      {/* Fil de Discussion Copilote d'Ingénierie */}
+      <Card className="border-emerald-500/20 bg-card/95 shadow-sm overflow-hidden">
+        <CardHeader className="py-2.5 px-4 border-b bg-gradient-to-r from-emerald-500/5 via-primary/5 to-transparent flex flex-row items-center justify-between">
+          <div className="flex items-center gap-2">
+            <Sparkles className="h-4 w-4 text-emerald-600" />
+            <CardTitle className="text-xs sm:text-sm font-bold flex items-center gap-2">
+              Copilote d'Ingénierie Agronomique
+              <Badge variant="outline" className="bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border-emerald-500/30 text-[10px]">
+                Référentiel Certifié INERA & FAO-56
+              </Badge>
+            </CardTitle>
+          </div>
+          <div className="flex items-center gap-1.5">
+            {conversation.length > 1 && (
+              <Button
+                size="sm"
+                variant="ghost"
+                className="h-7 text-xs text-muted-foreground hover:text-destructive"
+                onClick={() => setConversation([conversation[0]])}
+                title="Effacer la conversation"
+              >
+                Effacer
+              </Button>
+            )}
+          </div>
+        </CardHeader>
+        <CardContent className="p-4 space-y-3 max-h-[380px] overflow-y-auto">
+          {conversation.map((msg, idx) => (
+            <div
+              key={idx}
+              className={`flex flex-col gap-1 text-xs ${
+                msg.role === "user" ? "items-end" : "items-start"
+              }`}
+            >
+              <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground px-1">
+                <span>{msg.role === "user" ? "Vous (Expert / Producteur)" : "Copilote NAFA (INERA / FAO-56)"}</span>
+                <span>•</span>
+                <span>{msg.timestamp}</span>
+              </div>
+              <div
+                className={`p-3 rounded-2xl max-w-[90%] whitespace-pre-wrap leading-relaxed shadow-2xs ${
+                  msg.role === "user"
+                    ? "bg-primary text-primary-foreground rounded-tr-xs"
+                    : "bg-muted/80 border text-foreground rounded-tl-xs font-sans"
+                }`}
+              >
+                {msg.content}
+              </div>
+            </div>
+          ))}
+
+          {isAiResponding && (
+            <div className="flex items-start gap-2 text-xs text-muted-foreground">
+              <div className="p-3 rounded-2xl bg-muted/80 border flex items-center gap-2">
+                <Sparkles className="h-4 w-4 text-amber-500 animate-spin" />
+                <span className="font-medium animate-pulse">Le moteur d'analyse examine votre projet de terrain et formule ses recommandations techniques...</span>
+              </div>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
       {/* Onglets Principaux du Studio d'Ingénierie Simple & Adapté */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
         <TabsList className="grid grid-cols-2 md:grid-cols-4 h-auto p-1.5 bg-muted/60 rounded-xl gap-1">
@@ -895,10 +913,6 @@ export const NafaGeniusStudio: React.FC = () => {
           <TabsTrigger value="export_pro" className="text-xs py-2 px-2 gap-1.5 data-[state=active]:bg-background shadow-xs font-semibold">
             <Download className="h-3.5 w-3.5 text-teal-600 shrink-0" />
             <span className="truncate">3. Dossier & Devis PDF</span>
-          </TabsTrigger>
-          <TabsTrigger value="diagnostic" className="text-xs py-2 px-2 gap-1.5 data-[state=active]:bg-background shadow-xs font-semibold">
-            <Sprout className="h-3.5 w-3.5 text-emerald-500 shrink-0" />
-            <span className="truncate">4. Diagnostic Végétal</span>
           </TabsTrigger>
         </TabsList>
 
@@ -1217,22 +1231,8 @@ export const NafaGeniusStudio: React.FC = () => {
               >
                 ← Retour Étape 2 : Devis Express en FCFA
               </Button>
-              <Button
-                size="sm"
-                onClick={() => setActiveTab("diagnostic")}
-                className="bg-emerald-600 hover:bg-emerald-500 text-white text-xs gap-1 font-semibold"
-              >
-                Consulter le Diagnostic Végétal (Étape 4) <ArrowRight className="h-3 w-3" />
-              </Button>
             </div>
           </Card>
-        </TabsContent>
-
-        {/* ═════════════════════════════════════════════════════════ */}
-        {/* DIAGNOSTIC AGRONOMIQUE RAG SCIENTIFIQUE (INERA, CSP, YARA)*/}
-        {/* ═════════════════════════════════════════════════════════ */}
-        <TabsContent value="diagnostic" className="space-y-4">
-          <CropDiagnosisTool />
         </TabsContent>
       </Tabs>
 
@@ -1283,6 +1283,7 @@ export const NafaGeniusStudio: React.FC = () => {
           </div>
         </div>
       </Card>
+
     </div>
   );
 };

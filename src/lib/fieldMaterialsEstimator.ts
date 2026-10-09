@@ -27,10 +27,15 @@ export function generateBuildingBillOfQuantities(
   const items: QuoteItem[] = [];
   const prices = materialsStorage.getAll();
 
-  const getPrice = (code: string, fallback: number) => {
+  const getPriceAndSupplier = (code: string, fallback: number, fallbackSupplier = "Fournisseur Burkinabè Agréé") => {
     const found = prices.find((p) => p.code === code);
-    return found ? found.defaultUnitPriceFCFA : fallback;
+    return {
+      price: found ? found.defaultUnitPriceFCFA : fallback,
+      supplier: found?.supplier || fallbackSupplier,
+    };
   };
+  const getPrice = (code: string, fallback: number) => getPriceAndSupplier(code, fallback).price;
+  const getSupplier = (code: string, fallbackSupplier = "Fournisseur Burkinabè Agréé") => getPriceAndSupplier(code, 0, fallbackSupplier).supplier;
 
   const perimeter = 2 * (building.lengthM + building.widthM);
   const floorArea = building.lengthM * building.widthM;
@@ -49,6 +54,7 @@ export function generateBuildingBillOfQuantities(
     quantity: agglosCount,
     unitPriceFCFA: getPrice("AGG_15_CREUX", 260),
     totalFCFA: agglosCount * getPrice("AGG_15_CREUX", 260),
+    supplier: getSupplier("AGG_15_CREUX", "Fabrique Locale Agréée"),
   });
 
   // Ciment CPJ 35 (chape sol 8cm + mortier murets + enduits)
@@ -65,6 +71,7 @@ export function generateBuildingBillOfQuantities(
     quantity: totalCementSacks,
     unitPriceFCFA: getPrice("CIM_CPJ35", 5800),
     totalFCFA: totalCementSacks * getPrice("CIM_CPJ35", 5800),
+    supplier: getSupplier("CIM_CPJ35", "CIMBURKINA / CIMASSO"),
   });
 
   // Sable et Gravier (chargements 10m³)
@@ -77,6 +84,7 @@ export function generateBuildingBillOfQuantities(
     quantity: sandTrucks,
     unitPriceFCFA: getPrice("SABLE_CAMION", 65000),
     totalFCFA: sandTrucks * getPrice("SABLE_CAMION", 65000),
+    supplier: getSupplier("SABLE_CAMION", "Carrières Nazinon / Mouhoun"),
   });
 
   const gravelTrucks = Math.max(1, Math.ceil(concreteVolumeM3 / 7.0));
@@ -88,6 +96,7 @@ export function generateBuildingBillOfQuantities(
     quantity: gravelTrucks,
     unitPriceFCFA: getPrice("GRAVIER_CAMION", 120000),
     totalFCFA: gravelTrucks * getPrice("GRAVIER_CAMION", 120000),
+    supplier: getSupplier("GRAVIER_CAMION", "Carrière Concassage Yimdi"),
   });
 
   // Fer à béton (HA8 & HA6 pour chaînage bas et dallage)
@@ -100,6 +109,7 @@ export function generateBuildingBillOfQuantities(
     quantity: rebarBars,
     unitPriceFCFA: getPrice("FER_HA8", 3200),
     totalFCFA: rebarBars * getPrice("FER_HA8", 3200),
+    supplier: getSupplier("FER_HA8", "Faso Métal"),
   });
 
   // 2. Charpente Métallique & Couverture Tôles Aluzinc
@@ -115,6 +125,7 @@ export function generateBuildingBillOfQuantities(
     quantity: roofSheetsCount,
     unitPriceFCFA: getPrice("TOLE_BAC_035", 14500),
     totalFCFA: roofSheetsCount * getPrice("TOLE_BAC_035", 14500),
+    supplier: getSupplier("TOLE_BAC_035", "Faso Métal / Socomet"),
   });
 
   // Pannes tubes carrés 40x40 et fermes 60x40
@@ -127,6 +138,7 @@ export function generateBuildingBillOfQuantities(
     quantity: raftersTubesCount,
     unitPriceFCFA: getPrice("TUBE_RECT_6040", 11800),
     totalFCFA: raftersTubesCount * getPrice("TUBE_RECT_6040", 11800),
+    supplier: getSupplier("TUBE_RECT_6040", "Faso Métal"),
   });
 
   // Grillage anti-moineaux si poulailler / étable / bergerie
@@ -144,6 +156,7 @@ export function generateBuildingBillOfQuantities(
       quantity: meshRolls,
       unitPriceFCFA: getPrice("GRILLAGE_AVICOLE", 28000),
       totalFCFA: meshRolls * getPrice("GRILLAGE_AVICOLE", 28000),
+      supplier: getSupplier("GRILLAGE_AVICOLE", "Quincailleries Réunies BF"),
     });
   }
 
@@ -188,10 +201,15 @@ export function generateIrrigationBillOfQuantities(
   const items: QuoteItem[] = [];
   const prices = materialsStorage.getAll();
 
-  const getPrice = (code: string, fallback: number) => {
+  const getPriceAndSupplier = (code: string, fallback: number, fallbackSupplier = "Fournisseur Hydraulique Agréé") => {
     const found = prices.find((p) => p.code === code);
-    return found ? found.defaultUnitPriceFCFA : fallback;
+    return {
+      price: found ? found.defaultUnitPriceFCFA : fallback,
+      supplier: found?.supplier || fallbackSupplier,
+    };
   };
+  const getPrice = (code: string, fallback: number) => getPriceAndSupplier(code, fallback).price;
+  const getSupplier = (code: string, fallbackSupplier = "Fournisseur Hydraulique Agréé") => getPriceAndSupplier(code, 0, fallbackSupplier).supplier;
 
   // 1. Tuyau Conduite Principale PEHD Ø50 ou Ø63
   const mainCoils = Math.max(1, Math.ceil(project.mainPipeLengthM / 100));
@@ -204,6 +222,7 @@ export function generateIrrigationBillOfQuantities(
     quantity: mainCoils,
     unitPriceFCFA: getPrice(mainCode, 78000),
     totalFCFA: mainCoils * getPrice(mainCode, 78000),
+    supplier: getSupplier(mainCode, "Faso Plast / SOPLAST"),
   });
 
   // 2. Gaine Goutte-à-Goutte ou Rampes
@@ -217,6 +236,7 @@ export function generateIrrigationBillOfQuantities(
       quantity: coils1000m,
       unitPriceFCFA: getPrice("GAINE_GOUTTE_16", 85000),
       totalFCFA: coils1000m * getPrice("GAINE_GOUTTE_16", 85000),
+      supplier: getSupplier("GAINE_GOUTTE_16", "Netafim / Agrisahel"),
     });
   }
 
@@ -229,6 +249,7 @@ export function generateIrrigationBillOfQuantities(
     quantity: 1,
     unitPriceFCFA: getPrice("FILTRE_DISQUE_2", 45000),
     totalFCFA: getPrice("FILTRE_DISQUE_2", 45000),
+    supplier: getSupplier("FILTRE_DISQUE_2", "SOPLAST / Netafim"),
   });
 
   items.push({
@@ -239,6 +260,7 @@ export function generateIrrigationBillOfQuantities(
     quantity: 1,
     unitPriceFCFA: getPrice("KIT_VENTURI_FERTI", 35000),
     totalFCFA: getPrice("KIT_VENTURI_FERTI", 35000),
+    supplier: getSupplier("KIT_VENTURI_FERTI", "Agrisahel / SAPHYTO"),
   });
 
   // 4. Vannes de sectorisation
@@ -251,6 +273,7 @@ export function generateIrrigationBillOfQuantities(
     quantity: valvsCount,
     unitPriceFCFA: getPrice("VANNE_SPHERIQUE_2", 9500),
     totalFCFA: valvsCount * getPrice("VANNE_SPHERIQUE_2", 9500),
+    supplier: getSupplier("VANNE_SPHERIQUE_2", "SOPLAST / Faso Plast"),
   });
 
   // 5. Pompage solaire si choisi
@@ -263,6 +286,7 @@ export function generateIrrigationBillOfQuantities(
       quantity: 1,
       unitPriceFCFA: getPrice("POMPE_SOLAIRE_3HP", 1850000),
       totalFCFA: getPrice("POMPE_SOLAIRE_3HP", 1850000),
+      supplier: getSupplier("POMPE_SOLAIRE_3HP", "Apex Solar / Lorentz BF"),
     });
   }
 

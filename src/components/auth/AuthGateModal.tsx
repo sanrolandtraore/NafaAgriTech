@@ -95,7 +95,7 @@ export function AuthGateModal({
             </li>
             <li className="flex items-center gap-2">
               <CheckCircle2 className="h-3.5 w-3.5 text-emerald-600 shrink-0" />
-              <span>Passation de commandes sur le marketplace et réservation d'engins</span>
+              <span>Passation de commandes sur le marché et réservation d'engins</span>
             </li>
             <li className="flex items-center gap-2">
               <CheckCircle2 className="h-3.5 w-3.5 text-emerald-600 shrink-0" />

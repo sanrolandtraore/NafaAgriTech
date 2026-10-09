@@ -42,7 +42,6 @@ import { FieldVisitReportTool } from "./FieldVisitReportTool";
 import { FieldQuotesTool } from "./FieldQuotesTool";
 import { NafaAiCopilot } from "./NafaAiCopilot";
 import { NewFarmModal } from "./NewFarmModal";
-import { CropDiagnosisTool } from "@/components/expert/CropDiagnosisTool";
 import { Studio3DFarmModeler } from "./Studio3DFarmModeler";
 import { WcadiIrrigationStudio } from "./WcadiIrrigationStudio";
 import PdfExportHistoryModal from "@/components/export/PdfExportHistoryModal";
@@ -69,8 +68,8 @@ import {
   AlertTriangle,
   Wifi,
   WifiOff,
-  Microscope,
   Box,
+  Settings2,
 } from "lucide-react";
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
@@ -206,8 +205,6 @@ export const FieldDesignerStudio: React.FC = () => {
         setActiveTab("devis");
       } else if (["export", "export_pro", "pdf", "dossier"].includes(lower)) {
         setActiveTab("devis");
-      } else if (["diagnostic", "crop", "maladie"].includes(lower)) {
-        setActiveTab("diagnostic");
       } else if (["gps", "mesure", "arpentage"].includes(lower)) {
         setActiveTab("gps");
       } else if (["crop_designer", "culture"].includes(lower)) {
@@ -348,7 +345,8 @@ export const FieldDesignerStudio: React.FC = () => {
                 : "bg-white/10 text-white/90 border-white/20 hover:bg-white/20"
             }`}
           >
-            <span>{modeExpert ? "Mode Expert ⚙" : "Mode Simple"}</span>
+            {modeExpert && <Settings2 className="h-3.5 w-3.5 shrink-0" />}
+            <span>{modeExpert ? "Mode Expert" : "Mode Simple"}</span>
           </button>
 
           {/* Bouton Historique PDF */}
@@ -398,49 +396,45 @@ export const FieldDesignerStudio: React.FC = () => {
       {/* ── NAVIGATION PAR ONGLETS MÉTIER ── */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
         <TabsList className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-11 h-auto p-1.5 gap-1 rounded-2xl bg-muted/70">
-          <TabsTrigger value="dashboard" className="h-10 text-xs font-bold rounded-xl flex items-center justify-center gap-1">
-            <Compass className="h-3.5 w-3.5" />
-            <span>Mon Terrain</span>
+          <TabsTrigger value="dashboard" className="h-10 text-xs font-bold rounded-xl flex items-center justify-center gap-1 min-w-0">
+            <Compass className="h-3.5 w-3.5 shrink-0" />
+            <span className="truncate">Mon Terrain</span>
           </TabsTrigger>
-          <TabsTrigger value="gps" className="h-10 text-xs font-bold rounded-xl flex items-center justify-center gap-1">
-            <Navigation className="h-3.5 w-3.5" />
-            <span>Mesure GPS</span>
+          <TabsTrigger value="gps" className="h-10 text-xs font-bold rounded-xl flex items-center justify-center gap-1 min-w-0">
+            <Navigation className="h-3.5 w-3.5 shrink-0" />
+            <span className="truncate">Mesure GPS</span>
           </TabsTrigger>
-          <TabsTrigger value="crop" className="h-10 text-xs font-bold rounded-xl flex items-center justify-center gap-1">
-            <Sprout className="h-3.5 w-3.5" />
-            <span>Culture</span>
+          <TabsTrigger value="crop" className="h-10 text-xs font-bold rounded-xl flex items-center justify-center gap-1 min-w-0">
+            <Sprout className="h-3.5 w-3.5 shrink-0" />
+            <span className="truncate">Culture</span>
           </TabsTrigger>
-          <TabsTrigger value="irrigation" className="h-10 text-xs font-bold rounded-xl flex items-center justify-center gap-1" aria-label="1. Modèle IRRIS — Conception">
-            <Droplets className="h-3.5 w-3.5" />
-            <span>Irrigation</span>
+          <TabsTrigger value="irrigation" className="h-10 text-xs font-bold rounded-xl flex items-center justify-center gap-1 min-w-0" aria-label="1. Modèle IRRIS — Conception">
+            <Droplets className="h-3.5 w-3.5 shrink-0" />
+            <span className="truncate">Irrigation</span>
           </TabsTrigger>
-          <TabsTrigger value="batiment" className="h-10 text-xs font-bold rounded-xl flex items-center justify-center gap-1">
-            <Home className="h-3.5 w-3.5" />
-            <span>Bâtiment</span>
+          <TabsTrigger value="batiment" className="h-10 text-xs font-bold rounded-xl flex items-center justify-center gap-1 min-w-0">
+            <Home className="h-3.5 w-3.5 shrink-0" />
+            <span className="truncate">Bâtiment</span>
           </TabsTrigger>
-          <TabsTrigger value="builder" className="h-10 text-xs font-bold rounded-xl flex items-center justify-center gap-1">
-            <Layers className="h-3.5 w-3.5" />
-            <span>Carte 2D</span>
+          <TabsTrigger value="builder" className="h-10 text-xs font-bold rounded-xl flex items-center justify-center gap-1 min-w-0">
+            <Layers className="h-3.5 w-3.5 shrink-0" />
+            <span className="truncate">Carte 2D</span>
           </TabsTrigger>
-          <TabsTrigger value="modeler3d" className="h-10 text-xs font-bold rounded-xl flex items-center justify-center gap-1" aria-label="Modélisation 3D">
-            <Box className="h-3.5 w-3.5" />
-            <span>Modèle 3D</span>
+          <TabsTrigger value="modeler3d" className="h-10 text-xs font-bold rounded-xl flex items-center justify-center gap-1 min-w-0" aria-label="Modélisation 3D">
+            <Box className="h-3.5 w-3.5 shrink-0" />
+            <span className="truncate">Modèle 3D</span>
           </TabsTrigger>
-          <TabsTrigger value="interventions" className="h-10 text-xs font-bold rounded-xl flex items-center justify-center gap-1">
-            <FileText className="h-3.5 w-3.5" />
-            <span>Visites</span>
+          <TabsTrigger value="interventions" className="h-10 text-xs font-bold rounded-xl flex items-center justify-center gap-1 min-w-0">
+            <FileText className="h-3.5 w-3.5 shrink-0" />
+            <span className="truncate">Visites</span>
           </TabsTrigger>
-          <TabsTrigger value="devis" className="h-10 text-xs font-bold rounded-xl flex items-center justify-center gap-1" aria-label="2. Devis Express en FCFA">
-            <Wallet className="h-3.5 w-3.5" />
-            <span>Devis FCFA</span>
+          <TabsTrigger value="devis" className="h-10 text-xs font-bold rounded-xl flex items-center justify-center gap-1 min-w-0" aria-label="2. Devis Express en FCFA">
+            <Wallet className="h-3.5 w-3.5 shrink-0" />
+            <span className="truncate">Devis FCFA</span>
           </TabsTrigger>
-          <TabsTrigger value="copilot" className="h-10 text-xs font-bold rounded-xl flex items-center justify-center gap-1">
-            <Sparkles className="h-3.5 w-3.5" />
-            <span>AI Copilot</span>
-          </TabsTrigger>
-          <TabsTrigger value="diagnostic" className="h-10 text-xs font-bold rounded-xl flex items-center justify-center gap-1" aria-label="4. Diagnostic Végétal">
-            <Microscope className="h-3.5 w-3.5" />
-            <span>Diagnostic</span>
+          <TabsTrigger value="copilot" className="h-10 text-xs font-bold rounded-xl flex items-center justify-center gap-1 min-w-0">
+            <Sparkles className="h-3.5 w-3.5 shrink-0" />
+            <span className="truncate">AI Copilot</span>
           </TabsTrigger>
         </TabsList>
 
@@ -560,7 +554,7 @@ export const FieldDesignerStudio: React.FC = () => {
                   <Layers className="h-6 w-6 text-purple-600" />
                 </div>
                 <div>
-                  <h4 className="font-extrabold text-sm text-foreground">Carte & Farm Builder</h4>
+                  <h4 className="font-extrabold text-sm text-foreground">Carte & Plan de Ferme</h4>
                   <p className="text-xs text-muted-foreground mt-0.5">Plan 2D et agencement</p>
                 </div>
               </button>
@@ -660,7 +654,7 @@ export const FieldDesignerStudio: React.FC = () => {
           <CropDesignerTool onSavePlan={handleSaveCropPlan} fields={fields} activeFarmId={activeFarmId} />
         </TabsContent>
 
-        {/* ── 4. CONCEPTEUR D'IRRIGATION (STYLE RIVULIS WCADI) ── */}
+        {/* ── 4. CONCEPTEUR D'IRRIGATION (NAFA HYDRAULICS) ── */}
         <TabsContent value="irrigation">
           <div className="space-y-4">
             <WcadiIrrigationStudio
@@ -692,7 +686,7 @@ export const FieldDesignerStudio: React.FC = () => {
                   numSectors: p.hydraulicResults.numSectors,
                   dailyIrrigationHours: p.hydraulicResults.shiftDurationHours,
                   isTechnicalEstimate: false,
-                  notes: `Dimensionnement WCADI : ${p.financialTotalFcfa.toLocaleString()} FCFA (Nomenclature vérifiée)`,
+                  notes: `Dimensionnement NAFA Hydraulics : ${p.financialTotalFcfa.toLocaleString()} FCFA (Nomenclature vérifiée)`,
                   syncStatus: "pending",
                   createdAt: p.createdAt,
                   updatedAt: p.createdAt,
@@ -760,11 +754,6 @@ export const FieldDesignerStudio: React.FC = () => {
             irrigation={irrigationProjects[0]}
             buildings={buildings}
           />
-        </TabsContent>
-
-        {/* ── 10. DIAGNOSTIC VÉGÉTAL SCIENTIFIQUE ── */}
-        <TabsContent value="diagnostic">
-          <CropDiagnosisTool />
         </TabsContent>
       </Tabs>
 

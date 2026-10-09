@@ -6,7 +6,6 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Menu, Wifi, WifiOff, Sparkles, Smartphone } from "lucide-react";
 import logo from "@/assets/logo.png";
-import VoiceAssistant from "@/components/VoiceAssistant";
 import PWAInstallBanner from "@/components/PWAInstallBanner";
 import { useSubscription } from "@/hooks/useSubscription";
 import BackNavigationButton from "@/components/BackNavigationButton";
@@ -87,8 +86,6 @@ const DashboardLayout = () => {
 
       {/* PWA Install Banner */}
       <PWAInstallBanner />
-
-      {isPremium && <VoiceAssistant />}
     </div>
   );
 };

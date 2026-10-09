@@ -50,7 +50,7 @@ export const SUBSCRIPTION_PLANS: SubscriptionPlan[] = [
       "Support communautaire",
     ],
     toolsIncluded: [
-      { name: "Marketplace publique", description: "Consulter les offres et prestataires", route: "/dashboard/marketplace" },
+      { name: "Marché public", description: "Consulter les offres et prestataires", route: "/dashboard/marketplace" },
       { name: "Fiches techniques de base", description: "Cultures sahéliennes", route: "/dashboard/crop-library" },
     ],
   },
@@ -64,13 +64,13 @@ export const SUBSCRIPTION_PLANS: SubscriptionPlan[] = [
     features: [
       "Publication illimitée de produits (intrants, semences, petit matériel)",
       "Réception directe des demandes de devis clients",
-      "Visibilité prioritaire sur le Marketplace NAFA - AGRITECH",
+      "Visibilité prioritaire sur le Marché NAFA - AGRITECH",
       "Calculatrice de doses pour conseiller les clients au comptoir",
       "Factures et bons de commande PDF",
     ],
     toolsIncluded: [
       { name: "Gestion de mes offres & catalogue", description: "Gérer stock, prix et visibilité", route: "/dashboard/partenaire-mes-offres" },
-      { name: "Marketplace NAFA - AGRITECH", description: "Présence auprès des producteurs", route: "/dashboard/marketplace" },
+      { name: "Marché NAFA - AGRITECH", description: "Présence auprès des producteurs", route: "/dashboard/marketplace" },
       { name: "Calculatrice agronomique", description: "Aide au calcul de doses et fertilisation", route: "/dashboard/expert-calculator" },
       { name: "Fiches techniques 12 cultures", description: "Conseil client certifié", route: "/dashboard/crop-library" },
     ],
@@ -85,18 +85,18 @@ export const SUBSCRIPTION_PLANS: SubscriptionPlan[] = [
     tagline: "Pour les entrepreneurs de travaux agricoles, loueurs de tracteurs, drones et experts agronomes",
     features: [
       "Toute la suite d'aide à la décision NAFA - AGRITECH débloquée",
-      "Diagnostic avancé illimité (maladies, ravageurs, carences)",
+      "Fiches techniques de cultures et référentiels agronomiques",
       "Générateur d'ordonnances agronomiques certifiées PDF",
-      "Scouting terrain géolocalisé avec relevé GPS et export de rapports",
+      "Observation terrain géolocalisée avec relevé GPS et export de rapports",
       "Gestion de la flotte de matériel en location & réservations avec acompte séquestre",
       "Carnet de suivi des exploitations clientes et tournées",
-      "Export PDF/CSV des diagnostics et comptes-rendus d'intervention",
+      "Export PDF/CSV des rapports et comptes-rendus d'intervention",
       "Badge officiel 'Partenaire Agréé NAFA - AGRITECH'",
     ],
     toolsIncluded: [
-      { name: "Diagnostic Végétal", description: "Analyse instantanée et précise", route: "/dashboard/expert-diagnosis" },
+      { name: "Fiches Techniques Cultures", description: "Référentiels ouest-africains certifiés", route: "/dashboard/crop-library" },
       { name: "Ordonnances Agros PDF", description: "Génération signée et QR-code", route: "/dashboard/expert-prescriptions" },
-      { name: "Scouting terrain GPS", description: "Patrouilles parcellaires et relevés", route: "/dashboard/scouting" },
+      { name: "Observation terrain GPS", description: "Patrouilles parcellaires et relevés", route: "/dashboard/scouting" },
       { name: "Matériel & Intrants (Vente & Location)", description: "Offres matériel, semences et intrants", route: "/dashboard/marketplace?cat=machinisme" },
       { name: "Calculatrice Agro & Doses", description: "Semis, fractionnement NPK, eau ETc", route: "/dashboard/expert-calculator" },
       { name: "Cartographie GPS Polygone", description: "Mesure de surface et limites", route: "/dashboard/expert-cartography" },
@@ -128,14 +128,7 @@ export const SUBSCRIPTION_PLANS: SubscriptionPlan[] = [
 
 const LOCAL_STORAGE_KEY = "nafa_provider_subscription";
 
-export const CERTIFIED_DEFAULT_PARTNERS = [
-  "pe-fourn-1", "pe-fourn-2", "pe-fourn-3", "pe-fourn-4",
-  "pe-assur-1", "pe-assur-2", "pe-assur-3",
-  "pe-bank-1", "pe-bank-2", "pe-bank-3",
-  "pe-prog-1", "pe-prog-2", "pe-prog-3",
-  "prov-1", "prov-2", "prov-3", "prov-4", "prov-5",
-  "partner-sncitec", "partner-1"
-];
+export const CERTIFIED_DEFAULT_PARTNERS: string[] = [];
 
 export function isSubscriptionActive(sub?: ProviderSubscription | null): boolean {
   if (!sub || !sub.isActive) return false;
@@ -158,8 +151,7 @@ export function getSubscriptionDaysRemaining(sub?: ProviderSubscription | null):
  */
 export function isPartnerSubscriptionActive(partnerId?: string | null): boolean {
   if (!partnerId) return false;
-  // Les partenaires institutionnels et officiels certifiés pré-intégrés ont un abonnement permanent garanti
-  if (CERTIFIED_DEFAULT_PARTNERS.some((id) => partnerId.startsWith(id) || partnerId.includes(id))) {
+  if (CERTIFIED_DEFAULT_PARTNERS.length > 0 && CERTIFIED_DEFAULT_PARTNERS.some((id) => partnerId.startsWith(id) || partnerId.includes(id))) {
     return true;
   }
 

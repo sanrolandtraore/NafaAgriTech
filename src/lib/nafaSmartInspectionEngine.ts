@@ -561,7 +561,7 @@ export function buildInspectionTemplateForType(type: InspectionType): Inspection
         { key: "photo_contention", label: "Couloir de contention / Soins", description: "Sécurité lors des vaccinations.", is_mandatory: false },
       ],
       default_measurements: [
-        { name: "Surface utile par tête", unit: "m²/tête", min_threshold: 2.5, max_threshold: 12.0, default_norm: "CIRAD / FAO" },
+        { name: "Surface utile par tête", unit: "m²/tête", min_threshold: 2.5, max_threshold: 12.0, default_norm: "Normes Agronomiques Certifiées" },
         { name: "Hauteur sous faîtage", unit: "m", min_threshold: 3.5, max_threshold: 6.0, default_norm: "Confort thermique Sahel" },
         { name: "Débit d'eau abreuvoir", unit: "L/min", min_threshold: 5.0, max_threshold: 25.0, default_norm: "Pression constante" },
         { name: "Température ambiante relevée", unit: "°C", min_threshold: 20.0, max_threshold: 38.0, default_norm: "Stress thermique" },
@@ -769,7 +769,7 @@ export function generateSmartFormTemplate(input: {
       { key: "photo_mangeoires", label: "Mangeoires et râteliers", description: "Hauteur et propreté du distributeur d'aliments.", is_mandatory: true },
     ];
     measurements = [
-      { name: "Surface unitaire par tête", unit: "m²/tête", min_threshold: 4.0, max_threshold: 15.0, default_norm: "CIRAD / FAO" },
+      { name: "Surface unitaire par tête", unit: "m²/tête", min_threshold: 4.0, max_threshold: 15.0, default_norm: "Normes Agronomiques Certifiées" },
       { name: "Hauteur libre de toiture", unit: "m", min_threshold: 3.2, max_threshold: 5.5, default_norm: "Ventilation thermosiphon" },
       { name: "Débit d'eau abreuvoir", unit: "L/min", min_threshold: 10, max_threshold: 30, default_norm: "Abreuvement continu" },
     ];

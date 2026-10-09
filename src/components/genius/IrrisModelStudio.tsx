@@ -261,7 +261,7 @@ export const IrrisModelStudio: React.FC<IrrisModelStudioProps> = ({
               Modèle IRRIS — Conception & Personnalisation Ingénieur
             </h2>
             <Badge className="bg-sky-500/30 text-sky-200 border-sky-400/30 text-[10px] px-2 py-0.5">
-              Standard Practica / IRRINN Sahel
+              Standard d'Ingénierie NAFA Sahel
             </Badge>
             {result.isExpertCustomized && (
               <Badge className="bg-emerald-500/30 text-emerald-200 border-emerald-400/30 text-[10px] px-2 py-0.5 font-mono">
@@ -888,7 +888,7 @@ export const IrrisModelStudio: React.FC<IrrisModelStudioProps> = ({
                 <table className="w-full text-left text-xs">
                   <thead className="bg-muted/50 border-b border-border/60 text-[10px] uppercase font-bold text-muted-foreground">
                     <tr>
-                      <th className="py-2.5 px-3 min-w-[200px]">Désignation & Fournisseur Marketplace</th>
+                      <th className="py-2.5 px-3 min-w-[200px]">Désignation & Fournisseur du Marché</th>
                       <th className="py-2.5 px-2 text-center w-20">Qté</th>
                       <th className="py-2.5 px-2 text-right min-w-[110px]">Prix Unit. (FCFA)</th>
                       <th className="py-2.5 px-3 text-right min-w-[110px]">Total (FCFA)</th>
@@ -1040,7 +1040,7 @@ export const IrrisModelStudio: React.FC<IrrisModelStudioProps> = ({
                         />
                       </div>
                       <div>
-                        <Label className="text-[11px]">Fournisseur Marketplace</Label>
+                        <Label className="text-[11px]">Fournisseur du Marché</Label>
                         <Select
                           value={newItem.supplierName}
                           onValueChange={(v) => setNewItem({ ...newItem, supplierName: v })}

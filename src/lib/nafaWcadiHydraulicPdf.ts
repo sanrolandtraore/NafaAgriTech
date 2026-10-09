@@ -26,7 +26,7 @@ export function generateWcadiHydraulicPdf(project: WcadiHydraulicProject, client
 
   doc.setFont("helvetica", "normal");
   doc.setFontSize(8);
-  doc.text("STUDIO D'INGÉNIERIE HYDRAULIQUE & RÉSEAU AGRICOLE (STYLE WCADI)", 14, 18);
+  doc.text("STUDIO D'INGÉNIERIE HYDRAULIQUE & RÉSEAU AGRICOLE NAFA", 14, 18);
 
   doc.setFont("helvetica", "bold");
   doc.setFontSize(10);
@@ -79,7 +79,7 @@ export function generateWcadiHydraulicPdf(project: WcadiHydraulicProject, client
   // 3. Dimensionnement hydraulique & Tuyauterie
   doc.setFont("helvetica", "bold");
   doc.setFontSize(11);
-  doc.text("2. DIMENSIONNEMENT DU RÉSEAU & TUYAUTERIE (NORME FAO-56 & CIRAD)", 14, currentY);
+  doc.text("2. DIMENSIONNEMENT DU RÉSEAU & TUYAUTERIE (NORMES AGRONOMIQUES CERTIFIÉES)", 14, currentY);
   currentY += 5;
 
   const hr = project.hydraulicResults;
@@ -157,7 +157,7 @@ export function generateWcadiHydraulicPdf(project: WcadiHydraulicProject, client
   doc.setFont("helvetica", "normal");
   doc.setFontSize(7.5);
   doc.setTextColor(100, 116, 139);
-  doc.text("Document certifié généré par NAFA-AGRITECH • Moteur de calcul WCADI & FAO-56", 14, pageHeight - 7);
+  doc.text("Document certifié généré par NAFA-AGRITECH • Moteur de calcul NAFA Hydraulics certifié", 14, pageHeight - 7);
   doc.text(`Identifiant: ${project.id}`, pageWidth - 14, pageHeight - 7, { align: "right" });
 
   return doc;

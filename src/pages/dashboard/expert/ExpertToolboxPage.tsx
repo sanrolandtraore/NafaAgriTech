@@ -1,5 +1,5 @@
-﻿import { ToolboxTile } from "@/components/expert/ToolboxTile";
-import { Microscope, Calculator, BookOpen, Users, FileText, BarChart3, MapPin, Eye, Sparkles } from "lucide-react";
+import { ToolboxTile } from "@/components/expert/ToolboxTile";
+import { ClipboardCheck, Calculator, BookOpen, Users, FileText, BarChart3, MapPin, Eye, Sparkles } from "lucide-react";
 
 export default function ExpertToolboxPage() {
   return (
@@ -13,11 +13,11 @@ export default function ExpertToolboxPage() {
       </div>
 
       <div>
-        <h2 className="text-sm font-semibold text-muted-foreground mb-2 uppercase tracking-wide">Diagnostic & Conseil</h2>
+        <h2 className="text-sm font-semibold text-muted-foreground mb-2 uppercase tracking-wide">Conseil & Terrain</h2>
         <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-          <ToolboxTile to="/dashboard/expert-diagnosis" icon={Microscope} title="Diagnostic Avancé" description="Photo de plante → maladie, ravageur ou carence" accent="primary" />
+          <ToolboxTile to="/dashboard/inspections" icon={ClipboardCheck} title="Inspection de terrain" description="Protocoles d'audit et fiches de contrôle" accent="primary" />
           <ToolboxTile to="/dashboard/expert-prescriptions" icon={FileText} title="Ordonnances" description="Générer une ordonnance PDF signée" accent="accent" />
-          <ToolboxTile to="/dashboard/scouting" icon={Eye} title="Scouting terrain" description="Observations géolocalisées + rapport" accent="secondary" />
+          <ToolboxTile to="/dashboard/scouting" icon={Eye} title="Observation terrain" description="Observations géolocalisées + rapport" accent="secondary" />
         </div>
       </div>
 

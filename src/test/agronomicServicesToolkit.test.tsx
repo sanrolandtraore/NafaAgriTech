@@ -54,15 +54,16 @@ describe("Suite Professionnelle « NAFA FIELD DESIGNER »", () => {
     it("charge uniquement les outils officiels de NAFA Field Designer sans données fictives", () => {
       const allTools = agronomicToolkitStorage.getAllTools();
       // Les 40 anciens outils par domaine sont retirés, il ne reste que les outils officiels de NAFA Field Designer
-      expect(allTools.length).toBe(13);
+      expect(allTools.length).toBe(14);
 
       const allTitles = allTools.map((t) => t.title);
       expect(allTitles).toContain("Mesure GPS & Arpentage de Parcelle");
-      expect(allTitles).toContain("Farm Map & SIG Parcellaire");
-      expect(allTitles).toContain("Crop Designer — Lignes de Plantation");
+      expect(allTitles).toContain("Levé de Coordonnées GPS & Bornage");
+      expect(allTitles).toContain("Carte de l'Exploitation & SIG Parcellaire");
+      expect(allTitles).toContain("Conception des Cultures — Lignes de Plantation");
       expect(allTitles).toContain("Concepteur d'Irrigation — Réseaux & Pompage");
-      expect(allTitles).toContain("Livestock Designer — Bâtiments d'Élevage");
-      expect(allTitles).toContain("Farm Builder — Concepteur de Ferme 2D");
+      expect(allTitles).toContain("Conception d'Élevage — Bâtiments Bioclimatiques");
+      expect(allTitles).toContain("Concepteur de Ferme 2D");
       expect(allTitles).toContain("Modélisation & Aménagement 3D de Ferme");
       expect(allTitles).toContain("Calculateur de Devis Officiels FCFA");
       expect(allTitles).toContain("Diagnostic des Cultures & Ravageurs");

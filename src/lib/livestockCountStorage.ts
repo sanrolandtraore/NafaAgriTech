@@ -12,7 +12,7 @@ export interface LivestockCountRecord {
   animalGroupId?: string;
   species: AnimalSpeciesType;
   countedAt: string;
-  sourceType: "photo" | "video" | "camera_flux";
+  sourceType: "photo" | "video" | "camera_flux" | "manual";
   detectedCount: number;
   correctedCount: number;
   confidenceScore: number;
