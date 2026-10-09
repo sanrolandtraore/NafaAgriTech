@@ -242,14 +242,14 @@ const Index = () => {
             <Button
               variant="outline"
               size="sm"
-              onClick={() => navigate("/auth?mode=login")}
+              onClick={() => navigate("/connexion")}
               className="rounded-[24px] bg-white/10 hover:bg-white/20 text-white border-white/20 backdrop-blur-md text-[11px] sm:text-xs font-semibold px-2.5 sm:px-4"
             >
               Connexion
             </Button>
             <Button
               size="sm"
-              onClick={() => navigate("/auth?mode=register")}
+              onClick={() => navigate("/inscription")}
               className="rounded-[24px] bg-[#F97316] hover:bg-[#ea580c] text-white text-[11px] sm:text-xs font-bold px-2.5 sm:px-4 shadow-md shadow-orange-500/30 transition-transform active:scale-95"
             >
               S'inscrire
@@ -276,7 +276,7 @@ const Index = () => {
               </Button>
               <Button
                 size="lg"
-                onClick={() => navigate("/auth?mode=register")}
+                onClick={() => navigate("/inscription")}
                 className="w-full sm:w-auto bg-[#F97316] hover:bg-[#ea580c] text-white font-heading font-extrabold text-base sm:text-lg px-7 sm:px-9 py-6 sm:py-7 rounded-[24px] shadow-2xl shadow-orange-500/30 hover:scale-105 active:scale-95 transition-all duration-300 flex items-center justify-center gap-2"
               >
                 <User className="h-5 w-5" />
@@ -617,7 +617,7 @@ const Index = () => {
           <div className="flex flex-col sm:flex-row items-center gap-3 shrink-0 w-full sm:w-auto">
             <Button
               size="lg"
-              onClick={() => navigate("/auth?mode=register")}
+              onClick={() => navigate("/inscription")}
               className="w-full sm:w-auto rounded-[24px] bg-[#F97316] hover:bg-[#ea580c] text-white font-bold text-sm px-6 py-6 shadow-lg shadow-orange-500/30 transition-transform active:scale-95 flex items-center justify-center gap-2"
             >
               <span>S'inscrire sur la plateforme</span>
@@ -626,7 +626,7 @@ const Index = () => {
             <Button
               variant="outline"
               size="lg"
-              onClick={() => navigate("/auth?mode=login")}
+              onClick={() => navigate("/connexion")}
               className="w-full sm:w-auto rounded-[24px] bg-white/10 hover:bg-white/20 text-white border-white/20 backdrop-blur-md text-sm font-semibold px-6 py-6"
             >
               Connexion

@@ -76,6 +76,9 @@ interface AuthContextType {
   ) => Promise<{ error: any; isNewUser?: boolean }>;
   signOut: () => Promise<void>;
   deleteAccount: () => Promise<{ error: any }>;
+  resetPasswordForEmail: (email: string) => Promise<{ error: any }>;
+  updatePassword: (password: string) => Promise<{ error: any }>;
+  resendVerificationEmail: (email: string) => Promise<{ error: any }>;
   hasRole: (role: string) => boolean;
   startGuestSession: (role?: string) => Promise<void>;
   isGuestSession: boolean;
@@ -488,7 +491,37 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       password,
       options: {
         data: metadata,
-        emailRedirectTo: window.location.origin,
+        emailRedirectTo: typeof window !== "undefined" ? `${window.location.origin}/auth/callback` : undefined,
+      },
+    });
+    return { error };
+  };
+
+  const resetPasswordForEmail = async (email: string) => {
+    const cleanEmail = email.trim().toLowerCase();
+    const redirectTo = typeof window !== "undefined"
+      ? `${window.location.origin}/reinitialiser-mot-de-passe`
+      : undefined;
+    const { error } = await supabase.auth.resetPasswordForEmail(cleanEmail, {
+      redirectTo,
+    });
+    return { error };
+  };
+
+  const updatePassword = async (newPassword: string) => {
+    const { error } = await supabase.auth.updateUser({
+      password: newPassword,
+    });
+    return { error };
+  };
+
+  const resendVerificationEmail = async (email: string) => {
+    const cleanEmail = email.trim().toLowerCase();
+    const { error } = await supabase.auth.resend({
+      type: "signup",
+      email: cleanEmail,
+      options: {
+        emailRedirectTo: typeof window !== "undefined" ? `${window.location.origin}/auth/callback` : undefined,
       },
     });
     return { error };
@@ -818,7 +851,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   return (
     <AuthContext.Provider value={{
       user, session, loading, profile, roles, primaryRole, partnerType, setPartnerType, isOfflineSession, isGuestSession,
-      signUp, signIn, signInOffline, signInWithPhoneOtp, verifyPhoneOtp, signOut, deleteAccount, hasRole, startGuestSession,
+      signUp, signIn, signInOffline, signInWithPhoneOtp, verifyPhoneOtp, signOut, deleteAccount,
+      resetPasswordForEmail, updatePassword, resendVerificationEmail,
+      hasRole, startGuestSession,
     }}>
       {children}
     </AuthContext.Provider>
@@ -843,12 +878,17 @@ export const useAuth = () => {
       signIn: async () => ({ error: null }),
       signInOffline: async () => ({ error: null }),
       signInWithPhoneOtp: async () => ({ error: null }),
-      verifyPhoneOtp: async () => ({ error: null }),
+      verifyPhoneOtp: async (): Promise<{ error: any; isNewUser?: boolean }> => ({ error: null, isNewUser: false }),
       signOut: async () => {},
       deleteAccount: async () => ({ error: null }),
+      resetPasswordForEmail: async () => ({ error: null }),
+      updatePassword: async () => ({ error: null }),
+      resendVerificationEmail: async () => ({ error: null }),
       hasRole: () => false,
       startGuestSession: async () => ({ error: null }),
     };
   }
   return ctx;
 };
+
+export const useOptionalAuth = () => useContext(AuthContext) ?? null;

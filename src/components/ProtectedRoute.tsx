@@ -11,14 +11,14 @@ export const ProtectedRoute = ({ children }: { children: ReactNode }) => {
   const location = useLocation();
 
   useEffect(() => {
-    // Si l'utilisateur n'est pas connecté, exiger la création de compte ou la connexion
+    // Si l'utilisateur n'est pas connecté, exiger la connexion ou l'inscription
     if (!loading && !user) {
-      toast.info("Pour utiliser les fonctionnalités de NAFA-AGRITECH, vous devez d'abord créer un compte.", {
+      toast.info("Veuillez vous connecter pour accéder à cet espace NAFA-AGRITECH.", {
         id: "auth-required",
         duration: 4000,
       });
       const redirectUrl = encodeURIComponent(location.pathname + location.search);
-      navigate(`/auth?mode=register&redirect=${redirectUrl}`, { replace: true });
+      navigate(`/connexion?redirect=${redirectUrl}`, { replace: true });
     }
   }, [loading, user, location.pathname, location.search, navigate]);
 

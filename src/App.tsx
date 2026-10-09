@@ -15,6 +15,14 @@ import DashboardLayout from "./components/DashboardLayout";
 
 // Lazy-loaded auxiliary and legal pages for initial bundle minimization
 const Auth = lazy(() => import("./pages/Auth"));
+const InscriptionPage = lazy(() => import("./pages/auth/InscriptionPage"));
+const ConnexionPage = lazy(() => import("./pages/auth/ConnexionPage"));
+const MotDePasseOubliePage = lazy(() => import("./pages/auth/MotDePasseOubliePage"));
+const ReinitialiserMotDePassePage = lazy(() => import("./pages/auth/ReinitialiserMotDePassePage"));
+const AuthCallbackPage = lazy(() => import("./pages/auth/AuthCallbackPage"));
+const VerifierEmailPage = lazy(() => import("./pages/auth/VerifierEmailPage"));
+const ProfilPage = lazy(() => import("./pages/auth/ProfilPage"));
+const DeconnexionPage = lazy(() => import("./pages/auth/DeconnexionPage"));
 const MentionsLegales = lazy(() => import("./pages/MentionsLegales"));
 const ConditionsUtilisation = lazy(() => import("./pages/ConditionsUtilisation"));
 const PolitiqueConfidentialite = lazy(() => import("./pages/PolitiqueConfidentialite"));
@@ -162,6 +170,16 @@ const App = () => {
               <Route path="/conditions-utilisation" element={<Suspense fallback={<PageLoader />}><ConditionsUtilisation /></Suspense>} />
               <Route path="/politique-confidentialite" element={<Suspense fallback={<PageLoader />}><PolitiqueConfidentialite /></Suspense>} />
               <Route element={<AuthProvider><><OfflineIndicator /><Outlet /></></AuthProvider>}>
+                {/* Routes d'authentification native NAFA-AGRITECH */}
+                <Route path="/inscription" element={<Suspense fallback={<PageLoader />}><InscriptionPage /></Suspense>} />
+                <Route path="/connexion" element={<Suspense fallback={<PageLoader />}><ConnexionPage /></Suspense>} />
+                <Route path="/mot-de-passe-oublie" element={<Suspense fallback={<PageLoader />}><MotDePasseOubliePage /></Suspense>} />
+                <Route path="/reinitialiser-mot-de-passe" element={<Suspense fallback={<PageLoader />}><ReinitialiserMotDePassePage /></Suspense>} />
+                <Route path="/auth/callback" element={<Suspense fallback={<PageLoader />}><AuthCallbackPage /></Suspense>} />
+                <Route path="/verifier-email" element={<Suspense fallback={<PageLoader />}><VerifierEmailPage /></Suspense>} />
+                <Route path="/deconnexion" element={<Suspense fallback={<PageLoader />}><DeconnexionPage /></Suspense>} />
+                <Route path="/profil" element={<ProtectedRoute><Suspense fallback={<PageLoader />}><ProfilPage /></Suspense></ProtectedRoute>} />
+                {/* Rétrocompatibilité /auth */}
                 <Route path="/auth" element={<Suspense fallback={<PageLoader />}><Auth /></Suspense>} />
                 <Route path="/dashboard" element={<ProtectedRoute><DashboardLayout /></ProtectedRoute>}>
                 <Route index element={<Suspense fallback={<PageLoader />}><RoleDashboardHome /></Suspense>} />
