@@ -47,6 +47,10 @@ describe("Obligation de créer un compte pour utiliser les fonctionnalités", ()
               path="/auth"
               element={<div data-testid="auth-page">Création de compte requise / Connexion</div>}
             />
+            <Route
+              path="/connexion"
+              element={<div data-testid="auth-page">Création de compte requise / Connexion</div>}
+            />
           </Routes>
         </AuthProvider>
       </MemoryRouter>
@@ -73,6 +77,10 @@ describe("Obligation de créer un compte pour utiliser les fonctionnalités", ()
             />
             <Route
               path="/auth"
+              element={<div data-testid="auth-page">Création de compte requise / Connexion</div>}
+            />
+            <Route
+              path="/connexion"
               element={<div data-testid="auth-page">Création de compte requise / Connexion</div>}
             />
           </Routes>
