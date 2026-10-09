@@ -144,7 +144,7 @@ export const AGRONOMIC_TOOLS_CATALOG: AgronomicToolItem[] = [
     title: "Carte de l'Exploitation & SIG Parcellaire",
     category: "terrain_carto",
     categoryLabel: "Mesure GPS & Cartographie SIG",
-    description: "Carte interactive SIG ArcGIS/John Deere : dessin polygone, lignes, points d'eau, forages, routes et clôtures.",
+    description: "Carte interactive SIG parcellaire avancée : dessin polygone, lignes, points d'eau, forages, routes et clôtures.",
     route: "/dashboard/field-designer?tab=builder",
     iconName: "MapPin",
     isOffline: true,

@@ -196,7 +196,7 @@ export default function InspectionReportViewer({
           <span className={`text-2xl font-heading font-extrabold ${report.conformity_score >= 80 ? "text-emerald-600 dark:text-emerald-400" : "text-amber-600"}`}>
             {report.conformity_score}%
           </span>
-          <span className="text-[10px] text-muted-foreground block">Tolérances CIRAD • FAO respectées</span>
+          <span className="text-[10px] text-muted-foreground block">Tolérances agronomiques certifiées respectées</span>
         </div>
 
         <div className="p-4 rounded-xl bg-card border border-border text-center space-y-1">
@@ -391,7 +391,7 @@ export default function InspectionReportViewer({
               ) : (
                 <span className="text-xs text-muted-foreground italic">Aucune signature apposée</span>
               )}
-              <span className="text-[10px] text-primary font-semibold block">Certifié conforme normes CIRAD/FAO</span>
+              <span className="text-[10px] text-primary font-semibold block">Certifié conforme aux normes agronomiques</span>
             </div>
           </div>
         </CardContent>

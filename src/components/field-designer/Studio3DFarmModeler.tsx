@@ -2786,7 +2786,7 @@ export function Studio3DFarmModeler({
     a.download = `Plan_Agricole_${customPlanName.replace(/\s+/g, "_")}_${Date.now()}.geojson`;
     a.click();
     URL.revokeObjectURL(url);
-    toast.success("Fichier GeoJSON exporté pour SIG / QGIS / Arpentage !");
+    toast.success("Fichier GeoJSON exporté avec succès !");
   };
 
   // Export plan CAO JSON vectoriel
@@ -3872,7 +3872,7 @@ export function Studio3DFarmModeler({
                   className="rounded-xl text-xs font-bold h-8 flex items-center gap-1.5"
                 >
                   <Map className="h-3.5 w-3.5 text-[#F97316]" />
-                  <span>Exporter GeoJSON (SIG / QGIS)</span>
+                  <span>Exporter GeoJSON (Standard SIG)</span>
                 </Button>
                 <label className="cursor-pointer inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-input bg-background hover:bg-muted text-xs font-bold h-8 transition-colors">
                   <UploadCloud className="h-3.5 w-3.5 text-emerald-600" />

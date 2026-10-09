@@ -182,7 +182,7 @@ export const SmartQuoteComparator: React.FC<SmartQuoteComparatorProps> = ({
           <table className="w-full min-w-[700px] text-left border-collapse text-xs">
             <thead>
               <tr className="bg-muted/60 text-muted-foreground border-b border-border text-[11px]">
-                <th className="py-2.5 px-3 font-semibold">Poste • Matériel & Standard CIRAD-FAO</th>
+                <th className="py-2.5 px-3 font-semibold">Poste • Matériel & Référentiel Technique Certifié</th>
                 <th className="py-2.5 px-3 font-semibold">Quantité</th>
                 <th className="py-2.5 px-3 font-semibold">Fournisseur Partenaire Sélectionné</th>
                 <th className="py-2.5 px-3 font-semibold text-right">Prix Unitaire</th>

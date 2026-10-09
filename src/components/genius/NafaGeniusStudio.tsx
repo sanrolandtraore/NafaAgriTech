@@ -145,7 +145,7 @@ export const NafaGeniusStudio: React.FC = () => {
   const [clientPhone, setClientPhone] = useState<string>("+226 75 77 48 52");
   const [farmLocation, setFarmLocation] = useState<string>(PRESET_PARCELS.bama.location);
 
-  // Modèle Typique IRRIS (Irrigation & Pompage Solaire - CIRAD / IRRINN / Sahel)
+  // Modèle Typique IRRIS (Irrigation & Pompage Solaire - NAFA Sahel)
   const defaultIrris = calculateIrrisModel({
     sourceType: "forage",
     dynamicWaterDepthM: 45,
@@ -233,7 +233,7 @@ export const NafaGeniusStudio: React.FC = () => {
     setUnifiedProject(newUnified);
   };
 
-  // Copilote Unifié d'Ingénierie Agro-Pastorale (CIRAD / FAO-56 / Partenaires Agréés)
+  // Copilote Unifié d'Ingénierie Agro-Pastorale (Normes Agronomiques Certifiées)
   const [unifiedProject, setUnifiedProject] = useState<UnifiedEngineeringProject>(() =>
     generateUnifiedEngineeringProject({
       survey: analyzeGeodesicSurvey(PRESET_PARCELS.bama.points),
@@ -288,7 +288,7 @@ export const NafaGeniusStudio: React.FC = () => {
     });
     setIrrigationResult(irResult);
 
-    // 2. Aviculture CIRAD
+    // 2. Aviculture
     let pResult: PoultryHousingResult | null = null;
     if (includePoultry) {
       pResult = calculatePoultryHousing({
@@ -308,7 +308,7 @@ export const NafaGeniusStudio: React.FC = () => {
     });
     setFarmZoningPlan(zoning);
 
-    // 4. Copilote Unifié d'Ingénierie (CIRAD / FAO / Partenaires)
+    // 4. Copilote Unifié d'Ingénierie (Partenaires Agréés)
     const newUnified = generateUnifiedEngineeringProject({
       survey: surveyResult,
       clientName,

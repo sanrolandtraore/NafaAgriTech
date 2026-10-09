@@ -654,7 +654,7 @@ export const FieldDesignerStudio: React.FC = () => {
           <CropDesignerTool onSavePlan={handleSaveCropPlan} fields={fields} activeFarmId={activeFarmId} />
         </TabsContent>
 
-        {/* ── 4. CONCEPTEUR D'IRRIGATION (STYLE RIVULIS WCADI) ── */}
+        {/* ── 4. CONCEPTEUR D'IRRIGATION (NAFA HYDRAULICS) ── */}
         <TabsContent value="irrigation">
           <div className="space-y-4">
             <WcadiIrrigationStudio
@@ -686,7 +686,7 @@ export const FieldDesignerStudio: React.FC = () => {
                   numSectors: p.hydraulicResults.numSectors,
                   dailyIrrigationHours: p.hydraulicResults.shiftDurationHours,
                   isTechnicalEstimate: false,
-                  notes: `Dimensionnement WCADI : ${p.financialTotalFcfa.toLocaleString()} FCFA (Nomenclature vérifiée)`,
+                  notes: `Dimensionnement NAFA Hydraulics : ${p.financialTotalFcfa.toLocaleString()} FCFA (Nomenclature vérifiée)`,
                   syncStatus: "pending",
                   createdAt: p.createdAt,
                   updatedAt: p.createdAt,

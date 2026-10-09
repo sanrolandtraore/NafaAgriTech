@@ -746,7 +746,7 @@ export default function InspectionDynamicCollector({
           <CardTitle className="text-sm font-bold flex items-center justify-between">
             <span className="flex items-center gap-2 text-foreground">
               <ShieldCheck className="h-4 w-4 text-primary" />
-              4. Mesures Techniques & Plages de Tolérance (Normes CIRAD • FAO)
+              4. Mesures Techniques & Plages de Tolérance (Normes Agronomiques Certifiées)
             </span>
             <Button
               type="button"

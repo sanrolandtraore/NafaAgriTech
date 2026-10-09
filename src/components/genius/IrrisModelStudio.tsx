@@ -261,7 +261,7 @@ export const IrrisModelStudio: React.FC<IrrisModelStudioProps> = ({
               Modèle IRRIS — Conception & Personnalisation Ingénieur
             </h2>
             <Badge className="bg-sky-500/30 text-sky-200 border-sky-400/30 text-[10px] px-2 py-0.5">
-              Standard Practica / IRRINN Sahel
+              Standard d'Ingénierie NAFA Sahel
             </Badge>
             {result.isExpertCustomized && (
               <Badge className="bg-emerald-500/30 text-emerald-200 border-emerald-400/30 text-[10px] px-2 py-0.5 font-mono">

@@ -1018,7 +1018,7 @@ export default function GpsSurveyPage() {
     const session = createCurrentSessionSnapshot();
     const gpx = exportToGpx(session);
     downloadTextFile(gpx, `Leve_${parcelName.replace(/\s+/g, "_")}.gpx`, "application/gpx+xml");
-    toast.success("Fichier GPX exporté (compatible Garmin/GPS).");
+    toast.success("Fichier GPX exporté (compatible récepteurs GPS).");
   };
 
   const handleExportKml = () => {
@@ -1539,7 +1539,7 @@ export default function GpsSurveyPage() {
               {/* Indicateur de couche active */}
               <div className="absolute bottom-3 left-3 z-10 bg-black/75 text-white text-[10px] font-bold px-2.5 py-1 rounded-md backdrop-blur-xs flex items-center gap-2">
                 <Globe className="h-3 w-3 text-primary" />
-                <span>{mapLayerType === "satellite" ? "Imagerie Satellite ArcGIS" : "Rues & Chemins OSM"}</span>
+                <span>{mapLayerType === "satellite" ? "Imagerie Satellite Haute Précision" : "Rues & Chemins"}</span>
                 <span className="text-white/40">•</span>
                 <span className={showToponyms ? "text-emerald-400 font-bold" : "text-white/60"}>
                   {showToponyms ? "Noms des lieux actifs" : "Noms masqués"}
@@ -2078,7 +2078,7 @@ export default function GpsSurveyPage() {
               Exporter les Données Géospatiales
             </DialogTitle>
             <DialogDescription className="text-xs">
-              Formats interopérables compatibles avec QGIS, ArcGIS, Google Earth et les terminaux GPS Garmin.
+              Formats géodésiques interopérables et couches spatiales normalisées.
             </DialogDescription>
           </DialogHeader>
 
@@ -2092,7 +2092,7 @@ export default function GpsSurveyPage() {
                 <Globe className="h-4 w-4 text-emerald-600" />
                 <div className="text-left">
                   <div>GeoJSON (.geojson)</div>
-                  <div className="text-[10px] font-normal text-muted-foreground">Pour QGIS, ArcGIS et Web SIG</div>
+                  <div className="text-[10px] font-normal text-muted-foreground">Pour logiciels de cartographie et SIG</div>
                 </div>
               </div>
               <ChevronRight className="h-4 w-4 text-muted-foreground" />
@@ -2107,7 +2107,7 @@ export default function GpsSurveyPage() {
                 <Navigation className="h-4 w-4 text-sky-600" />
                 <div className="text-left">
                   <div>GPX (.gpx)</div>
-                  <div className="text-[10px] font-normal text-muted-foreground">Pour GPS Garmin, eTrex et OsmAnd</div>
+                  <div className="text-[10px] font-normal text-muted-foreground">Pour terminaux et récepteurs GPS de terrain</div>
                 </div>
               </div>
               <ChevronRight className="h-4 w-4 text-muted-foreground" />

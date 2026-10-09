@@ -750,7 +750,7 @@ export default function CustomFormGeneratorModal({
                     <Input
                       value={newMeasureNorm}
                       onChange={(e) => setNewMeasureNorm(e.target.value)}
-                      placeholder="Ex: CIRAD / FAO"
+                      placeholder="Ex: Normes professionnelles"
                       className="text-xs h-8"
                     />
                   </div>

@@ -155,7 +155,7 @@ export const IrrigationDesignerTool: React.FC<IrrigationDesignerToolProps> = ({
                   Concepteur de Système d'Irrigation
                 </h2>
                 <p className="text-xs text-muted-foreground mt-0.5">
-                  Dimensionnement hydraulique conforme aux normes CIRAD / IRRINN &amp; FAO-56.
+                  Dimensionnement hydraulique conforme aux normes agronomiques certifiées.
                 </p>
               </div>
               <Badge variant="outline" className="text-xs font-bold text-sky-600 border-sky-600/30">

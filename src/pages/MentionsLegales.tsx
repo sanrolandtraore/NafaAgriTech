@@ -36,8 +36,8 @@ const MentionsLegales = () => (
         <h2 className="text-xl font-semibold text-foreground mt-8">3. Hébergement</h2>
         <p>
           Le site est hébergé par :<br />
-          <strong>Lovable Cloud</strong><br />
-          Infrastructure sécurisée avec chiffrement des données en transit et au repos.
+          <strong>Infrastructure Sécurisée NAFA AGRITECH</strong><br />
+          Serveurs sécurisés avec chiffrement des données en transit et au repos.
         </p>
 
         <h2 className="text-xl font-semibold text-foreground mt-8">4. Propriété intellectuelle</h2>

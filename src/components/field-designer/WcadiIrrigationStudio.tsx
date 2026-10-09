@@ -172,8 +172,8 @@ export const WcadiIrrigationStudio: React.FC<WcadiIrrigationStudioProps> = ({
   const handleExportPdf = () => {
     if (!project) return;
     const pdf = generateWcadiHydraulicPdf(project, clientName);
-    pdf.save(`NAFA_WCADI_${project.cropParams.cropKey}_${new Date().toISOString().slice(0, 10)}.pdf`);
-    toast.success("Dossier technique complet (WCADI) téléchargé avec succès.");
+    pdf.save(`NAFA_HYDRAULIQUE_${project.cropParams.cropKey}_${new Date().toISOString().slice(0, 10)}.pdf`);
+    toast.success("Dossier technique d'irrigation NAFA Hydraulics téléchargé avec succès.");
   };
 
   // Sauvegarde
@@ -196,10 +196,10 @@ export const WcadiIrrigationStudio: React.FC<WcadiIrrigationStudioProps> = ({
           <div className="flex items-center gap-2">
             <h2 className="text-xl md:text-2xl font-heading font-extrabold flex items-center gap-2 text-foreground">
               <Droplets className="h-6 w-6 text-primary" />
-              Dimensionnement Hydraulique & Réseau (WCADI)
+              Dimensionnement Hydraulique & Réseau (NAFA Hydraulics)
             </h2>
             <Badge className="bg-primary/10 text-primary border-primary/20 text-xs">
-              Style Rivulis WCADI • FAO-56
+              Ingénierie NAFA Hydraulics • Normes agronomiques certifiées
             </Badge>
           </div>
           <p className="text-sm text-muted-foreground mt-0.5">
@@ -404,7 +404,7 @@ export const WcadiIrrigationStudio: React.FC<WcadiIrrigationStudioProps> = ({
           </Card>
         </div>
 
-        {/* Colonne Droite : Résultats WCADI, Tuyaux, Pompage & Chiffrage */}
+        {/* Colonne Droite : Résultats Hydrauliques, Tuyaux, Pompage & Chiffrage */}
         <div className="lg:col-span-7 space-y-4">
           {project && (
             <Tabs defaultValue="hydraulics" className="w-full">
@@ -491,7 +491,7 @@ export const WcadiIrrigationStudio: React.FC<WcadiIrrigationStudioProps> = ({
                       </div>
 
                       <div className="p-2.5 rounded bg-muted/30 border">
-                        <span className="font-bold text-foreground">Indicateurs de Précision WCADI :</span>
+                        <span className="font-bold text-foreground">Indicateurs de Précision NAFA Hydraulics :</span>
                         <p className="text-base font-extrabold text-emerald-600 mt-1">
                           Uniformité {project.hydraulicResults.emissionUniformityPct}% (EU)
                         </p>
@@ -569,7 +569,7 @@ export const WcadiIrrigationStudio: React.FC<WcadiIrrigationStudioProps> = ({
                     </span>
                   </div>
 
-                  {/* SVG simplifié représentant le tracé WCADI */}
+                  {/* SVG simplifié représentant le tracé NAFA Hydraulics */}
                   <div className="h-[240px] w-full flex items-center justify-center p-4">
                     <svg viewBox="0 0 500 240" className="w-full h-full stroke-emerald-500 fill-none">
                       {/* Enceinte de la parcelle */}
