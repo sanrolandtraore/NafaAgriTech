@@ -27,8 +27,10 @@ import {
   SlidersHorizontal,
   ChevronRight,
   Store,
+  Activity,
 } from "lucide-react";
-import { GeoPoint } from "@/types/fieldDesigner";
+import { GeoPoint, Field } from "@/types/fieldDesigner";
+import { HydraulicPanel } from "@/components/irrigation/HydraulicPanel";
 import {
   calculatePolygonAreaM2,
   calculatePerimeterM,
@@ -406,15 +408,19 @@ export const WcadiIrrigationStudio: React.FC<WcadiIrrigationStudioProps> = ({
         <div className="lg:col-span-7 space-y-4">
           {project && (
             <Tabs defaultValue="hydraulics" className="w-full">
-              <TabsList className="grid grid-cols-3 w-full">
+              <TabsList className="grid grid-cols-4 w-full">
                 <TabsTrigger value="hydraulics" className="text-xs font-bold">
-                  Hydraulique & Tuyaux
+                  Synthèse Réseau
+                </TabsTrigger>
+                <TabsTrigger value="hazen_williams" className="text-xs font-bold gap-1">
+                  <Activity className="h-3.5 w-3.5 text-primary" />
+                  Moteur Hazen-Williams
                 </TabsTrigger>
                 <TabsTrigger value="bom" className="text-xs font-bold">
-                  Devis & Marketplace ({project.billOfMaterials.length})
+                  Devis ({project.billOfMaterials.length})
                 </TabsTrigger>
                 <TabsTrigger value="canvas" className="text-xs font-bold">
-                  Plan Réseau CAD
+                  Plan CAD
                 </TabsTrigger>
               </TabsList>
 
@@ -620,6 +626,25 @@ export const WcadiIrrigationStudio: React.FC<WcadiIrrigationStudioProps> = ({
                     <span>{project.hydraulicResults.numSectors} secteurs d'arrosage</span>
                   </div>
                 </Card>
+              </TabsContent>
+
+              {/* Onglet 4 : Analyse & Moteur Hydraulique Déterministe Hazen-Williams */}
+              <TabsContent value="hazen_williams" className="pt-2">
+                <HydraulicPanel
+                  field={{
+                    id: "wcadi_survey_field",
+                    farmId: "active_farm",
+                    name: projectName || "Parcelle arpentée",
+                    points: gpsPoints,
+                    areaM2,
+                    areaHa,
+                    perimeterM,
+                    status: "active",
+                    syncStatus: "synced",
+                    createdAt: new Date().toISOString(),
+                    updatedAt: new Date().toISOString(),
+                  }}
+                />
               </TabsContent>
             </Tabs>
           )}

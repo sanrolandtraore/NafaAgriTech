@@ -19,8 +19,9 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Droplets, Save, Cpu, ShieldCheck, AlertCircle, Wrench, Layers } from "lucide-react";
+import { Droplets, Save, Cpu, ShieldCheck, AlertCircle, Wrench, Layers, Activity } from "lucide-react";
 import { toast } from "sonner";
+import { HydraulicPanel } from "@/components/irrigation/HydraulicPanel";
 
 interface IrrigationDesignerToolProps {
   onSaveProject: (project: IrrigationProject) => void;
@@ -40,6 +41,9 @@ export const IrrigationDesignerTool: React.FC<IrrigationDesignerToolProps> = ({
   const [sourceFlowM3h, setSourceFlowM3h] = useState<number>(6.0);
   const [areaHa, setAreaHa] = useState<number>(fields[0]?.areaHa || 1.0);
   const [selectedFieldId, setSelectedFieldId] = useState<string>(fields[0]?.id || "");
+  const [activeToolTab, setActiveToolTab] = useState<"engine" | "architecture">("engine");
+
+  const selectedField = fields.find((f) => f.id === selectedFieldId) || fields[0] || null;
 
   // Calcul du réseau
   const result = computeIrrigationDesign({
@@ -95,22 +99,69 @@ export const IrrigationDesignerTool: React.FC<IrrigationDesignerToolProps> = ({
 
   return (
     <div className="space-y-6 max-w-4xl mx-auto">
-      <Card className="rounded-3xl border-2 border-primary/20 shadow-sm">
-        <CardContent className="p-4 sm:p-6 space-y-6">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b pb-4">
-            <div>
-              <h2 className="text-xl sm:text-2xl font-black flex items-center gap-2">
-                <Droplets className="h-6 w-6 text-sky-600" />
-                Concepteur de Système d'Irrigation
-              </h2>
-              <p className="text-xs text-muted-foreground mt-0.5">
-                Dimensionnement hydraulique conforme aux normes CIRAD / IRRINN & FAO-56.
-              </p>
-            </div>
-            <Badge variant="outline" className="text-xs font-bold text-sky-600 border-sky-600/30">
-              Hydraulique & Solaire
-            </Badge>
+      {/* Sélecteur d'outils / modes d'ingénierie */}
+      <div className="flex flex-wrap items-center justify-between gap-3 p-2 bg-muted/40 rounded-2xl border border-primary/20">
+        <div className="flex items-center gap-1.5">
+          <Button
+            type="button"
+            size="sm"
+            variant={activeToolTab === "engine" ? "default" : "ghost"}
+            onClick={() => setActiveToolTab("engine")}
+            className="h-8 text-xs font-bold gap-1.5 rounded-xl"
+          >
+            <Activity className="h-4 w-4" />
+            Moteur Hydraulique (Hazen-Williams)
+          </Button>
+          <Button
+            type="button"
+            size="sm"
+            variant={activeToolTab === "architecture" ? "default" : "ghost"}
+            onClick={() => setActiveToolTab("architecture")}
+            className="h-8 text-xs font-bold gap-1.5 rounded-xl"
+          >
+            <Droplets className="h-4 w-4" />
+            Architecture &amp; Pompage
+          </Button>
+        </div>
+
+        {fields.length > 1 && (
+          <div className="flex items-center gap-2 text-xs">
+            <span className="font-semibold text-muted-foreground">Parcelle :</span>
+            <Select value={selectedFieldId} onValueChange={setSelectedFieldId}>
+              <SelectTrigger className="h-8 text-xs rounded-xl w-40">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {fields.map((fld) => (
+                  <SelectItem key={fld.id} value={fld.id}>
+                    {fld.name} ({fld.areaHa} ha)
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
+        )}
+      </div>
+
+      {activeToolTab === "engine" ? (
+        <HydraulicPanel field={selectedField} />
+      ) : (
+        <Card className="rounded-3xl border-2 border-primary/20 shadow-sm">
+          <CardContent className="p-4 sm:p-6 space-y-6">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b pb-4">
+              <div>
+                <h2 className="text-xl sm:text-2xl font-black flex items-center gap-2">
+                  <Droplets className="h-6 w-6 text-sky-600" />
+                  Concepteur de Système d'Irrigation
+                </h2>
+                <p className="text-xs text-muted-foreground mt-0.5">
+                  Dimensionnement hydraulique conforme aux normes CIRAD / IRRINN &amp; FAO-56.
+                </p>
+              </div>
+              <Badge variant="outline" className="text-xs font-bold text-sky-600 border-sky-600/30">
+                Hydraulique &amp; Solaire
+              </Badge>
+            </div>
 
           {/* ── AVERTISSEMENT ESTIMATION TECHNIQUE OBLIGATOIRE ── */}
           <div className="p-3.5 rounded-2xl bg-sky-500/10 border border-sky-500/25 flex items-start gap-3 text-xs">
@@ -289,6 +340,7 @@ export const IrrigationDesignerTool: React.FC<IrrigationDesignerToolProps> = ({
           </Button>
         </CardContent>
       </Card>
+      )}
     </div>
   );
 };
