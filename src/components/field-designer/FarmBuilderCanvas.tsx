@@ -26,6 +26,8 @@ import {
   Droplets,
   Layers,
   Sparkles,
+  PanelLeftClose,
+  PanelLeftOpen,
 } from "lucide-react";
 
 interface FarmBuilderCanvasProps {
@@ -76,6 +78,7 @@ export const FarmBuilderCanvas: React.FC<FarmBuilderCanvasProps> = ({
 
   const [draggingId, setDraggingId] = useState<string | null>(null);
   const [dragOffset, setDragOffset] = useState<{ x: number; y: number }>({ x: 0, y: 0 });
+  const [isPaletteOpen, setIsPaletteOpen] = useState(true);
 
   const canvasRef = useRef<HTMLDivElement>(null);
 
@@ -186,21 +189,33 @@ export const FarmBuilderCanvas: React.FC<FarmBuilderCanvasProps> = ({
   };
 
   return (
-    <div className="flex flex-col lg:flex-row gap-4 h-[750px] w-full select-none bg-background rounded-3xl border border-border overflow-hidden">
+    <div className="flex flex-col lg:flex-row h-[750px] min-h-[600px] w-full select-none bg-background rounded-3xl border border-border overflow-hidden">
       {/* ── BARRE D'OUTILS OBJETS GLISSABLES (Palette) ── */}
-      <div className="w-full lg:w-72 border-b lg:border-b-0 lg:border-r border-border p-4 bg-muted/20 flex flex-col gap-3 overflow-y-auto">
-        <div className="flex items-center justify-between">
-          <h3 className="font-extrabold text-sm flex items-center gap-2">
-            <Layers className="h-4 w-4 text-primary" />
-            Objets de la Ferme
-          </h3>
-          <Badge variant="outline" className="text-[10px]">
-            {buildings.length} placés
-          </Badge>
-        </div>
-        <p className="text-[11px] text-muted-foreground leading-snug">
-          Cliquez sur un objet pour le poser sur le plan d'aménagement :
-        </p>
+      {isPaletteOpen && (
+        <div className="w-full lg:w-72 border-b lg:border-b-0 lg:border-r border-border p-4 bg-muted/20 flex flex-col gap-3 overflow-y-auto shrink-0 animate-in fade-in duration-200">
+          <div className="flex items-center justify-between">
+            <h3 className="font-extrabold text-sm flex items-center gap-2">
+              <Layers className="h-4 w-4 text-primary" />
+              Objets de la Ferme
+            </h3>
+            <div className="flex items-center gap-1.5">
+              <Badge variant="outline" className="text-[10px]">
+                {buildings.length} placés
+              </Badge>
+              <Button
+                size="icon"
+                variant="ghost"
+                className="h-6 w-6 text-muted-foreground hover:text-foreground"
+                onClick={() => setIsPaletteOpen(false)}
+                title="Masquer la palette pour 100% Espace Canvas"
+              >
+                <PanelLeftClose className="h-3.5 w-3.5" />
+              </Button>
+            </div>
+          </div>
+          <p className="text-[11px] text-muted-foreground leading-snug">
+            Cliquez sur un objet pour le poser sur le plan d'aménagement :
+          </p>
 
         <div className="grid grid-cols-2 gap-2">
           {OBJECT_TEMPLATES.map((tmpl) => (
@@ -287,15 +302,31 @@ export const FarmBuilderCanvas: React.FC<FarmBuilderCanvasProps> = ({
           </div>
         )}
       </div>
+      )}
 
       {/* ── CANVAS 2D INTERACTIF AVEC GRILLE MÉTRIQUE ── */}
       <div className="flex-1 flex flex-col relative overflow-hidden bg-slate-900">
-        {/* Barre de contrôle haut (Zoom, Pan, Échelle) */}
-        <div className="absolute top-3 left-3 z-10 flex items-center gap-2 bg-slate-950/80 backdrop-blur-md p-1.5 rounded-2xl border border-slate-800 text-white">
-          <Button size="icon" variant="ghost" className="h-8 w-8 text-white hover:bg-slate-800" onClick={() => setZoom((z) => Math.min(3.0, z + 0.2))}>
+        {/* Barre de contrôle haut (Palette, Zoom, Pan, Échelle) */}
+        <div className="absolute top-3 left-3 z-10 flex items-center gap-1.5 bg-slate-950/80 backdrop-blur-md p-1.5 rounded-2xl border border-slate-800 text-white shadow-md">
+          {!isPaletteOpen && (
+            <>
+              <Button
+                size="sm"
+                variant="ghost"
+                className="h-8 px-2.5 text-xs font-bold text-white hover:bg-slate-800 rounded-xl flex items-center gap-1.5"
+                onClick={() => setIsPaletteOpen(true)}
+                title="Afficher la palette d'objets"
+              >
+                <PanelLeftOpen className="h-4 w-4 text-emerald-400" />
+                <span className="text-[11px]">Objets</span>
+              </Button>
+              <div className="h-4 w-px bg-slate-700" />
+            </>
+          )}
+          <Button size="icon" variant="ghost" className="h-8 w-8 text-white hover:bg-slate-800 rounded-xl" onClick={() => setZoom((z) => Math.min(3.0, z + 0.2))}>
             <ZoomIn className="h-4 w-4" />
           </Button>
-          <Button size="icon" variant="ghost" className="h-8 w-8 text-white hover:bg-slate-800" onClick={() => setZoom((z) => Math.max(0.5, z - 0.2))}>
+          <Button size="icon" variant="ghost" className="h-8 w-8 text-white hover:bg-slate-800 rounded-xl" onClick={() => setZoom((z) => Math.max(0.5, z - 0.2))}>
             <ZoomOut className="h-4 w-4" />
           </Button>
           <span className="text-xs font-mono px-2">Zoom {(zoom * 100).toFixed(0)}%</span>
