@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Outlet } from "react-router-dom";
+import { Outlet, useLocation } from "react-router-dom";
 import { RoleSidebar, SidebarNavContent } from "@/components/RoleSidebar";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
@@ -27,6 +27,9 @@ const DashboardLayout = () => {
       window.removeEventListener("offline", handleOffline);
     };
   }, []);
+
+  const location = useLocation();
+  const isFullWorkspaceRoute = location.pathname.includes("field-designer");
 
   return (
     <div className="flex h-screen overflow-hidden bg-background">
@@ -76,7 +79,7 @@ const DashboardLayout = () => {
 
         {/* Main content avec typographie confortable et aérée */}
         <main className="flex-1 overflow-y-auto">
-          <div className="container max-w-6xl py-4 px-3.5 sm:py-6 sm:px-6 lg:py-8 lg:px-8">
+          <div className={isFullWorkspaceRoute ? "w-full h-full p-2 sm:p-4 max-w-none" : "container max-w-6xl py-4 px-3.5 sm:py-6 sm:px-6 lg:py-8 lg:px-8"}>
             <ErrorBoundary inline>
               <Outlet />
             </ErrorBoundary>

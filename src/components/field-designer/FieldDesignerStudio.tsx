@@ -70,9 +70,12 @@ import {
   WifiOff,
   Box,
   Settings2,
+  Maximize2,
+  Minimize2,
 } from "lucide-react";
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
+import { cn } from "@/lib/utils";
 
 // Ferme pilote initiale par défaut si aucune ferme n'existe encore
 const INITIAL_DEMO_FARM: Farm = {
@@ -149,6 +152,38 @@ export const FieldDesignerStudio: React.FC = () => {
   // Mode Simple vs Mode Expert (Progressive disclosure CAD/GIS)
   const [modeExpert, setModeExpert] = useState(false);
   const [showPdfHistory, setShowPdfHistory] = useState(false);
+
+  // 100% Espace de travail immersif
+  const [isFullscreenWorkspace, setIsFullscreenWorkspace] = useState<boolean>(() => {
+    try {
+      return localStorage.getItem("nafa_field_designer_fullscreen") === "true";
+    } catch {
+      return false;
+    }
+  });
+
+  const toggleFullscreen = () => {
+    setIsFullscreenWorkspace((prev) => {
+      const next = !prev;
+      try {
+        localStorage.setItem("nafa_field_designer_fullscreen", String(next));
+      } catch {}
+      return next;
+    });
+  };
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape" && isFullscreenWorkspace) {
+        setIsFullscreenWorkspace(false);
+        try {
+          localStorage.setItem("nafa_field_designer_fullscreen", "false");
+        } catch {}
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [isFullscreenWorkspace]);
 
   // Synchronisation des abonnements
   useEffect(() => {
@@ -284,8 +319,15 @@ export const FieldDesignerStudio: React.FC = () => {
   };
 
   return (
-    <div className="space-y-6 w-full max-w-7xl mx-auto px-2 sm:px-4 py-4 sm:py-6">
-      {/* ── RUBAN SUPÉRIEUR COMPACT CAD/GIS (TOOLBAR PROFESSIONNELLE 80/20) ── */}
+    <div
+      className={cn(
+        "space-y-4 w-full transition-all duration-200",
+        isFullscreenWorkspace
+          ? "fixed inset-0 z-50 bg-background overflow-y-auto p-2 sm:p-4"
+          : "w-full max-w-none px-1 sm:px-2 py-2 sm:py-3"
+      )}
+    >
+      {/* ── RUBAN SUPÉRIEUR COMPACT CAD/GIS (TOOLBAR PROFESSIONNELLE 100% ESPACE DE TRAVAIL) ── */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3 bg-gradient-to-r from-emerald-950 via-slate-900 to-emerald-950 text-white rounded-2xl border border-emerald-500/30 shadow-lg">
         {/* Titre & Statut */}
         <div className="flex items-center gap-3">
@@ -302,7 +344,7 @@ export const FieldDesignerStudio: React.FC = () => {
               </Badge>
             </div>
             <p className="text-[11px] text-emerald-200/80 leading-none mt-0.5">
-              CAO &amp; SIG Agricole • 80% Espace de travail
+              CAO &amp; SIG Agricole • 100% Espace de travail
             </p>
           </div>
         </div>
@@ -334,6 +376,21 @@ export const FieldDesignerStudio: React.FC = () => {
               <Plus className="h-3.5 w-3.5" />
             </Button>
           </div>
+
+          {/* Bouton 100% Espace de travail Plein Écran */}
+          <button
+            type="button"
+            onClick={toggleFullscreen}
+            className={`px-3 py-1 rounded-xl text-xs font-bold border transition-all flex items-center gap-1.5 ${
+              isFullscreenWorkspace
+                ? "bg-emerald-600 text-white border-emerald-400 shadow-xs"
+                : "bg-white/10 text-white/90 border-white/20 hover:bg-white/20"
+            }`}
+            title={isFullscreenWorkspace ? "Quitter le mode 100% plein écran (Échap)" : "Activer 100% Espace de travail plein écran"}
+          >
+            {isFullscreenWorkspace ? <Minimize2 className="h-3.5 w-3.5" /> : <Maximize2 className="h-3.5 w-3.5" />}
+            <span>{isFullscreenWorkspace ? "Espace Réduit" : "100% Espace"}</span>
+          </button>
 
           {/* Toggle Mode Simple / Mode Expert */}
           <button
