@@ -219,9 +219,12 @@ def model_parcel_2d(req: Parcel2DRequest):
             "total_drip_pipe_length_m": res.total_drip_pipe_length_m,
             "topography_slope_pct": res.topography_slope_pct,
             "elevation_drop_m": res.elevation_drop_m,
+            "manifold_pipe_length_m": res.manifold_pipe_length_m,
+            "hydraulic_sectors_count": res.hydraulic_sectors_count,
             "polygon_geojson": res.polygon_geojson,
             "drip_lines_geojson": res.drip_lines_geojson,
-            "svg_technical_plan": res.svg_technical_plan
+            "svg_technical_plan": res.svg_technical_plan,
+            "dxf_2d_content": res.dxf_2d_content
         }
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
@@ -251,7 +254,10 @@ def model_building_3d(req: Building3DRequest):
             "ventilation_openings_surface_m2": res.ventilation_openings_surface_m2,
             "vertices_count": res.vertices_count,
             "faces_count": res.faces_count,
-            "mesh_obj_string": res.mesh_obj_string
+            "mesh_obj_string": res.mesh_obj_string,
+            "mtl_string": res.mtl_string,
+            "structural_bom": res.structural_bom,
+            "accessories_included": res.accessories_included
         }
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))

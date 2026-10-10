@@ -78,9 +78,12 @@ export interface PythonParcel2DResult {
   total_drip_pipe_length_m: number;
   topography_slope_pct: number;
   elevation_drop_m: number;
+  manifold_pipe_length_m?: number;
+  hydraulic_sectors_count?: number;
   polygon_geojson: Record<string, any>;
   drip_lines_geojson: Record<string, any>;
   svg_technical_plan: string;
+  dxf_2d_content?: string;
 }
 
 export interface PythonBuilding3DResult {
@@ -92,6 +95,14 @@ export interface PythonBuilding3DResult {
   vertices_count: number;
   faces_count: number;
   mesh_obj_string: string;
+  mtl_string?: string;
+  structural_bom?: Array<{
+    element: string;
+    quantite: number;
+    unite: string;
+    detail: string;
+  }>;
+  accessories_included?: Array<Record<string, any>>;
 }
 
 export interface PythonGPSPoint {

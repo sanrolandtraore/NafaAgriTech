@@ -4,7 +4,8 @@ from nafa.modeling_2d_3d import (
     StructureType,
     Building3DSpecs,
     Point3D,
-    Mesh3D
+    Mesh3D,
+    RealCADAccessoriesLibrary
 )
 
 
@@ -28,6 +29,9 @@ def test_parcel_2d_modeling_and_drip():
     assert res.topography_slope_pct > 0.0
     assert "<svg" in res.svg_technical_plan
     assert "polygon_geojson" in res.__dict__
+    assert res.manifold_pipe_length_m > 0
+    assert res.hydraulic_sectors_count >= 2
+    assert "SECTION" in res.dxf_2d_content
 
 
 def test_building_3d_modeling_and_obj_export():
@@ -39,7 +43,8 @@ def test_building_3d_modeling_and_obj_export():
         width_m=8.0,
         wall_height_m=2.40,
         ridge_height_m=3.60,
-        roof_overhang_m=1.20
+        roof_overhang_m=1.20,
+        include_accessories=True
     )
     res = engine.model_bioclimatic_building_3d(specs, annual_rainfall_mm=800.0)
 
@@ -49,10 +54,36 @@ def test_building_3d_modeling_and_obj_export():
     assert res.rainwater_harvesting_potential_m3_year > 100.0
     assert res.ventilation_openings_surface_m2 > 50.0
 
-    # Vérification syntaxe Wavefront OBJ
+    # Vérification syntaxe Wavefront OBJ et MTL
     obj_str = res.mesh_obj_string
     assert "o poulailler_bioclimatique" in obj_str
     assert "v " in obj_str
     assert "f " in obj_str
     assert res.vertices_count >= 10
     assert res.faces_count >= 5
+    assert "newmtl" in res.mtl_string
+
+    # Vérification des composants et de la nomenclature (BOM)
+    assert len(res.structural_bom) >= 5
+    assert any("béton armé" in item["element"] for item in res.structural_bom)
+    assert len(res.accessories_included) >= 2
+
+
+def test_cad_real_accessories_library():
+    lib = RealCADAccessoriesLibrary()
+
+    # Château d'eau
+    wt = lib.create_water_tower(height_stand_m=5.0, tank_diameter_m=2.2, tank_height_m=2.0)
+    assert len(wt.vertices) > 20
+    assert len(wt.faces) > 10
+    assert wt.material_name == "acier_galvanise"
+
+    # Champ solaire
+    pv = lib.create_solar_panel_array(panel_count=6, tilt_angle_deg=15.0)
+    assert len(pv.vertices) > 8
+    assert pv.material_name == "silicium_solaire"
+
+    # Tête de réseau irrigation
+    head = lib.create_irrigation_head_unit()
+    assert len(head.vertices) > 16
+    assert head.material_name == "pehd_fonte_irrigation"
