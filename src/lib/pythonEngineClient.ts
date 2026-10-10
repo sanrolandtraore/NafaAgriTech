@@ -369,4 +369,63 @@ export const pythonEngineClient = {
 
     return await res.json();
   },
+
+  /**
+   * Diagnostic automatique instantané 1-clic à partir de la photo seule :
+   * Détermine directement la spéculation, la partie atteinte (tige, racine, feuille...),
+   * la maladie, l'agent causal et les symptômes mesurés.
+   */
+  async diagnoseAutoPhoto(
+    file: File | Blob,
+    options?: { temperature_c?: number; humidity_pct?: number }
+  ): Promise<{
+    speculation: string;
+    domain: "vegetal" | "animal";
+    partie_atteinte: string;
+    partie_code: string;
+    maladie: string;
+    agent_causal: string;
+    pathogen_kind: string;
+    symptomes: string[];
+    confidence_pct: number;
+    mesures_immediates: string[];
+    traitement_bio?: {
+      nom: string;
+      substance_active: string;
+      dosage: string;
+      mode_action: string;
+      delai_attente: string;
+      statut: string;
+    } | null;
+    traitement_chimique_ou_veterinaire?: {
+      nom: string;
+      substance_active: string;
+      dosage: string;
+      mode_action: string;
+      delai_attente: string;
+      statut: string;
+    } | null;
+    test_confirmation_terrain: string;
+  }> {
+    const formData = new FormData();
+    formData.append("file", file);
+    if (options?.temperature_c !== undefined) {
+      formData.append("temperature_c", options.temperature_c.toString());
+    }
+    if (options?.humidity_pct !== undefined) {
+      formData.append("humidity_pct", options.humidity_pct.toString());
+    }
+
+    const res = await fetch(`${PYTHON_ENGINE_BASE_URL}/api/diagnosis/auto-detect`, {
+      method: "POST",
+      body: formData,
+    });
+
+    if (!res.ok) {
+      const errorText = await res.text();
+      throw new Error(`Erreur analyse photo automatique : ${errorText}`);
+    }
+
+    return await res.json();
+  },
 };

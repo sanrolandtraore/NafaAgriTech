@@ -418,3 +418,44 @@ async def diagnose_pathology(
         }
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
+
+
+@app.post("/api/diagnosis/auto-detect")
+async def auto_detect_from_photo(
+    file: UploadFile = File(...),
+    temperature_c: float = Form(33.0),
+    humidity_pct: float = Form(65.0)
+):
+    """
+    Endpoint autonome 1-clic : L'utilisateur prend en photo la partie malade,
+    l'IA détermine directement :
+    1. La spéculation
+    2. La partie atteinte (tige, racine, feuille, etc.)
+    3. La maladie
+    4. L'agent causal
+    5. Les symptômes mesurés
+    """
+    try:
+        content = await file.read()
+        res = diagnosis_engine.diagnose_from_single_photo(
+            image_input=content,
+            field_temperature_c=temperature_c,
+            field_humidity_pct=humidity_pct
+        )
+        return {
+            "speculation": res.speculation,
+            "domain": res.domain.value,
+            "partie_atteinte": res.partie_atteinte,
+            "partie_code": res.partie_code.value,
+            "maladie": res.maladie,
+            "agent_causal": res.agent_causal,
+            "pathogen_kind": res.pathogen_kind,
+            "symptomes": res.symptomes,
+            "confidence_pct": res.confidence_pct,
+            "mesures_immediates": res.mesures_immediates,
+            "traitement_bio": res.traitement_bio,
+            "traitement_chimique_ou_veterinaire": res.traitement_chimique_ou_veterinaire,
+            "test_confirmation_terrain": res.test_confirmation_terrain
+        }
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))

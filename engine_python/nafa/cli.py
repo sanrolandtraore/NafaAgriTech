@@ -47,9 +47,9 @@ def main():
 
     # Diagnostic IA Pathologies (Végétal & Vétérinaire)
     diag_parser = subparsers.add_parser("diagnose", help="Diagnostic différentiel réel des maladies des cultures et cheptels")
-    diag_parser.add_argument("--domain", default="vegetal", choices=["vegetal", "animal"], help="Domaine (vegetal ou animal)")
-    diag_parser.add_argument("--host", required=True, help="Hôte (mais, tomate, ovin, poulet_chair, bovin...)")
-    diag_parser.add_argument("--image", default=None, help="Chemin vers l'image de la lésion")
+    diag_parser.add_argument("--domain", default=None, choices=["vegetal", "animal"], help="Domaine (vegetal ou animal, auto-détecté si omis)")
+    diag_parser.add_argument("--host", default=None, help="Hôte (mais, tomate, ovin, poulet_chair, bovin... auto-détecté par la photo si omis)")
+    diag_parser.add_argument("--image", default=None, help="Chemin vers l'image de la partie malade")
     diag_parser.add_argument("--symptoms", default=None, help="Description textuelle des symptômes de terrain")
     diag_parser.add_argument("--temp", type=float, default=33.0, help="Température ambiante")
     diag_parser.add_argument("--humidity", type=float, default=65.0, help="Humidité relative")
@@ -114,36 +114,66 @@ def main():
         from .ai_disease_diagnosis import AIDiseaseDiagnosticEngine, DomainType
         engine = AIDiseaseDiagnosticEngine()
         img_input = args.image if args.image else None
-        res = engine.diagnose(
-            domain=DomainType(args.domain),
-            host_target=args.host,
-            image_input=img_input,
-            observed_symptoms_text=args.symptoms,
-            field_temperature_c=args.temp,
-            field_humidity_pct=args.humidity
-        )
-        print("=" * 65)
-        print(f"RAPPORT IA DE DIAGNOSTIC PATHOLOGIQUE — NAFA AGRITECH")
-        print("=" * 65)
-        print(f"Cible : {res.host_target.upper()} (Domaine: {res.domain.value})")
-        print(f"Hypothèse principale : {res.primary_hypothesis.name_fr} ({res.primary_hypothesis.scientific_name})")
-        print(f"Plausibilité calculée : {res.primary_hypothesis.plausibility_score_pct}% ({res.primary_hypothesis.likelihood_rank.value})")
-        print(f"Agent pathogène : {res.primary_hypothesis.pathogen_kind.value}")
-        print(f"\nTEST DE CONFIRMATION TERRAIN IMPÉRATIF :")
-        print(f"-> {res.primary_hypothesis.recommended_field_test}")
-        if res.primary_hypothesis.biological_protocol:
-            b = res.primary_hypothesis.biological_protocol
-            print(f"\nProtocole Biologique / Agro-écologique :")
-            print(f"- {b.name} : {b.dosage} ({b.active_molecule})")
-        if res.primary_hypothesis.chemical_or_veterinary_protocol:
-            c = res.primary_hypothesis.chemical_or_veterinary_protocol
-            print(f"\nProtocole Conventionnel / Vétérinaire Homologué :")
-            print(f"- {c.name} : {c.dosage} (Délai : {c.pre_harvest_or_withdrawal_delay})")
-        if res.differential_hypotheses:
-            print(f"\nDiagnostics différentiels à surveiller :")
-            for diff in res.differential_hypotheses:
-                print(f"- {diff.name_fr} ({diff.scientific_name}) : {diff.plausibility_score_pct}%")
-        print("=" * 65)
+
+        if img_input and not args.host:
+            # Mode automatique 1-clic direct à partir de la photo seule
+            auto_res = engine.diagnose_from_single_photo(
+                image_input=img_input,
+                field_temperature_c=args.temp,
+                field_humidity_pct=args.humidity
+            )
+            print("=" * 70)
+            print("DIAGNOSTIC AUTOMATIQUE INSTANTANÉ PAR PHOTO — NAFA AGRITECH")
+            print("=" * 70)
+            print(f"1. Spéculation détectée : {auto_res.speculation}")
+            print(f"2. Partie atteinte      : {auto_res.partie_atteinte}")
+            print(f"3. Maladie identifiée   : {auto_res.maladie} (Certitude: {auto_res.confidence_pct}%)")
+            print(f"4. Agent causal         : {auto_res.agent_causal}")
+            print(f"\n5. Symptômes réels constatés :")
+            for s in auto_res.symptomes:
+                print(f"   • {s}")
+            print(f"\nTEST DE CONFIRMATION DE TERRAIN :")
+            print(f"-> {auto_res.test_confirmation_terrain}")
+            if auto_res.traitement_bio:
+                b = auto_res.traitement_bio
+                print(f"\nTraitement Biologique : {b['nom']} ({b['dosage']}) - {b['delai_attente']}")
+            if auto_res.traitement_chimique_ou_veterinaire:
+                c = auto_res.traitement_chimique_ou_veterinaire
+                print(f"Traitement Conventionnel Homologué : {c['nom']} ({c['dosage']}) - {c['delai_attente']}")
+            print("=" * 70)
+        else:
+            domain_val = DomainType(args.domain) if args.domain else DomainType.PLANT
+            host_val = args.host if args.host else "mais"
+            res = engine.diagnose(
+                domain=domain_val,
+                host_target=host_val,
+                image_input=img_input,
+                observed_symptoms_text=args.symptoms,
+                field_temperature_c=args.temp,
+                field_humidity_pct=args.humidity
+            )
+            print("=" * 65)
+            print(f"RAPPORT IA DE DIAGNOSTIC PATHOLOGIQUE — NAFA AGRITECH")
+            print("=" * 65)
+            print(f"Cible : {res.host_target.upper()} (Domaine: {res.domain.value})")
+            print(f"Hypothèse principale : {res.primary_hypothesis.name_fr} ({res.primary_hypothesis.scientific_name})")
+            print(f"Plausibilité calculée : {res.primary_hypothesis.plausibility_score_pct}% ({res.primary_hypothesis.likelihood_rank.value})")
+            print(f"Agent pathogène : {res.primary_hypothesis.pathogen_kind.value}")
+            print(f"\nTEST DE CONFIRMATION TERRAIN IMPÉRATIF :")
+            print(f"-> {res.primary_hypothesis.recommended_field_test}")
+            if res.primary_hypothesis.biological_protocol:
+                b = res.primary_hypothesis.biological_protocol
+                print(f"\nProtocole Biologique / Agro-écologique :")
+                print(f"- {b.name} : {b.dosage} ({b.active_molecule})")
+            if res.primary_hypothesis.chemical_or_veterinary_protocol:
+                c = res.primary_hypothesis.chemical_or_veterinary_protocol
+                print(f"\nProtocole Conventionnel / Vétérinaire Homologué :")
+                print(f"- {c.name} : {c.dosage} (Délai : {c.pre_harvest_or_withdrawal_delay})")
+            if res.differential_hypotheses:
+                print(f"\nDiagnostics différentiels à surveiller :")
+                for diff in res.differential_hypotheses:
+                    print(f"- {diff.name_fr} ({diff.scientific_name}) : {diff.plausibility_score_pct}%")
+            print("=" * 65)
 
     else:
         parser.print_help()

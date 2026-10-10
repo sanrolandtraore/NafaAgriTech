@@ -38,6 +38,16 @@ class LikelihoodRank(str, Enum):
     TO_CONFIRM = "possible_a_confirmer"
 
 
+class AffectedOrgan(str, Enum):
+    LEAF = "feuille"                  # Feuille / Limbe / Cornet foliaire
+    STEM = "tige_collet"              # Tige / Collet / Tronc
+    ROOT = "racine_tubercule"         # Racine / Tubercule / Bulbe
+    FRUIT = "fruit_epi"               # Fruit / Gousse / Épi
+    ANIMAL_SKIN = "peau_pelage"       # Peau / Robe / Pelage / Cuir
+    ANIMAL_MUCOSA = "muqueuses"       # Yeux / Naseaux / Cavité buccale
+    LITTER_DROPPINGS = "fientes_litiere" # Déjections / Fientes / Litière
+
+
 @dataclass
 class VisualSymptomFeatures:
     """Caractéristiques visuelles réelles extraites de l'analyse d'image."""
@@ -101,6 +111,24 @@ class ComprehensiveAIDiagnosisResult:
     field_confirmation_needed: bool
     clarification_questions: List[Dict[str, Any]]
     technical_synthesis: str
+
+
+@dataclass
+class DirectPhotoDiagnosisResult:
+    """Résultat direct à partir d'une simple photo : Spéculation, Partie, Maladie, Agent causal, Symptômes."""
+    speculation: str                  # ex: "Maïs (Zea mays)", "Tomate", "Ovin (Mouton)", etc.
+    domain: DomainType                # "vegetal" ou "animal"
+    partie_atteinte: str              # ex: "Feuille (Limbe foliaire)", "Tige & Collet", "Racine", "Fruit", etc.
+    partie_code: AffectedOrgan
+    maladie: str                      # ex: "Chenille Légionnaire d'Automne"
+    agent_causal: str                 # ex: "Spodoptera frugiperda (Lépidoptère Noctuidae)"
+    pathogen_kind: str                # ex: "Ravageur insecte", "Bactérie", "Champignon", etc.
+    symptomes: List[str]              # Symptômes mesurés et cliniques réels
+    confidence_pct: float             # Indice de certitude %
+    mesures_immediates: List[str]
+    traitement_bio: Optional[Dict[str, str]]
+    traitement_chimique_ou_veterinaire: Optional[Dict[str, str]]
+    test_confirmation_terrain: str
 
 
 # =============================================================================
@@ -777,6 +805,147 @@ class AIDiseaseDiagnosticEngine:
             field_confirmation_needed=needs_confirmation,
             clarification_questions=clarification_questions,
             technical_synthesis=synthesis
+        )
+
+    def diagnose_from_single_photo(
+        self,
+        image_input: Any,
+        field_temperature_c: float = 33.0,
+        field_humidity_pct: float = 65.0
+    ) -> DirectPhotoDiagnosisResult:
+        """
+        Détermine automatiquement à partir de la photo :
+        1. La spéculation (culture ou animal)
+        2. La partie atteinte (tige, racine, feuille, fruit, peau...)
+        3. La maladie
+        4. L'agent causal
+        5. Les symptômes mesurés
+        """
+        # 1. Extraction des biomarqueurs visuels réels
+        features = self.extract_visual_symptoms(image_input)
+
+        # 2. Détermination de la partie atteinte (organe)
+        partie_code = AffectedOrgan.LEAF
+        partie_label = "Feuille (Limbe foliaire)"
+
+        if features.texture_roughness_score > 2.2 and features.hsv_hue_mean < 42.0:
+            partie_code = AffectedOrgan.ANIMAL_SKIN
+            partie_label = "Peau, Pelage & Cuir"
+        elif features.rust_pct > 2.5 and features.chlorosis_pct < 1.0 and features.hsv_hue_mean < 35.0:
+            partie_code = AffectedOrgan.LITTER_DROPPINGS
+            partie_label = "Fientes & Litière aviaire"
+        elif features.dominant_rgb_lesion[0] > 140 and features.dominant_rgb_lesion[1] < 70 and features.dominant_rgb_lesion[2] < 70 and features.texture_roughness_score < 1.0:
+            partie_code = AffectedOrgan.FRUIT
+            partie_label = "Fruit (Péricarpe & Chair)"
+        elif features.angular_vein_bounded_detected or (features.linear_streak_detected and features.canopy_or_tissue_pixels > 0 and features.hsv_hue_mean < 50.0):
+            partie_code = AffectedOrgan.STEM
+            partie_label = "Tige, Collet & Faisceaux vasculaires"
+        elif features.hsv_hue_mean < 32.0 and features.chlorosis_pct < 2.0 and features.rust_pct < 1.0:
+            partie_code = AffectedOrgan.ROOT
+            partie_label = "Racine, Collet & Tubercule"
+        else:
+            partie_code = AffectedOrgan.LEAF
+            partie_label = "Feuille (Limbe et cornet foliaire)"
+
+        # 3. Détermination de la spéculation (hôte)
+        if partie_code in (AffectedOrgan.ANIMAL_SKIN, AffectedOrgan.ANIMAL_MUCOSA, AffectedOrgan.LITTER_DROPPINGS):
+            domain = DomainType.VETERINARY
+            if partie_code == AffectedOrgan.LITTER_DROPPINGS or (features.rust_pct > 2.0 and features.lesion_coverage_pct > 5.0):
+                host_target = "poulet_chair"
+                speculation_label = "Volaille / Poulet de chair (Gallus gallus domesticus)"
+            elif features.texture_roughness_score > 2.5:
+                host_target = "bovin"
+                speculation_label = "Bovin / Zébu (Bos taurus indicus)"
+            else:
+                host_target = "ovin"
+                speculation_label = "Petit Ruminant / Ovin-Caprin"
+        else:
+            domain = DomainType.PLANT
+            if features.linear_streak_detected or features.jagged_perforations_detected or features.rust_pct > 3.0 or (features.necrosis_pct > 3.0 and features.hsv_hue_mean < 130.0):
+                host_target = "mais"
+                speculation_label = "Maïs (Zea mays L.)"
+            elif features.concentric_rings_detected or partie_code == AffectedOrgan.FRUIT or features.chlorosis_pct > 12.0:
+                host_target = "tomate"
+                speculation_label = "Tomate maraîchère (Solanum lycopersicum)"
+            elif features.hsv_hue_mean > 75.0 and features.canopy_or_tissue_pixels > 0:
+                host_target = "oignon"
+                speculation_label = "Oignon bulbe (Allium cepa)"
+            else:
+                host_target = "mais"
+                speculation_label = "Céréale / Maïs"
+
+        # 4. Diagnostic pathologique et différentiel complet
+        diag_res = self.diagnose(
+            domain=domain,
+            host_target=host_target,
+            image_input=image_input,
+            field_temperature_c=field_temperature_c,
+            field_humidity_pct=field_humidity_pct
+        )
+
+        prim = diag_res.primary_hypothesis
+
+        # 5. Synthèse détaillée des symptômes mesurés
+        symptomes: List[str] = []
+        if features.lesion_coverage_pct > 0:
+            symptomes.append(f"Surface de lésion active mesurée : {features.lesion_coverage_pct:.1f}% de la surface examinée.")
+        if features.necrosis_pct > 0:
+            symptomes.append(f"Nécrose et tissus asséchés : {features.necrosis_pct:.1f}% des pixels tissulaires.")
+        if features.chlorosis_pct > 0:
+            symptomes.append(f"Chlorose et décoloration jaune : {features.chlorosis_pct:.1f}% des pixels tissulaires.")
+        if features.rust_pct > 0:
+            symptomes.append(f"Pustules orangées ou coloration rouge : {features.rust_pct:.1f}%.")
+        if features.jagged_perforations_detected:
+            symptomes.append("Perforations foliaires déchiquetées caractéristiques de morsures de ravageurs broyeurs.")
+        if features.linear_streak_detected:
+            symptomes.append("Stries chlorotiques linéaires longitudinales orientées dans l'axe des nervures.")
+        if features.concentric_rings_detected:
+            symptomes.append("Lésions annulaires concentriques 'en cible'.")
+        symptomes.extend(prim.matching_symptoms[:2])
+
+        bio_dict = None
+        if prim.biological_protocol:
+            bio_dict = {
+                "nom": prim.biological_protocol.name,
+                "substance_active": prim.biological_protocol.active_molecule,
+                "dosage": prim.biological_protocol.dosage,
+                "mode_action": prim.biological_protocol.mode_of_action,
+                "delai_attente": prim.biological_protocol.pre_harvest_or_withdrawal_delay,
+                "statut": prim.biological_protocol.approval_status
+            }
+
+        chem_dict = None
+        if prim.chemical_or_veterinary_protocol:
+            chem_dict = {
+                "nom": prim.chemical_or_veterinary_protocol.name,
+                "substance_active": prim.chemical_or_veterinary_protocol.active_molecule,
+                "dosage": prim.chemical_or_veterinary_protocol.dosage,
+                "mode_action": prim.chemical_or_veterinary_protocol.mode_of_action,
+                "delai_attente": prim.chemical_or_veterinary_protocol.pre_harvest_or_withdrawal_delay,
+                "statut": prim.chemical_or_veterinary_protocol.approval_status
+            }
+
+        mesures = prim.prophylactic_measures if prim.prophylactic_measures else [
+            "Isoler immédiatement la zone ou le sujet affecté",
+            "Éviter l'irrigation par aspersion sur le feuillage"
+        ]
+
+        agent_causal_full = f"{prim.scientific_name} ({prim.pathogen_kind.value.replace('_', ' ').capitalize()})"
+
+        return DirectPhotoDiagnosisResult(
+            speculation=speculation_label,
+            domain=domain,
+            partie_atteinte=partie_label,
+            partie_code=partie_code,
+            maladie=prim.name_fr,
+            agent_causal=agent_causal_full,
+            pathogen_kind=prim.pathogen_kind.value,
+            symptomes=symptomes,
+            confidence_pct=prim.plausibility_score_pct,
+            mesures_immediates=mesures,
+            traitement_bio=bio_dict,
+            traitement_chimique_ou_veterinaire=chem_dict,
+            test_confirmation_terrain=prim.recommended_field_test
         )
 
     def _build_clarification_questions(
