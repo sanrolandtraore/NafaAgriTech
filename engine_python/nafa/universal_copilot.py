@@ -413,14 +413,14 @@ class UniversalNafaCopilotEngine:
             "**1. Formule de Hazen-Williams pour les pertes de charge linéaires** :",
             r"$$J = 10.67 \cdot \left(\frac{Q}{C}\right)^{1.852} \cdot D^{-4.87} \cdot L$$",
             "• Pour le PEHD rigide, coefficient de rugosité $C = 140$ à $150$.",
-            "• Vitesse d'écoulement préconisée : $1.0\text{ m/s} \le V \le 1.8\text{ m/s}$ pour éviter dépôts et coups de bélier.",
+            r"• Vitesse d'écoulement préconisée : $1.0\text{ m/s} \le V \le 1.8\text{ m/s}$ pour éviter dépôts et coups de bélier.",
             "",
             "**2. Facteur de réduction de Christiansen (Rampes perforées)** :",
             r"$$F \approx \frac{1}{m+1} + \frac{1}{2N} + \frac{\sqrt{m-1}}{6N^2} \approx 0.36\text{ pour }N > 20\text{ goutteurs}$$",
             "",
             "**3. Puissance de pompage solaire photovoltaïque requise** :",
             r"$$P_{pv} = \frac{\rho \cdot g \cdot Q \cdot HMT}{3600 \cdot \eta_{glob}} \cdot 1.30\text{ (marge poussière et chaleur)}$$",
-            "• Rendement global moyen en fil-du-soleil sahélien : $\eta = 55\% \text{ à } 65\%$."
+            r"• Rendement global moyen en fil-du-soleil sahélien : $\eta = 55\% \text{ à } 65\%$."
         ]
         actions = [
             {"title": "Ouvrir le Concepteur de Parcelles & Hydraulique", "target_route": "/dashboard/field-designer", "icon": "Compass"},
@@ -445,7 +445,7 @@ class UniversalNafaCopilotEngine:
             "Le moteur Python utilise **Shapely** et **GeoPandas** couplés à un pipeline de projection UTM WGS84 (Fuseau 30N/31N) :",
             "",
             "• **Arpentage métrique projeté** : Conversion des coordonnées degrés décimaux en coordonnées cartésiennes UTM pour un calcul de surface au millimètre carré sans distorsion sphérique.",
-            "• **Sectorisation automatique** : Découpage géométrique des parcelles en blocs d'arrosage de $2\,500\text{ m}^2$ maximum par vanne secteur.",
+            r"• **Sectorisation automatique** : Découpage géométrique des parcelles en blocs d'arrosage de $2\,500\text{ m}^2$ maximum par vanne secteur.",
             "• **Génération CAO 3D & Objets Réels** : Bâtiments d'élevage bioclimatiques, châteaux d'eau métalliques, centrales solaires orientées et abreuvoirs.",
             "• **Formats d'exportation professionnels** :",
             "  - **Wavefront OBJ + MTL** pour Blender, AutoCAD 3D et SketchUp.",

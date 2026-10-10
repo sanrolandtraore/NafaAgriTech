@@ -2,7 +2,7 @@ import io
 import numpy as np
 from PIL import Image
 import pytest
-from starlette.testclient import TestClient
+from fastapi.testclient import TestClient
 from nafa.api import app
 
 
