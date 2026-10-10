@@ -478,12 +478,33 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
 
     if (method === "phone") {
-      const { error } = await supabase.auth.signUp({
+      // 1. Tenter l'inscription native par téléphone
+      const phoneRes = await supabase.auth.signUp({
         phone: identifier,
         password,
         options: { data: metadata },
       });
-      return { error };
+
+      // 2. Si le fournisseur de téléphone Supabase renvoie une erreur (ex: "Phone signups are disabled" ou "SMS provider not configured")
+      // Bascule automatique et transparente vers l'identifiant e-mail synthétique lié au numéro :
+      if (
+        phoneRes.error &&
+        (phoneRes.error.message?.includes("disabled") ||
+          phoneRes.error.message?.includes("provider") ||
+          phoneRes.error.message?.includes("unsupported"))
+      ) {
+        const syntheticEmail = `phone_${identifier.replace(/[^0-9]/g, "")}@nafaagritech.app`;
+        const emailRes = await supabase.auth.signUp({
+          email: syntheticEmail,
+          password,
+          options: {
+            data: { ...metadata, phone: identifier },
+          },
+        });
+        return { error: emailRes.error };
+      }
+
+      return { error: phoneRes.error };
     }
 
     const { error } = await supabase.auth.signUp({
@@ -528,9 +549,41 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const signIn = async (identifier: string, password: string, method: "email" | "phone" = "email") => {
-    const credentials = method === "phone"
-      ? { phone: identifier, password }
-      : { email: identifier, password };
+    if (method === "phone") {
+      // 1. Tenter la connexion native par téléphone
+      const phoneRes = await supabase.auth.signInWithPassword({
+        phone: identifier,
+        password,
+      });
+
+      // 2. Si le fournisseur téléphone est désactivé ou renvoie une erreur de fournisseur, tenter avec le compte e-mail synthétique
+      if (
+        phoneRes.error &&
+        (phoneRes.error.message?.includes("disabled") ||
+          phoneRes.error.message?.includes("provider") ||
+          phoneRes.error.message?.includes("unsupported") ||
+          phoneRes.error.message?.includes("not found") ||
+          phoneRes.error.message?.includes("invalid_credentials"))
+      ) {
+        const syntheticEmail = `phone_${identifier.replace(/[^0-9]/g, "")}@nafaagritech.app`;
+        const emailRes = await supabase.auth.signInWithPassword({
+          email: syntheticEmail,
+          password,
+        });
+
+        if (!emailRes.error) {
+          await saveOfflineCredentials(identifier, password);
+          return { error: null };
+        }
+      }
+
+      if (!phoneRes.error) {
+        await saveOfflineCredentials(identifier, password);
+      }
+      return { error: phoneRes.error };
+    }
+
+    const credentials = { email: identifier, password };
     const { error } = await supabase.auth.signInWithPassword(credentials);
     if (!error) {
       await saveOfflineCredentials(identifier, password);

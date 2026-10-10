@@ -60,10 +60,22 @@ export const maxItStorage = {
 };
 
 /**
+ * Convertit un numéro de téléphone international en adresse e-mail synthétique
+ * unique et déterministe pour Supabase Auth : phone_{digits}@nafaagritech.app
+ * Cela garantit que l'inscription et la connexion par numéro de téléphone fonctionnent
+ * à 100% de manière native et fiable, sans dépendre d'un fournisseur SMS externe bloquant
+ * ou de l'option "Phone provider" désactivée côté Supabase.
+ */
+export function phoneToSyntheticEmail(phone: string): string {
+  const digits = phone.replace(/[^0-9]/g, "");
+  return `phone_${digits}@nafaagritech.app`;
+}
+
+/**
  * Dérive un mot de passe robuste et déterministe pour Supabase Auth
  * à partir du numéro de téléphone et du code PIN secret (4 ou 6 chiffres).
  * Cela permet de satisfaire les exigences de complexité de mot de passe Supabase
- * tout en offrant une expérience 100% Code PIN à l'utilisateur (façon Orange Max It).
+ * tout en offrant une expérience fluide par Code PIN à l'utilisateur.
  */
 export function deriveTechnicalPassword(phone: string, pin: string): string {
   const cleanPhone = phone.replace(/[^0-9]/g, "");

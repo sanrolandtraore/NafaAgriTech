@@ -20,6 +20,7 @@ from .field_suite import (
     LandSurveyResult
 )
 from .ai_disease_diagnosis import AIDiseaseDiagnosticEngine, DomainType
+from .universal_copilot import UniversalNafaCopilotEngine, UserSessionContext, UserRoleProfile
 
 app = FastAPI(
     title="NAFA AGRITECH — Scientific & Engineering Engine API",
@@ -41,6 +42,7 @@ livestock_engine = LivestockDensityEngine()
 cad_engine = AgronomicCAD3DEngine()
 field_engine = AfricanFieldSuiteEngine()
 diagnosis_engine = AIDiseaseDiagnosticEngine()
+copilot_engine = UniversalNafaCopilotEngine()
 
 
 # =============================================================================
@@ -462,6 +464,51 @@ async def auto_detect_from_photo(
             "traitement_bio": res.traitement_bio,
             "traitement_chimique_ou_veterinaire": res.traitement_chimique_ou_veterinaire,
             "test_confirmation_terrain": res.test_confirmation_terrain
+        }
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+
+# --- COPILOTE UNIVERSEL 100% PYTHON ---
+class CopilotChatRequest(BaseModel):
+    query: str
+    user_id: Optional[str] = None
+    full_name: Optional[str] = None
+    email: Optional[str] = None
+    phone: Optional[str] = None
+    role: Optional[str] = "guest"
+    partner_type: Optional[str] = None
+    company_name: Optional[str] = None
+    locality: Optional[str] = None
+    region: Optional[str] = None
+    is_authenticated: bool = False
+
+
+@app.post("/api/copilot/chat")
+def chat_with_copilot(req: CopilotChatRequest):
+    try:
+        session = UserSessionContext(
+            user_id=req.user_id,
+            full_name=req.full_name,
+            email=req.email,
+            phone=req.phone,
+            role=copilot_engine.resolve_profile(req.role, req.partner_type),
+            partner_type=req.partner_type,
+            company_name=req.company_name,
+            locality=req.locality,
+            region=req.region,
+            is_authenticated=req.is_authenticated
+        )
+        res = copilot_engine.assist(query=req.query, user_session=session)
+        return {
+            "reply": res.reply,
+            "detected_profile": res.detected_profile,
+            "personalized_greeting": res.personalized_greeting,
+            "category": res.category,
+            "factual_sources": res.factual_sources,
+            "suggested_actions": res.suggested_actions,
+            "technical_metrics": res.technical_metrics,
+            "direct_tools": res.direct_tools
         }
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))

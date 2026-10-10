@@ -439,4 +439,61 @@ export const pythonEngineClient = {
 
     return await res.json();
   },
+
+  /**
+   * Copilote Intelligent Universel 100% Python :
+   * Reconnaissance automatique du profil utilisateur (agriculteur, éleveur, agronome, vétérinaire, fournisseur, finance)
+   * et réponses factuelles d'ingénierie agronomique, zootechnique, hydraulique et économique.
+   */
+  async chatWithCopilot(params: {
+    query: string;
+    userId?: string | null;
+    fullName?: string | null;
+    email?: string | null;
+    phone?: string | null;
+    role?: string | null;
+    partnerType?: string | null;
+    companyName?: string | null;
+    locality?: string | null;
+    region?: string | null;
+    isAuthenticated?: boolean;
+  }): Promise<{
+    reply: string;
+    detected_profile: string;
+    personalized_greeting: string;
+    category: string;
+    factual_sources: string[];
+    suggested_actions: Array<{
+      title: string;
+      target_route: string;
+      icon: string;
+    }>;
+    technical_metrics: Record<string, any>;
+    direct_tools: Array<Record<string, string>>;
+  }> {
+    const res = await fetch(`${PYTHON_ENGINE_BASE_URL}/api/copilot/chat`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        query: params.query,
+        user_id: params.userId || undefined,
+        full_name: params.fullName || undefined,
+        email: params.email || undefined,
+        phone: params.phone || undefined,
+        role: params.role || "guest",
+        partner_type: params.partnerType || undefined,
+        company_name: params.companyName || undefined,
+        locality: params.locality || undefined,
+        region: params.region || undefined,
+        is_authenticated: params.isAuthenticated ?? false,
+      }),
+    });
+
+    if (!res.ok) {
+      const errorText = await res.text();
+      throw new Error(`Erreur copilote Python : ${errorText}`);
+    }
+
+    return await res.json();
+  },
 };

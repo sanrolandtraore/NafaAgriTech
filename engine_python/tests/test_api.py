@@ -107,3 +107,19 @@ def test_api_diagnosis_pathology(client):
     assert data["primary_hypothesis"]["scientific_name"] == "Spodoptera frugiperda"
     assert "biological_protocol" in data["primary_hypothesis"]
     assert "recommended_field_test" in data["primary_hypothesis"]
+
+
+def test_api_copilot_chat(client):
+    payload = {
+        "query": "Quel traitement homologué contre la chenille légionnaire du maïs ?",
+        "full_name": "Dr. Amadou Kaboré",
+        "role": "agronome",
+        "is_authenticated": True
+    }
+    response = client.post("/api/copilot/chat", json=payload)
+    assert response.status_code == 200
+    data = response.json()
+    assert "Spodoptera frugiperda" in data["reply"]
+    assert data["detected_profile"] == "agronome"
+    assert "Ingénieur" in data["personalized_greeting"]
+    assert len(data["suggested_actions"]) > 0

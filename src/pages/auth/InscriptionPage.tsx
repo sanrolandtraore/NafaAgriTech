@@ -307,7 +307,7 @@ export default function InscriptionPage() {
             <div>
               <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-[#F97316]/15 border border-[#F97316]/30 text-[#F97316] text-[11px] font-extrabold uppercase tracking-wider mb-1">
                 <Sparkles className="h-3 w-3" />
-                <span>Inscription Rapide Max It</span>
+                <span>Inscription Sécurisée</span>
               </div>
               <h1 className="text-2xl sm:text-3xl font-heading font-extrabold text-foreground tracking-tight">
                 Créer un compte <span className="text-[#F97316]">NAFA</span>

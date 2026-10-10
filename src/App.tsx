@@ -12,6 +12,7 @@ import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { CyberShieldProvider } from "@/components/security/CyberShieldProvider";
 import Index from "./pages/Index";
 import DashboardLayout from "./components/DashboardLayout";
+import { UniversalNafaCopilotWidget } from "./components/copilot/UniversalNafaCopilotWidget";
 
 // Lazy-loaded auxiliary and legal pages for initial bundle minimization
 const Auth = lazy(() => import("./pages/Auth"));
@@ -261,6 +262,7 @@ const App = () => {
               </Route>
               <Route path="*" element={<Suspense fallback={<PageLoader />}><NotFound /></Suspense>} />
             </Routes>
+            <UniversalNafaCopilotWidget />
           </BrowserRouter>
         </CyberShieldProvider>
       </ErrorBoundary>

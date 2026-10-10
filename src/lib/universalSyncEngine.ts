@@ -317,14 +317,16 @@ export function startUniversalSyncEngine(intervalSeconds = 60): () => void {
     });
   });
 
-  // 2. Écouter les changements en ligne / hors-ligne
+  // 2. Écouter les changements en ligne / hors-ligne pour synchronisation automatique immédiate
   const handleOnline = () => {
     updateSummary({ status: "syncing" });
-    // Délai aléatoire anti-collision (Jitter)
-    const jitter = 500 + Math.floor(Math.random() * 2000);
+    // Synchronisation automatique instantanée dès que la connexion s'établit
+    syncAllDatastores({ silent: false });
+
+    // Deuxième passe de consolidation rapide à 1.5s
     setTimeout(() => {
-      syncAllDatastores({ silent: false });
-    }, jitter);
+      syncAllDatastores({ silent: true });
+    }, 1500);
   };
 
   const handleOffline = () => {
