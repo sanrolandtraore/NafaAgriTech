@@ -298,4 +298,75 @@ export const pythonEngineClient = {
 
     return await res.json();
   },
+
+  /**
+   * Diagnostic pathologique IA expert (cultures et élevage) avec vision et analyse épidémiologique différentielle
+   */
+  async diagnosePathology(params: {
+    domain: "vegetal" | "animal";
+    host_target: string;
+    symptoms_text?: string;
+    temperature_c?: number;
+    humidity_pct?: number;
+    file?: File | Blob;
+  }): Promise<{
+    domain: string;
+    host_target: string;
+    image_analyzed: boolean;
+    visual_features?: Record<string, any> | null;
+    primary_hypothesis: {
+      case_id: string;
+      name_fr: string;
+      scientific_name: string;
+      pathogen_kind: string;
+      likelihood_rank: string;
+      plausibility_score_pct: number;
+      matching_symptoms: string[];
+      differential_clues: string;
+      recommended_field_test: string;
+      biological_protocol?: {
+        name: string;
+        active_molecule: string;
+        dosage: string;
+        mode_of_action: string;
+        pre_harvest_or_withdrawal_delay: string;
+        approval_status: string;
+      } | null;
+      chemical_or_veterinary_protocol?: {
+        name: string;
+        active_molecule: string;
+        dosage: string;
+        mode_of_action: string;
+        pre_harvest_or_withdrawal_delay: string;
+        approval_status: string;
+      } | null;
+      prophylactic_measures: string[];
+      epidemiological_risk: string;
+    };
+    differential_hypotheses: Array<any>;
+    uncertainty_level: string;
+    field_confirmation_needed: boolean;
+    clarification_questions: Array<{ id: string; question: string; action: string }>;
+    technical_synthesis: string;
+  }> {
+    const formData = new FormData();
+    formData.append("domain", params.domain);
+    formData.append("host_target", params.host_target);
+    if (params.symptoms_text) formData.append("symptoms_text", params.symptoms_text);
+    if (params.temperature_c !== undefined) formData.append("temperature_c", params.temperature_c.toString());
+    if (params.humidity_pct !== undefined) formData.append("humidity_pct", params.humidity_pct.toString());
+    if (params.file) formData.append("file", params.file);
+
+    const res = await fetch(`${PYTHON_ENGINE_BASE_URL}/api/diagnosis/pathology`, {
+      method: "POST",
+      body: formData,
+    });
+
+    if (!res.ok) {
+      const errorText = await res.text();
+      throw new Error(`Erreur diagnostic IA pathologique Python : ${errorText}`);
+    }
+
+    return await res.json();
+  },
 };
