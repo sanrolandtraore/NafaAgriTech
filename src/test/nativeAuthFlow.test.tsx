@@ -29,6 +29,8 @@ vi.mock("@/contexts/AuthContext", () => ({
     signOut: mockSignOut,
     isOfflineSession: false,
     role: null,
+    profile: null,
+    primaryRole: null,
   }),
   useOptionalAuth: () => null,
 }));
@@ -50,12 +52,12 @@ describe("Sécurité des redirections (safeRedirect)", () => {
   });
 });
 
-describe("Page d'inscription native (/inscription)", () => {
+describe("Page d'inscription native type Orange Max It (/inscription)", () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
 
-  it("affiche le formulaire complet avec sélection de profil", () => {
+  it("affiche le formulaire d'inscription mobile avec sélection de pays et nom", () => {
     render(
       <BrowserRouter>
         <InscriptionPage />
@@ -64,55 +66,56 @@ describe("Page d'inscription native (/inscription)", () => {
 
     expect(screen.getByText(/Créer un compte/i)).toBeInTheDocument();
     expect(screen.getByLabelText(/Nom et Prénom/i)).toBeInTheDocument();
-    expect(screen.getByLabelText(/Adresse e-mail/i)).toBeInTheDocument();
-    expect(screen.getByLabelText(/Téléphone/i)).toBeInTheDocument();
-    expect(screen.getByLabelText(/^Mot de passe/i)).toBeInTheDocument();
-    expect(screen.getByLabelText(/Confirmer le mot de passe/i)).toBeInTheDocument();
-    expect(screen.getByText(/Votre activité principale/i)).toBeInTheDocument();
+    expect(screen.getByPlaceholderText(/70 00 00 00/i)).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /Continuer vers mon profil/i })).toBeInTheDocument();
   });
 
-  it("valide la correspondance et la longueur des mots de passe", async () => {
+  it("permet de basculer vers l'inscription classique par e-mail", () => {
     render(
       <BrowserRouter>
         <InscriptionPage />
       </BrowserRouter>
     );
 
-    const nameInput = screen.getByLabelText(/Nom et Prénom/i);
-    const emailInput = screen.getByLabelText(/Adresse e-mail/i);
-    const passInput = screen.getByLabelText(/^Mot de passe/i);
-    const confirmInput = screen.getByLabelText(/Confirmer le mot de passe/i);
-    const submitBtn = screen.getByRole("button", { name: /Créer mon compte/i });
+    const emailSwitchBtn = screen.getByText(/S'inscrire plutôt avec une adresse e-mail/i);
+    fireEvent.click(emailSwitchBtn);
 
-    fireEvent.change(nameInput, { target: { value: "Oumar Sawadogo" } });
-    fireEvent.change(emailInput, { target: { value: "oumar@example.com" } });
-    fireEvent.change(passInput, { target: { value: "12345" } });
-    fireEvent.change(confirmInput, { target: { value: "different" } });
-
-    fireEvent.click(submitBtn);
-
-    // Ne doit pas appeler signUp si non valide
-    expect(mockSignUp).not.toHaveBeenCalled();
+    expect(screen.getByLabelText(/Adresse e-mail/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/^Mot de passe/i)).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /Créer mon compte par e-mail/i })).toBeInTheDocument();
   });
 });
 
-describe("Page de connexion native (/connexion)", () => {
+describe("Page de connexion native type Orange Max It (/connexion)", () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
 
-  it("affiche le formulaire de connexion avec lien mot de passe oublié", () => {
+  it("affiche la saisie du numéro de mobile et le bouton continuer", () => {
     render(
       <BrowserRouter>
         <ConnexionPage />
       </BrowserRouter>
     );
 
-    expect(screen.getByText(/Connexion/i)).toBeInTheDocument();
-    expect(screen.getByLabelText(/Adresse e-mail/i)).toBeInTheDocument();
+    expect(screen.getByText(/Bienvenue sur/i)).toBeInTheDocument();
+    expect(screen.getByPlaceholderText(/70 00 00 00/i)).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /Continuer/i })).toBeInTheDocument();
+  });
+
+  it("permet de basculer vers la connexion par e-mail", () => {
+    render(
+      <BrowserRouter>
+        <ConnexionPage />
+      </BrowserRouter>
+    );
+
+    const emailSwitchBtn = screen.getByText(/Se connecter plutôt avec une adresse e-mail/i);
+    fireEvent.click(emailSwitchBtn);
+
+    expect(screen.getByLabelText(/Adresse e-mail professionnelle/i)).toBeInTheDocument();
     expect(screen.getByLabelText(/^Mot de passe/i)).toBeInTheDocument();
-    expect(screen.getByText(/Mot de passe oublié \?/i)).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: /Se connecter/i })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /Se connecter par e-mail/i })).toBeInTheDocument();
   });
 });
 
