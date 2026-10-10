@@ -62,15 +62,76 @@ export function UniversalNafaCopilotWidget() {
   const [messages, setMessages] = useState<MessageItem[]>([]);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  // Initialisation à l'ouverture ou connexion
+  // Initialisation à l'ouverture ou connexion avec message personnalisé par utilisateur
   useEffect(() => {
     if (messages.length === 0) {
-      const userRoleName = primaryRole || "agriculteur";
-      const userName = profile?.full_name || (user ? "Utilisateur" : "Producteur");
-      
-      const welcomeText = `Bonjour ${userName}. Je suis votre Copilote Intelligent NAFA-AGRITECH, propulsé à 100% par le moteur Python de calcul scientifique.
+      const userRole = primaryRole || "agriculteur";
+      const userName = profile?.full_name?.trim() || (user ? "Producteur" : "");
 
-Mon système reconnaît votre profil (**${userRoleName.toUpperCase()}**). Posez-moi n'importe quelle question sur vos cultures, votre cheptel, vos calculs d'irrigation, vos coûts de forage ou le marché des services.`;
+      let welcomeText = "";
+      let suggestedActions = [
+        { title: "Diagnostic Photo Végétal", target_route: "/dashboard/diagnostic", icon: "Camera" },
+        { title: "Conception Parcelles & 3D", target_route: "/dashboard/field-designer", icon: "Compass" },
+        { title: "Marché des Services", target_route: "/dashboard/marketplace", icon: "Store" },
+      ];
+
+      if (userRole === "agriculteur") {
+        welcomeText = userName
+          ? `Bonjour ${userName} ! Ravi de vous accompagner sur votre exploitation. Que souhaitez-vous vérifier aujourd'hui sur vos cultures, vos besoins en intrants ou vos parcelles ?`
+          : `Bonjour ! Ravi de vous accompagner. Que souhaitez-vous vérifier aujourd'hui sur vos cultures, vos besoins en intrants ou vos parcelles ?`;
+        suggestedActions = [
+          { title: "Scanner une Plante Malade", target_route: "/dashboard/diagnostic", icon: "Camera" },
+          { title: "Marché des Intrants & Travaux", target_route: "/dashboard/marketplace", icon: "Store" },
+          { title: "Planification des Cultures", target_route: "/dashboard/crop-planning", icon: "Sprout" },
+        ];
+      } else if (userRole === "eleveur") {
+        welcomeText = userName
+          ? `Bonjour ${userName} ! Votre espace d'élevage et de zootechnie est actif. Avez-vous une question sur la conduite de votre cheptel, l'alimentation ou la santé animale ?`
+          : `Bonjour ! Votre espace d'élevage et de zootechnie est actif. Avez-vous une question sur la conduite de votre cheptel, l'alimentation ou la santé animale ?`;
+        suggestedActions = [
+          { title: "Mon Cheptel & Animaux", target_route: "/dashboard/animals", icon: "Beef" },
+          { title: "Comptage & Densité Bâtiment", target_route: "/dashboard/animal-counting", icon: "Camera" },
+          { title: "Réserver un Vétérinaire", target_route: "/dashboard/livestock-services", icon: "ShieldCheck" },
+        ];
+      } else if (userRole === "agronome") {
+        welcomeText = userName
+          ? `Bonjour ${userName} ! Vos outils d'ingénierie agronomique, arpentage GPS métrique et conception 3D sont prêts. Quel projet étudiez-vous ?`
+          : `Bonjour Confrère ! Vos outils d'ingénierie agronomique, arpentage GPS métrique et conception 3D sont prêts. Quel projet étudiez-vous ?`;
+        suggestedActions = [
+          { title: "Studio CAO & Parcelles 3D", target_route: "/dashboard/field-designer", icon: "Compass" },
+          { title: "Bibliothèque Phytosanitaire", target_route: "/dashboard/crop-library", icon: "Sprout" },
+          { title: "Calculateur Hydraulique FAO-56", target_route: "/dashboard/expert-calculator", icon: "Layers" },
+        ];
+      } else if (userRole === "veterinaire") {
+        welcomeText = userName
+          ? `Bonjour Dr. ${userName} ! Vos dossiers de soins, suivi épidémiologique et ordonnances sont synchronisés. Que souhaitez-vous consulter ?`
+          : `Bonjour Docteur ! Vos dossiers de soins, suivi épidémiologique et ordonnances sont synchronisés. Que souhaitez-vous consulter ?`;
+        suggestedActions = [
+          { title: "Interventions & Soins", target_route: "/dashboard/interventions", icon: "ShieldCheck" },
+          { title: "Audit Zootechnique Cheptel", target_route: "/dashboard/animal-counting", icon: "Camera" },
+          { title: "Demandes Éleveurs", target_route: "/dashboard/quote-requests", icon: "FileText" },
+        ];
+      } else if (userRole === "fournisseur") {
+        welcomeText = userName
+          ? `Bonjour ${userName} ! Vos catalogues, stocks de matériel et demandes de devis sont à jour. Souhaitez-vous gérer une offre ou répondre à un client ?`
+          : `Bonjour ! Vos catalogues, stocks de matériel et demandes de devis sont à jour. Souhaitez-vous gérer une offre ou répondre à un client ?`;
+        suggestedActions = [
+          { title: "Mes Offres & Catalogue", target_route: "/dashboard/partenaire-mes-offres", icon: "Store" },
+          { title: "Demandes de Devis", target_route: "/dashboard/quote-requests", icon: "FileText" },
+        ];
+      } else if (userRole === "institution_agri") {
+        welcomeText = userName
+          ? `Bonjour ${userName} ! Vos dossiers de financement agricole et produits d'assurance sont prêts pour instruction.`
+          : `Bonjour ! Vos dossiers de financement agricole et produits d'assurance sont prêts pour instruction.`;
+        suggestedActions = [
+          { title: "Dossiers de Financement", target_route: "/dashboard/partenaire-demandes", icon: "FileText" },
+          { title: "Assurance Agricole", target_route: "/dashboard/partenaire-assurance", icon: "ShieldCheck" },
+        ];
+      } else {
+        welcomeText = userName
+          ? `Bonjour ${userName} ! Bienvenue sur NAFA-AGRITECH. Comment puis-je vous aider dans vos activités agricoles aujourd'hui ?`
+          : `Bonjour et bienvenue sur NAFA-AGRITECH. Comment puis-je vous aider dans vos activités agricoles aujourd'hui ?`;
+      }
 
       setMessages([
         {
@@ -78,12 +139,8 @@ Mon système reconnaît votre profil (**${userRoleName.toUpperCase()}**). Posez-
           sender: "copilot",
           text: welcomeText,
           category: "bienvenue",
-          factualSources: ["Moteur Python NAFA-AGRITECH", "Référentiels INERA / CIRDES / CILSS"],
-          suggestedActions: [
-            { title: "Diagnostic Photo Végétal", target_route: "/dashboard/diagnostic", icon: "Camera" },
-            { title: "Conception Parcelles & 3D", target_route: "/dashboard/field-designer", icon: "Compass" },
-            { title: "Marché des Services", target_route: "/dashboard/marketplace", icon: "Store" },
-          ],
+          factualSources: ["Référentiels Techniques Sahel", "Données Opérationnelles In-Situ"],
+          suggestedActions,
           timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
         },
       ]);
@@ -166,7 +223,7 @@ Mon système reconnaît votre profil (**${userRoleName.toUpperCase()}**). Posez-
         <div className="fixed bottom-6 right-6 z-50 flex items-center gap-3">
           <div className="hidden md:flex items-center gap-2 bg-slate-900/90 text-white text-xs px-3 py-1.5 rounded-full shadow-lg border border-emerald-500/30 backdrop-blur-sm animate-pulse">
             <span className="w-2 h-2 rounded-full bg-emerald-400"></span>
-            <span>Copilote Python Actif</span>
+            <span>Copilote NAFA</span>
           </div>
           <Button
             onClick={() => setIsOpen(true)}
@@ -190,15 +247,13 @@ Mon système reconnaît votre profil (**${userRoleName.toUpperCase()}**). Posez-
               <div>
                 <div className="flex items-center gap-2">
                   <h3 className="text-sm font-bold text-white tracking-wide">NAFA COPILOTE</h3>
-                  <Badge variant="outline" className="text-[10px] px-1.5 py-0 border-emerald-500/40 text-emerald-300 bg-emerald-950/40">
-                    100% Python
-                  </Badge>
                 </div>
-                <p className="text-[11px] text-slate-400 flex items-center gap-1">
-                  <span>Profil détecté :</span>
-                  <span className="font-semibold text-emerald-400 capitalize">
-                    {primaryRole || "Invité"}
-                  </span>
+                <p className="text-[11px] text-slate-400">
+                  {profile?.full_name?.trim() ? (
+                    <span className="text-emerald-400 font-medium">{profile.full_name.trim()}</span>
+                  ) : (
+                    <span>Assistance Agricole & Technique</span>
+                  )}
                 </p>
               </div>
             </div>
@@ -272,7 +327,7 @@ Mon système reconnaît votre profil (**${userRoleName.toUpperCase()}**). Posez-
             {isLoading && (
               <div className="flex items-center gap-2 text-xs text-emerald-400 bg-slate-900/60 p-3 rounded-xl border border-slate-800 w-fit">
                 <Sparkles className="h-4 w-4 animate-spin text-emerald-400" />
-                <span>Calcul scientifique Python en cours...</span>
+                <span>Analyse et calculs en cours...</span>
               </div>
             )}
             <div ref={messagesEndRef} />

@@ -121,5 +121,5 @@ def test_api_copilot_chat(client):
     data = response.json()
     assert "Spodoptera frugiperda" in data["reply"]
     assert data["detected_profile"] == "agronome"
-    assert "Ingénieur" in data["personalized_greeting"]
+    assert "Dr. Amadou Kaboré" in data["personalized_greeting"]
     assert len(data["suggested_actions"]) > 0

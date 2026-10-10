@@ -209,47 +209,57 @@ class UniversalNafaCopilotEngine:
         return self._handle_general_query(query, role, greeting)
 
     def _build_greeting(self, role: UserRoleProfile, name: str, company: Optional[str]) -> str:
-        org_suffix = f" ({company})" if company else ""
+        clean_name = name.strip() if name and name.strip() else ""
+        org_suffix = f" du cabinet {company}" if company else ""
+
         if role == UserRoleProfile.AGRICULTEUR:
-            return f"Bienvenue Producteur {name}. Je suis votre Copilote Agricole de terrain."
+            target_name = f" {clean_name}" if clean_name and clean_name.lower() not in ["producteur", "utilisateur", "guest", "invité"] else ""
+            return f"Ravi de vous retrouver{target_name} ! Je suis à vos côtés pour le suivi de vos parcelles et de vos cultures."
         if role == UserRoleProfile.ELEVEUR:
-            return f"Bonjour Éleveur {name}. Je suis votre Copilote Zootechnique & Santé du Cheptel."
+            target_name = f" {clean_name}" if clean_name and clean_name.lower() not in ["éleveur", "utilisateur", "guest", "invité"] else ""
+            return f"Bonjour{target_name} ! Votre suivi de cheptel, alimentation et santé animale est prêt."
         if role == UserRoleProfile.AGRONOME:
-            return f"Bonjour Confrère Ingénieur {name}{org_suffix}. Copilote d'Ingénierie & CAO activé."
+            target_name = f" {clean_name}" if clean_name else ""
+            return f"Bonjour Confrère{target_name}{org_suffix}. Vos outils d'arpentage, hydraulique et conception 3D sont à votre disposition."
         if role == UserRoleProfile.VETERINAIRE:
-            return f"Bonjour Docteur {name}{org_suffix}. Copilote Clinique Vétérinaire & Épidémiologie opérationnel."
+            target_name = f" Dr. {clean_name}" if clean_name else " Docteur"
+            return f"Bonjour{target_name}{org_suffix}. Votre espace d'interventions, ordonnances et prophylaxie est opérationnel."
         if role == UserRoleProfile.FOURNISSEUR:
-            return f"Bonjour Partenaire Fournisseur {name}{org_suffix}. Copilote Marché & Distribution à votre écoute."
+            target_name = f" {clean_name}" if clean_name else ""
+            return f"Bonjour{target_name}{org_suffix}. Vos catalogues, stocks et demandes de devis sont synchronisés."
         if role == UserRoleProfile.INSTITUTION_AGRI:
-            return f"Bonjour {name}{org_suffix}. Copilote Risques Agricoles & Financement opérationnel."
-        return f"Bonjour {name}. Je suis le Copilote Intelligent Unifié de NAFA-AGRITECH."
+            target_name = f" {clean_name}" if clean_name else ""
+            return f"Bonjour{target_name}{org_suffix}. Vos dossiers de financement et d'assurance agricole sont prêts pour analyse."
+
+        target_name = f" {clean_name}" if clean_name and clean_name.lower() not in ["utilisateur", "guest", "invité"] else ""
+        return f"Bonjour{target_name} ! Je suis votre assistant pour toute question agricole, technique ou financière."
 
     def _handle_welcome_and_capabilities(self, role: UserRoleProfile, greeting: str) -> CopilotResponse:
         reply_lines = [
             greeting,
-            "\nVoici mes fonctionnalités spécifiques immédiatement adaptées à votre compte :"
+            "\nQue souhaitez-vous explorer ou calculer aujourd'hui ?"
         ]
 
         actions: List[Dict[str, str]] = []
-        sources = ["Système Intégré NAFA-AGRITECH", "Référentiels Techniques Sahéliens"]
+        sources = ["Référentiels Techniques Sahel", "Données Opérationnelles In-Situ"]
 
         if role == UserRoleProfile.AGRICULTEUR:
             reply_lines.extend([
-                "• **Marché des Services** : Réservez des tracteurs, commandez des semences certifiées INERA ou sollicitez un agronome.",
-                "• **Diagnostic Instantané** : Prenez une photo de culture malade pour connaître l'agent causal et le traitement bio/homologué.",
-                "• **Calcul des Intrants** : Estimez le nombre de sacs d'engrais et la dose exacte selon votre surface."
+                "• **Santé Végétale** : Photographiez une feuille ou une tige malade pour obtenir le diagnostic et le traitement certifié.",
+                "• **Calculs d'Intrants** : Évaluez précisément vos semences, engrais NPK/Urée et doses selon votre surface.",
+                "• **Marché & Matériel** : Commandez des intrants ou réservez un tracteur avec opérateur certifié."
             ])
-            actions.append({"title": "Accéder au Marché des Services", "target_route": "/dashboard/marketplace", "icon": "Store"})
-            actions.append({"title": "Scanner une Culture Malade", "target_route": "/dashboard/diagnostic", "icon": "Camera"})
+            actions.append({"title": "Scanner une Culture", "target_route": "/dashboard/diagnostic", "icon": "Camera"})
+            actions.append({"title": "Marché des Services", "target_route": "/dashboard/marketplace", "icon": "Store"})
 
         elif role == UserRoleProfile.ELEVEUR:
             reply_lines.extend([
-                "• **Suivi du Cheptel** : Enregistrez vos animaux, suivez les naissances, lactations et pesées.",
-                "• **Audit de Densité & Stress THI** : Calculez la charge UBT et le risque thermique en bergerie/poulailler.",
-                "• **Prestations Vétérinaires** : Commandez une vaccination ou un protocole sanitaire auprès d'un praticien agréé."
+                "• **Suivi Zootechnique** : Enregistrez vos animaux, suivez les naissances, pesées et rations alimentaires.",
+                "• **Ambiance Bâtiment & THI** : Vérifiez la densité et le risque de coup de chaleur en bergerie ou poulailler.",
+                "• **Soins Vétérinaires** : Réservez une visite ou un protocole vaccinal auprès d'un praticien agréé."
             ])
-            actions.append({"title": "Gérer mon Cheptel", "target_route": "/dashboard/animals", "icon": "Beef"})
-            actions.append({"title": "Comptage & Audit de Densité", "target_route": "/dashboard/animal-counting", "icon": "Camera"})
+            actions.append({"title": "Mon Cheptel", "target_route": "/dashboard/animals", "icon": "Beef"})
+            actions.append({"title": "Audit de Densité & Stress", "target_route": "/dashboard/animal-counting", "icon": "Camera"})
 
         elif role == UserRoleProfile.AGRONOME:
             reply_lines.extend([
