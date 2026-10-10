@@ -87,3 +87,23 @@ def test_api_field_suite_survey_gps(client):
     data = response.json()
     assert data["points_count"] == 4
     assert data["area_m2"] > 5000.0
+
+
+def test_api_diagnosis_pathology(client):
+    response = client.post(
+        "/api/diagnosis/pathology",
+        data={
+            "domain": "vegetal",
+            "host_target": "mais",
+            "symptoms_text": "perforations en coup de fusil cornet plein de sciure",
+            "temperature_c": 33.0,
+            "humidity_pct": 60.0
+        }
+    )
+    assert response.status_code == 200
+    data = response.json()
+    assert data["domain"] == "vegetal"
+    assert data["primary_hypothesis"]["case_id"] == "MAIS_ARMYWORM"
+    assert data["primary_hypothesis"]["scientific_name"] == "Spodoptera frugiperda"
+    assert "biological_protocol" in data["primary_hypothesis"]
+    assert "recommended_field_test" in data["primary_hypothesis"]

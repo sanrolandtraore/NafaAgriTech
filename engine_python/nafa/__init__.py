@@ -13,6 +13,12 @@ from .field_suite import (
     IrrigationMethod,
     MERCURIALE_BPU_FCFA
 )
+from .ai_disease_diagnosis import (
+    AIDiseaseDiagnosticEngine,
+    DomainType,
+    PathogenKind,
+    LikelihoodRank
+)
 
 __version__ = "1.0.0"
 __all__ = [
@@ -33,4 +39,8 @@ __all__ = [
     "PipeMaterial",
     "IrrigationMethod",
     "MERCURIALE_BPU_FCFA",
+    "AIDiseaseDiagnosticEngine",
+    "DomainType",
+    "PathogenKind",
+    "LikelihoodRank",
 ]

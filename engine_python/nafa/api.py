@@ -19,6 +19,7 @@ from .field_suite import (
     IrrigationMethod,
     LandSurveyResult
 )
+from .ai_disease_diagnosis import AIDiseaseDiagnosticEngine, DomainType
 
 app = FastAPI(
     title="NAFA AGRITECH — Scientific & Engineering Engine API",
@@ -39,6 +40,7 @@ crops_analyzer = CropVisionAnalyzer()
 livestock_engine = LivestockDensityEngine()
 cad_engine = AgronomicCAD3DEngine()
 field_engine = AfricanFieldSuiteEngine()
+diagnosis_engine = AIDiseaseDiagnosticEngine()
 
 
 # =============================================================================
@@ -329,6 +331,90 @@ def calculate_hydraulics(req: HydraulicRequest):
             "required_solar_pv_power_wc": res.required_solar_pv_power_wc,
             "is_velocity_compliant": res.is_velocity_compliant,
             "velocity_warning": res.velocity_warning
+        }
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+
+# --- DIAGNOSTIC PATHOLOGIQUE IA EXPERT (VÉGÉTAL & VÉTÉRINAIRE) ---
+@app.post("/api/diagnosis/pathology")
+async def diagnose_pathology(
+    domain: str = Form("vegetal"),
+    host_target: str = Form("mais"),
+    symptoms_text: Optional[str] = Form(None),
+    temperature_c: float = Form(33.0),
+    humidity_pct: float = Form(65.0),
+    file: Optional[UploadFile] = File(None)
+):
+    try:
+        content = await file.read() if file else None
+        res = diagnosis_engine.diagnose(
+            domain=DomainType(domain),
+            host_target=host_target,
+            image_input=content,
+            observed_symptoms_text=symptoms_text,
+            field_temperature_c=temperature_c,
+            field_humidity_pct=humidity_pct
+        )
+
+        visual_feat = None
+        if res.visual_features:
+            visual_feat = {
+                "canopy_or_tissue_pixels": res.visual_features.canopy_or_tissue_pixels,
+                "lesion_coverage_pct": res.visual_features.lesion_coverage_pct,
+                "chlorosis_pct": res.visual_features.chlorosis_pct,
+                "necrosis_pct": res.visual_features.necrosis_pct,
+                "rust_pct": res.visual_features.rust_pct,
+                "concentric_rings_detected": res.visual_features.concentric_rings_detected,
+                "linear_streak_detected": res.visual_features.linear_streak_detected,
+                "jagged_perforations_detected": res.visual_features.jagged_perforations_detected,
+                "texture_roughness_score": res.visual_features.texture_roughness_score,
+                "dominant_rgb_lesion": list(res.visual_features.dominant_rgb_lesion),
+                "hsv_hue_mean": res.visual_features.hsv_hue_mean,
+            }
+
+        def serialize_hypo(h):
+            return {
+                "case_id": h.case_id,
+                "name_fr": h.name_fr,
+                "scientific_name": h.scientific_name,
+                "pathogen_kind": h.pathogen_kind.value,
+                "likelihood_rank": h.likelihood_rank.value,
+                "plausibility_score_pct": h.plausibility_score_pct,
+                "matching_symptoms": h.matching_symptoms,
+                "differential_clues": h.differential_clues,
+                "recommended_field_test": h.recommended_field_test,
+                "biological_protocol": {
+                    "name": h.biological_protocol.name,
+                    "active_molecule": h.biological_protocol.active_molecule,
+                    "dosage": h.biological_protocol.dosage,
+                    "mode_of_action": h.biological_protocol.mode_of_action,
+                    "pre_harvest_or_withdrawal_delay": h.biological_protocol.pre_harvest_or_withdrawal_delay,
+                    "approval_status": h.biological_protocol.approval_status
+                } if h.biological_protocol else None,
+                "chemical_or_veterinary_protocol": {
+                    "name": h.chemical_or_veterinary_protocol.name,
+                    "active_molecule": h.chemical_or_veterinary_protocol.active_molecule,
+                    "dosage": h.chemical_or_veterinary_protocol.dosage,
+                    "mode_of_action": h.chemical_or_veterinary_protocol.mode_of_action,
+                    "pre_harvest_or_withdrawal_delay": h.chemical_or_veterinary_protocol.pre_harvest_or_withdrawal_delay,
+                    "approval_status": h.chemical_or_veterinary_protocol.approval_status
+                } if h.chemical_or_veterinary_protocol else None,
+                "prophylactic_measures": h.prophylactic_measures,
+                "epidemiological_risk": h.epidemiological_risk
+            }
+
+        return {
+            "domain": res.domain.value,
+            "host_target": res.host_target,
+            "image_analyzed": res.image_analyzed,
+            "visual_features": visual_feat,
+            "primary_hypothesis": serialize_hypo(res.primary_hypothesis),
+            "differential_hypotheses": [serialize_hypo(h) for h in res.differential_hypotheses],
+            "uncertainty_level": res.uncertainty_level,
+            "field_confirmation_needed": res.field_confirmation_needed,
+            "clarification_questions": res.clarification_questions,
+            "technical_synthesis": res.technical_synthesis
         }
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))

@@ -45,6 +45,15 @@ def main():
     cad_parser.add_argument("--ridge-height", type=float, default=3.6, help="Hauteur faîtage en mètres")
     cad_parser.add_argument("--output-obj", default=None, help="Chemin d'export du fichier .obj")
 
+    # Diagnostic IA Pathologies (Végétal & Vétérinaire)
+    diag_parser = subparsers.add_parser("diagnose", help="Diagnostic différentiel réel des maladies des cultures et cheptels")
+    diag_parser.add_argument("--domain", default="vegetal", choices=["vegetal", "animal"], help="Domaine (vegetal ou animal)")
+    diag_parser.add_argument("--host", required=True, help="Hôte (mais, tomate, ovin, poulet_chair, bovin...)")
+    diag_parser.add_argument("--image", default=None, help="Chemin vers l'image de la lésion")
+    diag_parser.add_argument("--symptoms", default=None, help="Description textuelle des symptômes de terrain")
+    diag_parser.add_argument("--temp", type=float, default=33.0, help="Température ambiante")
+    diag_parser.add_argument("--humidity", type=float, default=65.0, help="Humidité relative")
+
     args = parser.parse_args()
 
     if args.command == "serve":
@@ -100,6 +109,41 @@ def main():
             with open(args.output_obj, "w", encoding="utf-8") as f:
                 f.write(res.mesh_obj_string)
             print(f"Fichier OBJ exporté avec succès vers : {args.output_obj}")
+
+    elif args.command == "diagnose":
+        from .ai_disease_diagnosis import AIDiseaseDiagnosticEngine, DomainType
+        engine = AIDiseaseDiagnosticEngine()
+        img_input = args.image if args.image else None
+        res = engine.diagnose(
+            domain=DomainType(args.domain),
+            host_target=args.host,
+            image_input=img_input,
+            observed_symptoms_text=args.symptoms,
+            field_temperature_c=args.temp,
+            field_humidity_pct=args.humidity
+        )
+        print("=" * 65)
+        print(f"RAPPORT IA DE DIAGNOSTIC PATHOLOGIQUE — NAFA AGRITECH")
+        print("=" * 65)
+        print(f"Cible : {res.host_target.upper()} (Domaine: {res.domain.value})")
+        print(f"Hypothèse principale : {res.primary_hypothesis.name_fr} ({res.primary_hypothesis.scientific_name})")
+        print(f"Plausibilité calculée : {res.primary_hypothesis.plausibility_score_pct}% ({res.primary_hypothesis.likelihood_rank.value})")
+        print(f"Agent pathogène : {res.primary_hypothesis.pathogen_kind.value}")
+        print(f"\nTEST DE CONFIRMATION TERRAIN IMPÉRATIF :")
+        print(f"-> {res.primary_hypothesis.recommended_field_test}")
+        if res.primary_hypothesis.biological_protocol:
+            b = res.primary_hypothesis.biological_protocol
+            print(f"\nProtocole Biologique / Agro-écologique :")
+            print(f"- {b.name} : {b.dosage} ({b.active_molecule})")
+        if res.primary_hypothesis.chemical_or_veterinary_protocol:
+            c = res.primary_hypothesis.chemical_or_veterinary_protocol
+            print(f"\nProtocole Conventionnel / Vétérinaire Homologué :")
+            print(f"- {c.name} : {c.dosage} (Délai : {c.pre_harvest_or_withdrawal_delay})")
+        if res.differential_hypotheses:
+            print(f"\nDiagnostics différentiels à surveiller :")
+            for diff in res.differential_hypotheses:
+                print(f"- {diff.name_fr} ({diff.scientific_name}) : {diff.plausibility_score_pct}%")
+        print("=" * 65)
 
     else:
         parser.print_help()
