@@ -167,7 +167,9 @@ export const FieldDesignerStudio: React.FC = () => {
       const next = !prev;
       try {
         localStorage.setItem("nafa_field_designer_fullscreen", String(next));
-      } catch {}
+      } catch {
+        // Ignorer l'erreur de stockage local
+      }
       return next;
     });
   };
@@ -178,7 +180,9 @@ export const FieldDesignerStudio: React.FC = () => {
         setIsFullscreenWorkspace(false);
         try {
           localStorage.setItem("nafa_field_designer_fullscreen", "false");
-        } catch {}
+        } catch {
+          // Ignorer l'erreur de stockage local
+        }
       }
     };
     window.addEventListener("keydown", handleKeyDown);

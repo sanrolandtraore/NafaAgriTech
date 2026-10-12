@@ -47,7 +47,9 @@ export function useDefaultLivestockFarm() {
         localStorage.setItem(storageKey, cached);
       }
       setFarmId(cached);
-    } catch (_e) {}
+    } catch {
+      // Ignorer l'erreur d'accès au localStorage
+    }
 
     // Only attempt remote sync if user.id is a valid UUID and we are online
     if (!user || !isValidUuid(user.id) || !navigator.onLine) {

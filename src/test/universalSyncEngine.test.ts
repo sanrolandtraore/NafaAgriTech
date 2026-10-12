@@ -14,7 +14,9 @@ describe("NAFA - AGRITECH : Système Universel de Synchronisation Partout", () =
     try {
       await db.offlineRecords.clear();
       await db.cachedEntities.clear();
-    } catch (_e) {}
+    } catch (_e) {
+      // Ignoré lors des tests si Dexie non instancié
+    }
   });
 
   it("calcule correctement le total cumulé des éléments en attente sur l'ensemble des datastores", async () => {

@@ -45,14 +45,18 @@ async function getCurrentUserId(): Promise<string | null> {
   try {
     const { data: { user } } = await supabase.auth.getUser();
     if (user?.id) return user.id;
-  } catch (_e) {}
+  } catch (_e) {
+    // Ignoré si Supabase auth inaccessible en mode hors-ligne
+  }
   try {
     const raw = typeof localStorage !== 'undefined' ? localStorage.getItem('nafa_session_v1') : null;
     if (raw) {
       const s = JSON.parse(raw);
       if (s?.userId) return s.userId;
     }
-  } catch (_e) {}
+  } catch (_e) {
+    // Ignoré si session locale invalide ou inaccessible
+  }
   return null;
 }
 

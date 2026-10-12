@@ -699,7 +699,7 @@ export function generateSmartFormTemplate(input: {
   let photos: InspectionRequiredPhotoRule[] = [];
   let measurements: InspectionMeasurementRule[] = [];
   let generates_plan = true;
-  let generates_quote = true;
+  const generates_quote = true;
 
   if (query.includes("irrig") || query.includes("goutte") || query.includes("eau") || query.includes("pompe") || query.includes("forage") || query.includes("pivot") || query.includes("bassin")) {
     category = "agriculture";

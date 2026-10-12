@@ -2585,7 +2585,7 @@ export function executeScientificDiagnosisPipeline(params: {
 
     // 3. Évaluation du contexte agronomique (Saison, Sol, Organe)
     const { scoreBonus, explanation } = evaluateAgronomicContext(context, disease);
-    let totalScore = symptomScore + scoreBonus + imageScoreBonus;
+    const totalScore = symptomScore + scoreBonus + imageScoreBonus;
 
     // 4. Bonus si un cas identique a été validé sur le terrain par un agronome
     const validatedBonus = localValidatedCases.some(

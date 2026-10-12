@@ -1193,7 +1193,9 @@ export function Studio3DFarmModeler({
         if (parsed.customGroundTextureUrl !== undefined)
           setCustomGroundTextureUrl(parsed.customGroundTextureUrl);
       }
-    } catch {}
+    } catch {
+      // Ignorer l'erreur de parsing local
+    }
   }, [activeFarm?.id]);
 
   // -------------------------------------------------------------
@@ -1780,7 +1782,9 @@ export function Studio3DFarmModeler({
           if (container && container.contains(renderer.domElement)) {
             container.removeChild(renderer.domElement);
           }
-        } catch {}
+        } catch {
+          // Ignorer l'erreur de nettoyage Three.js
+        }
       }
     };
   }, [renderMode, isRotating, updateCameraPosition]);

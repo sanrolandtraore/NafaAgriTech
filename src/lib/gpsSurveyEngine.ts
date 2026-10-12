@@ -106,7 +106,7 @@ export function calculateBearingDeg(
   const x =
     Math.cos(lat1) * Math.sin(lat2) -
     Math.sin(lat1) * Math.cos(lat2) * Math.cos(dLng);
-  let brng = (Math.atan2(y, x) * 180) / Math.PI;
+  const brng = (Math.atan2(y, x) * 180) / Math.PI;
   return Math.round(((brng + 360) % 360) * 10) / 10;
 }
 

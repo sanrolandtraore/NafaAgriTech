@@ -488,8 +488,8 @@ export function calculateFaoIrrigation(input: IrrigationInput): IrrigationDesign
   const areaHa = Math.max(0.1, input.areaHa);
   const crop = FAO_SAHEL_CROPS[input.cropKey] || FAO_SAHEL_CROPS.tomate;
 
-  let isUncertain = !isCropKnown || input.areaHa <= 0;
-  let requiresExpertValidation = isUncertain || input.areaHa > 20 || (input.waterTableDepthM !== undefined && input.waterTableDepthM > 100);
+  const isUncertain = !isCropKnown || input.areaHa <= 0;
+  const requiresExpertValidation = isUncertain || input.areaHa > 20 || (input.waterTableDepthM !== undefined && input.waterTableDepthM > 100);
 
   // ETo sahélien moyen selon saison (Bobo-Dioulasso / Ouagadougou / Koudougou)
   let dailyEtoMm = 6.5;

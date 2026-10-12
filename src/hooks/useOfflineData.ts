@@ -120,7 +120,9 @@ export function useOfflineData<T = any>({
     try {
       const { data } = await supabase.auth.getSession();
       if (data?.session?.user) return { session: data.session, isRemote: true };
-    } catch (_e) {}
+    } catch {
+      // Ignorer l'erreur réseau de session
+    }
 
     if (typeof localStorage !== 'undefined') {
       try {
@@ -134,7 +136,9 @@ export function useOfflineData<T = any>({
             };
           }
         }
-      } catch (_e) {}
+      } catch {
+        // Ignorer l'erreur de parsing local
+      }
     }
     return null;
   }, []);

@@ -55,7 +55,9 @@ export const maxItStorage = {
   clearRememberedAccount(): void {
     try {
       localStorage.removeItem(REMEMBERED_ACCOUNT_KEY);
-    } catch {}
+    } catch {
+      // Ignoré si localStorage inaccessible
+    }
   },
 };
 

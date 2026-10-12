@@ -104,7 +104,9 @@ export function broadcastDataChange(table: string, data?: any) {
         type: "DATA_MODIFIED",
         payload: { table, data, timestamp: Date.now() },
       });
-    } catch (_e) {}
+    } catch (_e) {
+      // Ignoré si BroadcastChannel fermé
+    }
   }
 }
 
@@ -127,16 +129,22 @@ export async function computeGlobalPendingCount(): Promise<{
       const { getSyncQueueCount } = await import("./offlineDb");
       offlineDbPending = await getSyncQueueCount(user.id);
     }
-  } catch (_e) {}
+  } catch (_e) {
+    // Ignoré si échec de récupération Supabase
+  }
 
   try {
     const dexieCounts = await getSyncCounts();
     dexiePending = dexieCounts.pending + dexieCounts.error;
-  } catch (_e) {}
+  } catch (_e) {
+    // Ignoré si Dexie indisponible
+  }
 
   try {
     fieldDesignerPending = await fieldDesignerStorage.getSyncQueueCount();
-  } catch (_e) {}
+  } catch (_e) {
+    // Ignoré si storage local indisponible
+  }
 
   const totalPending = offlineDbPending + dexiePending + fieldDesignerPending;
   return { totalPending, offlineDbPending, dexiePending, fieldDesignerPending };
@@ -226,7 +234,9 @@ export async function syncAllDatastores(options: { silent?: boolean } = {}): Pro
           type: "SYNC_TRIGGERED",
           payload: { synced: totalSynced, timestamp: Date.now() },
         });
-      } catch (_e) {}
+      } catch (_e) {
+        // Ignoré si BroadcastChannel fermé
+      }
     }
 
     if (!options.silent) {

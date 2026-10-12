@@ -117,7 +117,9 @@ export function UniversalNafaCopilotWidget() {
     isDraggingRef.current = false;
     try {
       (e.currentTarget as HTMLElement).releasePointerCapture(e.pointerId);
-    } catch {}
+    } catch {
+      // Ignorer si la capture du pointeur n'est plus active
+    }
 
     if (movedRef.current) {
       if (pos) {

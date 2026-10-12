@@ -36,7 +36,9 @@ const safeRevokeObjectUrl = (url: string): void => {
   if (typeof URL !== "undefined" && typeof URL.revokeObjectURL === "function") {
     try {
       URL.revokeObjectURL(url);
-    } catch {}
+    } catch {
+      // Ignoré en environnement hors DOM ou URL révoquée
+    }
   }
 };
 

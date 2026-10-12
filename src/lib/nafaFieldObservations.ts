@@ -285,7 +285,9 @@ export const nafaFieldObservationsStorage = {
             gps_data: newObs.gps,
           } as any)
       ).catch(() => {});
-    } catch {}
+    } catch {
+      // Ignoré si réseau non connecté ou table indisponible
+    }
 
     return newObs;
   },

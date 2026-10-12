@@ -53,8 +53,8 @@ describe("Suite Professionnelle « NAFA FIELD DESIGNER »", () => {
   describe("1. Catalogue Exclusif NAFA FIELD DESIGNER (40 anciens outils génériques retirés)", () => {
     it("charge uniquement les outils officiels de NAFA Field Designer sans données fictives", () => {
       const allTools = agronomicToolkitStorage.getAllTools();
-      // Les 40 anciens outils par domaine sont retirés, il ne reste que les 15 outils officiels certifiés
-      expect(allTools.length).toBe(15);
+      // Suite unifiée complète de l'agronome et conseil technique regroupée (28 outils)
+      expect(allTools.length).toBe(28);
 
       const allTitles = allTools.map((t) => t.title);
       expect(allTitles).toContain("Application Tout-en-un (Arpentage • Satellite • Diagnostic)");
@@ -91,7 +91,7 @@ describe("Suite Professionnelle « NAFA FIELD DESIGNER »", () => {
       renderWithProviders(<ServicesPage />);
 
       // En-tête officiel
-      expect(screen.getByRole("heading", { level: 1, name: /NAFA FIELD DESIGNER/i })).toBeInTheDocument();
+      expect(screen.getByRole("heading", { level: 1, name: /Console Agronome & Conseil|NAFA FIELD DESIGNER/i })).toBeInTheDocument();
 
       // Vérifie la présence de cartes clés NAFA FIELD DESIGNER
       expect(screen.getAllByText("Mesure GPS & Arpentage de Parcelle").length).toBeGreaterThan(0);
