@@ -98,6 +98,7 @@ export const agronomeNav: NavItem[] = [
 /** 4. Profil Partenaire : Clinique Vétérinaire, Santé Animale & Zootechnie (Console Vétérinaire Unifiée) */
 export const veterinaireNav: NavItem[] = [
   { to: "/dashboard", labelKey: "Console Clinique Vétérinaire", icon: LayoutDashboard },
+  { to: "/dashboard/veterinaire-hub", labelKey: "Bloc Clinique Tout-en-un", icon: Sparkles },
   // Pôle 1 : Actes Cliniques & Terrain
   { to: "/dashboard/animal-counting", labelKey: "Comptage & Densité d'Élevage", icon: Camera, section: "Actes Cliniques & Terrain" },
   { to: "/dashboard/interventions", labelKey: "Interventions & Soins terrain", icon: Activity, section: "Actes Cliniques & Terrain" },
@@ -257,6 +258,7 @@ export const getNavLabel = (item: NavItem, t?: (key: string) => string): string 
     "Console Agronome & Conseil": "Console Agronome & Conseil",
     "Diagnostic & Prescriptions": "Diagnostic & Prescriptions",
     "Console Clinique Vétérinaire": "Console Clinique Vétérinaire",
+    "Bloc Clinique Tout-en-un": "Bloc Clinique Tout-en-un",
   };
 
   if (dictionary[key]) {

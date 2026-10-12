@@ -70,10 +70,12 @@ const REGIONS = [
 ];
 
 const LivestockServicesPage = () => {
-  const { user, profile, partnerType } = useAuth();
+  const { user, profile, partnerType, primaryRole } = useAuth();
   const [activeTab, setActiveTab] = useState<"catalogue" | "reservations">("catalogue");
   const [partners, setPartners] = useState<VeterinaryPartner[]>([]);
   const [loading, setLoading] = useState(true);
+
+  const isAgriculteur = primaryRole === "agriculteur" || primaryRole === "farmer";
 
   // Filtres
   const [search, setSearch] = useState("");
@@ -226,6 +228,31 @@ const LivestockServicesPage = () => {
     toast.success("Demande de devis transmise au cabinet vétérinaire !");
     setQuoteModalOpen(false);
   };
+
+  if (isAgriculteur) {
+    return (
+      <div className="max-w-2xl mx-auto px-4 py-16 text-center space-y-6 animate-fade-in">
+        <div className="h-16 w-16 mx-auto rounded-3xl bg-amber-500/10 border-2 border-amber-500/20 flex items-center justify-center text-amber-600">
+          <Stethoscope className="h-8 w-8" />
+        </div>
+        <div className="space-y-2">
+          <h1 className="text-2xl font-bold font-heading text-foreground">
+            Catalogue Vétérinaire Réservé aux Éleveurs
+          </h1>
+          <p className="text-sm text-muted-foreground leading-relaxed">
+            Le catalogue des prestations et actes médicaux vétérinaires est accessible exclusivement aux exploitants d'élevage et éleveurs pastoraux.
+            En tant qu'agriculteur, accédez directement à votre marché de semences, engrais et travaux agricoles.
+          </p>
+        </div>
+        <Button asChild className="gradient-primary text-primary-foreground font-bold shadow-md">
+          <Link to="/dashboard/marketplace">
+            Accéder à mon Marché des Services Agricoles
+            <ArrowRight className="h-4 w-4 ml-2" />
+          </Link>
+        </Button>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-8 max-w-7xl mx-auto px-4 py-6 animate-fade-in pb-20">

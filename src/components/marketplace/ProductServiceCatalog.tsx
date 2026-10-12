@@ -49,16 +49,27 @@ export interface ProductServiceCatalogProps {
   compact?: boolean;
 }
 
-const CATEGORY_TABS = [
-  { value: "all", label: "Toutes les offres", icon: Layers },
+export const AGRICULTEUR_CATEGORY_TABS = [
+  { value: "all", label: "Toutes les offres Agricoles", icon: Layers },
   { value: "intrants", label: "Intrants & Engrais", match: ["intrants"], icon: FlaskConical },
   { value: "semences", label: "Semences Certifiées", match: ["semences"], icon: Sprout },
-  { value: "aliments_elevage", label: "Aliments Bétail", match: ["aliments_elevage", "elevage"], icon: Wheat },
-  { value: "sante_veterinaire", label: "Soins Vétérinaires", match: ["sante_veterinaire", "sante_animale"], icon: Syringe },
-  { value: "materiel", label: "Matériel & Équipements", match: ["materiel", "materiel_elevage"], icon: Tractor },
-  { value: "services", label: "Services & Travaux", match: ["services", "services_elevage", "service"], icon: Wrench },
-  { value: "finance", label: "Financement & Assurance", match: ["finance", "assurance", "banque"], icon: Landmark },
-  { value: "mes_commandes", label: "Mes Commandes", isOrders: true, icon: ClipboardList },
+  { value: "materiel", label: "Matériel & Machinisme", match: ["materiel", "machinisme"], icon: Tractor },
+  { value: "services", label: "Travaux & Prestations", match: ["services", "travaux", "service"], icon: Wrench },
+  { value: "finance", label: "Financement & Assurance Récolte", match: ["finance", "assurance", "banque"], icon: Landmark },
+  { value: "mes_commandes", label: "Mes Commandes Agricoles", isOrders: true, icon: ClipboardList },
+];
+
+export const AGRICULTEUR_ALLOWED_CATEGORIES = [
+  "intrants",
+  "semences",
+  "materiel",
+  "machinisme",
+  "services",
+  "travaux",
+  "service",
+  "finance",
+  "assurance",
+  "banque",
 ];
 
 export const LIVESTOCK_ALLOWED_CATEGORIES = [
@@ -68,9 +79,7 @@ export const LIVESTOCK_ALLOWED_CATEGORIES = [
   "sante_animale",
   "veterinaire",
   "materiel_elevage",
-  "materiel",
   "services_elevage",
-  "service",
   "finance",
   "assurance",
   "banque",
@@ -80,7 +89,7 @@ export const LIVESTOCK_CATEGORY_TABS = [
   { value: "all", label: "Toutes les offres Élevage", icon: Layers },
   { value: "aliments_elevage", label: "Aliments Bétail & Provendes", match: ["aliments_elevage", "elevage"], icon: Wheat },
   { value: "sante_veterinaire", label: "Soins Vétérinaires & Vaccins", match: ["sante_veterinaire", "sante_animale", "veterinaire"], icon: Syringe },
-  { value: "materiel", label: "Matériel d'Élevage", match: ["materiel_elevage", "materiel"], icon: Package },
+  { value: "materiel", label: "Matériel d'Élevage & Abreuvoirs", match: ["materiel_elevage"], icon: Package },
   { value: "services", label: "Services Pastoraux", match: ["services_elevage", "service"], icon: Wrench },
   { value: "finance", label: "Financement & Assurance Bétail", match: ["finance", "assurance", "banque"], icon: Landmark },
   { value: "mes_commandes", label: "Mes Commandes d'Élevage", isOrders: true, icon: ClipboardList },
@@ -170,16 +179,32 @@ export default function ProductServiceCatalog({
     }
   }, [profile]);
 
-  const isEleveur = defaultRole === "eleveur";
-  const activeCategoryTabs = isEleveur ? LIVESTOCK_CATEGORY_TABS : CATEGORY_TABS;
+  const isEleveur = defaultRole === "eleveur" || profile?.primary_role === "eleveur";
+  const isAgriculteur = defaultRole === "agriculteur" || profile?.primary_role === "agriculteur" || (!isEleveur && defaultRole !== "all");
+  const activeCategoryTabs = isEleveur ? LIVESTOCK_CATEGORY_TABS : AGRICULTEUR_CATEGORY_TABS;
 
   const relevantOffers = useMemo(() => {
-    if (!isEleveur) return offers;
+    if (isEleveur) {
+      return offers.filter((o) => {
+        if (o.category === "semences" || o.category === "intrants" || o.category === "machinisme") return false;
+        return LIVESTOCK_ALLOWED_CATEGORIES.includes(o.category);
+      });
+    }
+    // Agriculteur ou général : STRICTEMENT agricole, AUCUN soin vétérinaire ou provende
     return offers.filter((o) => {
-      if (o.category === "semences" || o.category === "intrants") return false;
-      return LIVESTOCK_ALLOWED_CATEGORIES.includes(o.category);
+      const isLivestockCategory = [
+        "aliments_elevage",
+        "elevage",
+        "sante_veterinaire",
+        "sante_animale",
+        "veterinaire",
+        "materiel_elevage",
+        "services_elevage",
+      ].includes(o.category);
+      if (isLivestockCategory) return false;
+      return AGRICULTEUR_ALLOWED_CATEGORIES.includes(o.category);
     });
-  }, [offers, isEleveur]);
+  }, [offers, isEleveur, isAgriculteur]);
 
   const filteredOffers = useMemo(() => {
     return relevantOffers.filter((o) => {

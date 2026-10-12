@@ -285,3 +285,222 @@ export function calculateHydraulics(input: HydraulicInput): HydraulicResult {
     warnings,
   };
 }
+
+// ══════════════════════════════════════════════════════════════════════
+// EXTENSIONS INDUSTRIELLES : PERTES SINGULIÈRES, SOLAIRE ET CAVITATION
+// ══════════════════════════════════════════════════════════════════════
+
+/** Coefficients de pertes singulières K normalisés (ISO / Darcy-Weisbach) */
+export const FITTING_K_FACTORS = {
+  coude_90: 0.90,
+  coude_45: 0.42,
+  te_passage_direct: 0.35,
+  te_derivation: 1.50,
+  clapet_anti_retour: 2.50,
+  vanne_passage_direct: 0.20,
+  vanne_papillon: 0.80,
+  filtre_tamis_disques: 3.00,
+  reduction: 0.45,
+} as const;
+
+export type FittingType = keyof typeof FITTING_K_FACTORS;
+
+export interface FittingLossItem {
+  type: FittingType;
+  count: number;
+}
+
+/**
+ * Calcule la perte de charge singulière totale hs = sum(K) * (v² / (2*g)) en mCE.
+ * @param velocity Vitesse d'écoulement v en m/s
+ * @param fittings Liste des raccords et accessoires
+ */
+export function calculateSingularLossesFromFittings(
+  velocity: number,
+  fittings: FittingLossItem[]
+): number {
+  if (velocity <= 0 || !fittings || fittings.length === 0) return 0;
+  const g = 9.80665;
+  const dynamicHead = (velocity * velocity) / (2 * g);
+
+  let totalK = 0;
+  for (const item of fittings) {
+    const k = FITTING_K_FACTORS[item.type] ?? 0.5;
+    totalK += k * Math.max(0, item.count);
+  }
+
+  return Math.round(totalK * dynamicHead * 100) / 100;
+}
+
+export interface SolarPumpingSizingInput {
+  /** Besoin volumique journalier en m³/jour */
+  dailyVolumeM3: number;
+  /** Hauteur Manométrique Totale en mCE */
+  hmtMce: number;
+  /** Ensoleillement moyen en Heures Plein Soleil (HSP en h/jour, défaut 5.5 au Sahel) */
+  peakSunHours?: number;
+  /** Température ambiante moyenne en °C (défaut 38°C sous climat sahélien) */
+  ambientTemperatureC?: number;
+  /** Rendement global groupe motopompe (pompe + moteur brushless DC, défaut 0.62) */
+  motorPumpEfficiency?: number;
+  /** Rendement onduleur/variateur solaire (défaut 0.95) */
+  inverterEfficiency?: number;
+  /** Perte par poussière harmattan & salissure (défaut 0.05 soit 5%) */
+  dirtLossFactor?: number;
+  /** Puissance unitaire d'un panneau solaire standard en Wc (défaut 550 Wc) */
+  panelNominalPowerW?: number;
+}
+
+export interface SolarPumpingSizingResult {
+  /** Énergie hydraulique nette quotidienne requise en kWh/jour */
+  hydraulicEnergyKwhPerDay: number;
+  /** Énergie électrique journalière requise en kWh/jour */
+  electricalEnergyKwhPerDay: number;
+  /** Puissance crête photovoltaïque théorique minimale en Watts-Crête (Wc) */
+  theoreticalPeakPowerWc: number;
+  /** Ratio de performance globale du générateur solaire (PR sans dimension) */
+  performanceRatio: number;
+  /** Puissance crête photovoltaïque réelle recommandée avec marges thermiques et poussière en Wc */
+  recommendedPeakPowerWc: number;
+  /** Nombre de panneaux solaires nécessaires (ex: modules 550Wc) */
+  installedPanelsCount: number;
+  /** Puissance totale installée en Wc */
+  installedTotalPowerWc: number;
+  /** Débit horaire moyen de pompage au fil du soleil en m³/h */
+  averagePumpFlowRateM3h: number;
+  /** Puissance nominale du moteur requise en kW */
+  pumpMotorPowerKw: number;
+  /** Puissance nominale en CV / HP */
+  pumpMotorPowerHp: number;
+}
+
+/**
+ * Dimensionne un système de pompage solaire photovoltaïque au fil du soleil calibré pour le Sahel.
+ * Prend en compte l'irradiance HSP, les coefficients thermiques de cellules à haute température (> 40°C),
+ * et les pertes d'harmattan.
+ */
+export function calculateSolarPumpingSizing(
+  input: SolarPumpingSizingInput
+): SolarPumpingSizingResult {
+  const dailyV = Math.max(0.1, input.dailyVolumeM3);
+  const hmt = Math.max(1.0, input.hmtMce);
+  const hsp = Math.max(3.0, input.peakSunHours || 5.5);
+  const tAmb = input.ambientTemperatureC !== undefined ? input.ambientTemperatureC : 38;
+  const etaPump = input.motorPumpEfficiency || 0.62;
+  const etaInv = input.inverterEfficiency || 0.95;
+  const dirtLoss = input.dirtLossFactor !== undefined ? input.dirtLossFactor : 0.05;
+  const panelW = input.panelNominalPowerW || 550;
+
+  // 1. Énergie hydraulique requise : E_hydr = (rho * g * V * HMT) / (3.6e6) en kWh/jour
+  // rho * g = 9810 N/m³ -> 9810 * V * HMT / 3600000 = (2.725e-3) * V * HMT
+  const hydraulicEnergyKwhPerDay = (dailyV * hmt * 9.81) / 3600;
+
+  // 2. Dégradation thermique sous climat sahélien
+  // Température cellule estimée : T_cell = T_amb + ((NOCT - 20) / 800) * G (NOCT ~ 45°C)
+  const tCell = tAmb + 28; // Typiquement ~66°C à midi sous 1000 W/m²
+  const gammaTemp = -0.004; // -0.40% par °C au-delà de 25°C
+  const tempLoss = Math.max(0, (tCell - 25) * Math.abs(gammaTemp)); // ~16.4% de perte thermique
+
+  // 3. Performance Ratio réel
+  const performanceRatio = (1 - tempLoss) * (1 - dirtLoss) * etaInv;
+
+  // 4. Énergie électrique quotidienne requise
+  const electricalEnergyKwhPerDay = hydraulicEnergyKwhPerDay / etaPump;
+
+  // 5. Puissance crête théorique et recommandée
+  const theoreticalPeakPowerWc = (electricalEnergyKwhPerDay / hsp) * 1000;
+  const recommendedPeakPowerWc = (theoreticalPeakPowerWc / performanceRatio);
+
+  // 6. Nombre de panneaux (arrondi supérieur)
+  const installedPanelsCount = Math.max(2, Math.ceil(recommendedPeakPowerWc / panelW));
+  const installedTotalPowerWc = installedPanelsCount * panelW;
+
+  // 7. Débit moyen pendant les heures d'ensoleillement
+  const averagePumpFlowRateM3h = Math.round((dailyV / hsp) * 10) / 10;
+
+  // 8. Puissance moteur mécanique
+  const pumpMotorPowerKw = Math.round(((averagePumpFlowRateM3h * hmt * 9.81) / (3600 * etaPump)) * 10) / 10;
+  const pumpMotorPowerHp = Math.round(pumpMotorPowerKw * 1.341 * 10) / 10;
+
+  return {
+    hydraulicEnergyKwhPerDay: Math.round(hydraulicEnergyKwhPerDay * 100) / 100,
+    electricalEnergyKwhPerDay: Math.round(electricalEnergyKwhPerDay * 100) / 100,
+    theoreticalPeakPowerWc: Math.round(theoreticalPeakPowerWc),
+    performanceRatio: Math.round(performanceRatio * 100) / 100,
+    recommendedPeakPowerWc: Math.round(recommendedPeakPowerWc),
+    installedPanelsCount,
+    installedTotalPowerWc,
+    averagePumpFlowRateM3h,
+    pumpMotorPowerKw,
+    pumpMotorPowerHp,
+  };
+}
+
+export interface NpshAnalysisInput {
+  /** Température de l'eau en °C (défaut 28°C au Sahel) */
+  waterTemperatureC?: number;
+  /** Altitude de l'installation en mètres (défaut 300m au Burkina Faso) */
+  altitudeM?: number;
+  /** Hauteur géométrique d'aspiration en mètres (distance verticale eau -> axe pompe) */
+  suctionLiftM: number;
+  /** Pertes de charge cumulées dans la tuyauterie d'aspiration en mCE */
+  suctionFrictionLossMce: number;
+  /** NPSH requis fourni par le fabricant de la pompe en mètres (NPSHr, défaut 3.2 m) */
+  npshRequiredM?: number;
+}
+
+export interface NpshAnalysisResult {
+  /** Pression atmosphérique locale Patm en mCE */
+  atmosphericPressureMce: number;
+  /** Pression de vapeur saturante Pv en mCE */
+  vaporPressureMce: number;
+  /** NPSH disponible net (NPSHa) en mètres */
+  npshAvailableM: number;
+  /** NPSH requis (NPSHr) en mètres */
+  npshRequiredM: number;
+  /** Marge de sécurité (NPSHa - NPSHr) en mètres */
+  safetyMarginM: number;
+  /** Risque avéré de cavitation */
+  isCavitationRisk: boolean;
+  /** Recommandation technique d'ingénierie */
+  recommendation: string;
+}
+
+/**
+ * Évalue la cavitation d'une pompe selon le critère NPSHa >= NPSHr + 0.5m.
+ */
+export function calculateNpshAnalysis(input: NpshAnalysisInput): NpshAnalysisResult {
+  const alt = input.altitudeM !== undefined ? input.altitudeM : 300;
+  const temp = input.waterTemperatureC !== undefined ? input.waterTemperatureC : 28;
+  const suctionLift = Math.max(0, input.suctionLiftM);
+  const frictionLoss = Math.max(0, input.suctionFrictionLossMce);
+  const npshr = input.npshRequiredM !== undefined ? input.npshRequiredM : 3.2;
+
+  // 1. Pression atmosphérique en fonction de l'altitude : Patm = 10.33 * exp(-alt / 8400) en mCE
+  const atmosphericPressureMce = Math.round(10.33 * Math.exp(-alt / 8400) * 100) / 100;
+
+  // 2. Pression de vapeur saturante de l'eau (formule d'Antoine)
+  // Pv en kPa convertie en mCE (1 kPa = 0.10197 mCE)
+  const pvKpa = 0.61078 * Math.exp((17.27 * temp) / (temp + 237.3));
+  const vaporPressureMce = Math.round(pvKpa * 0.10197 * 100) / 100;
+
+  // 3. NPSHa = Patm - SuctionLift - SuctionLoss - Pv
+  const npshAvailableM = Math.round((atmosphericPressureMce - suctionLift - frictionLoss - vaporPressureMce) * 100) / 100;
+  const safetyMarginM = Math.round((npshAvailableM - npshr) * 100) / 100;
+  const isCavitationRisk = safetyMarginM < 0.5;
+
+  let recommendation = "Installation conforme : marge de cavitation sécurisée.";
+  if (isCavitationRisk) {
+    recommendation = `Alerte cavitation (Marge : ${safetyMarginM.toFixed(2)} m < 0.5 m recommandé) : risque de destruction des aubes de la turbine et de bruit intense. Rapprochez la pompe de l'eau, augmentez le diamètre d'aspiration ou utilisez une pompe immergée.`;
+  }
+
+  return {
+    atmosphericPressureMce,
+    vaporPressureMce,
+    npshAvailableM,
+    npshRequiredM: npshr,
+    safetyMarginM,
+    isCavitationRisk,
+    recommendation,
+  };
+}

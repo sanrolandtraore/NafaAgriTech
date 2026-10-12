@@ -84,7 +84,7 @@ export default function AnimalCountingPage() {
 
   // --- ÉTAT DU MODE 2 : ÉCHANTILLONNAGE PAR QUADRATS (NORME FAO) ---
   const [quadratSizeM2, setQuadratSizeM2] = useState<number>(1);
-  const [quadratCounts, setQuadratCounts] = useState<number[]>([12, 10, 11]);
+  const [quadratCounts, setQuadratCounts] = useState<number[]>([]);
 
   // --- ÉTAT DU MODE 3 : COMPTEUR DE PASSAGE (TALLY COUNTER) ---
   const [tallyCategories, setTallyCategories] = useState<{
@@ -1040,7 +1040,7 @@ export default function AnimalCountingPage() {
                       <Button
                         size="sm"
                         variant="outline"
-                        onClick={() => setQuadratCounts((prev) => [...prev, Math.round(quadratResult.averageCountPerQuadrat || 10)])}
+                        onClick={() => setQuadratCounts((prev) => [...prev, 0])}
                         className="h-7 text-xs gap-1 border-sky-600 text-sky-700 dark:text-sky-400"
                       >
                         <Plus className="h-3.5 w-3.5" />
@@ -1048,26 +1048,45 @@ export default function AnimalCountingPage() {
                       </Button>
                     </div>
 
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                      {quadratCounts.map((count, idx) => (
-                        <div
-                          key={idx}
-                          className="flex items-center justify-between p-2.5 rounded-lg border bg-card text-xs"
+                    {quadratCounts.length === 0 ? (
+                      <div className="p-4 rounded-xl border border-dashed border-sky-300 dark:border-sky-800 bg-sky-50/50 dark:bg-sky-950/20 text-center space-y-2">
+                        <Grid3X3 className="h-7 w-7 mx-auto text-sky-600" />
+                        <p className="text-xs font-semibold text-foreground">
+                          Aucun relevé de quadrat témoin saisi
+                        </p>
+                        <p className="text-[11px] text-muted-foreground max-w-sm mx-auto">
+                          Posez un cadre de 1 m² dans votre enclos et comptez les animaux à l'intérieur. Ajoutez au moins 3 relevés pour un calcul représentatif.
+                        </p>
+                        <Button
+                          size="sm"
+                          variant="secondary"
+                          onClick={() => setQuadratCounts([0])}
+                          className="text-xs gap-1.5 h-8 font-bold"
                         >
-                          <span className="font-semibold text-muted-foreground">Quadrat N° {idx + 1} :</span>
-                          <div className="flex items-center gap-2">
-                            <Input
-                              type="number"
-                              min={0}
-                              value={count}
-                              onChange={(e) => {
-                                const val = Math.max(0, Number(e.target.value) || 0);
-                                setQuadratCounts((prev) => prev.map((c, i) => (i === idx ? val : c)));
-                              }}
-                              className="h-8 w-20 text-center font-mono font-bold"
-                            />
-                            <span className="text-[11px] text-muted-foreground">sujets</span>
-                            {quadratCounts.length > 1 && (
+                          <Plus className="h-3.5 w-3.5" />
+                          Saisir mon premier relevé
+                        </Button>
+                      </div>
+                    ) : (
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                        {quadratCounts.map((count, idx) => (
+                          <div
+                            key={idx}
+                            className="flex items-center justify-between p-2.5 rounded-lg border bg-card text-xs"
+                          >
+                            <span className="font-semibold text-muted-foreground">Quadrat N° {idx + 1} :</span>
+                            <div className="flex items-center gap-2">
+                              <Input
+                                type="number"
+                                min={0}
+                                value={count}
+                                onChange={(e) => {
+                                  const val = Math.max(0, Number(e.target.value) || 0);
+                                  setQuadratCounts((prev) => prev.map((c, i) => (i === idx ? val : c)));
+                                }}
+                                className="h-8 w-20 text-center font-mono font-bold"
+                              />
+                              <span className="text-[11px] text-muted-foreground">sujets</span>
                               <Button
                                 size="icon"
                                 variant="ghost"
@@ -1076,11 +1095,11 @@ export default function AnimalCountingPage() {
                               >
                                 <Trash2 className="h-3.5 w-3.5" />
                               </Button>
-                            )}
+                            </div>
                           </div>
-                        </div>
-                      ))}
-                    </div>
+                        ))}
+                      </div>
+                    )}
                   </div>
                 </CardContent>
               </Card>
