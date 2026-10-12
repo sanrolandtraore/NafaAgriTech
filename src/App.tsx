@@ -114,6 +114,7 @@ const PartnerInvoicesPage = lazy(() => import("./pages/dashboard/partenaire/Part
 const GpsSurveyPage = lazy(() => import("./pages/dashboard/GpsSurveyPage"));
 const FieldSuiteAllInOnePage = lazy(() => import("./pages/dashboard/FieldSuiteAllInOnePage"));
 const ExpertDiagnosisPage = lazy(() => import("./pages/dashboard/expert/ExpertDiagnosisPage"));
+const VeterinaireHubPage = lazy(() => import("./pages/dashboard/veterinaire/VeterinaireHubPage"));
 
 import PageLoader from "@/components/PageLoader";
 import { startUniversalSyncEngine } from "@/lib/universalSyncEngine";
@@ -220,6 +221,7 @@ const App = () => {
                   <Route path="animal-counting" element={<Suspense fallback={<PageLoader />}><AnimalCountingPage /></Suspense>} />
                   <Route path="poultry-counting" element={<Suspense fallback={<PageLoader />}><AnimalCountingPage /></Suspense>} />
                 </Route>
+                <Route path="veterinaire-hub" element={<Suspense fallback={<PageLoader />}><VeterinaireHubPage /></Suspense>} />
                 <Route path="marketplace" element={<Suspense fallback={<PageLoader />}><ServiceMarketplacePage /></Suspense>} />
                 <Route path="expert-cartography" element={<Suspense fallback={<PageLoader />}><ExpertCartographyPage /></Suspense>} />
                 <Route path="field-suite" element={<Suspense fallback={<PageLoader />}><FieldSuiteAllInOnePage /></Suspense>} />

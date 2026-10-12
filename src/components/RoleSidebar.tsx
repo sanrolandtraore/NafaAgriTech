@@ -95,21 +95,24 @@ export const agronomeNav: NavItem[] = [
   { to: "/dashboard/settings", labelKey: "Paramètres", icon: Settings, section: "Visibilité & Gestion" },
 ];
 
-/** 4. Profil Partenaire : Clinique Vétérinaire, Santé Animale & Zootechnie (Prestations Vétérinaires) */
+/** 4. Profil Partenaire : Clinique Vétérinaire, Santé Animale & Zootechnie (Console Vétérinaire Unifiée) */
 export const veterinaireNav: NavItem[] = [
-  { to: "/dashboard", labelKey: "Tableau de bord", icon: LayoutDashboard },
-  { to: "/dashboard/partner-space", labelKey: "Mon Espace Partenaire (Offres & Devis)", icon: Building2, section: "Visibilité & Gestion" },
-  { to: "/dashboard/livestock-services", labelKey: "Catalogue & Réservations Vétérinaires", icon: ClipboardList, section: "Prestations Vétérinaires" },
-  { to: "/dashboard/animal-counting", labelKey: "Comptage & Densité d'Élevage", icon: Camera, section: "Prestations Vétérinaires" },
-  { to: "/dashboard/partenaire-mes-offres", labelKey: "Mes Services & Prestations", icon: Store, section: "Prestations Vétérinaires" },
-  { to: "/dashboard/interventions", labelKey: "Interventions & Soins terrain", icon: Activity, section: "Prestations Vétérinaires" },
-  { to: "/dashboard/quote-requests", labelKey: "Demandes de devis & Réservations", icon: FileText, section: "Prestations Vétérinaires" },
-  { to: "/dashboard/partenaire-factures", labelKey: "Facturation & Proformas", icon: Receipt, section: "Prestations Vétérinaires" },
-  { to: "/dashboard/provider-clients", labelKey: "Portefeuille Éleveurs & Clients", icon: Users, section: "Prestations Vétérinaires" },
-  { to: "/dashboard/revenus", labelKey: "Chiffre d'affaires & Règlements", icon: Wallet, section: "Prestations Vétérinaires" },
-  { to: "/dashboard/partenaire-kyc", labelKey: "Agrément & Vérification Ordre", icon: BadgeCheck, section: "Visibilité & Gestion" },
-  { to: "/dashboard/partenaire-abonnement", labelKey: "Abonnement partenaire", icon: Sparkles, section: "Visibilité & Gestion" },
-  { to: "/dashboard/settings", labelKey: "Paramètres", icon: Settings, section: "Visibilité & Gestion" },
+  { to: "/dashboard", labelKey: "Console Clinique Vétérinaire", icon: LayoutDashboard },
+  // Pôle 1 : Actes Cliniques & Terrain
+  { to: "/dashboard/animal-counting", labelKey: "Comptage & Densité d'Élevage", icon: Camera, section: "Actes Cliniques & Terrain" },
+  { to: "/dashboard/interventions", labelKey: "Interventions & Soins terrain", icon: Activity, section: "Actes Cliniques & Terrain" },
+  { to: "/dashboard/livestock-services", labelKey: "Catalogue & Réservations Vétérinaires", icon: ClipboardList, section: "Actes Cliniques & Terrain" },
+  { to: "/dashboard/partenaire-mes-offres", labelKey: "Mes Services & Prestations", icon: Store, section: "Actes Cliniques & Terrain" },
+  // Pôle 2 : Dossiers Éleveurs & Facturation
+  { to: "/dashboard/provider-clients", labelKey: "Portefeuille Éleveurs & Clients", icon: Users, section: "Dossiers Éleveurs & Facturation" },
+  { to: "/dashboard/quote-requests", labelKey: "Demandes de devis & Réservations", icon: FileText, section: "Dossiers Éleveurs & Facturation" },
+  { to: "/dashboard/partenaire-factures", labelKey: "Facturation & Proformas", icon: Receipt, section: "Dossiers Éleveurs & Facturation" },
+  { to: "/dashboard/revenus", labelKey: "Chiffre d'affaires & Règlements", icon: Wallet, section: "Dossiers Éleveurs & Facturation" },
+  // Pôle 3 : Conformité & Compte
+  { to: "/dashboard/partner-space", labelKey: "Mon Espace Partenaire (Offres & Devis)", icon: Building2, section: "Conformité & Compte" },
+  { to: "/dashboard/partenaire-kyc", labelKey: "Agrément & Vérification Ordre", icon: BadgeCheck, section: "Conformité & Compte" },
+  { to: "/dashboard/partenaire-abonnement", labelKey: "Abonnement partenaire", icon: Sparkles, section: "Conformité & Compte" },
+  { to: "/dashboard/settings", labelKey: "Paramètres", icon: Settings, section: "Conformité & Compte" },
 ];
 
 /** 5. Profil Partenaire : Banque, Microfinance & Assurance Agricole (Finance & Assurance exclusivement) */
@@ -252,6 +255,7 @@ export const getNavLabel = (item: NavItem, t?: (key: string) => string): string 
     "Facturation & Proformas": "Facturation & Proformas",
     "Console Agronome & Conseil": "Console Agronome & Conseil",
     "Diagnostic & Prescriptions": "Diagnostic & Prescriptions",
+    "Console Clinique Vétérinaire": "Console Clinique Vétérinaire",
   };
 
   if (dictionary[key]) {

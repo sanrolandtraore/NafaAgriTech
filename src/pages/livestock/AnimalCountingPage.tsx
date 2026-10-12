@@ -36,6 +36,7 @@ import {
   RefreshCw,
   ZoomIn,
   ZoomOut,
+  Scale,
 } from "lucide-react";
 
 import {
@@ -47,6 +48,7 @@ import {
   LIVESTOCK_DENSITY_STANDARDS,
   calculateQuadratSampling,
   QuadratSamplingResult,
+  calculateZootechnicRequirements,
 } from "@/lib/livestockVisionCounter";
 import { livestockCountStorage, LivestockCountRecord } from "@/lib/livestockCountStorage";
 import { generateLivestockCountPdf } from "@/lib/livestockCountPdf";
@@ -302,7 +304,7 @@ export default function AnimalCountingPage() {
     };
   };
 
-  // 6. Pointage interactif par clic sur l'image (Click-to-Tag)
+  // 6. Pointage interactif par clic sur l'image (Click-to-Tag & Suppression d'artefact)
   const handleImageClick = (e: React.MouseEvent<HTMLDivElement>) => {
     if (!imageContainerRef.current) return;
     const rect = imageContainerRef.current.getBoundingClientRect();
@@ -312,20 +314,42 @@ export default function AnimalCountingPage() {
     const relX = Math.max(0, Math.min(1, clickX / rect.width));
     const relY = Math.max(0, Math.min(1, clickY / rect.height));
 
-    // Vérifier si on clique sur un marqueur existant pour le supprimer
+    // 1. Vérifier si on clique sur un marqueur manuel existant pour le supprimer
     const existingIndex = interactiveMarkers.findIndex((m) => {
       const distX = Math.abs(m.x - relX) * rect.width;
       const distY = Math.abs(m.y - relY) * rect.height;
-      return Math.hypot(distX, distY) < 18;
+      return Math.hypot(distX, distY) < 22;
     });
 
     if (existingIndex >= 0) {
       setInteractiveMarkers((prev) => prev.filter((_, idx) => idx !== existingIndex));
-      toast.info("Point de marquage retiré.");
+      toast.info("Point de pointage manuel retiré.");
       return;
     }
 
-    // Sinon, ajouter un nouveau point de marquage précis
+    // 2. Vérifier si on clique sur une boîte de détection automatique pour la retirer (éliminer un artefact de litière)
+    if (analysisResult && analysisResult.detections.length > 0) {
+      const boxIndex = analysisResult.detections.findIndex((b) => {
+        const boxCenterX = b.x + b.width / 2;
+        const boxCenterY = b.y + b.height / 2;
+        const distX = Math.abs(boxCenterX - relX) * rect.width;
+        const distY = Math.abs(boxCenterY - relY) * rect.height;
+        return Math.hypot(distX, distY) < 24;
+      });
+
+      if (boxIndex >= 0) {
+        const newDetections = analysisResult.detections.filter((_, idx) => idx !== boxIndex);
+        setAnalysisResult({
+          ...analysisResult,
+          detections: newDetections,
+          detectedCount: newDetections.length,
+        });
+        toast.info("Silhouette retirée du décompte.");
+        return;
+      }
+    }
+
+    // 3. Sinon, ajouter un nouveau point de marquage précis
     const newMarker = {
       id: `mark_${Date.now()}_${interactiveMarkers.length + 1}`,
       x: relX,
@@ -333,6 +357,7 @@ export default function AnimalCountingPage() {
     };
 
     setInteractiveMarkers((prev) => [...prev, newMarker]);
+    toast.success("Sujet ajouté au pointage.");
   };
 
   // Calcul de l'effectif final selon la méthode active
@@ -361,6 +386,11 @@ export default function AnimalCountingPage() {
     interactiveMarkers.length,
     manualAdjustment,
   ]);
+
+  // Calcul scientifique des besoins zootechniques réels
+  const zootechData = useMemo(() => {
+    return calculateZootechnicRequirements(currentCountValue, species, surfaceAreaM2);
+  }, [currentCountValue, species, surfaceAreaM2]);
 
   // Sauvegarde dans l'élevage
   const handleSaveToLivestock = async () => {
@@ -866,31 +896,62 @@ export default function AnimalCountingPage() {
                     </div>
                   </div>
 
-                  {/* Analyse de densité si surface renseignée */}
-                  {surfaceAreaM2 > 0 && currentCountValue > 0 && (
-                    <div className="p-3 rounded-lg border bg-card space-y-1">
+                  {/* Analyse de densité et décision zootechnique réelle (Zéro simulation) */}
+                  {currentCountValue > 0 && (
+                    <div className="p-3.5 rounded-xl border bg-card space-y-2.5">
                       <div className="flex items-center justify-between text-xs">
-                        <span className="font-semibold text-muted-foreground">Densité au m² :</span>
-                        <Badge
-                          variant={
-                            currentCountValue / surfaceAreaM2 >
-                            (LIVESTOCK_DENSITY_STANDARDS[species]?.alertThresholdPerM2 || 10)
-                              ? "destructive"
-                              : "secondary"
-                          }
-                          className="text-[10px]"
-                        >
-                          {currentCountValue / surfaceAreaM2 >
-                          (LIVESTOCK_DENSITY_STANDARDS[species]?.alertThresholdPerM2 || 10)
-                            ? "Surcharge Détectée"
-                            : "Densité Conforme"}
-                        </Badge>
+                        <span className="font-bold text-foreground flex items-center gap-1.5">
+                          <Scale className="h-3.5 w-3.5 text-primary" />
+                          <span>Décision Zootechnique Réelle</span>
+                        </span>
+                        {surfaceAreaM2 > 0 && (
+                          <Badge
+                            variant={zootechData.isOvercrowded ? "destructive" : "secondary"}
+                            className="text-[10px] font-bold"
+                          >
+                            {zootechData.isOvercrowded ? "Surcharge Détectée" : "Densité Conforme"}
+                          </Badge>
+                        )}
                       </div>
-                      <div className="text-xl font-bold font-mono">
-                        {Math.round((currentCountValue / surfaceAreaM2) * 10) / 10} {LIVESTOCK_DENSITY_STANDARDS[species]?.unit || "sujets.m²"}
+
+                      {surfaceAreaM2 > 0 && (
+                        <div className="flex items-baseline justify-between border-b pb-2">
+                          <span className="text-xs text-muted-foreground">Densité actuelle :</span>
+                          <span className="text-lg font-mono font-bold text-foreground">
+                            {zootechData.currentDensityPerM2} {LIVESTOCK_DENSITY_STANDARDS[species]?.unit || "sujets.m²"}
+                          </span>
+                        </div>
+                      )}
+
+                      <div className="grid grid-cols-2 gap-2 text-xs pt-0.5">
+                        <div className="p-2 rounded-lg bg-muted/50 border border-border/50">
+                          <span className="text-[10px] text-muted-foreground block font-medium">Eau requise (35°C) :</span>
+                          <span className="text-sm font-mono font-bold text-sky-600 dark:text-sky-400">
+                            {zootechData.dailyWaterLitres} L/jour
+                          </span>
+                        </div>
+                        <div className="p-2 rounded-lg bg-muted/50 border border-border/50">
+                          <span className="text-[10px] text-muted-foreground block font-medium">Aliment requis :</span>
+                          <span className="text-sm font-mono font-bold text-emerald-600 dark:text-emerald-400">
+                            {zootechData.dailyFeedKg} kg/jour
+                          </span>
+                        </div>
+                        <div className="p-2 rounded-lg bg-muted/50 border border-border/50">
+                          <span className="text-[10px] text-muted-foreground block font-medium">Charge en UBT :</span>
+                          <span className="text-sm font-mono font-bold text-foreground">
+                            {zootechData.totalTropicalLivestockUnits} UBT
+                          </span>
+                        </div>
+                        <div className="p-2 rounded-lg bg-muted/50 border border-border/50">
+                          <span className="text-[10px] text-muted-foreground block font-medium">Surface min. conseillée :</span>
+                          <span className="text-sm font-mono font-bold text-foreground">
+                            {zootechData.recommendedMinSurfaceM2} m²
+                          </span>
+                        </div>
                       </div>
-                      <p className="text-[11px] text-muted-foreground">
-                        Norme sahélienne max : {LIVESTOCK_DENSITY_STANDARDS[species]?.standardMaxDensityPerM2} {LIVESTOCK_DENSITY_STANDARDS[species]?.unit}
+
+                      <p className="text-[11px] text-muted-foreground leading-snug pt-1 border-t">
+                        {zootechData.densityRecommendation}
                       </p>
                     </div>
                   )}
