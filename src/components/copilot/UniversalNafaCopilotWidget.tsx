@@ -42,7 +42,6 @@ interface MessageItem {
   sender: "user" | "copilot";
   text: string;
   category?: string;
-  factualSources?: string[];
   suggestedActions?: Array<{
     title: string;
     target_route: string;
@@ -139,7 +138,6 @@ export function UniversalNafaCopilotWidget() {
           sender: "copilot",
           text: welcomeText,
           category: "bienvenue",
-          factualSources: ["Référentiels Techniques Sahel", "Données Opérationnelles In-Situ"],
           suggestedActions,
           timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
         },
@@ -184,14 +182,13 @@ export function UniversalNafaCopilotWidget() {
         sender: "copilot",
         text: res.reply,
         category: res.category,
-        factualSources: res.factual_sources,
         suggestedActions: res.suggested_actions,
         timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
       };
 
       setMessages((prev) => [...prev, copilotMsg]);
     } catch (err: any) {
-      console.warn("Moteur Python distant indisponible, bascule de secours locale active :", err);
+      console.warn("Moteur distant indisponible, bascule de secours locale active :", err);
       // Réponse locale intelligente de secours
       const fallbackReply = generateOfflineCopilotReply(q, primaryRole || "agriculteur");
       setMessages((prev) => [
@@ -201,7 +198,6 @@ export function UniversalNafaCopilotWidget() {
           sender: "copilot",
           text: fallbackReply.text,
           category: fallbackReply.category,
-          factualSources: fallbackReply.sources,
           suggestedActions: fallbackReply.actions,
           timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
         },
@@ -306,19 +302,6 @@ export function UniversalNafaCopilotWidget() {
                       </div>
                     </div>
                   )}
-
-                  {/* Sources factuelles certifiées */}
-                  {m.factualSources && m.factualSources.length > 0 && (
-                    <div className="pt-1 flex flex-wrap items-center gap-1 text-[10px] text-slate-400">
-                      <ShieldCheck className="h-3 w-3 text-emerald-400" />
-                      <span>Sources :</span>
-                      {m.factualSources.map((s, idx) => (
-                        <span key={idx} className="bg-slate-800/80 px-1.5 py-0.5 rounded text-slate-300">
-                          {s}
-                        </span>
-                      ))}
-                    </div>
-                  )}
                 </div>
                 <span className="text-[9px] text-slate-400 mt-1 px-1">{m.timestamp}</span>
               </div>
@@ -394,27 +377,24 @@ function generateOfflineCopilotReply(query: string, role: string) {
     return {
       text: `### Identification : Chenille Légionnaire d'Automne (Spodoptera frugiperda)\n• Traitement Bio : Azadirachtine (Huile de Neem 50 ml / 15L d'eau) pulvérisée au cœur du cornet au crépuscule.\n• Traitement Homologué CSP-CILSS : Émamectine Benzoate 50 g/kg (ex: Emastar) à dose de 250 g/ha (DAR 7 jours).\n• Test terrain : Observer le 'Y' inversé caractéristique sur la tête de la chenille.`,
       category: "agronomie",
-      sources: ["Référentiel INERA Farako-Bâ", "CSP-CILSS UEMOA"],
-      actions: [{ title: "Scanner la culture au Scanner Photo IA", target_route: "/dashboard/diagnostic", icon: "Camera" }],
+      actions: [{ title: "Scanner la culture", target_route: "/dashboard/diagnostic", icon: "Camera" }],
     };
   }
 
   if (q.includes("eau") || q.includes("pompe") || q.includes("irrigation") || q.includes("forage")) {
     return {
-      text: `### Bilan Hydraulique & Pompage Solaire Sahélien (FAO-56)\n• Évapotranspiration ETo de référence : 5.5 à 6.5 mm/jour en saison sèche.\n• Pertes de charge Hazen-Williams : Maintenir la vitesse d'eau entre 1.0 m/s et 1.8 m/s dans le PEHD.\n• Coût moyen forage productif 50m au Burkina : 3 500 000 à 4 500 000 FCFA.`,
+      text: `### Bilan Hydraulique & Pompage Solaire Sahélien\n• Évapotranspiration ETo de référence : 5.5 à 6.5 mm/jour en saison sèche.\n• Pertes de charge Hazen-Williams : Maintenir la vitesse d'eau entre 1.0 m/s et 1.8 m/s dans le PEHD.\n• Coût moyen forage productif 50m au Burkina : 3 500 000 à 4 500 000 FCFA.`,
       category: "hydraulique",
-      sources: ["FAO-56 Irrigation and Drainage", "Mercuriale BPU Ministère Agriculture"],
       actions: [{ title: "Concevoir le Réseau d'Irrigation 3D", target_route: "/dashboard/field-designer", icon: "Compass" }],
     };
   }
 
   return {
-    text: `Bienvenue sur NAFA-AGRITECH. Votre profil (${role}) a accès à l'ensemble des modules d'ingénierie, du marché des services et de l'assistance de terrain. Comment puis-je vous aider précisément aujourd'hui ?`,
+    text: `Bienvenue sur NAFA. Comment puis-je vous aider dans vos activités aujourd'hui ?`,
     category: "aide_plateforme",
-    sources: ["NAFA-AGRITECH Engine"],
     actions: [
       { title: "Marché des Services", target_route: "/dashboard/marketplace", icon: "Store" },
-      { title: "Diagnostic Photo IA", target_route: "/dashboard/diagnostic", icon: "Camera" },
+      { title: "Diagnostic Végétal", target_route: "/dashboard/diagnostic", icon: "Camera" },
     ],
   };
 }

@@ -178,8 +178,10 @@ export default function InscriptionPage() {
       );
 
       if (error) {
-        if (error.message?.includes("User already registered") || error.message?.includes("already_exists")) {
+        if (error.message?.includes("User already registered") || error.message?.includes("already_exists") || error.message?.includes("déjà enregistré")) {
           setErrorMessage("Ce numéro de téléphone est déjà enregistré. Connectez-vous avec votre code secret.");
+        } else if (error.message?.includes("disabled")) {
+          setErrorMessage("Erreur lors de la création du compte. Veuillez réessayer.");
         } else {
           setErrorMessage(error.message || "Erreur lors de la création du compte.");
         }
@@ -600,7 +602,7 @@ export default function InscriptionPage() {
                   className="text-xs font-bold text-[#F97316] hover:underline flex items-center justify-center gap-1.5 mx-auto py-1"
                 >
                   <Phone className="h-3.5 w-3.5 text-[#F97316]" />
-                  <span>S'inscrire avec mon numéro mobile (Max It)</span>
+                  <span>S'inscrire avec mon numéro de téléphone</span>
                 </button>
               )}
             </div>

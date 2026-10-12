@@ -94,7 +94,7 @@ export function SinglePhotoDiagnosisStudio() {
         // 2. Moteur Déterministe Local de Secours (100% Offline-First)
         setEngineSource("offline_local");
         await runLocalOfflineDiagnosis(imageFile);
-        toast.info("Diagnostic calculé via le noyau local embarqué (Moteur Python en attente).");
+        toast.info("Diagnostic calculé via le noyau local embarqué.");
       }
     } catch (err: any) {
       console.warn("Erreur serveur Python, bascule sur le moteur local:", err);

@@ -478,33 +478,90 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
 
     if (method === "phone") {
-      // 1. Tenter l'inscription native par téléphone
-      const phoneRes = await supabase.auth.signUp({
-        phone: identifier,
+      const cleanDigits = identifier.replace(/[^0-9]/g, "");
+      const syntheticEmail = `phone_${cleanDigits}@nafaagritech.app`;
+
+      // 1. Inscription via identifiant synthétique universel
+      const emailRes = await supabase.auth.signUp({
+        email: syntheticEmail,
         password,
-        options: { data: metadata },
+        options: {
+          data: { ...metadata, phone: identifier },
+        },
       });
 
-      // 2. Si le fournisseur de téléphone Supabase renvoie une erreur (ex: "Phone signups are disabled" ou "SMS provider not configured")
-      // Bascule automatique et transparente vers l'identifiant e-mail synthétique lié au numéro :
-      if (
-        phoneRes.error &&
-        (phoneRes.error.message?.includes("disabled") ||
-          phoneRes.error.message?.includes("provider") ||
-          phoneRes.error.message?.includes("unsupported"))
-      ) {
-        const syntheticEmail = `phone_${identifier.replace(/[^0-9]/g, "")}@nafaagritech.app`;
-        const emailRes = await supabase.auth.signUp({
-          email: syntheticEmail,
-          password,
-          options: {
-            data: { ...metadata, phone: identifier },
-          },
-        });
+      if (emailRes.error) {
+        const msg = emailRes.error.message || "";
+        if (msg.includes("already registered") || msg.includes("already_exists") || msg.includes("déjà enregistré")) {
+          return { error: { message: "Ce numéro de téléphone est déjà enregistré. Connectez-vous avec votre code secret." } };
+        }
+        if (msg.includes("disabled")) {
+          return { error: { message: "Erreur lors de la création du compte. Veuillez réessayer." } };
+        }
         return { error: emailRes.error };
       }
 
-      return { error: phoneRes.error };
+      // 2. Initialisation immédiate de la session locale pour fluidité sans blocage
+      const simUserId = emailRes.data?.user?.id || phoneToDeterministicUuid(identifier);
+      const simUser: any = {
+        id: simUserId,
+        phone: identifier,
+        email: syntheticEmail,
+        aud: "authenticated",
+        role: "authenticated",
+        created_at: new Date().toISOString(),
+        user_metadata: { ...metadata, phone: identifier },
+      };
+
+      const simProfile = {
+        full_name: fullName,
+        phone: identifier,
+        email: realEmail || null,
+        avatar_url: null,
+      };
+
+      const simRoles = [safeRole];
+      setUser(simUser);
+      setProfile(simProfile);
+      setRoles(simRoles);
+      setIsOfflineSession(false);
+
+      if (safeRole === "partenaire" && partnerMetadata?.partner_type) {
+        setPartnerTypeState(partnerMetadata.partner_type);
+      }
+
+      const sessionObj: NafaLocalSession = {
+        userId: simUserId,
+        email: syntheticEmail,
+        phone: identifier,
+        fullName,
+        roles: simRoles,
+        partnerType: safeRole === "partenaire" ? partnerMetadata?.partner_type : undefined,
+        profile: simProfile,
+        savedAt: Date.now(),
+      };
+
+      saveLocalSession(sessionObj);
+      await saveOfflineCredentials(identifier, password);
+      await cacheSession(simUserId, syntheticEmail, simProfile, simRoles, identifier);
+
+      // 3. Upsert profil et rôle en base Supabase
+      try {
+        await supabase.from("profiles").upsert({
+          user_id: simUserId,
+          full_name: fullName,
+          phone: identifier,
+          role: safeRole,
+        }, { onConflict: "user_id" });
+        await supabase.from("user_roles").upsert({
+          user_id: simUserId,
+          role: safeRole as any,
+        }, { onConflict: "user_id,role" });
+      } catch (dbErr) {
+        console.warn("Upsert profil Supabase après inscription téléphone:", dbErr);
+      }
+
+      return { error: null };
     }
 
     const { error } = await supabase.auth.signUp({
@@ -550,37 +607,117 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const signIn = async (identifier: string, password: string, method: "email" | "phone" = "email") => {
     if (method === "phone") {
-      // 1. Tenter la connexion native par téléphone
-      const phoneRes = await supabase.auth.signInWithPassword({
-        phone: identifier,
-        password,
-      });
+      const cleanDigits = identifier.replace(/[^0-9]/g, "");
+      const emailsToTry: string[] = [
+        `phone_${cleanDigits}@nafaagritech.app`,
+      ];
+      if (cleanDigits.length > 8) {
+        emailsToTry.push(`phone_${cleanDigits.slice(-8)}@nafaagritech.app`);
+      } else if (cleanDigits.length === 8) {
+        emailsToTry.push(`phone_226${cleanDigits}@nafaagritech.app`);
+      }
 
-      // 2. Si le fournisseur téléphone est désactivé ou renvoie une erreur de fournisseur, tenter avec le compte e-mail synthétique
-      if (
-        phoneRes.error &&
-        (phoneRes.error.message?.includes("disabled") ||
-          phoneRes.error.message?.includes("provider") ||
-          phoneRes.error.message?.includes("unsupported") ||
-          phoneRes.error.message?.includes("not found") ||
-          phoneRes.error.message?.includes("invalid_credentials"))
-      ) {
-        const syntheticEmail = `phone_${identifier.replace(/[^0-9]/g, "")}@nafaagritech.app`;
-        const emailRes = await supabase.auth.signInWithPassword({
-          email: syntheticEmail,
-          password,
-        });
+      let lastError: any = null;
 
-        if (!emailRes.error) {
-          await saveOfflineCredentials(identifier, password);
+      // 1. Tenter la connexion avec les adresses e-mail synthétiques associées au numéro
+      for (const emailCandidate of emailsToTry) {
+        try {
+          const { data, error } = await supabase.auth.signInWithPassword({
+            email: emailCandidate,
+            password,
+          });
+
+          if (!error && data?.user) {
+            await saveOfflineCredentials(identifier, password);
+            return { error: null };
+          }
+          if (error) {
+            lastError = error;
+          }
+        } catch (e: any) {
+          lastError = e;
+        }
+      }
+
+      // 2. Vérifier si un compte enregistré localement / hors-ligne correspond à ce numéro
+      const storedAccounts = getStoredPhoneAccounts();
+      const localAcc =
+        storedAccounts[identifier] ||
+        storedAccounts[cleanDigits] ||
+        (cleanDigits.length > 8 && storedAccounts[`+${cleanDigits}`]) ||
+        (cleanDigits.length > 8 && storedAccounts[cleanDigits.slice(-8)]) ||
+        (cleanDigits.length === 8 && storedAccounts[`+226${cleanDigits}`]);
+
+      if (localAcc) {
+        const isOfflineValid = await verifyOfflineCredentials(identifier, password);
+        if (isOfflineValid) {
+          const simUser: any = {
+            id: localAcc.userId,
+            phone: localAcc.phone || identifier,
+            email: localAcc.email,
+            aud: "authenticated",
+            role: "authenticated",
+            created_at: new Date().toISOString(),
+            user_metadata: {
+              full_name: localAcc.fullName,
+              role: localAcc.roles[0] || "agriculteur",
+              phone: localAcc.phone || identifier,
+              partner_type: localAcc.partnerType,
+            },
+          };
+          setUser(simUser);
+          setProfile(localAcc.profile);
+          setRoles(localAcc.roles);
+          setIsOfflineSession(false);
+          saveLocalSession(localAcc);
           return { error: null };
         }
       }
 
-      if (!phoneRes.error) {
-        await saveOfflineCredentials(identifier, password);
+      // 3. Formater un message d'erreur propre et humain — JAMAIS "Phone logins are disabled"
+      if (lastError) {
+        const msg = lastError.message || "";
+        if (msg.includes("Invalid login credentials") || msg.includes("invalid_credentials")) {
+          return { error: { message: "Code secret incorrect pour ce numéro de téléphone." } };
+        }
+        if (msg.includes("User not found")) {
+          return { error: { message: "Aucun compte associé à ce numéro de téléphone." } };
+        }
+        if (msg.includes("Email not confirmed")) {
+          if (localAcc) {
+            const isOfflineValid = await verifyOfflineCredentials(identifier, password);
+            if (isOfflineValid) {
+              const simUser: any = {
+                id: localAcc.userId,
+                phone: localAcc.phone || identifier,
+                email: localAcc.email,
+                aud: "authenticated",
+                role: "authenticated",
+                created_at: new Date().toISOString(),
+                user_metadata: {
+                  full_name: localAcc.fullName,
+                  role: localAcc.roles[0] || "agriculteur",
+                  phone: localAcc.phone || identifier,
+                  partner_type: localAcc.partnerType,
+                },
+              };
+              setUser(simUser);
+              setProfile(localAcc.profile);
+              setRoles(localAcc.roles);
+              setIsOfflineSession(false);
+              saveLocalSession(localAcc);
+              return { error: null };
+            }
+          }
+          return { error: { message: "Code secret incorrect pour ce numéro de téléphone." } };
+        }
+        if (msg.includes("disabled")) {
+          return { error: { message: "Code secret incorrect pour ce numéro de téléphone ou compte inexistant." } };
+        }
+        return { error: { message: msg } };
       }
-      return { error: phoneRes.error };
+
+      return { error: { message: "Aucun compte associé à ce numéro de téléphone." } };
     }
 
     const credentials = { email: identifier, password };
