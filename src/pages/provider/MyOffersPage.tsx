@@ -12,7 +12,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Package, Plus, Trash2, Pencil, Search, Store, Video, Image as ImageIcon, Phone, MapPin, Tag, Copy, ExternalLink, Share2 } from "lucide-react";
 import { toast } from "sonner";
-import { OFFER_CATEGORIES } from "./partnerCategories";
+import { OFFER_CATEGORIES, VET_OFFER_CATEGORIES } from "./partnerCategories";
 import { partnerStorage, PartnerOffer, MediaItem } from "@/lib/partnerStorage";
 import { getEffectiveUserId } from "@/lib/deviceIdentity";
 import ProductMediaUploader from "@/components/partner/ProductMediaUploader";
@@ -35,11 +35,16 @@ const emptyForm = {
 export default function MyOffersPage() {
   const { user, profile, partnerType } = useAuth();
   const isFinance = partnerType === "institution_agri";
+  const isVet = partnerType === "elevage_veterinaire";
+  const currentCategories = isVet ? VET_OFFER_CATEGORIES : OFFER_CATEGORIES;
   const [offers, setOffers] = useState<PartnerOffer[]>([]);
   const [loading, setLoading] = useState(true);
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState<PartnerOffer | null>(null);
-  const [form, setForm] = useState({ ...emptyForm, category: isFinance ? "financement" : "intrants" });
+  const [form, setForm] = useState({
+    ...emptyForm,
+    category: isFinance ? "financement" : isVet ? "veterinaire" : "intrants",
+  });
   const [saving, setSaving] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("all");
@@ -70,8 +75,14 @@ export default function MyOffersPage() {
     setEditing(null);
     setForm({
       ...emptyForm,
-      category: isFinance ? "financement" : "intrants",
-      partner_name: profile?.full_name || (isFinance ? "Établissement Financier" : "Mon Entreprise Agricole"),
+      category: isFinance ? "financement" : isVet ? "veterinaire" : "intrants",
+      partner_name:
+        profile?.full_name ||
+        (isFinance
+          ? "Établissement Financier"
+          : isVet
+          ? "Cabinet Vétérinaire & Santé Animale"
+          : "Mon Entreprise Agricole"),
       contact_phone: profile?.phone || "+226 ",
       media: [],
     });
@@ -169,17 +180,28 @@ export default function MyOffersPage() {
         <div>
           <h1 className="text-2xl md:text-3xl font-heading font-bold flex items-center gap-2.5">
             <Store className="h-7 w-7 text-primary" />
-            {isFinance ? "Mes Services & Produits Financiers" : "Mes Produits & Services"} ({offers.length})
+            {isFinance
+              ? "Mes Services & Produits Financiers"
+              : isVet
+              ? "Mes Services & Prestations Vétérinaires"
+              : "Mes Produits & Services"}{" "}
+            ({offers.length})
           </h1>
           <p className="text-sm text-muted-foreground mt-1">
             {isFinance
               ? "Publiez vos offres de crédit de campagne, microfinances, assurances et bannières promotionnelles pour les agriculteurs et éleveurs."
+              : isVet
+              ? "Publiez vos actes médicaux, chirurgies, forfaits de vaccination et produits de santé animale visibles directement par les éleveurs."
               : "Publiez vos offres avec photos et vidéos démonstratives pour les agriculteurs et éleveurs."}
           </p>
         </div>
         <Button onClick={openNew} className="gradient-primary text-primary-foreground font-semibold shadow-sm">
           <Plus className="h-4 w-4 mr-2" />
-          {isFinance ? "Publier un service financier" : "Publier un produit / service"}
+          {isFinance
+            ? "Publier un service financier"
+            : isVet
+            ? "Proposer un acte / service vétérinaire"
+            : "Publier un produit / service"}
         </Button>
       </div>
 
@@ -190,10 +212,12 @@ export default function MyOffersPage() {
             <Store className="h-3.5 w-3.5" /> Votre Vitrine Partenaire Dédiée & URL Unique
           </div>
           <h2 className="text-base font-heading font-bold text-foreground">
-            Boutique publique NAFA - AGRITECH en ligne
+            {isVet ? "Vitrine Clinique Vétérinaire NAFA en ligne" : "Boutique publique NAFA - AGRITECH en ligne"}
           </h2>
           <p className="text-xs text-muted-foreground">
-            Toutes vos offres validées sont visibles sur votre lien unique, ainsi que dans le catalogue des agriculteurs et la page d'accueil.
+            {isVet
+              ? "Toutes vos prestations et tarifs validés sont visibles dans le catalogue officiel des éleveurs ainsi que sur votre vitrine clinique."
+              : "Toutes vos offres validées sont visibles sur votre lien unique, ainsi que dans le catalogue des agriculteurs et la page d'accueil."}
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-2 w-full md:w-auto shrink-0">
@@ -238,7 +262,7 @@ export default function MyOffersPage() {
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="all">Toutes les catégories</SelectItem>
-            {OFFER_CATEGORIES.map((c) => (
+            {currentCategories.map((c) => (
               <SelectItem key={c.value} value={c.value}>
                 {c.label}
               </SelectItem>
@@ -382,10 +406,18 @@ export default function MyOffersPage() {
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
               <div className="space-y-1.5">
-                <Label htmlFor="o-title">Titre du produit ou service *</Label>
+                <Label htmlFor="o-title">
+                  {isVet ? "Intitulé de l'acte ou service vétérinaire *" : "Titre du produit ou service *"}
+                </Label>
                 <Input
                   id="o-title"
-                  placeholder="ex: Tracteur 75 CV, Semences Maïs FBC6..."
+                  placeholder={
+                    isVet
+                      ? "ex: Consultation bovine sur site, Vaccination charbon/PPR, Césarienne..."
+                      : isFinance
+                      ? "ex: Crédit de campagne agricole, Assurance bétail..."
+                      : "ex: Tracteur 75 CV, Semences Maïs FBC6..."
+                  }
                   value={form.title}
                   onChange={(e) => setField("title", e.target.value)}
                 />
@@ -398,7 +430,7 @@ export default function MyOffersPage() {
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    {OFFER_CATEGORIES.map((c) => (
+                    {currentCategories.map((c) => (
                       <SelectItem key={c.value} value={c.value}>
                         {c.label}
                       </SelectItem>

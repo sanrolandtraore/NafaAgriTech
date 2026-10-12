@@ -20,8 +20,8 @@ describe("Audit Final — Isolation Stricte des Modules & Cloisonnement", () => 
   it("Module Vétérinaire (Partenaire) ne contient AUCUNE gestion d'exploitation d'éleveur", () => {
     const paths = veterinaireNav.map((item) => item.to);
 
-    // Contient les services vétérinaires et prestations professionnelles
-    expect(paths).toContain("/dashboard/livestock-services");
+    // Les vétérinaires proposent leurs services (le catalogue de réservation est réservé aux éleveurs)
+    expect(paths).not.toContain("/dashboard/livestock-services");
     expect(paths).toContain("/dashboard/partenaire-mes-offres");
     expect(paths).toContain("/dashboard/interventions");
     expect(paths).toContain("/dashboard/quote-requests");

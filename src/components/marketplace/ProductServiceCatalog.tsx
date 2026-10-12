@@ -61,6 +61,31 @@ const CATEGORY_TABS = [
   { value: "mes_commandes", label: "Mes Commandes", isOrders: true, icon: ClipboardList },
 ];
 
+export const LIVESTOCK_ALLOWED_CATEGORIES = [
+  "aliments_elevage",
+  "elevage",
+  "sante_veterinaire",
+  "sante_animale",
+  "veterinaire",
+  "materiel_elevage",
+  "materiel",
+  "services_elevage",
+  "service",
+  "finance",
+  "assurance",
+  "banque",
+];
+
+export const LIVESTOCK_CATEGORY_TABS = [
+  { value: "all", label: "Toutes les offres Élevage", icon: Layers },
+  { value: "aliments_elevage", label: "Aliments Bétail & Provendes", match: ["aliments_elevage", "elevage"], icon: Wheat },
+  { value: "sante_veterinaire", label: "Soins Vétérinaires & Vaccins", match: ["sante_veterinaire", "sante_animale", "veterinaire"], icon: Syringe },
+  { value: "materiel", label: "Matériel d'Élevage", match: ["materiel_elevage", "materiel"], icon: Package },
+  { value: "services", label: "Services Pastoraux", match: ["services_elevage", "service"], icon: Wrench },
+  { value: "finance", label: "Financement & Assurance Bétail", match: ["finance", "assurance", "banque"], icon: Landmark },
+  { value: "mes_commandes", label: "Mes Commandes d'Élevage", isOrders: true, icon: ClipboardList },
+];
+
 const quoteStatusConfig: Record<string, { label: string; badgeClass: string; icon: any }> = {
   en_attente: {
     label: "Demande transmise",
@@ -145,11 +170,22 @@ export default function ProductServiceCatalog({
     }
   }, [profile]);
 
-  const filteredOffers = useMemo(() => {
+  const isEleveur = defaultRole === "eleveur";
+  const activeCategoryTabs = isEleveur ? LIVESTOCK_CATEGORY_TABS : CATEGORY_TABS;
+
+  const relevantOffers = useMemo(() => {
+    if (!isEleveur) return offers;
     return offers.filter((o) => {
+      if (o.category === "semences" || o.category === "intrants") return false;
+      return LIVESTOCK_ALLOWED_CATEGORIES.includes(o.category);
+    });
+  }, [offers, isEleveur]);
+
+  const filteredOffers = useMemo(() => {
+    return relevantOffers.filter((o) => {
       // Category filter
       if (selectedCategory !== "all") {
-        const catConfig = CATEGORY_TABS.find((c) => c.value === selectedCategory);
+        const catConfig = activeCategoryTabs.find((c) => c.value === selectedCategory);
         if (catConfig?.match) {
           if (!catConfig.match.includes(o.category)) return false;
         } else if (o.category !== selectedCategory) {
@@ -169,7 +205,7 @@ export default function ProductServiceCatalog({
 
       return true;
     });
-  }, [offers, selectedCategory, search]);
+  }, [relevantOffers, selectedCategory, search, activeCategoryTabs]);
 
   const handleOpenOrder = (offer: PartnerOffer) => {
     setSelectedOffer(offer);
@@ -274,13 +310,13 @@ export default function ProductServiceCatalog({
 
       {/* Category Filter Pills (Direct Switcher sans nav imbriquée) */}
       <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-none">
-        {CATEGORY_TABS.map((cat) => {
+        {activeCategoryTabs.map((cat) => {
           const isActive = selectedCategory === cat.value;
           const count = cat.isOrders
             ? myQuotes.length
             : cat.value === "all"
-            ? offers.length
-            : offers.filter((o) => (cat.match ? cat.match.includes(o.category) : o.category === cat.value)).length;
+            ? relevantOffers.length
+            : relevantOffers.filter((o) => (cat.match ? cat.match.includes(o.category) : o.category === cat.value)).length;
 
           return (
             <button
@@ -334,8 +370,9 @@ export default function ProductServiceCatalog({
                 <Package className="h-12 w-12 mx-auto text-muted-foreground/50" />
                 <p className="text-lg font-bold text-foreground">Vous n'avez pas encore passé de commande</p>
                 <p className="text-sm text-muted-foreground max-w-md mx-auto">
-                  Sélectionnez les semences certifiées, engrais, provendes ou prestations dont vous avez besoin sur le
-                  catalogue ci-dessus.
+                  {isEleveur
+                    ? "Sélectionnez les provendes, tourteaux, blocs à lécher, soins vétérinaires ou équipements d'élevage dont vous avez besoin sur le catalogue ci-dessus."
+                    : "Sélectionnez les semences certifiées, engrais, provendes ou prestations dont vous avez besoin sur le catalogue ci-dessus."}
                 </p>
                 <Button
                   onClick={() => setSelectedCategory("all")}

@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useMemo } from "react";
+import { Link } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -31,7 +32,8 @@ import {
   Package,
   Layers,
   Sparkles,
-  ArrowRight
+  ArrowRight,
+  Store,
 } from "lucide-react";
 import BackNavigationButton from "@/components/BackNavigationButton";
 import {
@@ -68,7 +70,7 @@ const REGIONS = [
 ];
 
 const LivestockServicesPage = () => {
-  const { user } = useAuth();
+  const { user, profile, partnerType } = useAuth();
   const [activeTab, setActiveTab] = useState<"catalogue" | "reservations">("catalogue");
   const [partners, setPartners] = useState<VeterinaryPartner[]>([]);
   const [loading, setLoading] = useState(true);
@@ -274,6 +276,27 @@ const LivestockServicesPage = () => {
           </button>
         </div>
       </div>
+
+      {/* ── Bandeau Praticien Vétérinaire (Si connecté en tant que Partenaire Vétérinaire) ── */}
+      {partnerType === "elevage_veterinaire" && (
+        <div className="bg-emerald-500/10 border-2 border-emerald-500/30 rounded-2xl p-4 sm:p-5 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+          <div className="space-y-1">
+            <div className="flex items-center gap-2 text-emerald-700 dark:text-emerald-400 font-bold text-sm">
+              <Store className="h-4 w-4" />
+              <span>Espace Vétérinaire Partenaire • Aperçu du Catalogue des Éleveurs</span>
+            </div>
+            <p className="text-xs text-muted-foreground max-w-3xl">
+              Ce catalogue est l'annuaire consulté exclusivement par les éleveurs pour réserver des soins. Pour proposer vos propres prestations, définir vos honoraires de consultation et publier vos forfaits de vaccination, accédez à votre console dédiée.
+            </p>
+          </div>
+          <Button asChild size="sm" className="gradient-primary text-primary-foreground font-bold shrink-0 shadow-sm">
+            <Link to="/dashboard/partenaire-mes-offres">
+              Proposer mes Services & Soins
+              <ArrowRight className="h-4 w-4 ml-1.5" />
+            </Link>
+          </Button>
+        </div>
+      )}
 
       {activeTab === "catalogue" ? (
         <div className="space-y-8">

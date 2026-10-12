@@ -40,7 +40,7 @@ export const eleveurNav: NavItem[] = [
   { to: "/dashboard/animal-feeding", labelKey: "Alimentation & Rations", icon: Utensils },
   { to: "/dashboard/livestock-finance", labelKey: "Finances du Cheptel", icon: Wallet },
   { to: "/dashboard/livestock-report", labelKey: "Rapport d'activité", icon: FileText },
-  { to: "/dashboard/livestock-services", labelKey: "Réserver un vétérinaire", icon: ClipboardList },
+  { to: "/dashboard/livestock-services", labelKey: "Catalogue des Vétérinaires & Soins", icon: ClipboardList },
   { to: "/dashboard/settings", labelKey: "Paramètres", icon: Settings },
 ];
 
@@ -101,8 +101,7 @@ export const veterinaireNav: NavItem[] = [
   // Pôle 1 : Actes Cliniques & Terrain
   { to: "/dashboard/animal-counting", labelKey: "Comptage & Densité d'Élevage", icon: Camera, section: "Actes Cliniques & Terrain" },
   { to: "/dashboard/interventions", labelKey: "Interventions & Soins terrain", icon: Activity, section: "Actes Cliniques & Terrain" },
-  { to: "/dashboard/livestock-services", labelKey: "Catalogue & Réservations Vétérinaires", icon: ClipboardList, section: "Actes Cliniques & Terrain" },
-  { to: "/dashboard/partenaire-mes-offres", labelKey: "Mes Services & Prestations", icon: Store, section: "Actes Cliniques & Terrain" },
+  { to: "/dashboard/partenaire-mes-offres", labelKey: "Proposer mes Services & Soins", icon: Store, section: "Actes Cliniques & Terrain" },
   // Pôle 2 : Dossiers Éleveurs & Facturation
   { to: "/dashboard/provider-clients", labelKey: "Portefeuille Éleveurs & Clients", icon: Users, section: "Dossiers Éleveurs & Facturation" },
   { to: "/dashboard/quote-requests", labelKey: "Demandes de devis & Réservations", icon: FileText, section: "Dossiers Éleveurs & Facturation" },
@@ -236,7 +235,9 @@ export const getNavLabel = (item: NavItem, t?: (key: string) => string): string 
     "Marché des Services": "Marché des Services",
     "Marketplace des Services": "Marketplace des Services",
     "Finances du Cheptel": "Finances du Cheptel",
-    "Réserver un vétérinaire": "Réserver un vétérinaire",
+    "Réserver un vétérinaire": "Catalogue des Vétérinaires & Soins",
+    "Catalogue des Vétérinaires & Soins": "Catalogue des Vétérinaires & Soins",
+    "Proposer mes Services & Soins": "Proposer mes Services & Soins",
     "Formation professionnelle": "Formation professionnelle",
     "Portefeuille Clients": "Portefeuille Clients",
     "Analytique & Performances": "Analytique & Performances",
