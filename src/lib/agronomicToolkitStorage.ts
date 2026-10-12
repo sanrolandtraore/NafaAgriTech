@@ -100,6 +100,27 @@ export const TOOLKIT_CATEGORIES: ToolkitCategoryConfig[] = [
 ];
 
 export const AGRONOMIC_TOOLS_CATALOG: AgronomicToolItem[] = [
+  // ─── 0. APPLICATION TOUT-EN-UN (ARPENTAGE + SATELLITE + DIAGNOSTIC) ───
+  {
+    id: "tool-field-suite-all-in-one",
+    title: "Application Tout-en-un (Arpentage • Satellite • Diagnostic)",
+    category: "terrain_carto",
+    categoryLabel: "Suite Complète de Terrain",
+    description: "Arpentez les bordures au GPS en marchant, analysez la végétation par imagerie satellite (NDVI & stress) et laissez-vous guider vers les anomalies pour diagnostiquer et prescrire.",
+    route: "/dashboard/field-suite",
+    iconName: "Sparkles",
+    isOffline: true,
+    badges: ["Tout-en-un", "GPS Marche", "Satellite NDVI", "Diagnostic IA"],
+    keywords: ["tout-en-un", "arpentage", "satellite", "ndvi", "diagnostic", "guidage", "marche gps", "stress azoté", "maladie", "plante", "terrain", "agronome"],
+    contextualAi: {
+      roleDescription: "Copilote d'intervention de terrain : arpentage, télédétection satellite et phytopathologie.",
+      suggestedActions: [
+        { label: "Lancer la marche d'arpentage", prompt: "Démarre le détourage au GPS le long des bordures de la parcelle." },
+        { label: "Analyser le stress NDVI", prompt: "Génère la carte de réflectance satellite et identifie les foyers d'anomalies." },
+        { label: "Me guider vers l'anomalie", prompt: "Active le radar de guidage GPS vers le point critique détecté par satellite." },
+      ],
+    },
+  },
   // ─── 1. TERRAIN & CARTOGRAPHIE (NAFA FIELD DESIGNER) ───
   {
     id: "tool-mesure-gps",

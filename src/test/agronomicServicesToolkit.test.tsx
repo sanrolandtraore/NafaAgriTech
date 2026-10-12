@@ -53,10 +53,11 @@ describe("Suite Professionnelle « NAFA FIELD DESIGNER »", () => {
   describe("1. Catalogue Exclusif NAFA FIELD DESIGNER (40 anciens outils génériques retirés)", () => {
     it("charge uniquement les outils officiels de NAFA Field Designer sans données fictives", () => {
       const allTools = agronomicToolkitStorage.getAllTools();
-      // Les 40 anciens outils par domaine sont retirés, il ne reste que les outils officiels de NAFA Field Designer
-      expect(allTools.length).toBe(14);
+      // Les 40 anciens outils par domaine sont retirés, il ne reste que les 15 outils officiels certifiés
+      expect(allTools.length).toBe(15);
 
       const allTitles = allTools.map((t) => t.title);
+      expect(allTitles).toContain("Application Tout-en-un (Arpentage • Satellite • Diagnostic)");
       expect(allTitles).toContain("Mesure GPS & Arpentage de Parcelle");
       expect(allTitles).toContain("Levé de Coordonnées GPS & Bornage");
       expect(allTitles).toContain("Carte de l'Exploitation & SIG Parcellaire");

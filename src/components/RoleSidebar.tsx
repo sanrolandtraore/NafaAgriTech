@@ -66,6 +66,7 @@ export const machinismeNav: NavItem[] = fournisseurNav;
 /** 3. Profil Cabinet d'Agronomie & Conseil Technique (Suite complète des outils techniques) */
 export const agronomeNav: NavItem[] = [
   { to: "/dashboard", labelKey: "Tableau de bord", icon: LayoutDashboard },
+  { to: "/dashboard/field-suite", labelKey: "Application Tout-en-un (Arpentage • Satellite • Diagnostic)", icon: Sparkles, section: "Expertise Agronomique" },
   { to: "/dashboard/services", labelKey: "Suite d'Outils Agronomiques", icon: Compass, section: "Expertise Agronomique" },
   { to: "/dashboard/crop-planning", labelKey: "Planification des cultures", icon: Calculator, section: "Expertise Agronomique" },
   { to: "/dashboard/parcels", labelKey: "Parcelles & Cultures", icon: Sprout, section: "Expertise Agronomique" },
@@ -242,6 +243,7 @@ export const getNavLabel = (item: NavItem, t?: (key: string) => string): string 
     "Programmes & Subventions": "Programmes & Subventions",
     "Vérification KYC & Agrément": "Vérification KYC & Agrément",
     "Levé de coordonnées GPS": "Levé de coordonnées GPS",
+    "Application Tout-en-un (Arpentage • Satellite • Diagnostic)": "Application Tout-en-un (Arpentage • Satellite • Diagnostic)",
     "Facturation & Proformas": "Facturation & Proformas",
   };
 

@@ -30,6 +30,8 @@ import {
   ArrowRight,
   ShieldCheck,
   CheckCircle2,
+  Navigation,
+  Camera,
 } from "lucide-react";
 
 // Category icon map
@@ -205,6 +207,60 @@ export default function ServicesPage() {
           ))}
         </div>
       </div>
+
+      {/* ══════════════════════════════════════════════════════
+          2.5. CARTE PHARE : APPLICATION TOUT-EN-UN (ARPENTAGE + SATELLITE + DIAGNOSTIC)
+      ══════════════════════════════════════════════════════ */}
+      {!searchQuery && selectedCategory === "all" && (
+        <div className="relative overflow-hidden rounded-[28px] border-2 border-primary/30 bg-gradient-to-br from-primary/10 via-background to-amber-500/10 p-6 sm:p-7 shadow-lg">
+          <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+            <div className="space-y-3 max-w-2xl">
+              <div className="flex items-center gap-2">
+                <Badge className="bg-primary text-primary-foreground font-black text-xs px-3 py-1 shadow-xs">
+                  APPLICATION PHARE TOUT-EN-UN
+                </Badge>
+                <Badge variant="outline" className="border-primary/30 text-primary font-bold text-xs">
+                  Arpentage • Satellite • Diagnostic
+                </Badge>
+              </div>
+
+              <h2 className="text-xl sm:text-2xl lg:text-3xl font-heading font-black text-foreground">
+                Arpentage live, Imagerie Satellite (NDVI) & Guidage Terrain
+              </h2>
+
+              <p className="text-sm text-muted-foreground leading-relaxed">
+                Marchez le long de la parcelle pour la détourer au GPS, repérez instantanément les zones de stress (manque d'azote, de croissance ou anomalies) via satellite, et laissez-vous guider vers chaque foyer pour photographier et identifier la maladie.
+              </p>
+
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 pt-1">
+                <div className="flex items-center gap-2 p-2.5 rounded-xl bg-background/80 border border-border/60 text-xs">
+                  <Navigation className="h-4 w-4 text-primary shrink-0" />
+                  <span className="font-semibold text-foreground">1. Arpenter en marchant</span>
+                </div>
+                <div className="flex items-center gap-2 p-2.5 rounded-xl bg-background/80 border border-border/60 text-xs">
+                  <Layers className="h-4 w-4 text-amber-500 shrink-0" />
+                  <span className="font-semibold text-foreground">2. Satellite & Stress NDVI</span>
+                </div>
+                <div className="flex items-center gap-2 p-2.5 rounded-xl bg-background/80 border border-border/60 text-xs">
+                  <Camera className="h-4 w-4 text-emerald-600 shrink-0" />
+                  <span className="font-semibold text-foreground">3. Guidage & Diagnostic IA</span>
+                </div>
+              </div>
+            </div>
+
+            <div className="shrink-0 flex flex-col gap-2.5">
+              <Button
+                type="button"
+                onClick={() => navigate("/dashboard/field-suite")}
+                className="h-12 px-6 text-sm font-black rounded-2xl gradient-primary text-primary-foreground shadow-lg hover:shadow-primary/25 transition-all flex items-center gap-2"
+              >
+                <span>Lancer l'Application Tout-en-un</span>
+                <ArrowRight className="h-4 w-4" />
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* ══════════════════════════════════════════════════════
           3. CARTE HERO SPECIALE : NAFA GENIUS
