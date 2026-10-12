@@ -63,27 +63,32 @@ export const fournisseurNav: NavItem[] = [
 /** Alias de rétrocompatibilité : le module Machinisme & Travaux est consolidé dans Intrants & Matériel */
 export const machinismeNav: NavItem[] = fournisseurNav;
 
-/** 3. Profil Cabinet d'Agronomie & Conseil Technique (Suite complète des outils techniques) */
+/** 3. Profil Cabinet d'Agronomie & Conseil Technique (Suite complète des outils techniques regroupée) */
 export const agronomeNav: NavItem[] = [
-  { to: "/dashboard", labelKey: "Tableau de bord", icon: LayoutDashboard },
-  { to: "/dashboard/field-suite", labelKey: "Application Tout-en-un (Arpentage • Satellite • Diagnostic)", icon: Sparkles, section: "Expertise Agronomique" },
-  { to: "/dashboard/services", labelKey: "Suite d'Outils Agronomiques", icon: Compass, section: "Expertise Agronomique" },
-  { to: "/dashboard/crop-planning", labelKey: "Planification des cultures", icon: Calculator, section: "Expertise Agronomique" },
-  { to: "/dashboard/parcels", labelKey: "Parcelles & Cultures", icon: Sprout, section: "Expertise Agronomique" },
-  { to: "/dashboard/scouting", labelKey: "Suivi des Parcelles", icon: Eye, section: "Expertise Agronomique" },
-  { to: "/dashboard/inspections", labelKey: "Inspection Intelligente", icon: Eye, section: "Expertise Agronomique" },
-  { to: "/dashboard/field-designer", labelKey: "Conception de Parcelles", icon: Compass, section: "Expertise Agronomique" },
-  { to: "/dashboard/expert-prescriptions", labelKey: "Prescriptions", icon: FileText, section: "Expertise Agronomique" },
-  { to: "/dashboard/expert-calculator", labelKey: "Calculateur agricole", icon: Calculator, section: "Expertise Agronomique" },
-  { to: "/dashboard/expert-cartography", labelKey: "Cartographie GPS", icon: MapPin, section: "Expertise Agronomique" },
-  { to: "/dashboard/gps-survey", labelKey: "Levé de coordonnées GPS", icon: Navigation, section: "Expertise Agronomique" },
-  { to: "/dashboard/crop-library", labelKey: "Fiches techniques", icon: BookOpen, section: "Expertise Agronomique" },
-  { to: "/dashboard/education", labelKey: "Formation professionnelle", icon: GraduationCap, section: "Expertise Agronomique" },
-  { to: "/dashboard/expert-clients", labelKey: "Portefeuille Clients", icon: Users, section: "Clients & Conseils" },
-  { to: "/dashboard/expert-analytics", labelKey: "Analytique & Performances", icon: BarChart3, section: "Clients & Conseils" },
-  { to: "/dashboard/quote-requests", labelKey: "Demandes de devis", icon: FileText, section: "Clients & Conseils" },
-  { to: "/dashboard/partenaire-factures", labelKey: "Facturation & Proformas", icon: Receipt, section: "Clients & Conseils" },
-  { to: "/dashboard/identite-professionnelle", labelKey: "Identité & Documents", icon: Building2, section: "Visibilité & Gestion" },
+  { to: "/dashboard", labelKey: "Console Agronome & Conseil", icon: LayoutDashboard },
+  // Bloc 1 : Pôle Terrain & Diagnostic
+  { to: "/dashboard/field-suite", labelKey: "Application Tout-en-un (Arpentage • Satellite • Diagnostic)", icon: Sparkles, section: "Pôle Terrain & Diagnostic" },
+  { to: "/dashboard/diagnostic", labelKey: "Diagnostic & Prescriptions", icon: Microscope, section: "Pôle Terrain & Diagnostic" },
+  { to: "/dashboard/inspections", labelKey: "Inspection Intelligente", icon: Eye, section: "Pôle Terrain & Diagnostic" },
+  { to: "/dashboard/scouting", labelKey: "Suivi des Parcelles", icon: Eye, section: "Pôle Terrain & Diagnostic" },
+  { to: "/dashboard/gps-survey", labelKey: "Levé de coordonnées GPS", icon: Navigation, section: "Pôle Terrain & Diagnostic" },
+  { to: "/dashboard/expert-cartography", labelKey: "Cartographie GPS", icon: MapPin, section: "Pôle Terrain & Diagnostic" },
+  // Bloc 2 : Pôle Conception & Ingénierie
+  { to: "/dashboard/services", labelKey: "Suite d'Outils Agronomiques", icon: Compass, section: "Pôle Conception & Ingénierie" },
+  { to: "/dashboard/field-designer", labelKey: "Conception de Parcelles", icon: Compass, section: "Pôle Conception & Ingénierie" },
+  { to: "/dashboard/expert-calculator", labelKey: "Calculateur agricole", icon: Calculator, section: "Pôle Conception & Ingénierie" },
+  { to: "/dashboard/crop-planning", labelKey: "Planification des cultures", icon: Calculator, section: "Pôle Conception & Ingénierie" },
+  { to: "/dashboard/parcels", labelKey: "Parcelles & Cultures", icon: Sprout, section: "Pôle Conception & Ingénierie" },
+  { to: "/dashboard/crop-library", labelKey: "Fiches techniques", icon: BookOpen, section: "Pôle Conception & Ingénierie" },
+  { to: "/dashboard/expert-prescriptions", labelKey: "Prescriptions", icon: FileText, section: "Pôle Conception & Ingénierie" },
+  { to: "/dashboard/education", labelKey: "Formation professionnelle", icon: GraduationCap, section: "Pôle Conception & Ingénierie" },
+  // Bloc 3 : Pôle Conseil, Clients & Devis
+  { to: "/dashboard/expert-clients", labelKey: "Portefeuille Clients", icon: Users, section: "Pôle Conseil & Gestion" },
+  { to: "/dashboard/quote-requests", labelKey: "Demandes de devis", icon: FileText, section: "Pôle Conseil & Gestion" },
+  { to: "/dashboard/partenaire-factures", labelKey: "Facturation & Proformas", icon: Receipt, section: "Pôle Conseil & Gestion" },
+  { to: "/dashboard/identite-professionnelle", labelKey: "Identité & Documents", icon: Building2, section: "Pôle Conseil & Gestion" },
+  { to: "/dashboard/expert-analytics", labelKey: "Analytique & Performances", icon: BarChart3, section: "Pôle Conseil & Gestion" },
+  // Visibilité & Paramètres
   { to: "/dashboard/partner-space", labelKey: "Mon Espace Partenaire (Offres & Devis)", icon: Building2, section: "Visibilité & Gestion" },
   { to: "/dashboard/partenaire-kyc", labelKey: "Vérification KYC & Certification", icon: BadgeCheck, section: "Visibilité & Gestion" },
   { to: "/dashboard/partenaire-abonnement", labelKey: "Abonnement partenaire", icon: Sparkles, section: "Visibilité & Gestion" },
@@ -245,6 +250,8 @@ export const getNavLabel = (item: NavItem, t?: (key: string) => string): string 
     "Levé de coordonnées GPS": "Levé de coordonnées GPS",
     "Application Tout-en-un (Arpentage • Satellite • Diagnostic)": "Application Tout-en-un (Arpentage • Satellite • Diagnostic)",
     "Facturation & Proformas": "Facturation & Proformas",
+    "Console Agronome & Conseil": "Console Agronome & Conseil",
+    "Diagnostic & Prescriptions": "Diagnostic & Prescriptions",
   };
 
   if (dictionary[key]) {

@@ -32,6 +32,12 @@ import {
   CheckCircle2,
   Navigation,
   Camera,
+  Users,
+  Microscope,
+  ClipboardCheck,
+  BookOpen,
+  Receipt,
+  Building2,
 } from "lucide-react";
 
 // Category icon map
@@ -42,16 +48,20 @@ const CATEGORY_ICON_MAP: Record<string, React.ElementType> = {
   Droplets,
   PencilRuler,
   BarChart3,
+  Navigation,
+  Users,
 };
 
 // Search Suggestion Chips
 const SEARCH_SUGGESTIONS = [
-  "Mesurer une parcelle",
-  "Concevoir une irrigation",
+  "Application Tout-en-un",
+  "Arpenter une parcelle",
   "Diagnostiquer une maladie",
-  "Faire un devis",
-  "Calculer un débit",
-  "Plan de fertilisation",
+  "Prescrire une ordonnance",
+  "Concevoir une irrigation",
+  "Calculer la fumure NPK",
+  "Portefeuille clients",
+  "Faire un devis FCFA",
 ];
 
 export default function ServicesPage() {
@@ -132,28 +142,45 @@ export default function ServicesPage() {
   const allToolsCount = agronomicToolkitStorage.getAllTools().length;
 
   return (
-    <div className="space-y-8 max-w-7xl mx-auto px-4 py-6 animate-fade-in pb-24">
+    <div
+      data-testid="agronomic-services-suite"
+      className="space-y-8 max-w-7xl mx-auto px-4 py-6 animate-fade-in pb-24"
+    >
       {/* ══════════════════════════════════════════════════════
-          1. EN-TÊTE PRINCIPAL & BRANDING SUITE PROFESSIONNELLE
+          1. EN-TÊTE PRINCIPAL : BLOC CONSOLIDÉ AGRONOME & CONSEIL
       ══════════════════════════════════════════════════════ */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-border/80 pb-6">
         <div className="flex items-start sm:items-center gap-3">
           <BackNavigationButton fallbackTo="/dashboard" />
           <div>
+            <div className="flex items-center gap-2 mb-1">
+              <Badge className="bg-primary/10 text-primary border-primary/20 text-[11px] font-extrabold uppercase px-2.5 py-0.5">
+                Module Agronome & Conseil
+              </Badge>
+              <Badge variant="outline" className="text-muted-foreground text-[11px] font-semibold">
+                Bloc Tout-en-un
+              </Badge>
+            </div>
             <h1 className="text-2xl sm:text-3xl font-heading font-black text-foreground flex items-center gap-2.5">
               <Compass className="h-7 w-7 text-[#F97316]" />
-              <span>NAFA FIELD DESIGNER — Conception de Parcelles</span>
+              <span>Console Agronome & Conseil Technique</span>
             </h1>
 
-            <p className="text-xs sm:text-sm text-muted-foreground mt-1 max-w-2xl font-medium">
-              Le logiciel professionnel de conception et d’intervention terrain pour agronomes africains (Arpentage GPS, Cultures, Irrigation, Bâtiments d'élevage, Devis & Rapports).
+            <p className="text-xs sm:text-sm text-muted-foreground mt-1 max-w-3xl font-medium">
+              Toutes les fonctionnalités d'intervention terrain, arpentage GPS, imagerie satellite NDVI, diagnostic végétal, ingénierie de conception et gestion de clientèle regroupées dans un bloc unifié pour faciliter votre travail au quotidien.
             </p>
           </div>
         </div>
 
-        <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-muted border border-border text-xs font-bold text-muted-foreground self-start md:self-auto">
-          <CheckCircle2 className="h-3.5 w-3.5 text-emerald-600" />
-          <span>{allToolsCount} outils de conception opérationnels</span>
+        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 self-start md:self-auto">
+          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-xs font-bold text-emerald-700 dark:text-emerald-400">
+            <CheckCircle2 className="h-3.5 w-3.5 text-emerald-600" />
+            <span>{allToolsCount} fonctionnalités opérationnelles</span>
+          </div>
+          <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-muted border border-border text-xs font-bold text-muted-foreground">
+            <ShieldCheck className="h-3.5 w-3.5 text-primary" />
+            <span>Disponible sans connexion</span>
+          </div>
         </div>
       </div>
 
@@ -257,6 +284,27 @@ export default function ServicesPage() {
                 <span>Lancer l'Application Tout-en-un</span>
                 <ArrowRight className="h-4 w-4" />
               </Button>
+
+              <div className="flex items-center gap-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => navigate("/dashboard/diagnostic")}
+                  className="flex-1 h-9 text-xs font-bold rounded-xl border-border hover:bg-muted"
+                >
+                  <Microscope className="h-3.5 w-3.5 mr-1 text-primary" />
+                  Diagnostic Photo
+                </Button>
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => navigate("/dashboard/field-designer")}
+                  className="flex-1 h-9 text-xs font-bold rounded-xl border-border hover:bg-muted"
+                >
+                  <Compass className="h-3.5 w-3.5 mr-1 text-[#F97316]" />
+                  Field Designer
+                </Button>
+              </div>
             </div>
           </div>
         </div>
@@ -335,7 +383,7 @@ export default function ServicesPage() {
         <div className="flex items-center justify-between">
           <h2 className="text-base sm:text-lg font-heading font-black text-foreground flex items-center gap-2">
             <Compass className="h-5 w-5 text-[#F97316]" />
-            <span>Outils de Conception de Parcelles NAFA</span>
+            <span>Catalogue Unifié — Fonctionnalités Agronome & Conseil</span>
             <span className="text-xs text-muted-foreground font-semibold">
               ({filteredTools.length} outil{filteredTools.length > 1 ? "s" : ""})
             </span>
