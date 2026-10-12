@@ -59,7 +59,7 @@ describe("Workflow Intégral : Publication de Prestations par les Agronomes & Co
   });
 
   it("4. Un agronome peut publier et persister une offre de service agronomique", async () => {
-    const agronomeOfferInput: Partial<PartnerOffer> = {
+    const agronomeOfferInput = {
       owner_id: "agronome-pro-001",
       partner_name: "Cabinet Agro-Expert Sahel",
       category: "diagnostic_phytosanitaire",
