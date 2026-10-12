@@ -34,8 +34,11 @@ import {
   HelpCircle,
   CheckCircle2,
   AlertTriangle,
+  Flame,
+  Move,
 } from "lucide-react";
 import { toast } from "sonner";
+import agronomistImg from "@/assets/gallery/agronomist-tablet.jpg";
 
 interface MessageItem {
   id: string;
@@ -60,6 +63,71 @@ export function UniversalNafaCopilotWidget() {
   const [isLoading, setIsLoading] = useState(false);
   const [messages, setMessages] = useState<MessageItem[]>([]);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  // Position flottante libre (permet à l'icône de bouger partout sur l'écran)
+  const [pos, setPos] = useState<{ x: number; y: number } | null>(() => {
+    try {
+      const saved = localStorage.getItem("nafa_copilot_pos");
+      return saved ? JSON.parse(saved) : null;
+    } catch {
+      return null;
+    }
+  });
+
+  const isDraggingRef = useRef(false);
+  const dragStartRef = useRef<{ clientX: number; clientY: number; startX: number; startY: number }>({
+    clientX: 0,
+    clientY: 0,
+    startX: 0,
+    startY: 0,
+  });
+  const movedRef = useRef(false);
+
+  const handlePointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
+    const rect = e.currentTarget.getBoundingClientRect();
+    isDraggingRef.current = true;
+    movedRef.current = false;
+    dragStartRef.current = {
+      clientX: e.clientX,
+      clientY: e.clientY,
+      startX: rect.left,
+      startY: rect.top,
+    };
+    (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
+  };
+
+  const handlePointerMove = (e: React.PointerEvent<HTMLDivElement>) => {
+    if (!isDraggingRef.current) return;
+    const deltaX = e.clientX - dragStartRef.current.clientX;
+    const deltaY = e.clientY - dragStartRef.current.clientY;
+
+    if (Math.abs(deltaX) > 4 || Math.abs(deltaY) > 4) {
+      movedRef.current = true;
+    }
+
+    if (movedRef.current) {
+      const newX = Math.max(8, Math.min(window.innerWidth - 72, dragStartRef.current.startX + deltaX));
+      const newY = Math.max(8, Math.min(window.innerHeight - 72, dragStartRef.current.startY + deltaY));
+      setPos({ x: newX, y: newY });
+    }
+  };
+
+  const handlePointerUp = (e: React.PointerEvent<HTMLDivElement>) => {
+    if (!isDraggingRef.current) return;
+    isDraggingRef.current = false;
+    try {
+      (e.currentTarget as HTMLElement).releasePointerCapture(e.pointerId);
+    } catch {}
+
+    if (movedRef.current) {
+      if (pos) {
+        localStorage.setItem("nafa_copilot_pos", JSON.stringify(pos));
+      }
+    } else {
+      // C'était un simple clic sans déplacement : ouvrir le copilote
+      setIsOpen(true);
+    }
+  };
 
   // Initialisation à l'ouverture ou connexion avec message personnalisé par utilisateur
   useEffect(() => {
@@ -214,20 +282,50 @@ export function UniversalNafaCopilotWidget() {
 
   return (
     <>
-      {/* Bouton Flottant Déclencheur */}
+      {/* Bouton Flottant Déclencheur avec Vraie Image & Bougie d'Allumage Déplaçable */}
       {!isOpen && (
-        <div className="fixed bottom-6 right-6 z-50 flex items-center gap-3">
-          <div className="hidden md:flex items-center gap-2 bg-slate-900/90 text-white text-xs px-3 py-1.5 rounded-full shadow-lg border border-emerald-500/30 backdrop-blur-sm animate-pulse">
-            <span className="w-2 h-2 rounded-full bg-emerald-400"></span>
+        <div
+          onPointerDown={handlePointerDown}
+          onPointerMove={handlePointerMove}
+          onPointerUp={handlePointerUp}
+          style={
+            pos
+              ? { left: `${pos.x}px`, top: `${pos.y}px` }
+              : { right: "24px", bottom: "24px" }
+          }
+          className="fixed z-50 flex items-center gap-2.5 cursor-grab active:cursor-grabbing select-none group touch-none"
+          title="Copilote NAFA (Glissez pour déplacer l'icône sur l'écran • Cliquez pour ouvrir)"
+        >
+          {/* Badge indicatif textuel au survol ou visible */}
+          <div className="hidden sm:flex items-center gap-1.5 bg-slate-900/95 text-white text-[11px] font-bold px-3 py-1.5 rounded-full shadow-xl border border-emerald-500/40 backdrop-blur-md">
+            <Move className="h-3 w-3 text-slate-400 group-hover:text-emerald-400 transition-colors" />
             <span>Copilote NAFA</span>
+            <span className="flex items-center gap-0.5 text-amber-400 text-[10px]">
+              <Flame className="h-3 w-3 fill-amber-400 animate-pulse" />
+              <span>Allumé</span>
+            </span>
           </div>
-          <Button
-            onClick={() => setIsOpen(true)}
-            className="h-14 w-14 rounded-full shadow-2xl bg-gradient-to-tr from-emerald-600 to-teal-500 hover:from-emerald-700 hover:to-teal-600 text-white p-0 border-2 border-white/20 hover:scale-105 transition-all"
-            title="Ouvrir le Copilote Intelligent NAFA-AGRITECH"
-          >
-            <Bot className="h-7 w-7" />
-          </Button>
+
+          {/* Bouton Avatar avec Vraie Image Réaliste et Bougie d'Allumage */}
+          <div className="relative">
+            <div className="h-15 w-15 rounded-full p-0.5 bg-gradient-to-tr from-emerald-600 via-amber-400 to-emerald-500 shadow-2xl hover:scale-105 active:scale-95 transition-transform overflow-visible">
+              <div className="h-full w-full rounded-full overflow-hidden border-2 border-slate-950 bg-slate-900 relative">
+                <img
+                  src={agronomistImg}
+                  alt="NAFA Copilote - Expert Terrain Réel"
+                  className="h-full w-full object-cover object-center pointer-events-none"
+                />
+              </div>
+            </div>
+
+            {/* Voyant / Bougie d'Allumage Active (Témoin lumineux chaud et pulsant) */}
+            <div
+              className="absolute -top-1 -right-1 h-6 w-6 rounded-full bg-gradient-to-tr from-amber-600 to-amber-400 border-2 border-slate-950 flex items-center justify-center shadow-lg shadow-amber-500/50"
+              title="Bougie d'allumage active • Système opérationnel en direct"
+            >
+              <Flame className="h-3.5 w-3.5 text-white fill-amber-200 animate-pulse" />
+            </div>
+          </div>
         </div>
       )}
 
@@ -237,12 +335,29 @@ export function UniversalNafaCopilotWidget() {
           {/* En-tête */}
           <div className="flex items-center justify-between px-4 py-3 bg-gradient-to-r from-slate-900 via-emerald-950/60 to-slate-900 border-b border-emerald-500/20">
             <div className="flex items-center gap-3">
-              <div className="h-9 w-9 rounded-xl bg-emerald-500/20 border border-emerald-500/40 flex items-center justify-center text-emerald-400">
-                <Bot className="h-5 w-5" />
+              {/* Avatar avec vraie image et bougie d'allumage */}
+              <div className="relative">
+                <div className="h-10 w-10 rounded-full p-0.5 bg-gradient-to-tr from-emerald-500 to-amber-400 shadow-md">
+                  <div className="h-full w-full rounded-full overflow-hidden border border-slate-900">
+                    <img
+                      src={agronomistImg}
+                      alt="NAFA Copilote"
+                      className="h-full w-full object-cover object-center"
+                    />
+                  </div>
+                </div>
+                <div className="absolute -bottom-0.5 -right-0.5 h-4 w-4 rounded-full bg-amber-500 border border-slate-900 flex items-center justify-center shadow-xs">
+                  <Flame className="h-2.5 w-2.5 text-white fill-amber-200 animate-pulse" />
+                </div>
               </div>
+
               <div>
                 <div className="flex items-center gap-2">
                   <h3 className="text-sm font-bold text-white tracking-wide">NAFA COPILOTE</h3>
+                  <Badge variant="outline" className="text-[9px] font-extrabold bg-amber-500/15 text-amber-300 border-amber-500/40 px-1.5 py-0 flex items-center gap-1">
+                    <Flame className="h-2.5 w-2.5 fill-amber-300" />
+                    <span>Moteur Actif</span>
+                  </Badge>
                 </div>
                 <p className="text-[11px] text-slate-400">
                   {profile?.full_name?.trim() ? (

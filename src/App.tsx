@@ -113,6 +113,7 @@ const PartnerDemandesPage = lazy(() => import("./pages/dashboard/partenaire/Part
 const PartnerInvoicesPage = lazy(() => import("./pages/dashboard/partenaire/PartnerInvoicesPage"));
 const GpsSurveyPage = lazy(() => import("./pages/dashboard/GpsSurveyPage"));
 const FieldSuiteAllInOnePage = lazy(() => import("./pages/dashboard/FieldSuiteAllInOnePage"));
+const ExpertDiagnosisPage = lazy(() => import("./pages/dashboard/expert/ExpertDiagnosisPage"));
 
 import PageLoader from "@/components/PageLoader";
 import { startUniversalSyncEngine } from "@/lib/universalSyncEngine";
@@ -227,7 +228,9 @@ const App = () => {
                 <Route path="inspections" element={<Suspense fallback={<PageLoader />}><SmartInspectionPage /></Suspense>} />
                 <Route path="smart-inspection" element={<Suspense fallback={<PageLoader />}><SmartInspectionPage /></Suspense>} />
                 <Route path="expert-toolbox" element={<Suspense fallback={<PageLoader />}><ExpertToolboxPage /></Suspense>} />
-                <Route path="expert-diagnosis" element={<Navigate to="/dashboard" replace />} />
+                <Route path="diagnostic" element={<Suspense fallback={<PageLoader />}><ExpertDiagnosisPage /></Suspense>} />
+                <Route path="crop-diagnosis" element={<Suspense fallback={<PageLoader />}><ExpertDiagnosisPage /></Suspense>} />
+                <Route path="expert-diagnosis" element={<Suspense fallback={<PageLoader />}><ExpertDiagnosisPage /></Suspense>} />
                 <Route path="expert-calculator" element={<Suspense fallback={<PageLoader />}><ExpertCalculatorPage /></Suspense>} />
                 <Route path="expert-prescriptions" element={<Suspense fallback={<PageLoader />}><ExpertPrescriptionsPage /></Suspense>} />
                 <Route path="crop-library" element={<Suspense fallback={<PageLoader />}><CropLibraryPage /></Suspense>} />
