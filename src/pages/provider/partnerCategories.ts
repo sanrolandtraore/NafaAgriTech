@@ -19,3 +19,14 @@ export const VET_OFFER_CATEGORIES = [
   { value: "aliments_elevage", label: "Aliments & Compléments d'élevage" },
   { value: "materiel_elevage", label: "Matériel & Équipements d'élevage" },
 ];
+
+export const AGRONOME_OFFER_CATEGORIES = [
+  { value: "diagnostic_phytosanitaire", label: "Diagnostic phytosanitaire & Santé des cultures" },
+  { value: "arpentage_cartographie", label: "Arpentage parcellaire GPS & Plan topographique" },
+  { value: "conception_irrigation", label: "Étude & Dimensionnement réseau d'irrigation" },
+  { value: "plan_fertilisation", label: "Plan de fertilisation & Analyse de sol" },
+  { value: "suivi_culture", label: "Suivi de campagne & Visites de parcelles" },
+  { value: "formation_technique", label: "Formation technique & Bonnes pratiques agricoles" },
+  { value: "expertise_agricole", label: "Étude de faisabilité & Plan d'exploitation" },
+  { value: "service", label: "Autre prestation de conseil agronomique" },
+];

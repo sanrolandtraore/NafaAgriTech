@@ -12,7 +12,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Package, Plus, Trash2, Pencil, Search, Store, Video, Image as ImageIcon, Phone, MapPin, Tag, Copy, ExternalLink, Share2 } from "lucide-react";
 import { toast } from "sonner";
-import { OFFER_CATEGORIES, VET_OFFER_CATEGORIES } from "./partnerCategories";
+import { OFFER_CATEGORIES, VET_OFFER_CATEGORIES, AGRONOME_OFFER_CATEGORIES } from "./partnerCategories";
 import { partnerStorage, PartnerOffer, MediaItem } from "@/lib/partnerStorage";
 import { getEffectiveUserId } from "@/lib/deviceIdentity";
 import ProductMediaUploader from "@/components/partner/ProductMediaUploader";
@@ -33,17 +33,22 @@ const emptyForm = {
 };
 
 export default function MyOffersPage() {
-  const { user, profile, partnerType } = useAuth();
+  const { user, profile, partnerType, primaryRole } = useAuth();
   const isFinance = partnerType === "institution_agri";
   const isVet = partnerType === "elevage_veterinaire";
-  const currentCategories = isVet ? VET_OFFER_CATEGORIES : OFFER_CATEGORIES;
+  const isAgronome = primaryRole === "expert" || primaryRole === "agent_technique" || partnerType === "expert_agronome";
+  const currentCategories = isVet
+    ? VET_OFFER_CATEGORIES
+    : isAgronome
+    ? AGRONOME_OFFER_CATEGORIES
+    : OFFER_CATEGORIES;
   const [offers, setOffers] = useState<PartnerOffer[]>([]);
   const [loading, setLoading] = useState(true);
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState<PartnerOffer | null>(null);
   const [form, setForm] = useState({
     ...emptyForm,
-    category: isFinance ? "financement" : isVet ? "veterinaire" : "intrants",
+    category: isFinance ? "financement" : isVet ? "veterinaire" : isAgronome ? "diagnostic_phytosanitaire" : "intrants",
   });
   const [saving, setSaving] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
@@ -75,13 +80,15 @@ export default function MyOffersPage() {
     setEditing(null);
     setForm({
       ...emptyForm,
-      category: isFinance ? "financement" : isVet ? "veterinaire" : "intrants",
+      category: isFinance ? "financement" : isVet ? "veterinaire" : isAgronome ? "diagnostic_phytosanitaire" : "intrants",
       partner_name:
         profile?.full_name ||
         (isFinance
           ? "Établissement Financier"
           : isVet
           ? "Cabinet Vétérinaire & Santé Animale"
+          : isAgronome
+          ? "Cabinet d'Agronomie & Conseil"
           : "Mon Entreprise Agricole"),
       contact_phone: profile?.phone || "+226 ",
       media: [],
@@ -307,7 +314,11 @@ export default function MyOffersPage() {
                 <CardHeader className="p-4 pb-2">
                   <div className="flex items-start justify-between gap-2">
                     <Badge variant="outline" className="text-[11px] capitalize">
-                      {OFFER_CATEGORIES.find((c) => c.value === o.category)?.label || o.category}
+                      {currentCategories.find((c) => c.value === o.category)?.label ||
+                        AGRONOME_OFFER_CATEGORIES.find((c) => c.value === o.category)?.label ||
+                        VET_OFFER_CATEGORIES.find((c) => c.value === o.category)?.label ||
+                        OFFER_CATEGORIES.find((c) => c.value === o.category)?.label ||
+                        o.category}
                     </Badge>
                     <Badge variant={o.is_active ? "secondary" : "outline"} className="text-[11px] flex items-center gap-1.5">
                       {o.is_active ? (
@@ -407,13 +418,19 @@ export default function MyOffersPage() {
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
               <div className="space-y-1.5">
                 <Label htmlFor="o-title">
-                  {isVet ? "Intitulé de l'acte ou service vétérinaire *" : "Titre du produit ou service *"}
+                  {isVet
+                    ? "Intitulé de l'acte ou service vétérinaire *"
+                    : isAgronome
+                    ? "Intitulé de la prestation d'agronomie *"
+                    : "Titre du produit ou service *"}
                 </Label>
                 <Input
                   id="o-title"
                   placeholder={
                     isVet
                       ? "ex: Consultation bovine sur site, Vaccination charbon/PPR, Césarienne..."
+                      : isAgronome
+                      ? "ex: Diagnostic phytosanitaire sur site, Arpentage parcellaire GPS, Plan de fumure..."
                       : isFinance
                       ? "ex: Crédit de campagne agricole, Assurance bétail..."
                       : "ex: Tracteur 75 CV, Semences Maïs FBC6..."
@@ -445,7 +462,11 @@ export default function MyOffersPage() {
               <Textarea
                 id="o-desc"
                 rows={3}
-                placeholder="Précisez les caractéristiques, l'efficacité, la disponibilité et les modalités de livraison..."
+                placeholder={
+                  isAgronome
+                    ? "Décrivez le déroulement de l'intervention, les livrables (rapport, carte, ordonnance) et la zone couverte..."
+                    : "Précisez les caractéristiques, l'efficacité, la disponibilité et les modalités de livraison..."
+                }
                 value={form.description}
                 onChange={(e) => setField("description", e.target.value)}
               />
@@ -462,10 +483,14 @@ export default function MyOffersPage() {
                 />
               </div>
               <div className="space-y-1.5">
-                <Label htmlFor="o-unit">Unité de mesure</Label>
+                <Label htmlFor="o-unit">Unité de facturation / mesure</Label>
                 <Input
                   id="o-unit"
-                  placeholder="ex: sac 50kg, hectare, jour, litre..."
+                  placeholder={
+                    isAgronome
+                      ? "ex: par hectare, par visite, par parcelle, forfait..."
+                      : "ex: sac 50kg, hectare, jour, litre..."
+                  }
                   value={form.unit}
                   onChange={(e) => setField("unit", e.target.value)}
                 />

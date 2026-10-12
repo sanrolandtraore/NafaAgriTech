@@ -84,7 +84,8 @@ export const agronomeNav: NavItem[] = [
   { to: "/dashboard/education", labelKey: "Formation professionnelle", icon: GraduationCap, section: "Pôle Conception & Ingénierie" },
   // Bloc 3 : Pôle Conseil, Clients & Devis
   { to: "/dashboard/expert-clients", labelKey: "Portefeuille Clients", icon: Users, section: "Pôle Conseil & Gestion" },
-  { to: "/dashboard/quote-requests", labelKey: "Demandes de devis", icon: FileText, section: "Pôle Conseil & Gestion" },
+  { to: "/dashboard/partenaire-mes-offres", labelKey: "Proposer mes Prestations & Tarifs", icon: Store, section: "Pôle Conseil & Gestion" },
+  { to: "/dashboard/quote-requests", labelKey: "Demandes de devis & Commandes", icon: FileText, section: "Pôle Conseil & Gestion" },
   { to: "/dashboard/partenaire-factures", labelKey: "Facturation & Proformas", icon: Receipt, section: "Pôle Conseil & Gestion" },
   { to: "/dashboard/identite-professionnelle", labelKey: "Identité & Documents", icon: Building2, section: "Pôle Conseil & Gestion" },
   { to: "/dashboard/expert-analytics", labelKey: "Analytique & Performances", icon: BarChart3, section: "Pôle Conseil & Gestion" },
@@ -259,6 +260,8 @@ export const getNavLabel = (item: NavItem, t?: (key: string) => string): string 
     "Diagnostic & Prescriptions": "Diagnostic & Prescriptions",
     "Console Clinique Vétérinaire": "Console Clinique Vétérinaire",
     "Bloc Clinique Tout-en-un": "Bloc Clinique Tout-en-un",
+    "Proposer mes Prestations & Tarifs": "Proposer mes Prestations & Tarifs",
+    "Demandes de devis & Commandes": "Demandes de devis & Commandes",
   };
 
   if (dictionary[key]) {

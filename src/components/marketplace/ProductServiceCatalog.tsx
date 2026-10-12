@@ -39,6 +39,7 @@ import {
   Wrench,
   Landmark,
   ClipboardList,
+  Microscope,
 } from "lucide-react";
 
 export interface ProductServiceCatalogProps {
@@ -51,10 +52,27 @@ export interface ProductServiceCatalogProps {
 
 export const AGRICULTEUR_CATEGORY_TABS = [
   { value: "all", label: "Toutes les offres Agricoles", icon: Layers },
+  {
+    value: "expertise_agronome",
+    label: "Conseil & Services d'Agronomes",
+    match: [
+      "expertise_agronome",
+      "agronome",
+      "diagnostic_phytosanitaire",
+      "arpentage_cartographie",
+      "conception_irrigation",
+      "plan_fertilisation",
+      "suivi_culture",
+      "formation_technique",
+      "expertise_agricole",
+      "service",
+    ],
+    icon: Microscope,
+  },
   { value: "intrants", label: "Intrants & Engrais", match: ["intrants"], icon: FlaskConical },
   { value: "semences", label: "Semences Certifiées", match: ["semences"], icon: Sprout },
   { value: "materiel", label: "Matériel & Machinisme", match: ["materiel", "machinisme"], icon: Tractor },
-  { value: "services", label: "Travaux & Prestations", match: ["services", "travaux", "service"], icon: Wrench },
+  { value: "services", label: "Travaux & Prestations", match: ["services", "travaux"], icon: Wrench },
   { value: "finance", label: "Financement & Assurance Récolte", match: ["finance", "assurance", "banque"], icon: Landmark },
   { value: "mes_commandes", label: "Mes Commandes Agricoles", isOrders: true, icon: ClipboardList },
 ];
@@ -67,6 +85,15 @@ export const AGRICULTEUR_ALLOWED_CATEGORIES = [
   "services",
   "travaux",
   "service",
+  "expertise_agronome",
+  "agronome",
+  "diagnostic_phytosanitaire",
+  "arpentage_cartographie",
+  "conception_irrigation",
+  "plan_fertilisation",
+  "suivi_culture",
+  "formation_technique",
+  "expertise_agricole",
   "finance",
   "assurance",
   "banque",
@@ -258,18 +285,35 @@ export default function ProductServiceCatalog({
       const requesterName =
         profile?.full_name || profile?.display_name || user?.email?.split("@")[0] || "Exploitant Agricole";
 
-      const quoteMessage = `Commande directe : ${selectedOffer.title}. Quantité : ${orderForm.quantity} ${
-        selectedOffer.unit || "unité(s)"
-      }. Livraison : ${orderForm.delivery_location || "Non précisée"}. Précisions : ${
-        orderForm.notes || "Aucune remarque spécifique."
-      }`;
+      const isAgronomeService = [
+        "diagnostic_phytosanitaire",
+        "arpentage_cartographie",
+        "conception_irrigation",
+        "plan_fertilisation",
+        "suivi_culture",
+        "formation_technique",
+        "expertise_agricole",
+        "expertise_agronome",
+      ].includes(selectedOffer.category);
+
+      const quoteMessage = isAgronomeService
+        ? `Demande d'intervention agronomique : ${selectedOffer.title}. Volume/Superficie : ${orderForm.quantity} ${
+            selectedOffer.unit || "ha"
+          }. Parcelle/Localité : ${orderForm.delivery_location || "Non précisée"}. Détails des cultures / besoin : ${
+            orderForm.notes || "Demande d'expertise sur le terrain."
+          }`
+        : `Commande directe : ${selectedOffer.title}. Quantité : ${orderForm.quantity} ${
+            selectedOffer.unit || "unité(s)"
+          }. Livraison : ${orderForm.delivery_location || "Non précisée"}. Précisions : ${
+            orderForm.notes || "Aucune remarque spécifique."
+          }`;
 
       await partnerStorage.saveQuote({
         offer_id: selectedOffer.id,
         requester_id: getEffectiveUserId(user?.id),
         requester_name: requesterName,
         owner_id: selectedOffer.owner_id || "partner-agritech",
-        quantity: `${orderForm.quantity} ${selectedOffer.unit || "unité(s)"}`,
+        quantity: `${orderForm.quantity} ${selectedOffer.unit || (isAgronomeService ? "ha" : "unité(s)")}`,
         needed_by: orderForm.needed_by || null,
         contact_phone: orderForm.contact_phone.trim(),
         message: quoteMessage,
@@ -279,7 +323,9 @@ export default function ProductServiceCatalog({
       });
 
       toast.success(
-        `Commande transmise avec succès à ${selectedOffer.partner_name} ! Vous serez recontacté au ${orderForm.contact_phone}.`
+        isAgronomeService
+          ? `Demande d'intervention transmise avec succès à l'agronome (${selectedOffer.partner_name}) ! Vous serez contacté au ${orderForm.contact_phone}.`
+          : `Commande transmise avec succès à ${selectedOffer.partner_name} ! Vous serez recontacté au ${orderForm.contact_phone}.`
       );
       setOrderModalOpen(false);
       setSelectedOffer(null);
@@ -684,136 +730,198 @@ export default function ProductServiceCatalog({
       {/* SELECTION & ORDER MODAL */}
       <Dialog open={orderModalOpen} onOpenChange={setOrderModalOpen}>
         <DialogContent className="max-w-xl max-h-[92vh] overflow-y-auto p-6 rounded-3xl">
-          <DialogHeader className="space-y-1">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 text-primary text-xs font-bold uppercase tracking-wider w-fit">
-              <ShoppingCart className="h-3.5 w-3.5" /> Commande Directe & Devis
-            </div>
-            <DialogTitle className="text-xl md:text-2xl font-heading font-extrabold text-foreground">
-              Sélectionner ce produit / service
-            </DialogTitle>
-            <DialogDescription className="text-sm text-muted-foreground">
-              Votre demande sera transmise en temps réel au partenaire fournisseur agréé.
-            </DialogDescription>
-          </DialogHeader>
+          {(() => {
+            const isSelectedAgronome = Boolean(
+              selectedOffer &&
+                [
+                  "diagnostic_phytosanitaire",
+                  "arpentage_cartographie",
+                  "conception_irrigation",
+                  "plan_fertilisation",
+                  "suivi_culture",
+                  "formation_technique",
+                  "expertise_agricole",
+                  "expertise_agronome",
+                ].includes(selectedOffer.category)
+            );
 
-          {selectedOffer && (
-            <form onSubmit={handleSubmitOrder} className="space-y-5 pt-2">
-              {/* Product summary card */}
-              <div className="p-4 rounded-2xl bg-muted/50 border border-border/80 flex items-start gap-4">
-                {selectedOffer.image_url ? (
-                  <img
-                    src={selectedOffer.image_url}
-                    alt={selectedOffer.title}
-                    className="h-16 w-16 rounded-xl object-cover shrink-0 border border-border/80"
-                  />
-                ) : (
-                  <div className="h-16 w-16 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
-                    <Package className="h-8 w-8 text-primary" />
-                  </div>
-                )}
-                <div className="flex-1 min-w-0">
-                  <span className="text-xs font-bold text-primary flex items-center gap-1">
-                    <ShieldCheck className="h-3.5 w-3.5" /> {selectedOffer.partner_name}
-                  </span>
-                  <h4 className="font-bold text-foreground text-sm leading-snug line-clamp-2 mt-0.5">
-                    {selectedOffer.title}
-                  </h4>
-                  <div className="flex items-center gap-2 mt-1">
-                    <span className="text-sm font-extrabold text-primary">
-                      {selectedOffer.price_indication || "Tarif sur devis"}
-                    </span>
-                    {selectedOffer.unit && (
-                      <span className="text-xs text-muted-foreground">/ {selectedOffer.unit}</span>
+            return (
+              <>
+                <DialogHeader className="space-y-1">
+                  <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 text-primary text-xs font-bold uppercase tracking-wider w-fit">
+                    {isSelectedAgronome ? (
+                      <>
+                        <Microscope className="h-3.5 w-3.5" /> Réservation de Conseil Agronomique
+                      </>
+                    ) : (
+                      <>
+                        <ShoppingCart className="h-3.5 w-3.5" /> Commande Directe & Devis
+                      </>
                     )}
                   </div>
-                </div>
-              </div>
+                  <DialogTitle className="text-xl md:text-2xl font-heading font-extrabold text-foreground">
+                    {isSelectedAgronome
+                      ? "Réserver cette intervention agronomique"
+                      : "Sélectionner ce produit / service"}
+                  </DialogTitle>
+                  <DialogDescription className="text-sm text-muted-foreground">
+                    {isSelectedAgronome
+                      ? "Votre demande sera transmise directement à l'ingénieur agronome pour planification de la visite sur votre parcelle."
+                      : "Votre demande sera transmise en temps réel au partenaire fournisseur agréé."}
+                  </DialogDescription>
+                </DialogHeader>
 
-              {/* Form fields */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div className="space-y-1.5">
-                  <Label className="text-sm font-bold text-foreground">
-                    Quantité souhaitée ({selectedOffer.unit || "unités"}) *
-                  </Label>
-                  <Input
-                    type="number"
-                    min="1"
-                    step="1"
-                    required
-                    value={orderForm.quantity}
-                    onChange={(e) => setOrderForm({ ...orderForm, quantity: e.target.value })}
-                    className="h-11 rounded-xl text-base font-semibold"
-                  />
-                </div>
+                {selectedOffer && (
+                  <form onSubmit={handleSubmitOrder} className="space-y-5 pt-2">
+                    {/* Product summary card */}
+                    <div className="p-4 rounded-2xl bg-muted/50 border border-border/80 flex items-start gap-4">
+                      {selectedOffer.image_url ? (
+                        <img
+                          src={selectedOffer.image_url}
+                          alt={selectedOffer.title}
+                          className="h-16 w-16 rounded-xl object-cover shrink-0 border border-border/80"
+                        />
+                      ) : (
+                        <div className="h-16 w-16 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
+                          {isSelectedAgronome ? (
+                            <Microscope className="h-8 w-8 text-primary" />
+                          ) : (
+                            <Package className="h-8 w-8 text-primary" />
+                          )}
+                        </div>
+                      )}
+                      <div className="flex-1 min-w-0">
+                        <span className="text-xs font-bold text-primary flex items-center gap-1">
+                          <ShieldCheck className="h-3.5 w-3.5" /> {selectedOffer.partner_name}
+                        </span>
+                        <h4 className="font-bold text-foreground text-sm leading-snug line-clamp-2 mt-0.5">
+                          {selectedOffer.title}
+                        </h4>
+                        <div className="flex items-center gap-2 mt-1">
+                          <span className="text-sm font-extrabold text-primary">
+                            {selectedOffer.price_indication || "Tarif sur devis"}
+                          </span>
+                          {selectedOffer.unit && (
+                            <span className="text-xs text-muted-foreground">/ {selectedOffer.unit}</span>
+                          )}
+                        </div>
+                      </div>
+                    </div>
 
-                <div className="space-y-1.5">
-                  <Label className="text-sm font-bold text-foreground">Date souhaitée de mise à disposition</Label>
-                  <Input
-                    type="date"
-                    value={orderForm.needed_by}
-                    onChange={(e) => setOrderForm({ ...orderForm, needed_by: e.target.value })}
-                    className="h-11 rounded-xl text-base font-semibold"
-                  />
-                </div>
-              </div>
+                    {/* Form fields */}
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <div className="space-y-1.5">
+                        <Label className="text-sm font-bold text-foreground">
+                          {isSelectedAgronome
+                            ? `Superficie ou volume (${selectedOffer.unit || "ha / visites"}) *`
+                            : `Quantité souhaitée (${selectedOffer.unit || "unités"}) *`}
+                        </Label>
+                        <Input
+                          type="number"
+                          min="1"
+                          step="1"
+                          required
+                          value={orderForm.quantity}
+                          onChange={(e) => setOrderForm({ ...orderForm, quantity: e.target.value })}
+                          className="h-11 rounded-xl text-base font-semibold"
+                        />
+                      </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div className="space-y-1.5">
-                  <Label className="text-sm font-bold text-foreground">Numéro de téléphone de contact *</Label>
-                  <Input
-                    type="tel"
-                    required
-                    placeholder="+226 XX XX XX XX"
-                    value={orderForm.contact_phone}
-                    onChange={(e) => setOrderForm({ ...orderForm, contact_phone: e.target.value })}
-                    className="h-11 rounded-xl text-base font-semibold"
-                  />
-                  <span className="text-[11px] text-muted-foreground">Le fournisseur vous appellera pour confirmation.</span>
-                </div>
+                      <div className="space-y-1.5">
+                        <Label className="text-sm font-bold text-foreground">
+                          {isSelectedAgronome
+                            ? "Date souhaitée d'intervention"
+                            : "Date souhaitée de mise à disposition"}
+                        </Label>
+                        <Input
+                          type="date"
+                          value={orderForm.needed_by}
+                          onChange={(e) => setOrderForm({ ...orderForm, needed_by: e.target.value })}
+                          className="h-11 rounded-xl text-base font-semibold"
+                        />
+                      </div>
+                    </div>
 
-                <div className="space-y-1.5">
-                  <Label className="text-sm font-bold text-foreground">Lieu / Commune de livraison</Label>
-                  <Input
-                    type="text"
-                    placeholder="Ex: Bobo-Dioulasso, Koubri, Koudougou..."
-                    value={orderForm.delivery_location}
-                    onChange={(e) => setOrderForm({ ...orderForm, delivery_location: e.target.value })}
-                    className="h-11 rounded-xl text-base font-semibold"
-                  />
-                </div>
-              </div>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <div className="space-y-1.5">
+                        <Label className="text-sm font-bold text-foreground">Numéro de téléphone de contact *</Label>
+                        <Input
+                          type="tel"
+                          required
+                          placeholder="+226 XX XX XX XX"
+                          value={orderForm.contact_phone}
+                          onChange={(e) => setOrderForm({ ...orderForm, contact_phone: e.target.value })}
+                          className="h-11 rounded-xl text-base font-semibold"
+                        />
+                        <span className="text-[11px] text-muted-foreground">
+                          {isSelectedAgronome
+                            ? "L'agronome vous contactera pour confirmer l'intervention."
+                            : "Le fournisseur vous appellera pour confirmation."}
+                        </span>
+                      </div>
 
-              <div className="space-y-1.5">
-                <Label className="text-sm font-bold text-foreground">Précisions ou instructions complémentaires</Label>
-                <Textarea
-                  placeholder="Ex: Livraison en bordure de parcelle, conditionnement en sacs de 50 kg, besoin d'un chauffeur expérimenté..."
-                  value={orderForm.notes}
-                  onChange={(e) => setOrderForm({ ...orderForm, notes: e.target.value })}
-                  rows={3}
-                  className="rounded-xl text-sm font-medium"
-                />
-              </div>
+                      <div className="space-y-1.5">
+                        <Label className="text-sm font-bold text-foreground">
+                          {isSelectedAgronome
+                            ? "Localisation de votre parcelle (Commune / Village)"
+                            : "Lieu / Commune de livraison"}
+                        </Label>
+                        <Input
+                          type="text"
+                          placeholder="Ex: Bobo-Dioulasso, Koubri, Koudougou..."
+                          value={orderForm.delivery_location}
+                          onChange={(e) => setOrderForm({ ...orderForm, delivery_location: e.target.value })}
+                          className="h-11 rounded-xl text-base font-semibold"
+                        />
+                      </div>
+                    </div>
 
-              <DialogFooter className="gap-2 sm:gap-0 pt-2">
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => setOrderModalOpen(false)}
-                  className="h-11 rounded-xl font-bold"
-                >
-                  Annuler
-                </Button>
-                <Button
-                  type="submit"
-                  disabled={submitting}
-                  className="h-11 px-6 rounded-xl gradient-primary text-primary-foreground font-extrabold shadow-premium"
-                >
-                  <Send className="h-4 w-4 mr-2" />
-                  {submitting ? "Transmission en cours..." : "Confirmer ma commande"}
-                </Button>
-              </DialogFooter>
-            </form>
-          )}
+                    <div className="space-y-1.5">
+                      <Label className="text-sm font-bold text-foreground">
+                        {isSelectedAgronome
+                          ? "Description du besoin ou symptômes observés sur la culture"
+                          : "Précisions ou instructions complémentaires"}
+                      </Label>
+                      <Textarea
+                        placeholder={
+                          isSelectedAgronome
+                            ? "Ex: Jaunissement des feuilles sur 2 ha de tomate, besoin d'arpentage d'un nouveau verger, diagnostic d'irrigation..."
+                            : "Ex: Livraison en bordure de parcelle, conditionnement en sacs de 50 kg, besoin d'un chauffeur expérimenté..."
+                        }
+                        value={orderForm.notes}
+                        onChange={(e) => setOrderForm({ ...orderForm, notes: e.target.value })}
+                        rows={3}
+                        className="rounded-xl text-sm font-medium"
+                      />
+                    </div>
+
+                    <DialogFooter className="gap-2 sm:gap-0 pt-2">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={() => setOrderModalOpen(false)}
+                        className="h-11 rounded-xl font-bold"
+                      >
+                        Annuler
+                      </Button>
+                      <Button
+                        type="submit"
+                        disabled={submitting}
+                        className="h-11 px-6 rounded-xl gradient-primary text-primary-foreground font-extrabold shadow-premium"
+                      >
+                        <Send className="h-4 w-4 mr-2" />
+                        {submitting
+                          ? "Transmission en cours..."
+                          : isSelectedAgronome
+                          ? "Transmettre ma demande d'intervention"
+                          : "Confirmer ma commande"}
+                      </Button>
+                    </DialogFooter>
+                  </form>
+                )}
+              </>
+            );
+          })()}
         </DialogContent>
       </Dialog>
     </div>
