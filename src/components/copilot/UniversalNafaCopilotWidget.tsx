@@ -64,15 +64,37 @@ export function UniversalNafaCopilotWidget() {
   const [messages, setMessages] = useState<MessageItem[]>([]);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  // Position flottante libre (permet à l'icône de bouger partout sur l'écran)
+  // Position flottante libre (permet à l'icône de bouger partout sur l'écran avec sauvegarde et repositionnement adaptatif)
   const [pos, setPos] = useState<{ x: number; y: number } | null>(() => {
     try {
       const saved = localStorage.getItem("nafa_copilot_pos");
-      return saved ? JSON.parse(saved) : null;
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (typeof parsed?.x === "number" && typeof parsed?.y === "number") {
+          const clampedX = Math.max(12, Math.min((typeof window !== "undefined" ? window.innerWidth : 1024) - 76, parsed.x));
+          const clampedY = Math.max(12, Math.min((typeof window !== "undefined" ? window.innerHeight : 768) - 100, parsed.y));
+          return { x: clampedX, y: clampedY };
+        }
+      }
+      return null;
     } catch {
       return null;
     }
   });
+
+  // Réajuster la position lors d'un redimensionnement de l'écran pour éviter que l'icône sorte du viewport
+  useEffect(() => {
+    const handleResize = () => {
+      setPos((prev) => {
+        if (!prev) return null;
+        const clampedX = Math.max(12, Math.min(window.innerWidth - 76, prev.x));
+        const clampedY = Math.max(12, Math.min(window.innerHeight - 100, prev.y));
+        return { x: clampedX, y: clampedY };
+      });
+    };
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
 
   const isDraggingRef = useRef(false);
   const dragStartRef = useRef<{ clientX: number; clientY: number; startX: number; startY: number }>({
@@ -93,7 +115,11 @@ export function UniversalNafaCopilotWidget() {
       startX: rect.left,
       startY: rect.top,
     };
-    (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
+    try {
+      (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
+    } catch {
+      // Ignorer si la capture du pointeur n'est pas supportée
+    }
   };
 
   const handlePointerMove = (e: React.PointerEvent<HTMLDivElement>) => {
@@ -106,8 +132,8 @@ export function UniversalNafaCopilotWidget() {
     }
 
     if (movedRef.current) {
-      const newX = Math.max(8, Math.min(window.innerWidth - 72, dragStartRef.current.startX + deltaX));
-      const newY = Math.max(8, Math.min(window.innerHeight - 72, dragStartRef.current.startY + deltaY));
+      const newX = Math.max(12, Math.min(window.innerWidth - 76, dragStartRef.current.startX + deltaX));
+      const newY = Math.max(12, Math.min(window.innerHeight - 100, dragStartRef.current.startY + deltaY));
       setPos({ x: newX, y: newY });
     }
   };
@@ -122,9 +148,16 @@ export function UniversalNafaCopilotWidget() {
     }
 
     if (movedRef.current) {
-      if (pos) {
-        localStorage.setItem("nafa_copilot_pos", JSON.stringify(pos));
-      }
+      setPos((current) => {
+        if (current) {
+          try {
+            localStorage.setItem("nafa_copilot_pos", JSON.stringify(current));
+          } catch {
+            // Ignorer si localStorage inaccessible
+          }
+        }
+        return current;
+      });
     } else {
       // C'était un simple clic sans déplacement : ouvrir le copilote
       setIsOpen(true);
@@ -134,14 +167,15 @@ export function UniversalNafaCopilotWidget() {
   // Initialisation à l'ouverture ou connexion avec message personnalisé par utilisateur
   useEffect(() => {
     if (messages.length === 0) {
-      const userRole = primaryRole || "agriculteur";
-      const userName = profile?.full_name?.trim() || (user ? "Producteur" : "");
+      const isAuth = !!user;
+      const userRole = primaryRole || (isAuth ? "agriculteur" : "visiteur");
+      const userName = profile?.full_name?.trim() || (isAuth ? "Producteur" : "");
 
       let welcomeText = "";
       let suggestedActions = [
-        { title: "Diagnostic Photo Végétal", target_route: "/dashboard/diagnostic", icon: "Camera" },
-        { title: "Conception Parcelles & 3D", target_route: "/dashboard/field-designer", icon: "Compass" },
-        { title: "Marché des Services", target_route: "/dashboard/marketplace", icon: "Store" },
+        { title: "Diagnostic Photo Végétal", target_route: isAuth ? "/dashboard/diagnostic" : "/diagnostic", icon: "Camera" },
+        { title: "Explorer la Plateforme", target_route: "/explorer", icon: "Compass" },
+        { title: "Marché & Intrants", target_route: "/marketplace", icon: "Store" },
       ];
 
       if (userRole === "agriculteur") {
@@ -149,52 +183,52 @@ export function UniversalNafaCopilotWidget() {
           ? `Bonjour ${userName} ! Ravi de vous accompagner sur votre exploitation. Que souhaitez-vous vérifier aujourd'hui sur vos cultures, vos besoins en intrants ou vos parcelles ?`
           : `Bonjour ! Ravi de vous accompagner. Que souhaitez-vous vérifier aujourd'hui sur vos cultures, vos besoins en intrants ou vos parcelles ?`;
         suggestedActions = [
-          { title: "Scanner une Plante Malade", target_route: "/dashboard/diagnostic", icon: "Camera" },
-          { title: "Marché des Intrants & Travaux", target_route: "/dashboard/marketplace", icon: "Store" },
-          { title: "Planification des Cultures", target_route: "/dashboard/crop-planning", icon: "Sprout" },
+          { title: "Scanner une Plante Malade", target_route: isAuth ? "/dashboard/diagnostic" : "/diagnostic", icon: "Camera" },
+          { title: "Marché des Intrants & Travaux", target_route: isAuth ? "/dashboard/marketplace" : "/marketplace", icon: "Store" },
+          { title: "Planification des Cultures", target_route: isAuth ? "/dashboard/crop-planning" : "/explorer", icon: "Sprout" },
         ];
       } else if (userRole === "eleveur") {
         welcomeText = userName
           ? `Bonjour ${userName} ! Votre espace d'élevage et de zootechnie est actif. Avez-vous une question sur la conduite de votre cheptel, l'alimentation ou la santé animale ?`
           : `Bonjour ! Votre espace d'élevage et de zootechnie est actif. Avez-vous une question sur la conduite de votre cheptel, l'alimentation ou la santé animale ?`;
         suggestedActions = [
-          { title: "Mon Cheptel & Animaux", target_route: "/dashboard/animals", icon: "Beef" },
-          { title: "Comptage & Densité Bâtiment", target_route: "/dashboard/animal-counting", icon: "Camera" },
-          { title: "Réserver un Vétérinaire", target_route: "/dashboard/livestock-services", icon: "ShieldCheck" },
+          { title: "Mon Cheptel & Animaux", target_route: isAuth ? "/dashboard/animals" : "/explorer", icon: "Beef" },
+          { title: "Comptage & Densité Bâtiment", target_route: isAuth ? "/dashboard/animal-counting" : "/explorer", icon: "Camera" },
+          { title: "Réserver un Vétérinaire", target_route: isAuth ? "/dashboard/livestock-services" : "/marketplace", icon: "ShieldCheck" },
         ];
       } else if (userRole === "agronome") {
         welcomeText = userName
           ? `Bonjour ${userName} ! Vos outils d'ingénierie agronomique, arpentage GPS métrique et conception 3D sont prêts. Quel projet étudiez-vous ?`
           : `Bonjour Confrère ! Vos outils d'ingénierie agronomique, arpentage GPS métrique et conception 3D sont prêts. Quel projet étudiez-vous ?`;
         suggestedActions = [
-          { title: "Studio CAO & Parcelles 3D", target_route: "/dashboard/field-designer", icon: "Compass" },
-          { title: "Bibliothèque Phytosanitaire", target_route: "/dashboard/crop-library", icon: "Sprout" },
-          { title: "Calculateur Hydraulique FAO-56", target_route: "/dashboard/expert-calculator", icon: "Layers" },
+          { title: "Studio CAO & Parcelles 3D", target_route: isAuth ? "/dashboard/field-designer" : "/explorer", icon: "Compass" },
+          { title: "Bibliothèque Phytosanitaire", target_route: isAuth ? "/dashboard/crop-library" : "/fiches-techniques", icon: "Sprout" },
+          { title: "Calculateur Hydraulique FAO-56", target_route: isAuth ? "/dashboard/expert-calculator" : "/explorer", icon: "Layers" },
         ];
       } else if (userRole === "veterinaire") {
         welcomeText = userName
           ? `Bonjour Dr. ${userName} ! Vos dossiers de soins, suivi épidémiologique et ordonnances sont synchronisés. Que souhaitez-vous consulter ?`
           : `Bonjour Docteur ! Vos dossiers de soins, suivi épidémiologique et ordonnances sont synchronisés. Que souhaitez-vous consulter ?`;
         suggestedActions = [
-          { title: "Interventions & Soins", target_route: "/dashboard/interventions", icon: "ShieldCheck" },
-          { title: "Audit Zootechnique Cheptel", target_route: "/dashboard/animal-counting", icon: "Camera" },
-          { title: "Demandes Éleveurs", target_route: "/dashboard/quote-requests", icon: "FileText" },
+          { title: "Interventions & Soins", target_route: isAuth ? "/dashboard/interventions" : "/explorer", icon: "ShieldCheck" },
+          { title: "Audit Zootechnique Cheptel", target_route: isAuth ? "/dashboard/animal-counting" : "/explorer", icon: "Camera" },
+          { title: "Demandes Éleveurs", target_route: isAuth ? "/dashboard/quote-requests" : "/explorer", icon: "FileText" },
         ];
       } else if (userRole === "fournisseur") {
         welcomeText = userName
           ? `Bonjour ${userName} ! Vos catalogues, stocks de matériel et demandes de devis sont à jour. Souhaitez-vous gérer une offre ou répondre à un client ?`
           : `Bonjour ! Vos catalogues, stocks de matériel et demandes de devis sont à jour. Souhaitez-vous gérer une offre ou répondre à un client ?`;
         suggestedActions = [
-          { title: "Mes Offres & Catalogue", target_route: "/dashboard/partenaire-mes-offres", icon: "Store" },
-          { title: "Demandes de Devis", target_route: "/dashboard/quote-requests", icon: "FileText" },
+          { title: "Mes Offres & Catalogue", target_route: isAuth ? "/dashboard/partenaire-mes-offres" : "/marketplace", icon: "Store" },
+          { title: "Demandes de Devis", target_route: isAuth ? "/dashboard/quote-requests" : "/explorer", icon: "FileText" },
         ];
       } else if (userRole === "institution_agri") {
         welcomeText = userName
           ? `Bonjour ${userName} ! Vos dossiers de financement agricole et produits d'assurance sont prêts pour instruction.`
           : `Bonjour ! Vos dossiers de financement agricole et produits d'assurance sont prêts pour instruction.`;
         suggestedActions = [
-          { title: "Dossiers de Financement", target_route: "/dashboard/partenaire-demandes", icon: "FileText" },
-          { title: "Assurance Agricole", target_route: "/dashboard/partenaire-assurance", icon: "ShieldCheck" },
+          { title: "Dossiers de Financement", target_route: isAuth ? "/dashboard/partenaire-demandes" : "/explorer", icon: "FileText" },
+          { title: "Assurance Agricole", target_route: isAuth ? "/dashboard/partenaire-assurance" : "/solutions", icon: "ShieldCheck" },
         ];
       } else {
         welcomeText = userName
@@ -247,12 +281,24 @@ export function UniversalNafaCopilotWidget() {
         isAuthenticated: !!user,
       });
 
+      // Adapter les routes selon que l'utilisateur est authentifié ou visiteur
+      const adaptedActions = res.suggested_actions?.map((act) => {
+        let route = act.target_route;
+        if (!user && route.startsWith("/dashboard/")) {
+          if (route.includes("diagnostic")) route = "/diagnostic";
+          else if (route.includes("marketplace")) route = "/marketplace";
+          else if (route.includes("crop-library")) route = "/fiches-techniques";
+          else route = "/explorer";
+        }
+        return { ...act, target_route: route };
+      });
+
       const copilotMsg: MessageItem = {
         id: `copilot-${Date.now()}`,
         sender: "copilot",
         text: res.reply,
         category: res.category,
-        suggestedActions: res.suggested_actions,
+        suggestedActions: adaptedActions,
         timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
       };
 
@@ -260,7 +306,7 @@ export function UniversalNafaCopilotWidget() {
     } catch (err: any) {
       console.warn("Moteur distant indisponible, bascule de secours locale active :", err);
       // Réponse locale intelligente de secours
-      const fallbackReply = generateOfflineCopilotReply(q, primaryRole || "agriculteur");
+      const fallbackReply = generateOfflineCopilotReply(q, primaryRole || "agriculteur", !!user);
       setMessages((prev) => [
         ...prev,
         {
@@ -279,6 +325,19 @@ export function UniversalNafaCopilotWidget() {
 
   const handleActionClick = (route: string) => {
     setIsOpen(false);
+    // Si la route est sous /dashboard et l'utilisateur n'est pas connecté, aller vers /diagnostic ou rediriger vers connexion
+    if (!user && route.startsWith("/dashboard/")) {
+      if (route.includes("diagnostic")) {
+        navigate("/diagnostic");
+        return;
+      }
+      if (route.includes("marketplace")) {
+        navigate("/marketplace");
+        return;
+      }
+      navigate(`/connexion?redirect=${encodeURIComponent(route)}`);
+      return;
+    }
     navigate(route);
   };
 
@@ -293,7 +352,7 @@ export function UniversalNafaCopilotWidget() {
           style={
             pos
               ? { left: `${pos.x}px`, top: `${pos.y}px` }
-              : { right: "24px", bottom: "24px" }
+              : { right: "20px", bottom: "80px" }
           }
           className="fixed z-50 flex items-center gap-2.5 cursor-grab active:cursor-grabbing select-none group touch-none"
           title="Copilote NAFA (Glissez pour déplacer l'icône sur l'écran • Cliquez pour ouvrir)"
@@ -310,7 +369,7 @@ export function UniversalNafaCopilotWidget() {
 
           {/* Bouton Avatar avec Vraie Image Réaliste et Bougie d'Allumage */}
           <div className="relative">
-            <div className="h-15 w-15 rounded-full p-0.5 bg-gradient-to-tr from-emerald-600 via-amber-400 to-emerald-500 shadow-2xl hover:scale-105 active:scale-95 transition-transform overflow-visible">
+            <div className="h-14 w-14 rounded-full p-0.5 bg-gradient-to-tr from-emerald-600 via-amber-400 to-emerald-500 shadow-2xl hover:scale-105 active:scale-95 transition-transform overflow-visible ring-2 ring-emerald-500/30">
               <div className="h-full w-full rounded-full overflow-hidden border-2 border-slate-950 bg-slate-900 relative">
                 <img
                   src={agronomistImg}
@@ -487,14 +546,18 @@ export function UniversalNafaCopilotWidget() {
 }
 
 /** Fonction de secours locale avec raisonnement expert sahélien */
-function generateOfflineCopilotReply(query: string, role: string) {
+function generateOfflineCopilotReply(query: string, role: string, isAuth: boolean = false) {
   const q = query.toLowerCase();
+
+  const diagRoute = isAuth ? "/dashboard/diagnostic" : "/diagnostic";
+  const marketRoute = isAuth ? "/dashboard/marketplace" : "/marketplace";
+  const designerRoute = isAuth ? "/dashboard/field-designer" : "/explorer";
 
   if (q.includes("chenille") || q.includes("mais") || q.includes("ravageur")) {
     return {
       text: `### Identification : Chenille Légionnaire d'Automne (Spodoptera frugiperda)\n• Traitement Bio : Azadirachtine (Huile de Neem 50 ml / 15L d'eau) pulvérisée au cœur du cornet au crépuscule.\n• Traitement Homologué CSP-CILSS : Émamectine Benzoate 50 g/kg (ex: Emastar) à dose de 250 g/ha (DAR 7 jours).\n• Test terrain : Observer le 'Y' inversé caractéristique sur la tête de la chenille.`,
       category: "agronomie",
-      actions: [{ title: "Scanner la culture", target_route: "/dashboard/diagnostic", icon: "Camera" }],
+      actions: [{ title: "Scanner la culture", target_route: diagRoute, icon: "Camera" }],
     };
   }
 
@@ -502,7 +565,7 @@ function generateOfflineCopilotReply(query: string, role: string) {
     return {
       text: `### Bilan Hydraulique & Pompage Solaire Sahélien\n• Évapotranspiration ETo de référence : 5.5 à 6.5 mm/jour en saison sèche.\n• Pertes de charge Hazen-Williams : Maintenir la vitesse d'eau entre 1.0 m/s et 1.8 m/s dans le PEHD.\n• Coût moyen forage productif 50m au Burkina : 3 500 000 à 4 500 000 FCFA.`,
       category: "hydraulique",
-      actions: [{ title: "Concevoir le Réseau d'Irrigation 3D", target_route: "/dashboard/field-designer", icon: "Compass" }],
+      actions: [{ title: "Concevoir le Réseau d'Irrigation 3D", target_route: designerRoute, icon: "Compass" }],
     };
   }
 
@@ -510,8 +573,8 @@ function generateOfflineCopilotReply(query: string, role: string) {
     text: `Bienvenue sur NAFA. Comment puis-je vous aider dans vos activités aujourd'hui ?`,
     category: "aide_plateforme",
     actions: [
-      { title: "Marché des Services", target_route: "/dashboard/marketplace", icon: "Store" },
-      { title: "Diagnostic Végétal", target_route: "/dashboard/diagnostic", icon: "Camera" },
+      { title: "Marché des Services", target_route: marketRoute, icon: "Store" },
+      { title: "Diagnostic Végétal", target_route: diagRoute, icon: "Camera" },
     ],
   };
 }
