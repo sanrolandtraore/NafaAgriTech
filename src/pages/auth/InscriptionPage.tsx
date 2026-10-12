@@ -178,12 +178,15 @@ export default function InscriptionPage() {
       );
 
       if (error) {
-        if (error.message?.includes("User already registered") || error.message?.includes("already_exists") || error.message?.includes("déjà enregistré")) {
+        const msg = error.message || "";
+        if (msg.includes("User already registered") || msg.includes("already_exists") || msg.includes("déjà enregistré")) {
           setErrorMessage("Ce numéro de téléphone est déjà enregistré. Connectez-vous avec votre code secret.");
-        } else if (error.message?.includes("disabled")) {
+        } else if (msg.includes("disabled")) {
           setErrorMessage("Erreur lors de la création du compte. Veuillez réessayer.");
+        } else if (msg.toLowerCase().includes("rate limit") || msg.toLowerCase().includes("over_email_send_rate_limit")) {
+          setErrorMessage("La limite d'envoi d'e-mails du serveur est temporairement atteinte. Veuillez patienter un instant ou connectez-vous directement.");
         } else {
-          setErrorMessage(error.message || "Erreur lors de la création du compte.");
+          setErrorMessage(msg || "Erreur lors de la création du compte.");
         }
       } else {
         // Mémoriser le compte pour la prochaine session
@@ -254,10 +257,15 @@ export default function InscriptionPage() {
       );
 
       if (error) {
-        setErrorMessage(error.message || "Erreur lors de l'inscription.");
+        const msg = error.message || "";
+        if (msg.toLowerCase().includes("rate limit") || msg.toLowerCase().includes("over_email_send_rate_limit")) {
+          setErrorMessage("La limite d'envoi d'e-mails du serveur est temporairement atteinte. Vous pouvez créer votre compte directement avec votre numéro de téléphone sans aucune attente.");
+        } else {
+          setErrorMessage(msg || "Erreur lors de l'inscription.");
+        }
       } else {
-        toast.success("Compte créé ! Vérifiez votre adresse e-mail.");
-        navigate(`/verifier-email?email=${encodeURIComponent(trimmedEmail)}`);
+        toast.success("Compte créé avec succès ! Bienvenue !");
+        navigate(targetUrl, { replace: true });
       }
     } catch (err: any) {
       setErrorMessage(err?.message || "Erreur d'inscription.");

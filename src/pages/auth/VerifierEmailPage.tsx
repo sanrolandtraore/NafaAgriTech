@@ -26,7 +26,12 @@ export default function VerifierEmailPage() {
     try {
       const { error } = await resendVerificationEmail(emailParam);
       if (error) {
-        toast.error("Impossible de renvoyer l'e-mail : " + error.message);
+        const msg = error.message || "";
+        if (msg.toLowerCase().includes("rate limit") || msg.toLowerCase().includes("over_email_send_rate_limit")) {
+          toast.warning("La limite d'envoi d'e-mails est temporairement atteinte. Vérifiez vos courriers indésirables ou patientez quelques minutes.");
+        } else {
+          toast.error("Impossible de renvoyer l'e-mail : " + msg);
+        }
       } else {
         setResent(true);
         toast.success("E-mail de confirmation renvoyé avec succès !");
