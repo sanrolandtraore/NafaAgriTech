@@ -208,31 +208,52 @@ class UniversalNafaCopilotEngine:
         # 8. Réponse générale contextuelle enrichie par le rôle
         return self._handle_general_query(query, role, greeting)
 
+    def _extract_first_name(self, full_name: Optional[str]) -> str:
+        """Extrait proprement le prénom de l'utilisateur en filtrant les titres honorifiques."""
+        if not full_name:
+            return ""
+        clean = full_name.strip()
+        honorifics = [
+            r"^dr\.?\s+", r"^ing\.?\s+", r"^prof\.?\s+", r"^pr\.?\s+",
+            r"^m\.?\s+", r"^mme\.?\s+", r"^mlle\.?\s+",
+            r"^monsieur\s+", r"^madame\s+", r"^mademoiselle\s+", r"^maître\s+", r"^me\.?\s+"
+        ]
+        for pattern in honorifics:
+            clean = re.sub(pattern, "", clean, flags=re.IGNORECASE).strip()
+
+        parts = clean.split()
+        if not parts:
+            return ""
+
+        first = parts[0]
+        subparts = [p.capitalize() for p in first.split("-")]
+        return "-".join(subparts)
+
     def _build_greeting(self, role: UserRoleProfile, name: str, company: Optional[str]) -> str:
-        clean_name = name.strip() if name and name.strip() else ""
+        prenom = self._extract_first_name(name)
         org_suffix = f" du cabinet {company}" if company else ""
 
         if role == UserRoleProfile.AGRICULTEUR:
-            target_name = f" {clean_name}" if clean_name and clean_name.lower() not in ["producteur", "utilisateur", "guest", "invité"] else ""
-            return f"Ravi de vous retrouver{target_name} ! Je suis à vos côtés pour le suivi de vos parcelles et de vos cultures."
+            target = f" {prenom}" if prenom and prenom.lower() not in ["producteur", "utilisateur", "guest", "invité"] else ""
+            return f"Bonjour{target} ! Je suis Nafa assistant, à vos côtés pour le suivi personnalisé de vos cultures, fertilisants et parcelles."
         if role == UserRoleProfile.ELEVEUR:
-            target_name = f" {clean_name}" if clean_name and clean_name.lower() not in ["éleveur", "utilisateur", "guest", "invité"] else ""
-            return f"Bonjour{target_name} ! Votre suivi de cheptel, alimentation et santé animale est prêt."
+            target = f" {prenom}" if prenom and prenom.lower() not in ["éleveur", "utilisateur", "guest", "invité"] else ""
+            return f"Bonjour{target} ! Je suis Nafa assistant, dédié à la conduite optimale de votre cheptel, alimentation et santé animale."
         if role == UserRoleProfile.AGRONOME:
-            target_name = f" {clean_name}" if clean_name else ""
-            return f"Bonjour Confrère{target_name}{org_suffix}. Vos outils d'arpentage, hydraulique et conception 3D sont à votre disposition."
+            target = f" {prenom}" if prenom else " Confrère"
+            return f"Bonjour{target}{org_suffix} ! Je suis Nafa assistant, votre copilote technique pour l'arpentage GPS, l'hydraulique FAO-56 et la modélisation 3D."
         if role == UserRoleProfile.VETERINAIRE:
-            target_name = f" Dr. {clean_name}" if clean_name else " Docteur"
-            return f"Bonjour{target_name}{org_suffix}. Votre espace d'interventions, ordonnances et prophylaxie est opérationnel."
+            target = f" Dr. {prenom}" if prenom else " Docteur"
+            return f"Bonjour{target}{org_suffix} ! Je suis Nafa assistant. Vos dossiers de soins, suivi épidémiologique et ordonnances sont synchronisés."
         if role == UserRoleProfile.FOURNISSEUR:
-            target_name = f" {clean_name}" if clean_name else ""
-            return f"Bonjour{target_name}{org_suffix}. Vos catalogues, stocks et demandes de devis sont synchronisés."
+            target = f" {prenom}" if prenom else ""
+            return f"Bonjour{target}{org_suffix} ! Je suis Nafa assistant. Vos catalogues de produits, stocks d'intrants et demandes de devis sont à jour."
         if role == UserRoleProfile.INSTITUTION_AGRI:
-            target_name = f" {clean_name}" if clean_name else ""
-            return f"Bonjour{target_name}{org_suffix}. Vos dossiers de financement et d'assurance agricole sont prêts pour analyse."
+            target = f" {prenom}" if prenom else ""
+            return f"Bonjour{target}{org_suffix} ! Je suis Nafa assistant. Vos dossiers de financement agricole et contrats d'assurance sont prêts pour analyse."
 
-        target_name = f" {clean_name}" if clean_name and clean_name.lower() not in ["utilisateur", "guest", "invité"] else ""
-        return f"Bonjour{target_name} ! Je suis votre assistant pour toute question agricole, technique ou financière."
+        target = f" {prenom}" if prenom and prenom.lower() not in ["utilisateur", "guest", "invité"] else ""
+        return f"Bonjour{target} ! Je suis Nafa assistant, à votre écoute pour toute assistance agricole, technique ou financière sur-mesure."
 
     def _handle_welcome_and_capabilities(self, role: UserRoleProfile, greeting: str) -> CopilotResponse:
         reply_lines = [
@@ -549,7 +570,7 @@ class UniversalNafaCopilotEngine:
             "",
             f"Votre question porte sur : *« {query} »*.",
             "",
-            "En tant que Copilote d'Ingénierie NAFA, mes modules de calcul réel sont disponibles pour :",
+            "En tant que Nafa assistant, mes modules d'ingénierie et d'assistance spécialisée sont disponibles pour :",
             "• Évaluer précisément vos besoins hydriques (FAO-56) et vos densités de semis.",
             "• Diagnostiquer toute maladie de plante ou animal par analyse d'image physique réelle.",
             "• Dimensionner vos réseaux d'arrosage goutte-à-goutte et vos pompages solaires.",

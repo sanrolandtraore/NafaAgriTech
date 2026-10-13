@@ -28,7 +28,8 @@ def test_copilot_greeting_and_personalized_assistance():
         locality="Dori"
     )
     res_eleveur = engine.assist("Bonjour", session_eleveur)
-    assert "Ousmane Diallo" in res_eleveur.personalized_greeting
+    assert "Ousmane" in res_eleveur.personalized_greeting
+    assert "Nafa assistant" in res_eleveur.personalized_greeting
     assert "cheptel" in res_eleveur.reply.lower()
     assert res_eleveur.detected_profile == "eleveur"
     assert any(a["target_route"] == "/dashboard/animals" for a in res_eleveur.suggested_actions)
@@ -40,7 +41,8 @@ def test_copilot_greeting_and_personalized_assistance():
         company_name="Bureau Sahel Agro-Conseil"
     )
     res_agronome = engine.assist("Que peux-tu faire pour moi ?", session_agronome)
-    assert "Dr. Aminata Traoré" in res_agronome.personalized_greeting
+    assert "Aminata" in res_agronome.personalized_greeting
+    assert "Nafa assistant" in res_agronome.personalized_greeting
     assert "CAO" in res_agronome.reply or "Shapely" in res_agronome.reply
     assert res_agronome.detected_profile == "agronome"
 
