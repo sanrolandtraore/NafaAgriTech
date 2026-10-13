@@ -52,7 +52,7 @@ describe("Sécurité des redirections (safeRedirect)", () => {
   });
 });
 
-describe("Page d'inscription native type Orange Max It (/inscription)", () => {
+describe("Page d'inscription native (/inscription)", () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
@@ -86,7 +86,7 @@ describe("Page d'inscription native type Orange Max It (/inscription)", () => {
   });
 });
 
-describe("Page de connexion native type Orange Max It (/connexion)", () => {
+describe("Page de connexion native (/connexion)", () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });

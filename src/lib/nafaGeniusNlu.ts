@@ -302,7 +302,7 @@ export function parseGeniusCommand(text: string, activeDomain: GeniusDomain = "g
   // 3. Extraction nom client / producteur
   // Ex: "pour le producteur Issa Ouédraogo", "visite pour Oumarou", "chez Moussa"
   const clientMatch = lower.match(
-    /(?:pour\s+(?:le\s+|la\s+|l['’])?(?:producteur|productrice|client|cliente|exploitant|éleveur)?\s*|chez\s+(?:le\s+|la\s+|l['’])?(?:producteur|client|exploitant)?\s*|producteur\s+|client\s+|n\s+kon\s+|koro\s+|soba\s+|remoowo\s+)([A-ZÀ-ÿa-z\-]+(?:\s+[A-ZÀ-ÿa-z\-]+)?)/i
+    /(?:pour\s+(?:le\s+|la\s+|l['’])?(?:producteur|productrice|client|cliente|exploitant|éleveur)?\s*|chez\s+(?:le\s+|la\s+|l['’])?(?:producteur|client|exploitant)?\s*|producteur\s+|client\s+|n\s+kon\s+|koro\s+|soba\s+|remoowo\s+)([A-ZÀ-ÿa-z-]+(?:\s+[A-ZÀ-ÿa-z-]+)?)/i
   );
   if (clientMatch) {
     let rawName = clientMatch[1].trim();

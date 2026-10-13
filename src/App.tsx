@@ -12,6 +12,7 @@ import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { CyberShieldProvider } from "@/components/security/CyberShieldProvider";
 import Index from "./pages/Index";
 import DashboardLayout from "./components/DashboardLayout";
+import { UniversalNafaCopilotWidget } from "./components/copilot/UniversalNafaCopilotWidget";
 
 // Lazy-loaded auxiliary and legal pages for initial bundle minimization
 const Auth = lazy(() => import("./pages/Auth"));
@@ -111,6 +112,9 @@ const PartnerMarketingPage = lazy(() => import("./pages/dashboard/partenaire/Par
 const PartnerDemandesPage = lazy(() => import("./pages/dashboard/partenaire/PartnerDemandesPage"));
 const PartnerInvoicesPage = lazy(() => import("./pages/dashboard/partenaire/PartnerInvoicesPage"));
 const GpsSurveyPage = lazy(() => import("./pages/dashboard/GpsSurveyPage"));
+const FieldSuiteAllInOnePage = lazy(() => import("./pages/dashboard/FieldSuiteAllInOnePage"));
+const ExpertDiagnosisPage = lazy(() => import("./pages/dashboard/expert/ExpertDiagnosisPage"));
+const VeterinaireHubPage = lazy(() => import("./pages/dashboard/veterinaire/VeterinaireHubPage"));
 
 import PageLoader from "@/components/PageLoader";
 import { startUniversalSyncEngine } from "@/lib/universalSyncEngine";
@@ -164,6 +168,7 @@ const App = () => {
               <Route path="/ressources" element={<Suspense fallback={<PageLoader />}><RessourcesPage /></Suspense>} />
               <Route path="/explorer" element={<AuthProvider><Suspense fallback={<PageLoader />}><PublicExplorerPage /></Suspense></AuthProvider>} />
               <Route path="/fiches-techniques" element={<AuthProvider><Suspense fallback={<PageLoader />}><CropLibraryPage /></Suspense></AuthProvider>} />
+              <Route path="/diagnostic" element={<AuthProvider><Suspense fallback={<PageLoader />}><ExpertDiagnosisPage /></Suspense></AuthProvider>} />
               <Route path="/a-propos" element={<Suspense fallback={<PageLoader />}><AboutPage /></Suspense>} />
               <Route path="/contact" element={<Suspense fallback={<PageLoader />}><ContactPage /></Suspense>} />
               <Route path="/mentions-legales" element={<Suspense fallback={<PageLoader />}><MentionsLegales /></Suspense>} />
@@ -198,6 +203,7 @@ const App = () => {
                 <Route path="crop-planning" element={<Suspense fallback={<PageLoader />}><CropPlanningPage /></Suspense>} />
                 <Route path="services" element={<Suspense fallback={<PageLoader />}><ServicesPage /></Suspense>} />
                 <Route path="agronomic-services" element={<Suspense fallback={<PageLoader />}><ServicesPage /></Suspense>} />
+                <Route path="agronome-hub" element={<Suspense fallback={<PageLoader />}><ServicesPage /></Suspense>} />
                 <Route path="settings" element={<Suspense fallback={<PageLoader />}><RoleSettingsRouter /></Suspense>} />
                 <Route path="education" element={<Suspense fallback={<PageLoader />}><EducationCatalogPage /></Suspense>} />
                 <Route path="education/:slug" element={<Suspense fallback={<PageLoader />}><CourseDetailPage /></Suspense>} />
@@ -216,15 +222,19 @@ const App = () => {
                   <Route path="animal-counting" element={<Suspense fallback={<PageLoader />}><AnimalCountingPage /></Suspense>} />
                   <Route path="poultry-counting" element={<Suspense fallback={<PageLoader />}><AnimalCountingPage /></Suspense>} />
                 </Route>
+                <Route path="veterinaire-hub" element={<Suspense fallback={<PageLoader />}><VeterinaireHubPage /></Suspense>} />
                 <Route path="marketplace" element={<Suspense fallback={<PageLoader />}><ServiceMarketplacePage /></Suspense>} />
                 <Route path="expert-cartography" element={<Suspense fallback={<PageLoader />}><ExpertCartographyPage /></Suspense>} />
+                <Route path="field-suite" element={<Suspense fallback={<PageLoader />}><FieldSuiteAllInOnePage /></Suspense>} />
                 <Route path="gps-survey" element={<Suspense fallback={<PageLoader />}><GpsSurveyPage /></Suspense>} />
                 <Route path="leve-gps" element={<Suspense fallback={<PageLoader />}><GpsSurveyPage /></Suspense>} />
                 <Route path="scouting" element={<Suspense fallback={<PageLoader />}><ScoutingPage /></Suspense>} />
                 <Route path="inspections" element={<Suspense fallback={<PageLoader />}><SmartInspectionPage /></Suspense>} />
                 <Route path="smart-inspection" element={<Suspense fallback={<PageLoader />}><SmartInspectionPage /></Suspense>} />
                 <Route path="expert-toolbox" element={<Suspense fallback={<PageLoader />}><ExpertToolboxPage /></Suspense>} />
-                <Route path="expert-diagnosis" element={<Navigate to="/dashboard" replace />} />
+                <Route path="diagnostic" element={<Suspense fallback={<PageLoader />}><ExpertDiagnosisPage /></Suspense>} />
+                <Route path="crop-diagnosis" element={<Suspense fallback={<PageLoader />}><ExpertDiagnosisPage /></Suspense>} />
+                <Route path="expert-diagnosis" element={<Suspense fallback={<PageLoader />}><ExpertDiagnosisPage /></Suspense>} />
                 <Route path="expert-calculator" element={<Suspense fallback={<PageLoader />}><ExpertCalculatorPage /></Suspense>} />
                 <Route path="expert-prescriptions" element={<Suspense fallback={<PageLoader />}><ExpertPrescriptionsPage /></Suspense>} />
                 <Route path="crop-library" element={<Suspense fallback={<PageLoader />}><CropLibraryPage /></Suspense>} />
@@ -261,6 +271,7 @@ const App = () => {
               </Route>
               <Route path="*" element={<Suspense fallback={<PageLoader />}><NotFound /></Suspense>} />
             </Routes>
+            <UniversalNafaCopilotWidget />
           </BrowserRouter>
         </CyberShieldProvider>
       </ErrorBoundary>

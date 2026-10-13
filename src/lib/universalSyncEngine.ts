@@ -104,7 +104,9 @@ export function broadcastDataChange(table: string, data?: any) {
         type: "DATA_MODIFIED",
         payload: { table, data, timestamp: Date.now() },
       });
-    } catch (_e) {}
+    } catch (_e) {
+      // Ignoré si BroadcastChannel fermé
+    }
   }
 }
 
@@ -127,16 +129,22 @@ export async function computeGlobalPendingCount(): Promise<{
       const { getSyncQueueCount } = await import("./offlineDb");
       offlineDbPending = await getSyncQueueCount(user.id);
     }
-  } catch (_e) {}
+  } catch (_e) {
+    // Ignoré si échec de récupération Supabase
+  }
 
   try {
     const dexieCounts = await getSyncCounts();
     dexiePending = dexieCounts.pending + dexieCounts.error;
-  } catch (_e) {}
+  } catch (_e) {
+    // Ignoré si Dexie indisponible
+  }
 
   try {
     fieldDesignerPending = await fieldDesignerStorage.getSyncQueueCount();
-  } catch (_e) {}
+  } catch (_e) {
+    // Ignoré si storage local indisponible
+  }
 
   const totalPending = offlineDbPending + dexiePending + fieldDesignerPending;
   return { totalPending, offlineDbPending, dexiePending, fieldDesignerPending };
@@ -226,7 +234,9 @@ export async function syncAllDatastores(options: { silent?: boolean } = {}): Pro
           type: "SYNC_TRIGGERED",
           payload: { synced: totalSynced, timestamp: Date.now() },
         });
-      } catch (_e) {}
+      } catch (_e) {
+        // Ignoré si BroadcastChannel fermé
+      }
     }
 
     if (!options.silent) {
@@ -317,14 +327,16 @@ export function startUniversalSyncEngine(intervalSeconds = 60): () => void {
     });
   });
 
-  // 2. Écouter les changements en ligne / hors-ligne
+  // 2. Écouter les changements en ligne / hors-ligne pour synchronisation automatique immédiate
   const handleOnline = () => {
     updateSummary({ status: "syncing" });
-    // Délai aléatoire anti-collision (Jitter)
-    const jitter = 500 + Math.floor(Math.random() * 2000);
+    // Synchronisation automatique instantanée dès que la connexion s'établit
+    syncAllDatastores({ silent: false });
+
+    // Deuxième passe de consolidation rapide à 1.5s
     setTimeout(() => {
-      syncAllDatastores({ silent: false });
-    }, jitter);
+      syncAllDatastores({ silent: true });
+    }, 1500);
   };
 
   const handleOffline = () => {

@@ -40,7 +40,7 @@ export const eleveurNav: NavItem[] = [
   { to: "/dashboard/animal-feeding", labelKey: "Alimentation & Rations", icon: Utensils },
   { to: "/dashboard/livestock-finance", labelKey: "Finances du Cheptel", icon: Wallet },
   { to: "/dashboard/livestock-report", labelKey: "Rapport d'activité", icon: FileText },
-  { to: "/dashboard/livestock-services", labelKey: "Réserver un vétérinaire", icon: ClipboardList },
+  { to: "/dashboard/livestock-services", labelKey: "Catalogue des Vétérinaires & Soins", icon: ClipboardList },
   { to: "/dashboard/settings", labelKey: "Paramètres", icon: Settings },
 ];
 
@@ -63,47 +63,57 @@ export const fournisseurNav: NavItem[] = [
 /** Alias de rétrocompatibilité : le module Machinisme & Travaux est consolidé dans Intrants & Matériel */
 export const machinismeNav: NavItem[] = fournisseurNav;
 
-/** 3. Profil Cabinet d'Agronomie & Conseil Technique (Suite complète des outils techniques) */
+/** 3. Profil Cabinet d'Agronomie & Conseil Technique (Suite complète des outils techniques regroupée) */
 export const agronomeNav: NavItem[] = [
-  { to: "/dashboard", labelKey: "Tableau de bord", icon: LayoutDashboard },
-  { to: "/dashboard/services", labelKey: "Suite d'Outils Agronomiques", icon: Compass, section: "Expertise Agronomique" },
-  { to: "/dashboard/crop-planning", labelKey: "Planification des cultures", icon: Calculator, section: "Expertise Agronomique" },
-  { to: "/dashboard/parcels", labelKey: "Parcelles & Cultures", icon: Sprout, section: "Expertise Agronomique" },
-  { to: "/dashboard/scouting", labelKey: "Suivi des Parcelles", icon: Eye, section: "Expertise Agronomique" },
-  { to: "/dashboard/inspections", labelKey: "Inspection Intelligente", icon: Eye, section: "Expertise Agronomique" },
-  { to: "/dashboard/field-designer", labelKey: "Conception de Parcelles", icon: Compass, section: "Expertise Agronomique" },
-  { to: "/dashboard/expert-prescriptions", labelKey: "Prescriptions", icon: FileText, section: "Expertise Agronomique" },
-  { to: "/dashboard/expert-calculator", labelKey: "Calculateur agricole", icon: Calculator, section: "Expertise Agronomique" },
-  { to: "/dashboard/expert-cartography", labelKey: "Cartographie GPS", icon: MapPin, section: "Expertise Agronomique" },
-  { to: "/dashboard/gps-survey", labelKey: "Levé de coordonnées GPS", icon: Navigation, section: "Expertise Agronomique" },
-  { to: "/dashboard/crop-library", labelKey: "Fiches techniques", icon: BookOpen, section: "Expertise Agronomique" },
-  { to: "/dashboard/education", labelKey: "Formation professionnelle", icon: GraduationCap, section: "Expertise Agronomique" },
-  { to: "/dashboard/expert-clients", labelKey: "Portefeuille Clients", icon: Users, section: "Clients & Conseils" },
-  { to: "/dashboard/expert-analytics", labelKey: "Analytique & Performances", icon: BarChart3, section: "Clients & Conseils" },
-  { to: "/dashboard/quote-requests", labelKey: "Demandes de devis", icon: FileText, section: "Clients & Conseils" },
-  { to: "/dashboard/partenaire-factures", labelKey: "Facturation & Proformas", icon: Receipt, section: "Clients & Conseils" },
-  { to: "/dashboard/identite-professionnelle", labelKey: "Identité & Documents", icon: Building2, section: "Visibilité & Gestion" },
+  { to: "/dashboard", labelKey: "Console Agronome & Conseil", icon: LayoutDashboard },
+  // Bloc 1 : Pôle Terrain & Diagnostic
+  { to: "/dashboard/field-suite", labelKey: "Application Tout-en-un (Arpentage • Satellite • Diagnostic)", icon: Sparkles, section: "Pôle Terrain & Diagnostic" },
+  { to: "/dashboard/diagnostic", labelKey: "Diagnostic & Prescriptions", icon: Microscope, section: "Pôle Terrain & Diagnostic" },
+  { to: "/dashboard/inspections", labelKey: "Inspection Intelligente", icon: Eye, section: "Pôle Terrain & Diagnostic" },
+  { to: "/dashboard/scouting", labelKey: "Suivi des Parcelles", icon: Eye, section: "Pôle Terrain & Diagnostic" },
+  { to: "/dashboard/gps-survey", labelKey: "Levé de coordonnées GPS", icon: Navigation, section: "Pôle Terrain & Diagnostic" },
+  { to: "/dashboard/expert-cartography", labelKey: "Cartographie GPS", icon: MapPin, section: "Pôle Terrain & Diagnostic" },
+  // Bloc 2 : Pôle Conception & Ingénierie
+  { to: "/dashboard/services", labelKey: "Suite d'Outils Agronomiques", icon: Compass, section: "Pôle Conception & Ingénierie" },
+  { to: "/dashboard/field-designer", labelKey: "Conception de Parcelles", icon: Compass, section: "Pôle Conception & Ingénierie" },
+  { to: "/dashboard/expert-calculator", labelKey: "Calculateur agricole", icon: Calculator, section: "Pôle Conception & Ingénierie" },
+  { to: "/dashboard/crop-planning", labelKey: "Planification des cultures", icon: Calculator, section: "Pôle Conception & Ingénierie" },
+  { to: "/dashboard/parcels", labelKey: "Parcelles & Cultures", icon: Sprout, section: "Pôle Conception & Ingénierie" },
+  { to: "/dashboard/crop-library", labelKey: "Fiches techniques", icon: BookOpen, section: "Pôle Conception & Ingénierie" },
+  { to: "/dashboard/expert-prescriptions", labelKey: "Prescriptions", icon: FileText, section: "Pôle Conception & Ingénierie" },
+  { to: "/dashboard/education", labelKey: "Formation professionnelle", icon: GraduationCap, section: "Pôle Conception & Ingénierie" },
+  // Bloc 3 : Pôle Conseil, Clients & Devis
+  { to: "/dashboard/expert-clients", labelKey: "Portefeuille Clients", icon: Users, section: "Pôle Conseil & Gestion" },
+  { to: "/dashboard/partenaire-mes-offres", labelKey: "Proposer mes Prestations & Tarifs", icon: Store, section: "Pôle Conseil & Gestion" },
+  { to: "/dashboard/quote-requests", labelKey: "Demandes de devis & Commandes", icon: FileText, section: "Pôle Conseil & Gestion" },
+  { to: "/dashboard/partenaire-factures", labelKey: "Facturation & Proformas", icon: Receipt, section: "Pôle Conseil & Gestion" },
+  { to: "/dashboard/identite-professionnelle", labelKey: "Identité & Documents", icon: Building2, section: "Pôle Conseil & Gestion" },
+  { to: "/dashboard/expert-analytics", labelKey: "Analytique & Performances", icon: BarChart3, section: "Pôle Conseil & Gestion" },
+  // Visibilité & Paramètres
   { to: "/dashboard/partner-space", labelKey: "Mon Espace Partenaire (Offres & Devis)", icon: Building2, section: "Visibilité & Gestion" },
   { to: "/dashboard/partenaire-kyc", labelKey: "Vérification KYC & Certification", icon: BadgeCheck, section: "Visibilité & Gestion" },
   { to: "/dashboard/partenaire-abonnement", labelKey: "Abonnement partenaire", icon: Sparkles, section: "Visibilité & Gestion" },
   { to: "/dashboard/settings", labelKey: "Paramètres", icon: Settings, section: "Visibilité & Gestion" },
 ];
 
-/** 4. Profil Partenaire : Clinique Vétérinaire, Santé Animale & Zootechnie (Prestations Vétérinaires) */
+/** 4. Profil Partenaire : Clinique Vétérinaire, Santé Animale & Zootechnie (Console Vétérinaire Unifiée) */
 export const veterinaireNav: NavItem[] = [
-  { to: "/dashboard", labelKey: "Tableau de bord", icon: LayoutDashboard },
-  { to: "/dashboard/partner-space", labelKey: "Mon Espace Partenaire (Offres & Devis)", icon: Building2, section: "Visibilité & Gestion" },
-  { to: "/dashboard/livestock-services", labelKey: "Catalogue & Réservations Vétérinaires", icon: ClipboardList, section: "Prestations Vétérinaires" },
-  { to: "/dashboard/animal-counting", labelKey: "Comptage & Densité d'Élevage", icon: Camera, section: "Prestations Vétérinaires" },
-  { to: "/dashboard/partenaire-mes-offres", labelKey: "Mes Services & Prestations", icon: Store, section: "Prestations Vétérinaires" },
-  { to: "/dashboard/interventions", labelKey: "Interventions & Soins terrain", icon: Activity, section: "Prestations Vétérinaires" },
-  { to: "/dashboard/quote-requests", labelKey: "Demandes de devis & Réservations", icon: FileText, section: "Prestations Vétérinaires" },
-  { to: "/dashboard/partenaire-factures", labelKey: "Facturation & Proformas", icon: Receipt, section: "Prestations Vétérinaires" },
-  { to: "/dashboard/provider-clients", labelKey: "Portefeuille Éleveurs & Clients", icon: Users, section: "Prestations Vétérinaires" },
-  { to: "/dashboard/revenus", labelKey: "Chiffre d'affaires & Règlements", icon: Wallet, section: "Prestations Vétérinaires" },
-  { to: "/dashboard/partenaire-kyc", labelKey: "Agrément & Vérification Ordre", icon: BadgeCheck, section: "Visibilité & Gestion" },
-  { to: "/dashboard/partenaire-abonnement", labelKey: "Abonnement partenaire", icon: Sparkles, section: "Visibilité & Gestion" },
-  { to: "/dashboard/settings", labelKey: "Paramètres", icon: Settings, section: "Visibilité & Gestion" },
+  { to: "/dashboard", labelKey: "Console Clinique Vétérinaire", icon: LayoutDashboard },
+  { to: "/dashboard/veterinaire-hub", labelKey: "Bloc Clinique Tout-en-un", icon: Sparkles },
+  // Pôle 1 : Actes Cliniques & Terrain
+  { to: "/dashboard/animal-counting", labelKey: "Comptage & Densité d'Élevage", icon: Camera, section: "Actes Cliniques & Terrain" },
+  { to: "/dashboard/interventions", labelKey: "Interventions & Soins terrain", icon: Activity, section: "Actes Cliniques & Terrain" },
+  { to: "/dashboard/partenaire-mes-offres", labelKey: "Proposer mes Services & Soins", icon: Store, section: "Actes Cliniques & Terrain" },
+  // Pôle 2 : Dossiers Éleveurs & Facturation
+  { to: "/dashboard/provider-clients", labelKey: "Portefeuille Éleveurs & Clients", icon: Users, section: "Dossiers Éleveurs & Facturation" },
+  { to: "/dashboard/quote-requests", labelKey: "Demandes de devis & Réservations", icon: FileText, section: "Dossiers Éleveurs & Facturation" },
+  { to: "/dashboard/partenaire-factures", labelKey: "Facturation & Proformas", icon: Receipt, section: "Dossiers Éleveurs & Facturation" },
+  { to: "/dashboard/revenus", labelKey: "Chiffre d'affaires & Règlements", icon: Wallet, section: "Dossiers Éleveurs & Facturation" },
+  // Pôle 3 : Conformité & Compte
+  { to: "/dashboard/partner-space", labelKey: "Mon Espace Partenaire (Offres & Devis)", icon: Building2, section: "Conformité & Compte" },
+  { to: "/dashboard/partenaire-kyc", labelKey: "Agrément & Vérification Ordre", icon: BadgeCheck, section: "Conformité & Compte" },
+  { to: "/dashboard/partenaire-abonnement", labelKey: "Abonnement partenaire", icon: Sparkles, section: "Conformité & Compte" },
+  { to: "/dashboard/settings", labelKey: "Paramètres", icon: Settings, section: "Conformité & Compte" },
 ];
 
 /** 5. Profil Partenaire : Banque, Microfinance & Assurance Agricole (Finance & Assurance exclusivement) */
@@ -227,7 +237,9 @@ export const getNavLabel = (item: NavItem, t?: (key: string) => string): string 
     "Marché des Services": "Marché des Services",
     "Marketplace des Services": "Marketplace des Services",
     "Finances du Cheptel": "Finances du Cheptel",
-    "Réserver un vétérinaire": "Réserver un vétérinaire",
+    "Réserver un vétérinaire": "Catalogue des Vétérinaires & Soins",
+    "Catalogue des Vétérinaires & Soins": "Catalogue des Vétérinaires & Soins",
+    "Proposer mes Services & Soins": "Proposer mes Services & Soins",
     "Formation professionnelle": "Formation professionnelle",
     "Portefeuille Clients": "Portefeuille Clients",
     "Analytique & Performances": "Analytique & Performances",
@@ -242,7 +254,14 @@ export const getNavLabel = (item: NavItem, t?: (key: string) => string): string 
     "Programmes & Subventions": "Programmes & Subventions",
     "Vérification KYC & Agrément": "Vérification KYC & Agrément",
     "Levé de coordonnées GPS": "Levé de coordonnées GPS",
+    "Application Tout-en-un (Arpentage • Satellite • Diagnostic)": "Application Tout-en-un (Arpentage • Satellite • Diagnostic)",
     "Facturation & Proformas": "Facturation & Proformas",
+    "Console Agronome & Conseil": "Console Agronome & Conseil",
+    "Diagnostic & Prescriptions": "Diagnostic & Prescriptions",
+    "Console Clinique Vétérinaire": "Console Clinique Vétérinaire",
+    "Bloc Clinique Tout-en-un": "Bloc Clinique Tout-en-un",
+    "Proposer mes Prestations & Tarifs": "Proposer mes Prestations & Tarifs",
+    "Demandes de devis & Commandes": "Demandes de devis & Commandes",
   };
 
   if (dictionary[key]) {

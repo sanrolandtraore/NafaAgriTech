@@ -32,7 +32,12 @@ export default function MotDePasseOubliePage() {
     try {
       const { error } = await resetPasswordForEmail(trimmedEmail);
       if (error) {
-        setErrorMessage(error.message || "Impossible d'envoyer l'e-mail de réinitialisation.");
+        const msg = error.message || "";
+        if (msg.toLowerCase().includes("rate limit") || msg.toLowerCase().includes("over_email_send_rate_limit")) {
+          setErrorMessage("La limite d'envoi d'e-mails du serveur est temporairement atteinte. Veuillez patienter quelques minutes avant de renouveler votre demande ou contactez le support.");
+        } else {
+          setErrorMessage(msg || "Impossible d'envoyer l'e-mail de réinitialisation.");
+        }
       } else {
         setSubmitted(true);
       }

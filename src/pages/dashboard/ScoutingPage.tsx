@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import type { SupabaseClient } from "@supabase/supabase-js";
-import { useAuth } from "@/contexts/AuthContext";
+import { useOptionalAuth } from "@/contexts/AuthContext";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -76,12 +76,7 @@ const conditionColor = (c: string | null) => {
 
 export default function ScoutingPage() {
   const navigate = useNavigate();
-  let authContext: any = null;
-  try {
-    authContext = useAuth();
-  } catch (_e) {
-    authContext = null;
-  }
+  const authContext = useOptionalAuth();
   const user = authContext?.user || null;
   const [sessions, setSessions] = useState<ScoutingSession[]>([]);
   const [loading, setLoading] = useState(true);

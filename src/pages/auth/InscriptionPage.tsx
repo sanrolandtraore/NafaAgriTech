@@ -178,10 +178,15 @@ export default function InscriptionPage() {
       );
 
       if (error) {
-        if (error.message?.includes("User already registered") || error.message?.includes("already_exists")) {
+        const msg = error.message || "";
+        if (msg.includes("User already registered") || msg.includes("already_exists") || msg.includes("déjà enregistré")) {
           setErrorMessage("Ce numéro de téléphone est déjà enregistré. Connectez-vous avec votre code secret.");
+        } else if (msg.includes("disabled")) {
+          setErrorMessage("Erreur lors de la création du compte. Veuillez réessayer.");
+        } else if (msg.toLowerCase().includes("rate limit") || msg.toLowerCase().includes("over_email_send_rate_limit")) {
+          setErrorMessage("La limite d'envoi d'e-mails du serveur est temporairement atteinte. Veuillez patienter un instant ou connectez-vous directement.");
         } else {
-          setErrorMessage(error.message || "Erreur lors de la création du compte.");
+          setErrorMessage(msg || "Erreur lors de la création du compte.");
         }
       } else {
         // Mémoriser le compte pour la prochaine session
@@ -252,10 +257,15 @@ export default function InscriptionPage() {
       );
 
       if (error) {
-        setErrorMessage(error.message || "Erreur lors de l'inscription.");
+        const msg = error.message || "";
+        if (msg.toLowerCase().includes("rate limit") || msg.toLowerCase().includes("over_email_send_rate_limit")) {
+          setErrorMessage("La limite d'envoi d'e-mails du serveur est temporairement atteinte. Vous pouvez créer votre compte directement avec votre numéro de téléphone sans aucune attente.");
+        } else {
+          setErrorMessage(msg || "Erreur lors de l'inscription.");
+        }
       } else {
-        toast.success("Compte créé ! Vérifiez votre adresse e-mail.");
-        navigate(`/verifier-email?email=${encodeURIComponent(trimmedEmail)}`);
+        toast.success("Compte créé avec succès ! Bienvenue !");
+        navigate(targetUrl, { replace: true });
       }
     } catch (err: any) {
       setErrorMessage(err?.message || "Erreur d'inscription.");
@@ -307,7 +317,7 @@ export default function InscriptionPage() {
             <div>
               <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-[#F97316]/15 border border-[#F97316]/30 text-[#F97316] text-[11px] font-extrabold uppercase tracking-wider mb-1">
                 <Sparkles className="h-3 w-3" />
-                <span>Inscription Rapide Max It</span>
+                <span>Inscription Sécurisée</span>
               </div>
               <h1 className="text-2xl sm:text-3xl font-heading font-extrabold text-foreground tracking-tight">
                 Créer un compte <span className="text-[#F97316]">NAFA</span>
@@ -600,7 +610,7 @@ export default function InscriptionPage() {
                   className="text-xs font-bold text-[#F97316] hover:underline flex items-center justify-center gap-1.5 mx-auto py-1"
                 >
                   <Phone className="h-3.5 w-3.5 text-[#F97316]" />
-                  <span>S'inscrire avec mon numéro mobile (Max It)</span>
+                  <span>S'inscrire avec mon numéro de téléphone</span>
                 </button>
               )}
             </div>

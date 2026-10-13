@@ -16,7 +16,8 @@ export type ToolkitCategory =
   | "agronomie"
   | "irrigation"
   | "ingenierie"
-  | "gestion_analyse";
+  | "gestion_analyse"
+  | "conseil_clients";
 
 export interface ToolkitBadge {
   label: string;
@@ -57,49 +58,77 @@ export interface ToolkitCategoryConfig {
 export const TOOLKIT_CATEGORIES: ToolkitCategoryConfig[] = [
   {
     id: "all",
-    label: "Tous les outils de Conception de Parcelles",
-    shortLabel: "Tous",
+    label: "Toutes les fonctionnalités",
+    shortLabel: "Tout le module",
     iconName: "Layers",
-    description: "Ensemble des outils professionnels de conception et d'intervention terrain NAFA.",
+    description: "Ensemble des fonctionnalités du module Agronome & Conseil unifiées en un seul bloc.",
   },
   {
     id: "terrain_carto",
-    label: "Mesure GPS & Cartographie SIG",
-    shortLabel: "Terrain",
-    iconName: "Globe",
-    description: "Arpentage par satellite/GPS, mesure de parcelles et SIG parcellaire.",
+    label: "Terrain, Arpentage & Diagnostic",
+    shortLabel: "Terrain & Diag",
+    iconName: "Navigation",
+    description: "Arpentage satellite/GPS en marchant, satellite NDVI, diagnostic végétal et bornage.",
   },
   {
     id: "agronomie",
-    label: "Cultures & Diagnostic",
-    shortLabel: "Cultures",
+    label: "Cultures, Calculs & Semis",
+    shortLabel: "Cultures & Calculs",
     iconName: "Sprout",
-    description: "Conception des rangs de semis, densités et diagnostic phytosanitaire.",
+    description: "Conception des rangs de semis, densités, calculs NPK et planification culturale.",
   },
   {
     id: "irrigation",
-    label: "Irrigation & Eau",
-    shortLabel: "Irrigation",
+    label: "Irrigation & Pompage Solaire",
+    shortLabel: "Irrigation & Eau",
     iconName: "Droplets",
     description: "Réseaux goutte-à-goutte, dimensionnement PEHD et pompage solaire.",
   },
   {
     id: "ingenierie",
-    label: "Bâtiments & Modélisation",
-    shortLabel: "Bâtiments",
+    label: "Bâtiments & Modélisation 3D",
+    shortLabel: "Bâtiments & 3D",
     iconName: "PencilRuler",
-    description: "Conception bioclimatique d'élevage, plan de ferme 2D et métrés réels.",
+    description: "Conception bioclimatique d'élevage, plan de ferme 2D/3D et métrés réels.",
+  },
+  {
+    id: "conseil_clients",
+    label: "Conseil, Clients & Facturation",
+    shortLabel: "Conseil & Clients",
+    iconName: "Users",
+    description: "Portefeuille clients, demandes de devis, facturation proforma et identité professionnelle.",
   },
   {
     id: "gestion_analyse",
     label: "Devis, Rapports & Copilote",
-    shortLabel: "Gestion",
+    shortLabel: "Devis & Rapports",
     iconName: "BarChart3",
-    description: "Devis officiels en FCFA, rapports de visite terrain et IA déontologique.",
+    description: "Devis officiels en FCFA, rapports de visite terrain et copilote agronomique.",
   },
 ];
 
 export const AGRONOMIC_TOOLS_CATALOG: AgronomicToolItem[] = [
+  // ─── 0. APPLICATION TOUT-EN-UN (ARPENTAGE + SATELLITE + DIAGNOSTIC) ───
+  {
+    id: "tool-field-suite-all-in-one",
+    title: "Application Tout-en-un (Arpentage • Satellite • Diagnostic)",
+    category: "terrain_carto",
+    categoryLabel: "Suite Complète de Terrain",
+    description: "Arpentez les bordures au GPS en marchant, analysez la végétation par imagerie satellite (NDVI & stress) et laissez-vous guider vers les anomalies pour diagnostiquer et prescrire.",
+    route: "/dashboard/field-suite",
+    iconName: "Sparkles",
+    isOffline: true,
+    badges: ["Tout-en-un", "GPS Marche", "Satellite NDVI", "Diagnostic IA"],
+    keywords: ["tout-en-un", "arpentage", "satellite", "ndvi", "diagnostic", "guidage", "marche gps", "stress azoté", "maladie", "plante", "terrain", "agronome"],
+    contextualAi: {
+      roleDescription: "Copilote d'intervention de terrain : arpentage, télédétection satellite et phytopathologie.",
+      suggestedActions: [
+        { label: "Lancer la marche d'arpentage", prompt: "Démarre le détourage au GPS le long des bordures de la parcelle." },
+        { label: "Analyser le stress NDVI", prompt: "Génère la carte de réflectance satellite et identifie les foyers d'anomalies." },
+        { label: "Me guider vers l'anomalie", prompt: "Active le radar de guidage GPS vers le point critique détecté par satellite." },
+      ],
+    },
+  },
   // ─── 1. TERRAIN & CARTOGRAPHIE (NAFA FIELD DESIGNER) ───
   {
     id: "tool-mesure-gps",
@@ -360,6 +389,247 @@ export const AGRONOMIC_TOOLS_CATALOG: AgronomicToolItem[] = [
       roleDescription: "Copilote expert en ingénierie agronomique sahélienne.",
       suggestedActions: [
         { label: "Analyser la parcelle", prompt: "Vérifie la cohérence entre sol, culture, irrigation et climat local." },
+      ],
+    },
+  },
+
+  // ─── 6. TERRAIN & DIAGNOSTIC DIRECT ───
+  {
+    id: "tool-expert-diagnosis-suite",
+    title: "Diagnostic Photo Instantané & Ordonnances",
+    category: "terrain_carto",
+    categoryLabel: "Terrain, Arpentage & Diagnostic",
+    description: "Diagnostic phytosanitaire par analyse photo directe, détection des bioagresseurs et rédaction d'ordonnances homologuées Sahel.",
+    route: "/dashboard/diagnostic",
+    iconName: "Microscope",
+    isOffline: true,
+    badges: ["Diagnostic IA", "Photo", "Ordonnance", "Hors ligne"],
+    keywords: ["diagnostic", "maladie", "photo", "ravageur", "ordonnance", "phytosanitaire", "inera", "conseil", "plante"],
+    contextualAi: {
+      roleDescription: "Expert phytopathologiste et prescripteur de traitements agronomiques homologués.",
+      suggestedActions: [
+        { label: "Analyser une photo", prompt: "Prends ou charge une photo foliaire pour diagnostiquer la maladie." },
+        { label: "Générer une ordonnance", prompt: "Établis l'ordonnance de traitement homologué au Sahel." },
+      ],
+    },
+  },
+  {
+    id: "tool-inspection-intelligente",
+    title: "Inspection Intelligente & Protocoles Terrain",
+    category: "terrain_carto",
+    categoryLabel: "Terrain, Arpentage & Diagnostic",
+    description: "Protocoles d'audit et fiches de contrôle sur le terrain avec dictée vocale, relevé de points critiques et rapport officiel horodaté.",
+    route: "/dashboard/inspections",
+    iconName: "ClipboardCheck",
+    isOffline: true,
+    badges: ["Audit", "Vocal", "PDF", "Hors ligne"],
+    keywords: ["inspection", "audit", "fiche de contrôle", "mission", "rapport terrain", "visite", "vocal"],
+    contextualAi: {
+      roleDescription: "Auditeur agronomique certifié pour le contrôle de conformité des exploitations.",
+      suggestedActions: [
+        { label: "Démarrer une inspection", prompt: "Lance un protocole d'inspection pour cette parcelle." },
+      ],
+    },
+  },
+  {
+    id: "tool-scouting-parcelles",
+    title: "Suivi des Parcelles & Scouting Terrain",
+    category: "terrain_carto",
+    categoryLabel: "Terrain, Arpentage & Diagnostic",
+    description: "Carnet de tournée et relevés d'observations géolocalisées in-situ avec photos et historique de vigueur des cultures.",
+    route: "/dashboard/scouting",
+    iconName: "Eye",
+    isOffline: true,
+    badges: ["Scouting", "GPS", "Historique", "Hors ligne"],
+    keywords: ["scouting", "suivi parcelles", "tournée", "observation", "géolocalisation", "historique"],
+    contextualAi: {
+      roleDescription: "Conseiller de terrain assurant le suivi hebdomadaire des parcelles d'agriculteurs.",
+      suggestedActions: [
+        { label: "Ajouter une observation", prompt: "Enregistre une nouvelle observation de terrain avec géolocalisation." },
+      ],
+    },
+  },
+  {
+    id: "tool-expert-cartography-sig",
+    title: "Cartographie GPS & SIG Parcellaire",
+    category: "terrain_carto",
+    categoryLabel: "Terrain, Arpentage & Diagnostic",
+    description: "Capture de polygones, calcul précis des surfaces, délimitation des zones d'eau et export cartographique.",
+    route: "/dashboard/expert-cartography",
+    iconName: "MapPin",
+    isOffline: true,
+    badges: ["SIG", "Polygone", "Surface", "Hors ligne"],
+    keywords: ["cartographie", "polygone", "sig", "carte", "surface", "parcelle"],
+    contextualAi: {
+      roleDescription: "Cartographe et géomaticien agricole.",
+      suggestedActions: [
+        { label: "Tracer une parcelle", prompt: "Dessine le polygone de la parcelle pour calculer la superficie." },
+      ],
+    },
+  },
+
+  // ─── 7. CULTURES, CALCULS & INGÉNIERIE ───
+  {
+    id: "tool-expert-calculator",
+    title: "Calculateur Agricole Expert (NPK, Semis, Eau)",
+    category: "agronomie",
+    categoryLabel: "Cultures, Calculs & Semis",
+    description: "Calculs scientifiques certifiés : fumure NPK, doses de semences, besoins hydriques ETc (FAO-56), prévisions de rendement et marge.",
+    route: "/dashboard/expert-calculator",
+    iconName: "Calculator",
+    isOffline: true,
+    badges: ["Calculs", "FAO-56", "NPK", "Hors ligne"],
+    keywords: ["calculateur", "calcul", "npk", "engrais", "semis", "etc", "eau", "rendement", "marge", "doses"],
+    contextualAi: {
+      roleDescription: "Spécialiste du calcul agronomique, de la fertilisation raisonnée et de l'hydraulique.",
+      suggestedActions: [
+        { label: "Calculer les besoins NPK", prompt: "Détermine le plan de fumure adapté aux analyses de sol." },
+      ],
+    },
+  },
+  {
+    id: "tool-crop-planning",
+    title: "Planification des Cultures & Calendrier Cultural",
+    category: "agronomie",
+    categoryLabel: "Cultures, Calculs & Semis",
+    description: "Calendrier prévisionnel complet des cycles culturaux : dates de semis, repiquage, stades critiques, sarclages et récoltes.",
+    route: "/dashboard/crop-planning",
+    iconName: "Calendar",
+    isOffline: true,
+    badges: ["Calendrier", "Cycles", "Hors ligne"],
+    keywords: ["planification", "calendrier cultural", "cycle", "semis", "récolte", "stade", "rotation"],
+    contextualAi: {
+      roleDescription: "Conseiller en planification des assolements et rotations culturales sahéliennes.",
+      suggestedActions: [
+        { label: "Planifier un cycle", prompt: "Établis le calendrier prévisionnel des interventions du cycle cultural." },
+      ],
+    },
+  },
+  {
+    id: "tool-parcelles-exploitations",
+    title: "Gestion des Parcelles & Exploitations",
+    category: "agronomie",
+    categoryLabel: "Cultures, Calculs & Semis",
+    description: "Registre détaillé des parcelles enregistrées, historique des assolements, textures de sols et bilans culturaux.",
+    route: "/dashboard/parcels",
+    iconName: "Sprout",
+    isOffline: true,
+    badges: ["Parcelles", "Cultures", "Registre", "Hors ligne"],
+    keywords: ["parcelles", "exploitations", "registre", "sol", "cultures", "assolements"],
+    contextualAi: {
+      roleDescription: "Gestionnaire technique d'exploitations agricoles.",
+      suggestedActions: [
+        { label: "Créer une parcelle", prompt: "Ajoute une nouvelle parcelle dans le registre de l'exploitation." },
+      ],
+    },
+  },
+
+  // ─── 8. CONSEIL, CLIENTS, DEVIS & DOCUMENTS PROFESSIONNELS ───
+  {
+    id: "tool-expert-clients",
+    title: "Portefeuille Clients & Exploitations Suivies",
+    category: "conseil_clients",
+    categoryLabel: "Conseil, Clients & Facturation",
+    description: "Carnet de clientèle pour l'agronome : liste des exploitants suivis, historique des visites, contrats de conseil et coordonnées directes.",
+    route: "/dashboard/expert-clients",
+    iconName: "Users",
+    isOffline: true,
+    badges: ["Clients", "Contrats", "Gestion", "Hors ligne"],
+    keywords: ["clients", "portefeuille", "agriculteurs", "exploitants", "suivi", "carnet", "tournée", "visite"],
+    contextualAi: {
+      roleDescription: "Gestionnaire de portefeuille clients et chargé de relation avec les producteurs agricoles.",
+      suggestedActions: [
+        { label: "Ajouter un client", prompt: "Enregistre une nouvelle exploitation agricole dans le carnet client." },
+      ],
+    },
+  },
+  {
+    id: "tool-quote-requests",
+    title: "Demandes de Devis & Missions Reçues",
+    category: "conseil_clients",
+    categoryLabel: "Conseil, Clients & Facturation",
+    description: "Gestion des sollicitations d'agriculteurs et d'investisseurs : demandes d'arpentage, conception d'irrigation, forages et conseils.",
+    route: "/dashboard/quote-requests",
+    iconName: "FileText",
+    isOffline: true,
+    badges: ["Devis reçus", "Missions", "Clients"],
+    keywords: ["demandes de devis", "devis", "missions", "sollicitations", "investisseurs", "rendez-vous"],
+    contextualAi: {
+      roleDescription: "Coordonnateur des missions d'ingénierie et des propositions commerciales.",
+      suggestedActions: [
+        { label: "Traiter les demandes", prompt: "Examine les nouvelles demandes d'intervention reçues des exploitants." },
+      ],
+    },
+  },
+  {
+    id: "tool-partenaire-factures",
+    title: "Facturation & Proformas en FCFA",
+    category: "conseil_clients",
+    categoryLabel: "Conseil, Clients & Facturation",
+    description: "Édition rapide de factures proformas, factures d'honoraires et reçus de prestations agronomiques en FCFA conformes.",
+    route: "/dashboard/partenaire-factures",
+    iconName: "Receipt",
+    isOffline: true,
+    badges: ["FCFA", "Factures", "Proformas", "PDF"],
+    keywords: ["facturation", "factures", "proformas", "honoraires", "prestations", "fcfa", "reçus"],
+    contextualAi: {
+      roleDescription: "Comptable et gestionnaire de facturation pour cabinets d'expertise agricole.",
+      suggestedActions: [
+        { label: "Créer une facture proforma", prompt: "Prépare une facture proforma pour une prestation d'arpentage." },
+      ],
+    },
+  },
+  {
+    id: "tool-partner-branding",
+    title: "Identité Professionnelle & Documents Officiels",
+    category: "conseil_clients",
+    categoryLabel: "Conseil, Clients & Facturation",
+    description: "Personnalisez tous vos PDF (devis, rapports d'inspection, plans) avec le nom de votre cabinet, logo textuel, numéro d'agrément et coordonnées.",
+    route: "/dashboard/identite-professionnelle",
+    iconName: "Building2",
+    isOffline: true,
+    badges: ["Branding", "Agrément", "PDF", "Cabinet"],
+    keywords: ["identité", "documents", "branding", "logo", "agrément", "cabinet", "en-tête", "rapports personnalisés"],
+    contextualAi: {
+      roleDescription: "Responsable conformité et valorisation de l'identité de marque du cabinet.",
+      suggestedActions: [
+        { label: "Configurer mon cabinet", prompt: "Mets à jour le nom, numéro d'agrément et coordonnées qui apparaissent sur les PDF." },
+      ],
+    },
+  },
+  {
+    id: "tool-expert-analytics",
+    title: "Analytique & Performances du Conseil",
+    category: "conseil_clients",
+    categoryLabel: "Conseil, Clients & Facturation",
+    description: "Tableau de bord statistique : nombre d'interventions, parcelles arpentées, rendements moyens des clients conseillés et honoraires.",
+    route: "/dashboard/expert-analytics",
+    iconName: "BarChart3",
+    isOffline: true,
+    badges: ["Statistiques", "KPIs", "Performances"],
+    keywords: ["statistiques", "analytique", "performances", "kpi", "suivi activité", "rendements"],
+    contextualAi: {
+      roleDescription: "Analyste d'impact agronomique et de rentabilité des exploitations.",
+      suggestedActions: [
+        { label: "Consulter les indicateurs", prompt: "Affiche le récapitulatif des interventions et des surfaces traitées ce mois-ci." },
+      ],
+    },
+  },
+  {
+    id: "tool-education-catalog",
+    title: "Académie & Formation Continue Agronomique",
+    category: "conseil_clients",
+    categoryLabel: "Conseil, Clients & Facturation",
+    description: "Guides techniques avancés, bonnes pratiques agroécologiques, formations certifiantes et manuels de terrain.",
+    route: "/dashboard/education",
+    iconName: "GraduationCap",
+    isOffline: true,
+    badges: ["Formation", "Guides", "Certifications"],
+    keywords: ["formation", "académie", "cours", "bonnes pratiques", "agroécologie", "guides"],
+    contextualAi: {
+      roleDescription: "Responsable formation et transmission des savoirs agronomiques.",
+      suggestedActions: [
+        { label: "Consulter les formations", prompt: "Ouvre le catalogue des modules de formation continue." },
       ],
     },
   },

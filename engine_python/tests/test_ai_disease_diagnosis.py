@@ -92,3 +92,32 @@ def test_veterinary_diagnosis_avian_newcastle():
     assert res.primary_hypothesis.case_id == "VET_NEWCASTLE"
     assert "torticolis" in res.primary_hypothesis.matching_symptoms[1].lower() or "neurologique" in res.primary_hypothesis.matching_symptoms[1].lower()
     assert "La Sota" in res.primary_hypothesis.prophylactic_measures[0] or "I-2" in res.primary_hypothesis.prophylactic_measures[0]
+
+
+def test_diagnose_from_single_photo_auto_detect():
+    engine = AIDiseaseDiagnosticEngine()
+    # Image simulant une feuille avec perforations
+    w, h = 200, 200
+    arr = np.zeros((h, w, 3), dtype=np.uint8)
+    arr[:, :, 1] = 170 # Vert
+    arr[:, :, 0] = 30
+    arr[:, :, 2] = 20
+    # Nécrose de morsure
+    arr[50:100, 50:100, 0] = 110
+    arr[50:100, 50:100, 1] = 70
+    arr[50:100, 50:100, 2] = 15
+    img = Image.fromarray(arr)
+
+    res = engine.diagnose_from_single_photo(img)
+
+    # 1. Spéculation détectée
+    assert "Maïs" in res.speculation or "Céréale" in res.speculation
+    # 2. Partie atteinte
+    assert "Feuille" in res.partie_atteinte
+    # 3. Maladie
+    assert "Chenille" in res.maladie or "Légionnaire" in res.maladie
+    # 4. Agent causal
+    assert "Spodoptera frugiperda" in res.agent_causal
+    # 5. Symptômes
+    assert len(res.symptomes) >= 2
+    assert res.confidence_pct > 60.0

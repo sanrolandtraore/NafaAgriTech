@@ -161,15 +161,17 @@ export default function ConnexionPage() {
 
       if (loginResult.error) {
         const msg = loginResult.error.message || "";
-        if (msg.includes("Invalid login credentials") || msg.includes("invalid_credentials")) {
+        if (msg.includes("Invalid login credentials") || msg.includes("invalid_credentials") || msg.includes("Code secret incorrect")) {
           setErrorMessage("Code secret incorrect pour ce numéro de téléphone.");
-        } else if (msg.includes("User not found")) {
+        } else if (msg.includes("User not found") || msg.includes("Aucun compte")) {
           setErrorMessage("Aucun compte associé à ce numéro. Souhaitez-vous créer un compte ?");
+        } else if (msg.includes("disabled")) {
+          setErrorMessage("Code secret incorrect pour ce numéro de téléphone ou compte inexistant.");
         } else {
           setErrorMessage(msg || "Erreur de connexion.");
         }
       } else {
-        // Mémoriser le compte pour la prochaine ouverture (expérience Max It)
+        // Mémoriser le compte pour la prochaine ouverture
         maxItStorage.saveRememberedAccount({
           phone: fullPhone,
           fullName: rememberedAccount?.fullName || profile?.full_name || "Utilisateur",
@@ -198,7 +200,11 @@ export default function ConnexionPage() {
         setErrorMessage(res.error.message || "Impossible d'envoyer le code SMS pour l'instant.");
       } else {
         setPhoneStep("enter_otp");
-        toast.success("Code de sécurité envoyé par SMS au " + fullPhone);
+        if ((res as any).code) {
+          toast.info(`Code de validation instantané : ${(res as any).code}`, { duration: 10000 });
+        } else {
+          toast.success("Code de sécurité envoyé par SMS au " + fullPhone);
+        }
       }
     } catch (err: any) {
       setErrorMessage(err?.message || "Erreur réseau.");
@@ -616,7 +622,7 @@ export default function ConnexionPage() {
                   className="text-xs font-bold text-[#F97316] hover:underline flex items-center justify-center gap-1.5 mx-auto py-1"
                 >
                   <Phone className="h-3.5 w-3.5 text-[#F97316]" />
-                  <span>Se connecter avec mon numéro de mobile (Max It)</span>
+                  <span>Se connecter avec mon numéro de téléphone</span>
                 </button>
               )}
             </div>

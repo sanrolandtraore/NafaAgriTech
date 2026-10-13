@@ -78,9 +78,12 @@ export interface PythonParcel2DResult {
   total_drip_pipe_length_m: number;
   topography_slope_pct: number;
   elevation_drop_m: number;
+  manifold_pipe_length_m?: number;
+  hydraulic_sectors_count?: number;
   polygon_geojson: Record<string, any>;
   drip_lines_geojson: Record<string, any>;
   svg_technical_plan: string;
+  dxf_2d_content?: string;
 }
 
 export interface PythonBuilding3DResult {
@@ -92,6 +95,14 @@ export interface PythonBuilding3DResult {
   vertices_count: number;
   faces_count: number;
   mesh_obj_string: string;
+  mtl_string?: string;
+  structural_bom?: Array<{
+    element: string;
+    quantite: number;
+    unite: string;
+    detail: string;
+  }>;
+  accessories_included?: Array<Record<string, any>>;
 }
 
 export interface PythonGPSPoint {
@@ -365,6 +376,122 @@ export const pythonEngineClient = {
     if (!res.ok) {
       const errorText = await res.text();
       throw new Error(`Erreur diagnostic IA pathologique Python : ${errorText}`);
+    }
+
+    return await res.json();
+  },
+
+  /**
+   * Diagnostic automatique instantané 1-clic à partir de la photo seule :
+   * Détermine directement la spéculation, la partie atteinte (tige, racine, feuille...),
+   * la maladie, l'agent causal et les symptômes mesurés.
+   */
+  async diagnoseAutoPhoto(
+    file: File | Blob,
+    options?: { temperature_c?: number; humidity_pct?: number }
+  ): Promise<{
+    speculation: string;
+    domain: "vegetal" | "animal";
+    partie_atteinte: string;
+    partie_code: string;
+    maladie: string;
+    agent_causal: string;
+    pathogen_kind: string;
+    symptomes: string[];
+    confidence_pct: number;
+    mesures_immediates: string[];
+    traitement_bio?: {
+      nom: string;
+      substance_active: string;
+      dosage: string;
+      mode_action: string;
+      delai_attente: string;
+      statut: string;
+    } | null;
+    traitement_chimique_ou_veterinaire?: {
+      nom: string;
+      substance_active: string;
+      dosage: string;
+      mode_action: string;
+      delai_attente: string;
+      statut: string;
+    } | null;
+    test_confirmation_terrain: string;
+  }> {
+    const formData = new FormData();
+    formData.append("file", file);
+    if (options?.temperature_c !== undefined) {
+      formData.append("temperature_c", options.temperature_c.toString());
+    }
+    if (options?.humidity_pct !== undefined) {
+      formData.append("humidity_pct", options.humidity_pct.toString());
+    }
+
+    const res = await fetch(`${PYTHON_ENGINE_BASE_URL}/api/diagnosis/auto-detect`, {
+      method: "POST",
+      body: formData,
+    });
+
+    if (!res.ok) {
+      const errorText = await res.text();
+      throw new Error(`Erreur analyse photo automatique : ${errorText}`);
+    }
+
+    return await res.json();
+  },
+
+  /**
+   * Copilote Intelligent Universel 100% Python :
+   * Reconnaissance automatique du profil utilisateur (agriculteur, éleveur, agronome, vétérinaire, fournisseur, finance)
+   * et réponses factuelles d'ingénierie agronomique, zootechnique, hydraulique et économique.
+   */
+  async chatWithCopilot(params: {
+    query: string;
+    userId?: string | null;
+    fullName?: string | null;
+    email?: string | null;
+    phone?: string | null;
+    role?: string | null;
+    partnerType?: string | null;
+    companyName?: string | null;
+    locality?: string | null;
+    region?: string | null;
+    isAuthenticated?: boolean;
+  }): Promise<{
+    reply: string;
+    detected_profile: string;
+    personalized_greeting: string;
+    category: string;
+    factual_sources: string[];
+    suggested_actions: Array<{
+      title: string;
+      target_route: string;
+      icon: string;
+    }>;
+    technical_metrics: Record<string, any>;
+    direct_tools: Array<Record<string, string>>;
+  }> {
+    const res = await fetch(`${PYTHON_ENGINE_BASE_URL}/api/copilot/chat`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        query: params.query,
+        user_id: params.userId || undefined,
+        full_name: params.fullName || undefined,
+        email: params.email || undefined,
+        phone: params.phone || undefined,
+        role: params.role || "guest",
+        partner_type: params.partnerType || undefined,
+        company_name: params.companyName || undefined,
+        locality: params.locality || undefined,
+        region: params.region || undefined,
+        is_authenticated: params.isAuthenticated ?? false,
+      }),
+    });
+
+    if (!res.ok) {
+      const errorText = await res.text();
+      throw new Error(`Erreur copilote Python : ${errorText}`);
     }
 
     return await res.json();

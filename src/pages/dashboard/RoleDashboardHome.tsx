@@ -4,6 +4,7 @@ import PartenaireDashboard from "@/pages/dashboard/partenaire/PartenaireDashboar
 import InstitutionFinanceDashboard from "@/pages/dashboard/partenaire/InstitutionFinanceDashboard";
 import ServiceMarketplacePage from "@/pages/dashboard/ServiceMarketplacePage";
 import ServicesPage from "@/pages/dashboard/ServicesPage";
+import VeterinaireHubPage from "@/pages/dashboard/veterinaire/VeterinaireHubPage";
 
 const RoleDashboardHome = () => {
   const { primaryRole, partnerType } = useAuth();
@@ -20,6 +21,14 @@ const RoleDashboardHome = () => {
     (primaryRole === "partenaire" && partnerType === "expert_agronome")
   ) {
     return <ServicesPage />;
+  }
+
+  // 2.2 Cliniques Vétérinaires & Praticiens de Santé Animale : Console Vétérinaire Unifiée
+  if (
+    primaryRole === "veterinaire" ||
+    (primaryRole === "partenaire" && partnerType === "elevage_veterinaire")
+  ) {
+    return <VeterinaireHubPage />;
   }
 
   // 2.5 Acteurs Finance & Assurance Agricole : Portail dédié Finance, Crédit, Assurance & Marketing

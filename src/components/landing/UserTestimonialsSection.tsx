@@ -41,17 +41,12 @@ import {
   Building2,
   Stethoscope,
 } from "lucide-react";
-import { useAuth } from "@/contexts/AuthContext";
+import { useOptionalAuth } from "@/contexts/AuthContext";
 import { testimonialsStorage, UserTestimonial } from "@/lib/testimonialsStorage";
 import { useToast } from "@/hooks/use-toast";
 
 export const UserTestimonialsSection: React.FC = () => {
-  let authContext: any = null;
-  try {
-    authContext = useAuth();
-  } catch (_e) {
-    authContext = null;
-  }
+  const authContext = useOptionalAuth();
   const user = authContext?.user || null;
   const profile = authContext?.profile || null;
   const { toast } = useToast();

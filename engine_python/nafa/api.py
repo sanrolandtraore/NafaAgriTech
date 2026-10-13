@@ -20,6 +20,7 @@ from .field_suite import (
     LandSurveyResult
 )
 from .ai_disease_diagnosis import AIDiseaseDiagnosticEngine, DomainType
+from .universal_copilot import UniversalNafaCopilotEngine, UserSessionContext, UserRoleProfile
 
 app = FastAPI(
     title="NAFA AGRITECH — Scientific & Engineering Engine API",
@@ -41,6 +42,7 @@ livestock_engine = LivestockDensityEngine()
 cad_engine = AgronomicCAD3DEngine()
 field_engine = AfricanFieldSuiteEngine()
 diagnosis_engine = AIDiseaseDiagnosticEngine()
+copilot_engine = UniversalNafaCopilotEngine()
 
 
 # =============================================================================
@@ -219,9 +221,12 @@ def model_parcel_2d(req: Parcel2DRequest):
             "total_drip_pipe_length_m": res.total_drip_pipe_length_m,
             "topography_slope_pct": res.topography_slope_pct,
             "elevation_drop_m": res.elevation_drop_m,
+            "manifold_pipe_length_m": res.manifold_pipe_length_m,
+            "hydraulic_sectors_count": res.hydraulic_sectors_count,
             "polygon_geojson": res.polygon_geojson,
             "drip_lines_geojson": res.drip_lines_geojson,
-            "svg_technical_plan": res.svg_technical_plan
+            "svg_technical_plan": res.svg_technical_plan,
+            "dxf_2d_content": res.dxf_2d_content
         }
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
@@ -251,7 +256,10 @@ def model_building_3d(req: Building3DRequest):
             "ventilation_openings_surface_m2": res.ventilation_openings_surface_m2,
             "vertices_count": res.vertices_count,
             "faces_count": res.faces_count,
-            "mesh_obj_string": res.mesh_obj_string
+            "mesh_obj_string": res.mesh_obj_string,
+            "mtl_string": res.mtl_string,
+            "structural_bom": res.structural_bom,
+            "accessories_included": res.accessories_included
         }
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
@@ -415,6 +423,92 @@ async def diagnose_pathology(
             "field_confirmation_needed": res.field_confirmation_needed,
             "clarification_questions": res.clarification_questions,
             "technical_synthesis": res.technical_synthesis
+        }
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+
+@app.post("/api/diagnosis/auto-detect")
+async def auto_detect_from_photo(
+    file: UploadFile = File(...),
+    temperature_c: float = Form(33.0),
+    humidity_pct: float = Form(65.0)
+):
+    """
+    Endpoint autonome 1-clic : L'utilisateur prend en photo la partie malade,
+    l'IA détermine directement :
+    1. La spéculation
+    2. La partie atteinte (tige, racine, feuille, etc.)
+    3. La maladie
+    4. L'agent causal
+    5. Les symptômes mesurés
+    """
+    try:
+        content = await file.read()
+        res = diagnosis_engine.diagnose_from_single_photo(
+            image_input=content,
+            field_temperature_c=temperature_c,
+            field_humidity_pct=humidity_pct
+        )
+        return {
+            "speculation": res.speculation,
+            "domain": res.domain.value,
+            "partie_atteinte": res.partie_atteinte,
+            "partie_code": res.partie_code.value,
+            "maladie": res.maladie,
+            "agent_causal": res.agent_causal,
+            "pathogen_kind": res.pathogen_kind,
+            "symptomes": res.symptomes,
+            "confidence_pct": res.confidence_pct,
+            "mesures_immediates": res.mesures_immediates,
+            "traitement_bio": res.traitement_bio,
+            "traitement_chimique_ou_veterinaire": res.traitement_chimique_ou_veterinaire,
+            "test_confirmation_terrain": res.test_confirmation_terrain
+        }
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+
+# --- COPILOTE UNIVERSEL 100% PYTHON ---
+class CopilotChatRequest(BaseModel):
+    query: str
+    user_id: Optional[str] = None
+    full_name: Optional[str] = None
+    email: Optional[str] = None
+    phone: Optional[str] = None
+    role: Optional[str] = "guest"
+    partner_type: Optional[str] = None
+    company_name: Optional[str] = None
+    locality: Optional[str] = None
+    region: Optional[str] = None
+    is_authenticated: bool = False
+
+
+@app.post("/api/copilot/chat")
+def chat_with_copilot(req: CopilotChatRequest):
+    try:
+        session = UserSessionContext(
+            user_id=req.user_id,
+            full_name=req.full_name,
+            email=req.email,
+            phone=req.phone,
+            role=copilot_engine.resolve_profile(req.role, req.partner_type),
+            partner_type=req.partner_type,
+            company_name=req.company_name,
+            locality=req.locality,
+            region=req.region,
+            is_authenticated=req.is_authenticated
+        )
+        res = copilot_engine.assist(query=req.query, user_session=session)
+        return {
+            "reply": res.reply,
+            "detected_profile": res.detected_profile,
+            "personalized_greeting": res.personalized_greeting,
+            "category": res.category,
+            "factual_sources": res.factual_sources,
+            "suggested_actions": res.suggested_actions,
+            "technical_metrics": res.technical_metrics,
+            "direct_tools": res.direct_tools
         }
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))

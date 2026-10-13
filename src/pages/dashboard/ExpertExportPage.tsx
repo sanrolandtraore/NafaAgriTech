@@ -1,12 +1,13 @@
 
-// Les tables metier ne figurent pas dans les types Supabase generes (src/integrations/supabase/types.ts) :
-// on passe par une vue non typee du client pour ces requetes.
-const db = supabase as unknown as SupabaseClient;
-﻿import { useState } from "react";
+import { useState } from "react";
 import PremiumGate from "@/components/PremiumGate";
 import { supabase } from "@/integrations/supabase/client";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+
+// Les tables metier ne figurent pas dans les types Supabase generes (src/integrations/supabase/types.ts) :
+// on passe par une vue non typee du client pour ces requetes.
+const db = supabase as unknown as SupabaseClient;
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";

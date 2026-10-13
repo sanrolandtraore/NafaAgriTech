@@ -1,13 +1,14 @@
 
-// Les tables metier ne figurent pas dans les types Supabase generes (src/integrations/supabase/types.ts) :
-// on passe par une vue non typee du client pour ces requetes.
-const db = supabase as unknown as SupabaseClient;
-﻿import { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { Card } from "@/components/ui/card";
 import { BarChart3, Users, Microscope, FileText, Calendar, Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { useAuth } from "@/contexts/AuthContext";
+
+// Les tables metier ne figurent pas dans les types Supabase generes (src/integrations/supabase/types.ts) :
+// on passe par une vue non typee du client pour ces requetes.
+const db = supabase as unknown as SupabaseClient;
 
 export default function ExpertAnalyticsPage() {
   const { user } = useAuth();
