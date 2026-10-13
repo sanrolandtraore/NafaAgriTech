@@ -432,12 +432,14 @@ async def diagnose_pathology(
 async def auto_detect_from_photo(
     file: UploadFile = File(...),
     temperature_c: float = Form(33.0),
-    humidity_pct: float = Form(65.0)
+    humidity_pct: float = Form(65.0),
+    host_target: Optional[str] = Form(None),
+    affected_organ: Optional[str] = Form(None)
 ):
     """
     Endpoint autonome 1-clic : L'utilisateur prend en photo la partie malade,
-    l'IA détermine directement :
-    1. La spéculation
+    l'IA détermine ou confirme directement :
+    1. La spéculation (culture ou animal, avec prise en compte du choix de l'agronome)
     2. La partie atteinte (tige, racine, feuille, etc.)
     3. La maladie
     4. L'agent causal
@@ -448,7 +450,9 @@ async def auto_detect_from_photo(
         res = diagnosis_engine.diagnose_from_single_photo(
             image_input=content,
             field_temperature_c=temperature_c,
-            field_humidity_pct=humidity_pct
+            field_humidity_pct=humidity_pct,
+            host_target=host_target,
+            affected_organ=affected_organ
         )
         return {
             "speculation": res.speculation,

@@ -388,7 +388,12 @@ export const pythonEngineClient = {
    */
   async diagnoseAutoPhoto(
     file: File | Blob,
-    options?: { temperature_c?: number; humidity_pct?: number }
+    options?: {
+      temperature_c?: number;
+      humidity_pct?: number;
+      host_target?: string;
+      affected_organ?: string;
+    }
   ): Promise<{
     speculation: string;
     domain: "vegetal" | "animal";
@@ -425,6 +430,12 @@ export const pythonEngineClient = {
     }
     if (options?.humidity_pct !== undefined) {
       formData.append("humidity_pct", options.humidity_pct.toString());
+    }
+    if (options?.host_target) {
+      formData.append("host_target", options.host_target);
+    }
+    if (options?.affected_organ) {
+      formData.append("affected_organ", options.affected_organ);
     }
 
     const res = await fetch(`${PYTHON_ENGINE_BASE_URL}/api/diagnosis/auto-detect`, {
