@@ -53,6 +53,29 @@ interface MessageItem {
   timestamp: string;
 }
 
+/**
+ * Extrait proprement le prénom de l'utilisateur pour une salutation courtoise et personnalisée.
+ * Retire les titres honorifiques (Dr., Ing., Prof., M., Mme, etc.).
+ */
+export function extractFirstName(fullName?: string | null): string {
+  if (!fullName) return "";
+  let clean = fullName.trim();
+  const honorificsRegex = /^(dr\.?|ing\.?|prof\.?|pr\.?|m\.?|mme\.?|mlle\.?|monsieur|madame|mademoiselle|maître|me\.?)\s+/i;
+  while (honorificsRegex.test(clean)) {
+    clean = clean.replace(honorificsRegex, "").trim();
+  }
+  if (!clean) return "";
+
+  const parts = clean.split(/\s+/).filter(Boolean);
+  if (parts.length === 0) return "";
+
+  const first = parts[0];
+  return first
+    .split("-")
+    .map((p) => p.charAt(0).toUpperCase() + p.slice(1).toLowerCase())
+    .join("-");
+}
+
 export function UniversalNafaCopilotWidget() {
   const { user, profile, primaryRole, partnerType } = useAuth();
   const navigate = useNavigate();
@@ -63,6 +86,8 @@ export function UniversalNafaCopilotWidget() {
   const [isLoading, setIsLoading] = useState(false);
   const [messages, setMessages] = useState<MessageItem[]>([]);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  const firstName = extractFirstName(profile?.full_name);
 
   // Position flottante libre (permet à l'icône de bouger partout sur l'écran avec sauvegarde et repositionnement adaptatif)
   const [pos, setPos] = useState<{ x: number; y: number } | null>(() => {
@@ -159,17 +184,17 @@ export function UniversalNafaCopilotWidget() {
         return current;
       });
     } else {
-      // C'était un simple clic sans déplacement : ouvrir le copilote
+      // C'était un simple clic sans déplacement : ouvrir l'assistant
       setIsOpen(true);
     }
   };
 
-  // Initialisation à l'ouverture ou connexion avec message personnalisé par utilisateur
+  // Initialisation à l'ouverture ou connexion avec salutation par prénom et assistance ultra-personnalisée
   useEffect(() => {
     if (messages.length === 0) {
       const isAuth = !!user;
       const userRole = primaryRole || (isAuth ? "agriculteur" : "visiteur");
-      const userName = profile?.full_name?.trim() || (isAuth ? "Producteur" : "");
+      const currentFirstName = extractFirstName(profile?.full_name);
 
       let welcomeText = "";
       let suggestedActions = [
@@ -179,61 +204,61 @@ export function UniversalNafaCopilotWidget() {
       ];
 
       if (userRole === "agriculteur") {
-        welcomeText = userName
-          ? `Bonjour ${userName} ! Ravi de vous accompagner sur votre exploitation. Que souhaitez-vous vérifier aujourd'hui sur vos cultures, vos besoins en intrants ou vos parcelles ?`
-          : `Bonjour ! Ravi de vous accompagner. Que souhaitez-vous vérifier aujourd'hui sur vos cultures, vos besoins en intrants ou vos parcelles ?`;
+        welcomeText = currentFirstName
+          ? `Bonjour ${currentFirstName} ! Je suis Nafa assistant, à vos côtés sur votre exploitation. Que souhaitez-vous vérifier aujourd'hui sur vos cultures, vos besoins en fertilisants ou la météo de vos parcelles ?`
+          : `Bonjour ! Je suis Nafa assistant, ravi de vous accompagner. Que souhaitez-vous vérifier aujourd'hui sur vos cultures, vos fertilisants ou vos parcelles ?`;
         suggestedActions = [
           { title: "Scanner une Plante Malade", target_route: isAuth ? "/dashboard/diagnostic" : "/diagnostic", icon: "Camera" },
           { title: "Marché des Intrants & Travaux", target_route: isAuth ? "/dashboard/marketplace" : "/marketplace", icon: "Store" },
           { title: "Planification des Cultures", target_route: isAuth ? "/dashboard/crop-planning" : "/explorer", icon: "Sprout" },
         ];
       } else if (userRole === "eleveur") {
-        welcomeText = userName
-          ? `Bonjour ${userName} ! Votre espace d'élevage et de zootechnie est actif. Avez-vous une question sur la conduite de votre cheptel, l'alimentation ou la santé animale ?`
-          : `Bonjour ! Votre espace d'élevage et de zootechnie est actif. Avez-vous une question sur la conduite de votre cheptel, l'alimentation ou la santé animale ?`;
+        welcomeText = currentFirstName
+          ? `Bonjour ${currentFirstName} ! Je suis Nafa assistant. Votre suivi de cheptel et de zootechnie est actif. Avez-vous une question sur la conduite de votre élevage, l'optimisation des rations ou la santé de vos animaux ?`
+          : `Bonjour ! Je suis Nafa assistant. Votre espace d'élevage et de zootechnie est actif. Avez-vous une question sur la conduite de votre cheptel, l'alimentation ou la santé animale ?`;
         suggestedActions = [
           { title: "Mon Cheptel & Animaux", target_route: isAuth ? "/dashboard/animals" : "/explorer", icon: "Beef" },
           { title: "Comptage & Densité Bâtiment", target_route: isAuth ? "/dashboard/animal-counting" : "/explorer", icon: "Camera" },
           { title: "Réserver un Vétérinaire", target_route: isAuth ? "/dashboard/livestock-services" : "/marketplace", icon: "ShieldCheck" },
         ];
       } else if (userRole === "agronome") {
-        welcomeText = userName
-          ? `Bonjour ${userName} ! Vos outils d'ingénierie agronomique, arpentage GPS métrique et conception 3D sont prêts. Quel projet étudiez-vous ?`
-          : `Bonjour Confrère ! Vos outils d'ingénierie agronomique, arpentage GPS métrique et conception 3D sont prêts. Quel projet étudiez-vous ?`;
+        welcomeText = currentFirstName
+          ? `Bonjour ${currentFirstName} ! Je suis Nafa assistant. Vos outils d'ingénierie agronomique, arpentage GPS métrique et conception 3D sont prêts. Quel projet de terrain étudiez-vous aujourd'hui ?`
+          : `Bonjour Confrère ! Je suis Nafa assistant. Vos outils d'ingénierie agronomique, arpentage GPS métrique et conception 3D sont prêts. Quel projet étudiez-vous ?`;
         suggestedActions = [
           { title: "Studio CAO & Parcelles 3D", target_route: isAuth ? "/dashboard/field-designer" : "/explorer", icon: "Compass" },
           { title: "Bibliothèque Phytosanitaire", target_route: isAuth ? "/dashboard/crop-library" : "/fiches-techniques", icon: "Sprout" },
           { title: "Calculateur Hydraulique FAO-56", target_route: isAuth ? "/dashboard/expert-calculator" : "/explorer", icon: "Layers" },
         ];
       } else if (userRole === "veterinaire") {
-        welcomeText = userName
-          ? `Bonjour Dr. ${userName} ! Vos dossiers de soins, suivi épidémiologique et ordonnances sont synchronisés. Que souhaitez-vous consulter ?`
-          : `Bonjour Docteur ! Vos dossiers de soins, suivi épidémiologique et ordonnances sont synchronisés. Que souhaitez-vous consulter ?`;
+        welcomeText = currentFirstName
+          ? `Bonjour Dr. ${currentFirstName} ! Je suis Nafa assistant. Vos dossiers de soins, suivi épidémiologique et ordonnances sont synchronisés. Que souhaitez-vous consulter pour vos éleveurs ?`
+          : `Bonjour Docteur ! Je suis Nafa assistant. Vos dossiers de soins, suivi épidémiologique et ordonnances sont synchronisés. Que souhaitez-vous consulter ?`;
         suggestedActions = [
           { title: "Interventions & Soins", target_route: isAuth ? "/dashboard/interventions" : "/explorer", icon: "ShieldCheck" },
           { title: "Audit Zootechnique Cheptel", target_route: isAuth ? "/dashboard/animal-counting" : "/explorer", icon: "Camera" },
           { title: "Demandes Éleveurs", target_route: isAuth ? "/dashboard/quote-requests" : "/explorer", icon: "FileText" },
         ];
       } else if (userRole === "fournisseur") {
-        welcomeText = userName
-          ? `Bonjour ${userName} ! Vos catalogues, stocks de matériel et demandes de devis sont à jour. Souhaitez-vous gérer une offre ou répondre à un client ?`
-          : `Bonjour ! Vos catalogues, stocks de matériel et demandes de devis sont à jour. Souhaitez-vous gérer une offre ou répondre à un client ?`;
+        welcomeText = currentFirstName
+          ? `Bonjour ${currentFirstName} ! Je suis Nafa assistant. Vos catalogues de produits, stocks d'intrants et demandes de devis sont à jour. Souhaitez-vous gérer une offre ou répondre à un client ?`
+          : `Bonjour ! Je suis Nafa assistant. Vos catalogues, stocks de matériel et demandes de devis sont à jour. Souhaitez-vous gérer une offre ou répondre à un client ?`;
         suggestedActions = [
           { title: "Mes Offres & Catalogue", target_route: isAuth ? "/dashboard/partenaire-mes-offres" : "/marketplace", icon: "Store" },
           { title: "Demandes de Devis", target_route: isAuth ? "/dashboard/quote-requests" : "/explorer", icon: "FileText" },
         ];
       } else if (userRole === "institution_agri") {
-        welcomeText = userName
-          ? `Bonjour ${userName} ! Vos dossiers de financement agricole et produits d'assurance sont prêts pour instruction.`
-          : `Bonjour ! Vos dossiers de financement agricole et produits d'assurance sont prêts pour instruction.`;
+        welcomeText = currentFirstName
+          ? `Bonjour ${currentFirstName} ! Je suis Nafa assistant. Vos dossiers de financement agricole et vos produits d'assurance indicielle sont prêts pour instruction. Que souhaitez-vous analyser ?`
+          : `Bonjour ! Je suis Nafa assistant. Vos dossiers de financement agricole et produits d'assurance sont prêts pour instruction.`;
         suggestedActions = [
           { title: "Dossiers de Financement", target_route: isAuth ? "/dashboard/partenaire-demandes" : "/explorer", icon: "FileText" },
           { title: "Assurance Agricole", target_route: isAuth ? "/dashboard/partenaire-assurance" : "/solutions", icon: "ShieldCheck" },
         ];
       } else {
-        welcomeText = userName
-          ? `Bonjour ${userName} ! Bienvenue sur NAFA-AGRITECH. Comment puis-je vous aider dans vos activités agricoles aujourd'hui ?`
-          : `Bonjour et bienvenue sur NAFA-AGRITECH. Comment puis-je vous aider dans vos activités agricoles aujourd'hui ?`;
+        welcomeText = currentFirstName
+          ? `Bonjour ${currentFirstName} ! Je suis Nafa assistant, votre conseiller agricole et technique intelligent. Comment puis-je vous aider dans vos activités aujourd'hui ?`
+          : `Bonjour et bienvenue sur NAFA ! Je suis Nafa assistant, votre conseiller agricole et technique intelligent. Comment puis-je vous aider dans vos activités aujourd'hui ?`;
       }
 
       setMessages([
@@ -306,7 +331,7 @@ export function UniversalNafaCopilotWidget() {
     } catch (err: any) {
       console.warn("Moteur distant indisponible, bascule de secours locale active :", err);
       // Réponse locale intelligente de secours
-      const fallbackReply = generateOfflineCopilotReply(q, primaryRole || "agriculteur", !!user);
+      const fallbackReply = generateOfflineCopilotReply(q, primaryRole || "agriculteur", !!user, firstName);
       setMessages((prev) => [
         ...prev,
         {
@@ -341,6 +366,53 @@ export function UniversalNafaCopilotWidget() {
     navigate(route);
   };
 
+  // Suggestions rapides contextualisées selon le profil et les besoins spécifiques de l'utilisateur
+  const quickPromptsByRole: Record<string, Array<{ label: string; query: string }>> = {
+    agriculteur: [
+      { label: "🐛 Chenille légionnaire & ravageurs", query: "Quel traitement contre la chenille légionnaire du maïs ?" },
+      { label: "🧪 Calcul engrais NPK & Urée", query: "Quelle quantité d'engrais NPK et Urée pour 1 hectare de maïs ?" },
+      { label: "💧 Irrigation & Pompe solaire", query: "Comment calculer le besoin en eau FAO-56 et le pompage solaire ?" },
+      { label: "💰 Prix Forage en FCFA", query: "Quel est le coût indicatif d'un forage et château d'eau en FCFA ?" },
+    ],
+    eleveur: [
+      { label: "🐔 Densité & ventilation bâtiment", query: "Quelle est la densité maximale en poulailler sahélien ?" },
+      { label: "💉 Calendrier vaccinal & soins", query: "Quel est le calendrier de vaccination PPR pour ovins et Newcastle pour volailles ?" },
+      { label: "🌾 Ration alimentaire bétail", query: "Comment composer une ration équilibrée pour bovins à moindre coût ?" },
+      { label: "🌡️ Risque stress thermique THI", query: "Comment prévenir le stress thermique quand le THI dépasse 78 ?" },
+    ],
+    agronome: [
+      { label: "📐 Calcul hydraulique FAO-56 & HMT", query: "Comment dimensionner les pertes de charge Hazen-Williams et la HMT d'une pompe ?" },
+      { label: "🗺️ Arpentage GPS & Studio 3D", query: "Comment exporter ma parcelle arpentée en DXF ou Wavefront OBJ 3D ?" },
+      { label: "🔬 Clés phytosanitaires INERA", query: "Quelles sont les clés de diagnostic INERA pour la tomate et l'oignon ?" },
+      { label: "💰 Devis quantitatif DQE", query: "Comment chiffrer un devis d'aménagement hydraulique d'un hectare ?" },
+    ],
+    veterinaire: [
+      { label: "🩺 Diagnostic épizooties", query: "Quels sont les biomarqueurs différentiels pour la PPR et la maladie de Newcastle ?" },
+      { label: "⚠️ Délais d'attente (DAR)", query: "Quels sont les délais d'attente DAR lait et viande pour les antibiotiques usuels ?" },
+      { label: "💉 Protocoles de prophylaxie", query: "Quel protocole vaccinal officiel recommander pour un cheptel caprin au Sahel ?" },
+      { label: "📋 Devis d'intervention", query: "Comment éditer un compte-rendu d'intervention et un devis conforme à l'Ordre ?" },
+    ],
+    fournisseur: [
+      { label: "📦 Actualiser mes stocks & prix", query: "Comment mettre à jour mon catalogue d'engrais et semences certifiées ?" },
+      { label: "📄 Répondre aux devis", query: "Comment émettre une facture proforma certifiée pour un groupement de producteurs ?" },
+      { label: "🌾 Produits homologués CILSS", query: "Quels produits phytosanitaires sont strictement homologués par le CSP-CILSS ?" },
+      { label: "🚚 Suivi des commandes clients", query: "Comment organiser le suivi des commandes d'intrants expédiées ?" },
+    ],
+    institution_agri: [
+      { label: "🏦 Analyser dossier de crédit", query: "Quels sont les critères de rentabilité et de trésorerie pour financer un forage ?" },
+      { label: "🛡️ Risque assurance climat", query: "Comment fonctionne l'assurance indicielle sécheresse par données satellitaires ?" },
+      { label: "📑 Conformité foncière & KYC", query: "Quels documents fonciers (APFR, bail rural) exiger pour un prêt agricole ?" },
+      { label: "📊 Ratios de rentabilité agricole", query: "Quels sont les ratios de marge brute standard pour les céréales et maraîchage ?" },
+    ],
+  };
+
+  const activePrompts = quickPromptsByRole[primaryRole || ""] || [
+    { label: "🐛 Chenille légionnaire", query: "Quel traitement contre la chenille légionnaire du maïs ?" },
+    { label: "💧 Irrigation & Pompe solaire", query: "Comment calculer le besoin en eau FAO-56 et le pompage solaire ?" },
+    { label: "🐔 Élevage & cheptel", query: "Quelle est la densité maximale en poulailler sahélien ?" },
+    { label: "💰 Prix Forage en FCFA", query: "Quel est le coût indicatif d'un forage et château d'eau en FCFA ?" },
+  ];
+
   return (
     <>
       {/* Bouton Flottant Déclencheur avec Vraie Image & Bougie d'Allumage Déplaçable */}
@@ -355,15 +427,15 @@ export function UniversalNafaCopilotWidget() {
               : { right: "20px", bottom: "80px" }
           }
           className="fixed z-50 flex items-center gap-2.5 cursor-grab active:cursor-grabbing select-none group touch-none"
-          title="Copilote NAFA (Glissez pour déplacer l'icône sur l'écran • Cliquez pour ouvrir)"
+          title="Nafa assistant (Glissez pour déplacer l'icône sur l'écran • Cliquez pour ouvrir)"
         >
           {/* Badge indicatif textuel au survol ou visible */}
           <div className="hidden sm:flex items-center gap-1.5 bg-slate-900/95 text-white text-[11px] font-bold px-3 py-1.5 rounded-full shadow-xl border border-emerald-500/40 backdrop-blur-md">
             <Move className="h-3 w-3 text-slate-400 group-hover:text-emerald-400 transition-colors" />
-            <span>Copilote NAFA</span>
+            <span>Nafa assistant</span>
             <span className="flex items-center gap-0.5 text-amber-400 text-[10px]">
               <Flame className="h-3 w-3 fill-amber-400 animate-pulse" />
-              <span>Allumé</span>
+              <span>En ligne</span>
             </span>
           </div>
 
@@ -373,7 +445,7 @@ export function UniversalNafaCopilotWidget() {
               <div className="h-full w-full rounded-full overflow-hidden border-2 border-slate-950 bg-slate-900 relative">
                 <img
                   src={agronomistImg}
-                  alt="NAFA Copilote - Expert Terrain Réel"
+                  alt="Nafa assistant - Expert Terrain Réel"
                   className="h-full w-full object-cover object-center pointer-events-none"
                 />
               </div>
@@ -382,7 +454,7 @@ export function UniversalNafaCopilotWidget() {
             {/* Voyant / Bougie d'Allumage Active (Témoin lumineux chaud et pulsant) */}
             <div
               className="absolute -top-1 -right-1 h-6 w-6 rounded-full bg-gradient-to-tr from-amber-600 to-amber-400 border-2 border-slate-950 flex items-center justify-center shadow-lg shadow-amber-500/50"
-              title="Bougie d'allumage active • Système opérationnel en direct"
+              title="Nafa assistant opérationnel en direct"
             >
               <Flame className="h-3.5 w-3.5 text-white fill-amber-200 animate-pulse" />
             </div>
@@ -390,19 +462,19 @@ export function UniversalNafaCopilotWidget() {
         </div>
       )}
 
-      {/* Panneau Modal / Tiroir du Copilote */}
+      {/* Panneau Modal / Tiroir de Nafa assistant */}
       {isOpen && (
         <div className="fixed bottom-6 right-6 z-50 w-[95vw] sm:w-[460px] max-h-[85vh] h-[640px] flex flex-col bg-slate-950 text-slate-100 rounded-2xl shadow-2xl border border-emerald-500/40 backdrop-blur-md overflow-hidden animate-in fade-in slide-in-from-bottom-6">
           {/* En-tête */}
           <div className="flex items-center justify-between px-4 py-3 bg-gradient-to-r from-slate-900 via-emerald-950/60 to-slate-900 border-b border-emerald-500/20">
             <div className="flex items-center gap-3">
-              {/* Avatar avec vraie image et bougie d'allumage */}
+              {/* Avatar avec vraie image et voyant d'activité */}
               <div className="relative">
                 <div className="h-10 w-10 rounded-full p-0.5 bg-gradient-to-tr from-emerald-500 to-amber-400 shadow-md">
                   <div className="h-full w-full rounded-full overflow-hidden border border-slate-900">
                     <img
                       src={agronomistImg}
-                      alt="NAFA Copilote"
+                      alt="Nafa assistant"
                       className="h-full w-full object-cover object-center"
                     />
                   </div>
@@ -414,17 +486,17 @@ export function UniversalNafaCopilotWidget() {
 
               <div>
                 <div className="flex items-center gap-2">
-                  <h3 className="text-sm font-bold text-white tracking-wide">NAFA COPILOTE</h3>
+                  <h3 className="text-sm font-bold text-white tracking-wide">Nafa assistant</h3>
                   <Badge variant="outline" className="text-[9px] font-extrabold bg-amber-500/15 text-amber-300 border-amber-500/40 px-1.5 py-0 flex items-center gap-1">
                     <Flame className="h-2.5 w-2.5 fill-amber-300" />
-                    <span>Moteur Actif</span>
+                    <span>Actif</span>
                   </Badge>
                 </div>
                 <p className="text-[11px] text-slate-400">
-                  {profile?.full_name?.trim() ? (
-                    <span className="text-emerald-400 font-medium">{profile.full_name.trim()}</span>
+                  {firstName ? (
+                    <span className="text-emerald-400 font-medium">Bonjour {firstName} !</span>
                   ) : (
-                    <span>Assistance Agricole & Technique</span>
+                    <span>Assistance Agricole Personnalisée</span>
                   )}
                 </p>
               </div>
@@ -486,38 +558,23 @@ export function UniversalNafaCopilotWidget() {
             {isLoading && (
               <div className="flex items-center gap-2 text-xs text-emerald-400 bg-slate-900/60 p-3 rounded-xl border border-slate-800 w-fit">
                 <Sparkles className="h-4 w-4 animate-spin text-emerald-400" />
-                <span>Analyse et calculs en cours...</span>
+                <span>Nafa assistant analyse vos données...</span>
               </div>
             )}
             <div ref={messagesEndRef} />
           </div>
 
-          {/* Suggestions rapides en pied de page */}
+          {/* Suggestions rapides adaptées aux besoins du rôle */}
           <div className="px-3 py-1.5 bg-slate-900/40 border-t border-slate-800/60 flex items-center gap-1.5 overflow-x-auto no-scrollbar">
-            <button
-              onClick={() => handleSendMessage("Quel traitement contre la chenille légionnaire du maïs ?")}
-              className="text-[10px] bg-slate-800/80 hover:bg-slate-800 text-slate-300 px-2 py-1 rounded-md whitespace-nowrap transition-colors"
-            >
-              🐛 Chenille légionnaire
-            </button>
-            <button
-              onClick={() => handleSendMessage("Comment calculer le besoin en eau FAO-56 et le pompage solaire ?")}
-              className="text-[10px] bg-slate-800/80 hover:bg-slate-800 text-slate-300 px-2 py-1 rounded-md whitespace-nowrap transition-colors"
-            >
-              💧 Irrigation & Pompe solaire
-            </button>
-            <button
-              onClick={() => handleSendMessage("Quelle est la densité maximale en poulailler sahélien ?")}
-              className="text-[10px] bg-slate-800/80 hover:bg-slate-800 text-slate-300 px-2 py-1 rounded-md whitespace-nowrap transition-colors"
-            >
-              🐔 Densité poulet chair
-            </button>
-            <button
-              onClick={() => handleSendMessage("Quel est le coût indicatif d'un forage et château d'eau en FCFA ?")}
-              className="text-[10px] bg-slate-800/80 hover:bg-slate-800 text-slate-300 px-2 py-1 rounded-md whitespace-nowrap transition-colors"
-            >
-              💰 Prix Forage en FCFA
-            </button>
+            {activePrompts.map((p, idx) => (
+              <button
+                key={idx}
+                onClick={() => handleSendMessage(p.query)}
+                className="text-[10px] bg-slate-800/80 hover:bg-slate-800 text-slate-300 px-2 py-1 rounded-md whitespace-nowrap transition-colors"
+              >
+                {p.label}
+              </button>
+            ))}
           </div>
 
           {/* Champ de saisie */}
@@ -545,17 +602,18 @@ export function UniversalNafaCopilotWidget() {
   );
 }
 
-/** Fonction de secours locale avec raisonnement expert sahélien */
-function generateOfflineCopilotReply(query: string, role: string, isAuth: boolean = false) {
+/** Fonction de secours locale avec raisonnement expert sahélien et salutation personnalisée */
+function generateOfflineCopilotReply(query: string, role: string, isAuth: boolean = false, firstName?: string) {
   const q = query.toLowerCase();
 
   const diagRoute = isAuth ? "/dashboard/diagnostic" : "/diagnostic";
   const marketRoute = isAuth ? "/dashboard/marketplace" : "/marketplace";
   const designerRoute = isAuth ? "/dashboard/field-designer" : "/explorer";
+  const salutation = firstName ? `Bonjour ${firstName} ! ` : "Bonjour ! ";
 
   if (q.includes("chenille") || q.includes("mais") || q.includes("ravageur")) {
     return {
-      text: `### Identification : Chenille Légionnaire d'Automne (Spodoptera frugiperda)\n• Traitement Bio : Azadirachtine (Huile de Neem 50 ml / 15L d'eau) pulvérisée au cœur du cornet au crépuscule.\n• Traitement Homologué CSP-CILSS : Émamectine Benzoate 50 g/kg (ex: Emastar) à dose de 250 g/ha (DAR 7 jours).\n• Test terrain : Observer le 'Y' inversé caractéristique sur la tête de la chenille.`,
+      text: `${salutation}Voici les recommandations de Nafa assistant :\n\n### Identification : Chenille Légionnaire d'Automne (Spodoptera frugiperda)\n• Traitement Bio : Azadirachtine (Huile de Neem 50 ml / 15L d'eau) pulvérisée au cœur du cornet au crépuscule.\n• Traitement Homologué CSP-CILSS : Émamectine Benzoate 50 g/kg (ex: Emastar) à dose de 250 g/ha (DAR 7 jours).\n• Test terrain : Observer le 'Y' inversé caractéristique sur la tête de la chenille.`,
       category: "agronomie",
       actions: [{ title: "Scanner la culture", target_route: diagRoute, icon: "Camera" }],
     };
@@ -563,14 +621,14 @@ function generateOfflineCopilotReply(query: string, role: string, isAuth: boolea
 
   if (q.includes("eau") || q.includes("pompe") || q.includes("irrigation") || q.includes("forage")) {
     return {
-      text: `### Bilan Hydraulique & Pompage Solaire Sahélien\n• Évapotranspiration ETo de référence : 5.5 à 6.5 mm/jour en saison sèche.\n• Pertes de charge Hazen-Williams : Maintenir la vitesse d'eau entre 1.0 m/s et 1.8 m/s dans le PEHD.\n• Coût moyen forage productif 50m au Burkina : 3 500 000 à 4 500 000 FCFA.`,
+      text: `${salutation}Voici l'analyse hydraulique de Nafa assistant :\n\n### Bilan Hydraulique & Pompage Solaire Sahélien\n• Évapotranspiration ETo de référence : 5.5 à 6.5 mm/jour en saison sèche.\n• Pertes de charge Hazen-Williams : Maintenir la vitesse d'eau entre 1.0 m/s et 1.8 m/s dans le PEHD.\n• Coût moyen forage productif 50m au Burkina : 3 500 000 à 4 500 000 FCFA.`,
       category: "hydraulique",
       actions: [{ title: "Concevoir le Réseau d'Irrigation 3D", target_route: designerRoute, icon: "Compass" }],
     };
   }
 
   return {
-    text: `Bienvenue sur NAFA. Comment puis-je vous aider dans vos activités aujourd'hui ?`,
+    text: `${salutation}Je suis Nafa assistant, à vos côtés en mode local. Comment puis-je vous aider dans vos activités aujourd'hui ?`,
     category: "aide_plateforme",
     actions: [
       { title: "Marché des Services", target_route: marketRoute, icon: "Store" },
