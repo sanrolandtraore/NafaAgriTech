@@ -811,11 +811,13 @@ class AIDiseaseDiagnosticEngine:
         self,
         image_input: Any,
         field_temperature_c: float = 33.0,
-        field_humidity_pct: float = 65.0
+        field_humidity_pct: float = 65.0,
+        host_target: Optional[str] = None,
+        affected_organ: Optional[str] = None
     ) -> DirectPhotoDiagnosisResult:
         """
-        Détermine automatiquement à partir de la photo :
-        1. La spéculation (culture ou animal)
+        Détermine ou confirme à partir de la photo et des critères agronomiques :
+        1. La spéculation (culture ou animal) avec override possible de l'agronome
         2. La partie atteinte (tige, racine, feuille, fruit, peau...)
         3. La maladie
         4. L'agent causal
@@ -825,54 +827,101 @@ class AIDiseaseDiagnosticEngine:
         features = self.extract_visual_symptoms(image_input)
 
         # 2. Détermination de la partie atteinte (organe)
-        partie_code = AffectedOrgan.LEAF
-        partie_label = "Feuille (Limbe foliaire)"
-
-        if features.texture_roughness_score > 2.2 and features.hsv_hue_mean < 42.0:
-            partie_code = AffectedOrgan.ANIMAL_SKIN
-            partie_label = "Peau, Pelage & Cuir"
-        elif features.rust_pct > 2.5 and features.chlorosis_pct < 1.0 and features.hsv_hue_mean < 35.0:
-            partie_code = AffectedOrgan.LITTER_DROPPINGS
-            partie_label = "Fientes & Litière aviaire"
-        elif features.dominant_rgb_lesion[0] > 140 and features.dominant_rgb_lesion[1] < 70 and features.dominant_rgb_lesion[2] < 70 and features.texture_roughness_score < 1.0:
-            partie_code = AffectedOrgan.FRUIT
-            partie_label = "Fruit (Péricarpe & Chair)"
-        elif features.angular_vein_bounded_detected or (features.linear_streak_detected and features.canopy_or_tissue_pixels > 0 and features.hsv_hue_mean < 50.0):
-            partie_code = AffectedOrgan.STEM
-            partie_label = "Tige, Collet & Faisceaux vasculaires"
-        elif features.hsv_hue_mean < 32.0 and features.chlorosis_pct < 2.0 and features.rust_pct < 1.0:
-            partie_code = AffectedOrgan.ROOT
-            partie_label = "Racine, Collet & Tubercule"
+        if affected_organ:
+            partie_norm = affected_organ.lower()
+            if "tige" in partie_norm or "collet" in partie_norm:
+                partie_code = AffectedOrgan.STEM
+                partie_label = "Tige, Collet & Faisceaux vasculaires"
+            elif "fruit" in partie_norm or "epi" in partie_norm or "gousse" in partie_norm:
+                partie_code = AffectedOrgan.FRUIT
+                partie_label = "Fruit / Épi / Gousse"
+            elif "racine" in partie_norm:
+                partie_code = AffectedOrgan.ROOT
+                partie_label = "Racine, Collet & Tubercule"
+            elif "peau" in partie_norm or "pelage" in partie_norm:
+                partie_code = AffectedOrgan.ANIMAL_SKIN
+                partie_label = "Peau, Pelage & Cuir"
+            elif "fiente" in partie_norm or "litiere" in partie_norm:
+                partie_code = AffectedOrgan.LITTER_DROPPINGS
+                partie_label = "Fientes & Litière aviaire"
+            else:
+                partie_code = AffectedOrgan.LEAF
+                partie_label = "Feuille (Limbe foliaire)"
         else:
-            partie_code = AffectedOrgan.LEAF
-            partie_label = "Feuille (Limbe et cornet foliaire)"
+            if features.texture_roughness_score > 2.2 and features.hsv_hue_mean < 42.0:
+                partie_code = AffectedOrgan.ANIMAL_SKIN
+                partie_label = "Peau, Pelage & Cuir"
+            elif features.rust_pct > 2.5 and features.chlorosis_pct < 1.0 and features.hsv_hue_mean < 35.0:
+                partie_code = AffectedOrgan.LITTER_DROPPINGS
+                partie_label = "Fientes & Litière aviaire"
+            elif features.dominant_rgb_lesion[0] > 140 and features.dominant_rgb_lesion[1] < 70 and features.dominant_rgb_lesion[2] < 70 and features.texture_roughness_score < 1.0:
+                partie_code = AffectedOrgan.FRUIT
+                partie_label = "Fruit (Péricarpe & Chair)"
+            elif features.angular_vein_bounded_detected or (features.linear_streak_detected and features.canopy_or_tissue_pixels > 0 and features.hsv_hue_mean < 50.0):
+                partie_code = AffectedOrgan.STEM
+                partie_label = "Tige, Collet & Faisceaux vasculaires"
+            elif features.hsv_hue_mean < 32.0 and features.chlorosis_pct < 2.0 and features.rust_pct < 1.0:
+                partie_code = AffectedOrgan.ROOT
+                partie_label = "Racine, Collet & Tubercule"
+            else:
+                partie_code = AffectedOrgan.LEAF
+                partie_label = "Feuille (Limbe et cornet foliaire)"
 
         # 3. Détermination de la spéculation (hôte)
-        if partie_code in (AffectedOrgan.ANIMAL_SKIN, AffectedOrgan.ANIMAL_MUCOSA, AffectedOrgan.LITTER_DROPPINGS):
-            domain = DomainType.VETERINARY
-            if partie_code == AffectedOrgan.LITTER_DROPPINGS or (features.rust_pct > 2.0 and features.lesion_coverage_pct > 5.0):
-                host_target = "poulet_chair"
-                speculation_label = "Volaille / Poulet de chair (Gallus gallus domesticus)"
-            elif features.texture_roughness_score > 2.5:
-                host_target = "bovin"
-                speculation_label = "Bovin / Zébu (Bos taurus indicus)"
+        SPECULATION_NAMES = {
+            "mais": "Maïs (Zea mays L.)",
+            "tomate": "Tomate maraîchère (Solanum lycopersicum)",
+            "oignon": "Oignon bulbe (Allium cepa)",
+            "coton": "Cotonnier (Gossypium hirsutum)",
+            "sorgho": "Sorgho grain (Sorghum bicolor)",
+            "mil": "Mil perlé (Pennisetum glaucum)",
+            "niebe": "Niébé / Haricot (Vigna unguiculata)",
+            "arachide": "Arachide (Arachis hypogaea)",
+            "riz": "Riz pluvial / irrigué (Oryza sativa)",
+            "piment": "Piment / Poivron (Capsicum annuum)",
+            "aubergine": "Aubergine locale (Solanum aethiopicum)",
+            "gombo": "Gombo (Abelmoschus esculentus)",
+            "poulet_chair": "Volaille / Poulet de chair (Gallus gallus domesticus)",
+            "volaille": "Volaille / Poulet local (Gallus gallus)",
+            "bovin": "Bovin / Zébu (Bos taurus indicus)",
+            "ovin": "Petit Ruminant / Ovin-Caprin"
+        }
+
+        if host_target:
+            h_key = host_target.lower().strip()
+            if h_key in ("bovin", "zebu", "ovin", "mouton", "chevre", "caprin", "volaille", "poulet", "poulet_chair"):
+                domain = DomainType.VETERINARY
+                host_target = "poulet_chair" if "poulet" in h_key or "volaille" in h_key else ("bovin" if "bov" in h_key or "zebu" in h_key else "ovin")
             else:
-                host_target = "ovin"
-                speculation_label = "Petit Ruminant / Ovin-Caprin"
+                domain = DomainType.PLANT
+                host_target = h_key
+            speculation_label = SPECULATION_NAMES.get(host_target, f"Spéculation agricole ({host_target.capitalize()})")
         else:
-            domain = DomainType.PLANT
-            if features.linear_streak_detected or features.jagged_perforations_detected or features.rust_pct > 3.0 or (features.necrosis_pct > 3.0 and features.hsv_hue_mean < 130.0):
-                host_target = "mais"
-                speculation_label = "Maïs (Zea mays L.)"
-            elif features.concentric_rings_detected or partie_code == AffectedOrgan.FRUIT or features.chlorosis_pct > 12.0:
-                host_target = "tomate"
-                speculation_label = "Tomate maraîchère (Solanum lycopersicum)"
-            elif features.hsv_hue_mean > 75.0 and features.canopy_or_tissue_pixels > 0:
-                host_target = "oignon"
-                speculation_label = "Oignon bulbe (Allium cepa)"
+            if partie_code in (AffectedOrgan.ANIMAL_SKIN, AffectedOrgan.ANIMAL_MUCOSA, AffectedOrgan.LITTER_DROPPINGS):
+                domain = DomainType.VETERINARY
+                if partie_code == AffectedOrgan.LITTER_DROPPINGS or (features.rust_pct > 2.0 and features.lesion_coverage_pct > 5.0):
+                    host_target = "poulet_chair"
+                    speculation_label = SPECULATION_NAMES["poulet_chair"]
+                elif features.texture_roughness_score > 2.5:
+                    host_target = "bovin"
+                    speculation_label = SPECULATION_NAMES["bovin"]
+                else:
+                    host_target = "ovin"
+                    speculation_label = SPECULATION_NAMES["ovin"]
             else:
-                host_target = "mais"
-                speculation_label = "Céréale / Maïs"
+                domain = DomainType.PLANT
+                if features.linear_streak_detected or features.jagged_perforations_detected or features.rust_pct > 3.0 or (features.necrosis_pct > 3.0 and features.hsv_hue_mean < 130.0):
+                    host_target = "mais"
+                    speculation_label = SPECULATION_NAMES["mais"]
+                elif features.concentric_rings_detected or partie_code == AffectedOrgan.FRUIT or features.chlorosis_pct > 12.0:
+                    host_target = "tomate"
+                    speculation_label = SPECULATION_NAMES["tomate"]
+                elif features.hsv_hue_mean > 75.0 and features.canopy_or_tissue_pixels > 0:
+                    host_target = "oignon"
+                    speculation_label = SPECULATION_NAMES["oignon"]
+                else:
+                    host_target = "mais"
+                    speculation_label = SPECULATION_NAMES["mais"]
 
         # 4. Diagnostic pathologique et différentiel complet
         diag_res = self.diagnose(
