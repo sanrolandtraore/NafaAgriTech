@@ -8,6 +8,38 @@
  * - Vitesse d'écoulement et alertes de coup de bélier (v > 2.5 m/s) et sédimentation (v < 0.5 m/s).
  */
 
+import { Provenance, createProvenance } from "@/engineering/provenance";
+import {
+  pipeFrictionLoss,
+  pipeArea,
+  reynoldsNumber,
+  flowRegime,
+  darcyFrictionFactor,
+  FlowRegime,
+} from "@/engineering/hydraulics/friction";
+import { waterKinematicViscosity, GRAVITY } from "@/engineering/hydraulics/waterProperties";
+import { solveNetwork, NetworkModel, NetworkSolution } from "@/engineering/hydraulics/networkSolver";
+import { calculateNpsh, NpshInput, NpshAnalysisResult as ExactNpshResult } from "@/engineering/hydraulics/npsh";
+import {
+  evaluateIrrigationUniformity,
+  calculateEmitterFlowLh,
+  EmitterSpecification,
+  UniformityResult,
+} from "@/engineering/hydraulics/emitters";
+
+export {
+  solveNetwork,
+  calculateNpsh,
+  evaluateIrrigationUniformity,
+  calculateEmitterFlowLh,
+  pipeFrictionLoss,
+  pipeArea,
+  reynoldsNumber,
+  flowRegime,
+  darcyFrictionFactor,
+};
+export type { NetworkModel, NetworkSolution, NpshInput, ExactNpshResult, EmitterSpecification, UniformityResult, FlowRegime };
+
 export type PipeMaterial = "PEHD" | "PVC" | "Acier";
 
 export const MATERIAL_ROUGHNESS: Record<PipeMaterial, number> = {
@@ -80,6 +112,12 @@ export interface HydraulicResult {
   pressureMarginBar: number;
   /** Indicateur si le dimensionnement satisfait la pression requise */
   isPressureAdequate: boolean;
+  /** Nombre de Reynolds de l'écoulement */
+  reynoldsNumber?: number;
+  /** Régime d'écoulement */
+  flowRegime?: FlowRegime;
+  /** Traçabilité scientifique complète de l'ingénierie */
+  provenance?: Provenance;
   /** Liste des alertes et avertissements techniques générés */
   warnings: HydraulicWarning[];
 }
@@ -263,6 +301,37 @@ export function calculateHydraulics(input: HydraulicInput): HydraulicResult {
     });
   }
 
+  const qM3s = input.flowRate / 3600;
+  const dM = input.internalDiameter / 1000;
+  const nu = waterKinematicViscosity(20);
+  const re = reynoldsNumber(qM3s, dM, nu);
+  const regime = flowRegime(re);
+
+  const provenance = createProvenance(
+    "NafaHydraulicsEngine",
+    "2.0.0",
+    [
+      {
+        name: "Hazen-Williams métrique",
+        reference: "Hazen A. & Williams G.S. (1920) Hydraulic Tables",
+      },
+      {
+        name: "Facteur F de réduction de Christiansen",
+        reference: "Christiansen J.E. (1942) Irrigation by Sprinkling, Bulletin 670, University of California",
+      },
+      {
+        name: "Dimensionnement d'irrigation",
+        reference: "Keller J. & Bliesner R.D. (1990) Sprinkle and Trickle Irrigation",
+      },
+    ],
+    [
+      "Écoulement d'eau à 20°C (viscosité cinématique ν ≈ 1.004e-6 m²/s)",
+      "Sorties multiples équidistantes à débits identiques",
+      "Régime permanent",
+    ],
+    warnings.map((w) => w.message),
+  );
+
   return {
     velocity: Math.round(velocity * 100) / 100,
     christiansenFactor: Math.round(christiansenFactor * 1000) / 1000,
@@ -282,6 +351,9 @@ export function calculateHydraulics(input: HydraulicInput): HydraulicResult {
     requiredPressureBar: Math.round(requiredPressureBar * 100) / 100,
     pressureMarginBar: Math.round(pressureMarginBar * 100) / 100,
     isPressureAdequate,
+    reynoldsNumber: Math.round(re),
+    flowRegime: regime,
+    provenance,
     warnings,
   };
 }

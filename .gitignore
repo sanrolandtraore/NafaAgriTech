@@ -27,3 +27,19 @@ dist-ssr
 .env
 .env.*
 !.env.example
+
+# Python cache & test artifacts
+__pycache__/
+*.py[cod]
+*$py.class
+*.pytest_cache/
+.coverage
+htmlcov/
+
+# Temporary and generated files
+temp.bin
+temp.inp
+temp.rpt
+engine_python/temp.*
+Rapport_Intervention_*.pdf
+

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useCallback } from "react";
+import React, { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -53,6 +53,7 @@ import {
   calculatePolygonAreaM2,
   calculatePerimeterM,
   calculateCentroid,
+  calculateParcelAreaWithUncertainty,
   toDMS,
   parseDMSToDD,
   toApproximateUtmZone30N,
@@ -741,6 +742,21 @@ export default function GpsSurveyPage() {
       ? Math.round((waypoints.reduce((s, w) => s + (w.accuracy || 0), 0) / waypoints.length) * 10) / 10
       : 0;
 
+  const areaUncertainty = useMemo(() => {
+    if (waypoints.length < 3) return null;
+    try {
+      const vertices = waypoints.map((w) => ({
+        lat: w.lat,
+        lng: w.lng,
+        horizontalAccuracyM: w.accuracy || averageAccuracyM || 3.5,
+        id: w.id,
+      }));
+      return calculateParcelAreaWithUncertainty(vertices, averageAccuracyM || 3.5);
+    } catch {
+      return null;
+    }
+  }, [waypoints, averageAccuracyM]);
+
   // Détection de la localité la plus proche et recherche toponymique
   const nearestToponym = livePos ? findNearestToponym(livePos.lat, livePos.lng) : null;
   const filteredToponyms = toponymSearchQuery.trim()
@@ -1227,6 +1243,11 @@ export default function GpsSurveyPage() {
             <p className="text-xs text-muted-foreground font-mono">
               {areaM2.toLocaleString("fr-FR")} m²
             </p>
+            {areaUncertainty && (
+              <p className="text-[10px] text-emerald-600 dark:text-emerald-400 font-semibold pt-0.5 border-t border-border/40">
+                ±{areaUncertainty.margin95Ha.toFixed(3)} ha (±{areaUncertainty.relativeUncertaintyPercent.toFixed(1)}% à 95%)
+              </p>
+            )}
           </CardContent>
         </Card>
 
@@ -1247,7 +1268,7 @@ export default function GpsSurveyPage() {
         <Card className="border-2 border-primary/20 bg-card">
           <CardContent className="p-4 space-y-1">
             <span className="text-[10px] font-extrabold text-muted-foreground uppercase tracking-wider block">
-              Bornes & Sommets
+              Bornes &amp; Sommets
             </span>
             <div className="text-2xl sm:text-3xl font-black text-foreground font-mono">
               {waypoints.length} <span className="text-sm font-normal text-muted-foreground">points</span>
@@ -1267,8 +1288,12 @@ export default function GpsSurveyPage() {
               {waypoints.length > 0 ? `±${averageAccuracyM} m` : "—"}
             </div>
             <p className="text-xs text-muted-foreground">
-              {averageAccuracyM > 0 && averageAccuracyM <= 3
-                ? "Qualité centimétrique/haute"
+              {areaUncertainty?.surveyQualityGrade === "cadastral_centimetric"
+                ? "Qualité centimétrique RTK"
+                : areaUncertainty?.surveyQualityGrade === "metric_professional"
+                ? "Submétrique professionnel"
+                : averageAccuracyM > 0 && averageAccuracyM <= 3
+                ? "Haute précision (≤3m)"
                 : averageAccuracyM <= 8
                 ? "Conforme arpentage agricole"
                 : "Standard satellite"}
@@ -1276,6 +1301,21 @@ export default function GpsSurveyPage() {
           </CardContent>
         </Card>
       </div>
+
+      {/* Alerte d'auto-intersection topologique (Nœud papillon / Sablier) */}
+      {areaUncertainty?.topology.hasSelfIntersections && (
+        <div className="p-3.5 rounded-2xl bg-destructive/10 border-2 border-destructive/30 flex items-start gap-3">
+          <AlertTriangle className="h-5 w-5 text-destructive shrink-0 mt-0.5" />
+          <div className="space-y-1 text-xs">
+            <h4 className="font-bold text-destructive uppercase tracking-wide">
+              Anomalie Cadastrale : Auto-intersection détectée (Nœud papillon)
+            </h4>
+            <p className="text-destructive/90">
+              Des segments de clôture se croisent entre les bornes. Réordonnez les sommets avec les flèches du tableau des bornes pour former un contour fermé sans croisement conforme aux normes cadastrales.
+            </p>
+          </div>
+        </div>
+      )}
 
       {/* ─── DISPOSITION PRINCIPALE (CARTE + CONTRÔLES + TABLEAU) ─── */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">

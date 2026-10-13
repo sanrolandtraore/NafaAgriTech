@@ -13,6 +13,32 @@
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import { partnerBrandingStorage, PartnerBranding } from "./partnerBrandingStorage";
+import {
+  vincentyInverse,
+  calculateGeodesicPolygonArea,
+  WGS84,
+} from "@/engineering/geodesy/wgs84Ellipsoid";
+import {
+  projectLatLonToUtm,
+  getUtmZoneNumber,
+  getUtmCentralMeridian,
+  analyzeParcelUtmZone,
+} from "@/engineering/geodesy/utmProjection";
+import {
+  calculateParcelAreaWithUncertainty,
+  validateParcelTopology,
+} from "@/engineering/geodesy/parcelTopology";
+
+export {
+  vincentyInverse,
+  calculateGeodesicPolygonArea,
+  projectLatLonToUtm,
+  getUtmZoneNumber,
+  getUtmCentralMeridian,
+  analyzeParcelUtmZone,
+  calculateParcelAreaWithUncertainty,
+  validateParcelTopology,
+};
 
 // Rayon moyen de la Terre en mètres (WGS84)
 const EARTH_RADIUS_M = 6378137;
@@ -73,81 +99,45 @@ export interface GpsSurveySession {
 // ============================================================================
 
 /**
- * Distance orthodromique entre deux coordonnées GPS en mètres (Haversine)
+ * Distance géodésique ellipsoïdale exacte WGS84 en mètres (Vincenty 1975)
  */
 export function calculateDistanceM(
   p1: { lat: number; lng: number },
   p2: { lat: number; lng: number }
 ): number {
-  const dLat = ((p2.lat - p1.lat) * Math.PI) / 180;
-  const dLng = ((p2.lng - p1.lng) * Math.PI) / 180;
-  const lat1 = (p1.lat * Math.PI) / 180;
-  const lat2 = (p2.lat * Math.PI) / 180;
-
-  const a =
-    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-    Math.sin(dLng / 2) * Math.sin(dLng / 2) * Math.cos(lat1) * Math.cos(lat2);
-  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-  return Math.round(EARTH_RADIUS_M * c * 100) / 100;
+  if (Math.abs(p1.lat - p2.lat) < 1e-9 && Math.abs(p1.lng - p2.lng) < 1e-9) return 0;
+  const result = vincentyInverse(p1, p2);
+  return Math.round(result.distanceM * 100) / 100;
 }
 
 /**
- * Calcul du gisement / cap / azimut de p1 vers p2 en degrés par rapport au Nord (0-360°)
+ * Calcul du gisement géodésique initial (azimut) de p1 vers p2 en degrés (0-360°)
  */
 export function calculateBearingDeg(
   p1: { lat: number; lng: number },
   p2: { lat: number; lng: number }
 ): number {
-  const lat1 = (p1.lat * Math.PI) / 180;
-  const lat2 = (p2.lat * Math.PI) / 180;
-  const dLng = ((p2.lng - p1.lng) * Math.PI) / 180;
-
-  const y = Math.sin(dLng) * Math.cos(lat2);
-  const x =
-    Math.cos(lat1) * Math.sin(lat2) -
-    Math.sin(lat1) * Math.cos(lat2) * Math.cos(dLng);
-  const brng = (Math.atan2(y, x) * 180) / Math.PI;
-  return Math.round(((brng + 360) % 360) * 10) / 10;
+  if (Math.abs(p1.lat - p2.lat) < 1e-9 && Math.abs(p1.lng - p2.lng) < 1e-9) return 0;
+  const result = vincentyInverse(p1, p2);
+  return Math.round(result.initialAzimuthDeg * 10) / 10;
 }
 
 /**
- * Calcul de la superficie d'un polygone fermé en m² (Shoelace sphérique WGS84)
+ * Calcul de la superficie d'un polygone fermé en m² sur l'ellipsoïde WGS84 (Karney 2013)
  */
 export function calculatePolygonAreaM2(coords: { lat: number; lng: number }[]): number {
   if (coords.length < 3) return 0;
-
-  let total = 0;
-  const len = coords.length;
-
-  for (let i = 0; i < len; i++) {
-    const p1 = coords[i];
-    const p2 = coords[(i + 1) % len];
-
-    const lat1 = (p1.lat * Math.PI) / 180;
-    const lat2 = (p2.lat * Math.PI) / 180;
-    const dLng = ((p2.lng - p1.lng) * Math.PI) / 180;
-
-    total += dLng * (2 + Math.sin(lat1) + Math.sin(lat2));
-  }
-
-  const area = Math.abs((total * EARTH_RADIUS_M * EARTH_RADIUS_M) / 2.0);
-  return Math.round(area * 100) / 100;
+  const result = calculateGeodesicPolygonArea(coords);
+  return Math.round(result.areaM2 * 100) / 100;
 }
 
 /**
- * Calcul du périmètre total d'un polygone fermé en mètres
+ * Calcul du périmètre géodésique total d'un polygone fermé en mètres (Vincenty WGS84)
  */
 export function calculatePerimeterM(coords: { lat: number; lng: number }[]): number {
   if (coords.length < 2) return 0;
-  let perimeter = 0;
-  const len = coords.length;
-
-  for (let i = 0; i < len; i++) {
-    const p1 = coords[i];
-    const p2 = coords[(i + 1) % len];
-    perimeter += calculateDistanceM(p1, p2);
-  }
-  return Math.round(perimeter * 100) / 100;
+  const result = calculateGeodesicPolygonArea(coords);
+  return Math.round(result.perimeterM * 100) / 100;
 }
 
 /**
@@ -223,23 +213,11 @@ export function parseDMSToDD(dmsStr: string): number | null {
  * Conversion approximative WGS84 vers coordonnées UTM Zone 30N (Burkina Faso)
  */
 export function toApproximateUtmZone30N(lat: number, lng: number): { easting: number; northing: number; zone: string } {
-  // Projection transverse de Mercator simplifiée pour le fuseau 30N (-6° à 0°)
-  const latRad = (lat * Math.PI) / 180;
-  const lngRad = (lng * Math.PI) / 180;
-  const centralMeridianRad = (-3.0 * Math.PI) / 180; // Méridien central du fuseau 30
-
-  const k0 = 0.9996;
-  const falseEasting = 500000.0;
-  const falseNorthing = 0.0;
-
-  const dLng = lngRad - centralMeridianRad;
-  const easting = falseEasting + k0 * EARTH_RADIUS_M * dLng * Math.cos(latRad);
-  const northing = falseNorthing + k0 * EARTH_RADIUS_M * latRad;
-
+  const utm = projectLatLonToUtm({ lat, lng });
   return {
-    easting: Math.round(easting),
-    northing: Math.round(northing),
-    zone: "30N",
+    easting: Math.round(utm.eastingM),
+    northing: Math.round(utm.northingM),
+    zone: `${utm.zoneNumber}${utm.hemisphere}`,
   };
 }
 

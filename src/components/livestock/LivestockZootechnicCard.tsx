@@ -27,6 +27,14 @@ import {
   calculateBroilerBatch,
   calculateSahelianWaterNeeds,
 } from "@/lib/livestockEngine";
+import {
+  formulateLeastCostRation,
+  STANDARD_POULTRY_TARGETS,
+  SAHELIAN_FEED_LIBRARY,
+  FeedIngredientNutrientProfile,
+  FormulationResult,
+} from "@/engineering/zootechnics/leastCostRation";
+import { calculateThiIndex, diagnoseBioclimaticStress } from "@/engineering/zootechnics/bioclimaticThi";
 
 const fmt = (n: number) => Math.round(n).toLocaleString("fr-FR");
 
@@ -59,7 +67,37 @@ export const LivestockZootechnicCard = () => {
   const [waterHeadCount, setWaterHeadCount] = useState<number>(20);
   const [isHotDrySeason, setIsHotDrySeason] = useState<boolean>(false);
 
+  // Formulation Simplex state
+  const [formulationTargetKey, setFormulationTargetKey] = useState<string>("broiler_grower");
+  const [formulationBatchWeightKg, setFormulationBatchWeightKg] = useState<number>(100);
+  const [customIngredientPrices, setCustomIngredientPrices] = useState<Record<string, number>>({
+    corn_yellow: 220,
+    soybean_meal_46: 460,
+    cottonseed_meal: 190,
+    wheat_bran: 140,
+    fish_meal_local: 580,
+    oyster_shell: 90,
+    dicalcium_phosphate: 420,
+    premix_cmv_broiler: 1800,
+    vegetable_oil: 850,
+    dl_methionine: 4200,
+    l_lysine_hcl: 2400,
+  });
+
   // Calculations
+  const formulationResult: FormulationResult = useMemo(() => {
+    const target = STANDARD_POULTRY_TARGETS[formulationTargetKey] || STANDARD_POULTRY_TARGETS.broiler_grower;
+    const ingredients = SAHELIAN_FEED_LIBRARY.map((ing) => ({
+      ...ing,
+      priceFcfaPerKg: customIngredientPrices[ing.id] ?? ing.priceFcfaPerKg,
+    }));
+    return formulateLeastCostRation({
+      target,
+      availableIngredients: ingredients,
+      batchWeightKg: formulationBatchWeightKg,
+    });
+  }, [formulationTargetKey, formulationBatchWeightKg, customIngredientPrices]);
+
   const fatteningResult = useMemo(() => {
     return calculateFatteningPlan({
       species: emboucheSpecies,
@@ -121,7 +159,7 @@ export const LivestockZootechnicCard = () => {
       </CardHeader>
       <CardContent className="space-y-4">
         <Tabs defaultValue="embouche">
-          <TabsList className="grid w-full grid-cols-2 sm:grid-cols-4">
+          <TabsList className="grid w-full grid-cols-2 sm:grid-cols-5">
             <TabsTrigger value="embouche" className="flex items-center gap-1.5 text-xs">
               <Beef className="h-3.5 w-3.5" /> Embouche
             </TabsTrigger>
@@ -130,6 +168,9 @@ export const LivestockZootechnicCard = () => {
             </TabsTrigger>
             <TabsTrigger value="poulets" className="flex items-center gap-1.5 text-xs">
               <Bird className="h-3.5 w-3.5" /> Poulets
+            </TabsTrigger>
+            <TabsTrigger value="formulation" className="flex items-center gap-1.5 text-xs">
+              <Wheat className="h-3.5 w-3.5 text-emerald-600" /> Formulation Simplex
             </TabsTrigger>
             <TabsTrigger value="eau" className="flex items-center gap-1.5 text-xs">
               <Droplets className="h-3.5 w-3.5 text-sky-500" /> Eau & Climat
@@ -322,6 +363,114 @@ export const LivestockZootechnicCard = () => {
                   {broilerResult.netMarginFcfa >= 0 ? "+" : ""}{fmt(broilerResult.netMarginFcfa)} FCFA
                 </p>
                 <p className="text-[10px] text-muted-foreground">ROI: {broilerResult.roiPercent}% ({fmt(broilerResult.marginPerChickenFcfa)} F/poulet)</p>
+              </div>
+            </div>
+          </TabsContent>
+
+          {/* ONGLET FORMULATION SIMPLEX À MOINDRE COÛT (NRC / INRAE) */}
+          <TabsContent value="formulation" className="space-y-4 pt-3">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 border-b pb-3">
+              <div>
+                <h4 className="font-bold text-sm text-foreground flex items-center gap-2">
+                  <Wheat className="h-4 w-4 text-emerald-600" />
+                  Optimisation Linéaire Exacte (Simplex Deux Phases)
+                </h4>
+                <p className="text-xs text-muted-foreground">
+                  Formulation d'aliment complet au moindre coût (FCFA/kg) respectant les normes NRC (1994) et matières premières sahéliennes.
+                </p>
+              </div>
+              <Badge variant="outline" className="border-emerald-500/40 text-emerald-700 bg-emerald-500/10 font-mono text-[11px]">
+                {formulationResult.iterations} itérations Simplex
+              </Badge>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
+              <div className="space-y-1">
+                <Label className="text-xs font-semibold">Stade physiologique &amp; Besoins</Label>
+                <Select value={formulationTargetKey} onValueChange={setFormulationTargetKey}>
+                  <SelectTrigger className="h-8 text-xs font-medium"><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="broiler_starter">Poulet Chair — Démarrage (J0-J14, 21.5% PB)</SelectItem>
+                    <SelectItem value="broiler_grower">Poulet Chair — Croissance (J15-J28, 19.5% PB)</SelectItem>
+                    <SelectItem value="broiler_finisher">Poulet Chair — Finition (J29+, 18.0% PB)</SelectItem>
+                    <SelectItem value="layer_production">Poule Pondeuse — Pic de Ponte (17% PB, 3.5% Ca)</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-1">
+                <Label className="text-xs font-semibold">Taille du lot à fabriquer (kg)</Label>
+                <Input
+                  type="number"
+                  min="10"
+                  step="10"
+                  value={formulationBatchWeightKg}
+                  onChange={(e) => setFormulationBatchWeightKg(Math.max(1, Number(e.target.value)))}
+                  className="h-8 text-xs font-mono"
+                />
+              </div>
+
+              <div className="space-y-1 sm:col-span-2 md:col-span-1">
+                <Label className="text-xs font-semibold">Coût de revient optimal calculé</Label>
+                <div className="h-8 px-3 rounded-md bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-between">
+                  <span className="text-xs text-emerald-800 dark:text-emerald-200 font-bold">
+                    {formulationResult.isFeasible ? `${fmt(formulationResult.costPerKgFcfa)} FCFA / kg` : "Non réalisable"}
+                  </span>
+                  <span className="text-[11px] font-mono text-emerald-700">
+                    Total: {fmt(formulationResult.totalBatchCostFcfa)} F
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            {/* Tableau de la formule optimale par ingrédient */}
+            <div className="rounded-xl border overflow-hidden bg-card text-xs">
+              <div className="bg-muted/60 p-2.5 font-bold grid grid-cols-12 gap-2 text-foreground border-b">
+                <span className="col-span-5">Matière Première Sahélienne</span>
+                <span className="col-span-2 text-right">Taux (%)</span>
+                <span className="col-span-2 text-right">Poids ({formulationBatchWeightKg} kg)</span>
+                <span className="col-span-3 text-right">Coût (FCFA)</span>
+              </div>
+              <div className="divide-y divide-border/60">
+                {formulationResult.inclusions.map((inc) => (
+                  <div key={inc.ingredientId} className="p-2 grid grid-cols-12 gap-2 font-mono items-center">
+                    <span className="col-span-5 font-sans font-medium text-foreground">{inc.ingredientName}</span>
+                    <span className="col-span-2 text-right font-bold text-emerald-600">{inc.percentageInRation.toFixed(2)} %</span>
+                    <span className="col-span-2 text-right text-foreground">{inc.weightInBatchKg.toFixed(2)} kg</span>
+                    <span className="col-span-3 text-right text-muted-foreground">{fmt(inc.costContributionFcfa)} F ({inc.pricePerKgFcfa} F/kg)</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Comparatif Valeurs nutritionnelles atteintes vs Normes NRC */}
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs">
+              <div className="p-2 rounded-lg bg-muted/40 border">
+                <span className="text-[10px] text-muted-foreground block font-medium">Énergie Métabolisable :</span>
+                <span className="font-mono font-bold text-foreground text-sm">{formulationResult.achievedNutrients.energyKcalKg} kcal/kg</span>
+              </div>
+              <div className="p-2 rounded-lg bg-muted/40 border">
+                <span className="text-[10px] text-muted-foreground block font-medium">Protéines Brutes (PB) :</span>
+                <span className="font-mono font-bold text-emerald-600 text-sm">{formulationResult.achievedNutrients.crudeProteinPercent} %</span>
+              </div>
+              <div className="p-2 rounded-lg bg-muted/40 border">
+                <span className="text-[10px] text-muted-foreground block font-medium">Lysine / Méthionine :</span>
+                <span className="font-mono font-bold text-foreground text-sm">{formulationResult.achievedNutrients.lysinePercent}% / {formulationResult.achievedNutrients.methioninePercent}%</span>
+              </div>
+              <div className="p-2 rounded-lg bg-muted/40 border">
+                <span className="text-[10px] text-muted-foreground block font-medium">Calcium / Phosphore :</span>
+                <span className="font-mono font-bold text-foreground text-sm">{formulationResult.achievedNutrients.calciumPercent}% / {formulationResult.achievedNutrients.availablePhosphorusPercent}%</span>
+              </div>
+            </div>
+
+            {/* Traçabilité Provenance */}
+            <div className="p-2.5 rounded-lg bg-slate-900 border border-slate-800 text-[11px] text-slate-300 space-y-1 font-mono">
+              <div className="flex items-center justify-between text-slate-400">
+                <span>Moteur : {formulationResult.provenance.engine} v{formulationResult.provenance.engineVersion}</span>
+                <span>Méthode : Simplex Exact (Dantzig 1963)</span>
+              </div>
+              <div className="text-[10px] text-slate-400">
+                Références : NRC (1994) Nutrient Requirements of Poultry • Tables INRAE-AFZ (Sauvant et al. 2004)
               </div>
             </div>
           </TabsContent>

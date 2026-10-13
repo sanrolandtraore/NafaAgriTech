@@ -1,0 +1,912 @@
+{
+  "generator": "WNTR 1.5.0 / EPANET 2.2",
+  "epanetGravity": 9.814560000000002,
+  "epanetKinematicViscosity": 1.02193344e-06,
+  "networks": {
+    "grid_dw_turbulent": {
+      "model": {
+        "nodes": [
+          {
+            "id": "R",
+            "type": "reservoir",
+            "head": 80.0
+          },
+          {
+            "id": "J1",
+            "type": "junction",
+            "elevation": 52.0,
+            "demandM3s": 0.002
+          },
+          {
+            "id": "J2",
+            "type": "junction",
+            "elevation": 50.0,
+            "demandM3s": 0.003
+          },
+          {
+            "id": "J3",
+            "type": "junction",
+            "elevation": 48.0,
+            "demandM3s": 0.0025
+          },
+          {
+            "id": "J4",
+            "type": "junction",
+            "elevation": 51.0,
+            "demandM3s": 0.0015
+          },
+          {
+            "id": "J5",
+            "type": "junction",
+            "elevation": 49.0,
+            "demandM3s": 0.0035
+          },
+          {
+            "id": "J6",
+            "type": "junction",
+            "elevation": 47.0,
+            "demandM3s": 0.002
+          }
+        ],
+        "pipes": [
+          {
+            "id": "P0",
+            "from": "R",
+            "to": "J1",
+            "lengthM": 500,
+            "diameterM": 0.1018,
+            "roughness": 0.01,
+            "minorK": 1.5
+          },
+          {
+            "id": "P1",
+            "from": "J1",
+            "to": "J2",
+            "lengthM": 300,
+            "diameterM": 0.0816,
+            "roughness": 0.01,
+            "minorK": 0.9
+          },
+          {
+            "id": "P2",
+            "from": "J2",
+            "to": "J3",
+            "lengthM": 250,
+            "diameterM": 0.0636,
+            "roughness": 0.01,
+            "minorK": 0.9
+          },
+          {
+            "id": "P3",
+            "from": "J1",
+            "to": "J4",
+            "lengthM": 280,
+            "diameterM": 0.0816,
+            "roughness": 0.01,
+            "minorK": 0.9
+          },
+          {
+            "id": "P4",
+            "from": "J2",
+            "to": "J5",
+            "lengthM": 320,
+            "diameterM": 0.0636,
+            "roughness": 0.01,
+            "minorK": 1.3
+          },
+          {
+            "id": "P5",
+            "from": "J3",
+            "to": "J6",
+            "lengthM": 260,
+            "diameterM": 0.0636,
+            "roughness": 0.01,
+            "minorK": 0.9
+          },
+          {
+            "id": "P6",
+            "from": "J4",
+            "to": "J5",
+            "lengthM": 300,
+            "diameterM": 0.0636,
+            "roughness": 0.01,
+            "minorK": 0.4
+          },
+          {
+            "id": "P7",
+            "from": "J5",
+            "to": "J6",
+            "lengthM": 240,
+            "diameterM": 0.0508,
+            "roughness": 0.01,
+            "minorK": 0.4
+          }
+        ],
+        "formula": "D-W"
+      },
+      "expectedHeads": {
+        "J1": 66.5022964477539,
+        "J2": 59.25442123413086,
+        "J3": 55.32481384277344,
+        "J4": 63.44822692871094,
+        "J5": 57.84992599487305,
+        "J6": 55.11122131347656,
+        "R": 80.0
+      },
+      "expectedFlowsM3s": {
+        "P0": 0.014500000514090061,
+        "P1": 0.007596093229949474,
+        "P2": 0.003083747113123536,
+        "P3": 0.004903907421976328,
+        "P4": 0.0015123459743335843,
+        "P5": 0.0005837470525875688,
+        "P6": 0.003403907408937812,
+        "P7": 0.0014162531588226557
+      }
+    },
+    "grid_hw_with_minor": {
+      "model": {
+        "nodes": [
+          {
+            "id": "R",
+            "type": "reservoir",
+            "head": 80.0
+          },
+          {
+            "id": "J1",
+            "type": "junction",
+            "elevation": 52.0,
+            "demandM3s": 0.002
+          },
+          {
+            "id": "J2",
+            "type": "junction",
+            "elevation": 50.0,
+            "demandM3s": 0.003
+          },
+          {
+            "id": "J3",
+            "type": "junction",
+            "elevation": 48.0,
+            "demandM3s": 0.0025
+          },
+          {
+            "id": "J4",
+            "type": "junction",
+            "elevation": 51.0,
+            "demandM3s": 0.0015
+          },
+          {
+            "id": "J5",
+            "type": "junction",
+            "elevation": 49.0,
+            "demandM3s": 0.0035
+          },
+          {
+            "id": "J6",
+            "type": "junction",
+            "elevation": 47.0,
+            "demandM3s": 0.002
+          }
+        ],
+        "pipes": [
+          {
+            "id": "P0",
+            "from": "R",
+            "to": "J1",
+            "lengthM": 500,
+            "diameterM": 0.1018,
+            "roughness": 140.0,
+            "minorK": 1.5
+          },
+          {
+            "id": "P1",
+            "from": "J1",
+            "to": "J2",
+            "lengthM": 300,
+            "diameterM": 0.0816,
+            "roughness": 140.0,
+            "minorK": 0.9
+          },
+          {
+            "id": "P2",
+            "from": "J2",
+            "to": "J3",
+            "lengthM": 250,
+            "diameterM": 0.0636,
+            "roughness": 140.0,
+            "minorK": 0.9
+          },
+          {
+            "id": "P3",
+            "from": "J1",
+            "to": "J4",
+            "lengthM": 280,
+            "diameterM": 0.0816,
+            "roughness": 140.0,
+            "minorK": 0.9
+          },
+          {
+            "id": "P4",
+            "from": "J2",
+            "to": "J5",
+            "lengthM": 320,
+            "diameterM": 0.0636,
+            "roughness": 140.0,
+            "minorK": 1.3
+          },
+          {
+            "id": "P5",
+            "from": "J3",
+            "to": "J6",
+            "lengthM": 260,
+            "diameterM": 0.0636,
+            "roughness": 140.0,
+            "minorK": 0.9
+          },
+          {
+            "id": "P6",
+            "from": "J4",
+            "to": "J5",
+            "lengthM": 300,
+            "diameterM": 0.0636,
+            "roughness": 140.0,
+            "minorK": 0.4
+          },
+          {
+            "id": "P7",
+            "from": "J5",
+            "to": "J6",
+            "lengthM": 240,
+            "diameterM": 0.0508,
+            "roughness": 140.0,
+            "minorK": 0.4
+          }
+        ],
+        "formula": "H-W"
+      },
+      "expectedHeads": {
+        "J1": 64.60478210449219,
+        "J2": 56.47162628173828,
+        "J3": 52.21394348144531,
+        "J4": 61.20024108886719,
+        "J5": 54.99150848388672,
+        "J6": 52.0207405090332,
+        "R": 80.0
+      },
+      "expectedFlowsM3s": {
+        "P0": 0.014500000514090061,
+        "P1": 0.007582355290651321,
+        "P2": 0.0030658391769975424,
+        "P3": 0.004917645361274481,
+        "P4": 0.0015165158547461033,
+        "P5": 0.0005658392328768969,
+        "P6": 0.003417645115405321,
+        "P7": 0.0014341608621180058
+      }
+    },
+    "branched_irrigation_dw": {
+      "model": {
+        "nodes": [
+          {
+            "id": "R",
+            "type": "reservoir",
+            "head": 150.0
+          },
+          {
+            "id": "T1",
+            "type": "junction",
+            "elevation": 100.0,
+            "demandM3s": 0.0
+          },
+          {
+            "id": "T2",
+            "type": "junction",
+            "elevation": 96.0,
+            "demandM3s": 0.0
+          },
+          {
+            "id": "A1",
+            "type": "junction",
+            "elevation": 94.0,
+            "demandM3s": 0.0045
+          },
+          {
+            "id": "A2",
+            "type": "junction",
+            "elevation": 92.0,
+            "demandM3s": 0.006
+          },
+          {
+            "id": "A3",
+            "type": "junction",
+            "elevation": 99.0,
+            "demandM3s": 0.003
+          }
+        ],
+        "pipes": [
+          {
+            "id": "T0",
+            "from": "R",
+            "to": "T1",
+            "lengthM": 650.0,
+            "diameterM": 0.1018,
+            "roughness": 0.01,
+            "minorK": 1.5
+          },
+          {
+            "id": "T1",
+            "from": "T1",
+            "to": "T2",
+            "lengthM": 420.0,
+            "diameterM": 0.0816,
+            "roughness": 0.01,
+            "minorK": 0.9
+          },
+          {
+            "id": "B1",
+            "from": "T2",
+            "to": "A1",
+            "lengthM": 180.0,
+            "diameterM": 0.0636,
+            "roughness": 0.01,
+            "minorK": 0.4
+          },
+          {
+            "id": "B2",
+            "from": "T2",
+            "to": "A2",
+            "lengthM": 260.0,
+            "diameterM": 0.0636,
+            "roughness": 0.01,
+            "minorK": 0.4
+          },
+          {
+            "id": "B3",
+            "from": "T1",
+            "to": "A3",
+            "lengthM": 300.0,
+            "diameterM": 0.0508,
+            "roughness": 0.01,
+            "minorK": 0.4
+          }
+        ],
+        "formula": "D-W"
+      },
+      "expectedHeads": {
+        "T1": 134.67709350585938,
+        "T2": 116.37018585205078,
+        "A1": 110.7778549194336,
+        "A2": 102.7330322265625,
+        "A3": 121.43824768066406,
+        "R": 150.0
+      },
+      "expectedFlowsM3s": {
+        "T0": 0.013500000350177288,
+        "T1": 0.010500000789761543,
+        "B1": 0.004500000271946192,
+        "B2": 0.006000000052154064,
+        "B3": 0.003000000026077032
+      }
+    },
+    "grid_dw_transition_low_flow": {
+      "model": {
+        "nodes": [
+          {
+            "id": "R",
+            "type": "reservoir",
+            "head": 80.0
+          },
+          {
+            "id": "J1",
+            "type": "junction",
+            "elevation": 52.0,
+            "demandM3s": 5e-05
+          },
+          {
+            "id": "J2",
+            "type": "junction",
+            "elevation": 50.0,
+            "demandM3s": 5e-05
+          },
+          {
+            "id": "J3",
+            "type": "junction",
+            "elevation": 48.0,
+            "demandM3s": 5e-05
+          },
+          {
+            "id": "J4",
+            "type": "junction",
+            "elevation": 51.0,
+            "demandM3s": 5e-05
+          },
+          {
+            "id": "J5",
+            "type": "junction",
+            "elevation": 49.0,
+            "demandM3s": 5e-05
+          },
+          {
+            "id": "J6",
+            "type": "junction",
+            "elevation": 47.0,
+            "demandM3s": 5e-05
+          }
+        ],
+        "pipes": [
+          {
+            "id": "P0",
+            "from": "R",
+            "to": "J1",
+            "lengthM": 120,
+            "diameterM": 0.0204,
+            "roughness": 0.01,
+            "minorK": 0
+          },
+          {
+            "id": "P1",
+            "from": "J1",
+            "to": "J2",
+            "lengthM": 80,
+            "diameterM": 0.0204,
+            "roughness": 0.01,
+            "minorK": 0
+          },
+          {
+            "id": "P2",
+            "from": "J2",
+            "to": "J3",
+            "lengthM": 80,
+            "diameterM": 0.0204,
+            "roughness": 0.01,
+            "minorK": 0
+          },
+          {
+            "id": "P3",
+            "from": "J1",
+            "to": "J4",
+            "lengthM": 90,
+            "diameterM": 0.0204,
+            "roughness": 0.01,
+            "minorK": 0
+          },
+          {
+            "id": "P4",
+            "from": "J2",
+            "to": "J5",
+            "lengthM": 90,
+            "diameterM": 0.0204,
+            "roughness": 0.01,
+            "minorK": 0
+          },
+          {
+            "id": "P5",
+            "from": "J3",
+            "to": "J6",
+            "lengthM": 80,
+            "diameterM": 0.0204,
+            "roughness": 0.01,
+            "minorK": 0
+          },
+          {
+            "id": "P6",
+            "from": "J4",
+            "to": "J5",
+            "lengthM": 90,
+            "diameterM": 0.0204,
+            "roughness": 0.01,
+            "minorK": 0
+          },
+          {
+            "id": "P7",
+            "from": "J5",
+            "to": "J6",
+            "lengthM": 80,
+            "diameterM": 0.0204,
+            "roughness": 0.01,
+            "minorK": 0
+          }
+        ],
+        "formula": "D-W"
+      },
+      "expectedHeads": {
+        "J1": 73.05168914794922,
+        "J2": 71.86705017089844,
+        "J3": 71.67060089111328,
+        "J4": 72.12274169921875,
+        "J5": 71.79075622558594,
+        "J6": 71.6635971069336,
+        "R": 80.0
+      },
+      "expectedFlowsM3s": {
+        "P0": 0.0003000000142492354,
+        "P1": 0.00013799071894027293,
+        "P2": 5.357434565667063e-05,
+        "P3": 0.00011200930021004751,
+        "P4": 3.4416367270750925e-05,
+        "P5": 3.5743430544243893e-06,
+        "P6": 6.200929055921733e-05,
+        "P7": 4.64256590930745e-05
+      }
+    },
+    "pumped_three_point_curve": {
+      "model": {
+        "nodes": [
+          {
+            "id": "R",
+            "type": "reservoir",
+            "head": 90.0
+          },
+          {
+            "id": "S",
+            "type": "junction",
+            "elevation": 90.0,
+            "demandM3s": 0.0
+          },
+          {
+            "id": "T1",
+            "type": "junction",
+            "elevation": 100.0,
+            "demandM3s": 0.0
+          },
+          {
+            "id": "T2",
+            "type": "junction",
+            "elevation": 96.0,
+            "demandM3s": 0.0
+          },
+          {
+            "id": "A1",
+            "type": "junction",
+            "elevation": 94.0,
+            "demandM3s": 0.0045
+          },
+          {
+            "id": "A2",
+            "type": "junction",
+            "elevation": 92.0,
+            "demandM3s": 0.006
+          },
+          {
+            "id": "A3",
+            "type": "junction",
+            "elevation": 99.0,
+            "demandM3s": 0.003
+          }
+        ],
+        "pipes": [
+          {
+            "id": "T0",
+            "from": "S",
+            "to": "T1",
+            "lengthM": 650.0,
+            "diameterM": 0.1018,
+            "roughness": 0.01,
+            "minorK": 1.5
+          },
+          {
+            "id": "T1",
+            "from": "T1",
+            "to": "T2",
+            "lengthM": 420.0,
+            "diameterM": 0.0816,
+            "roughness": 0.01,
+            "minorK": 0.9
+          },
+          {
+            "id": "B1",
+            "from": "T2",
+            "to": "A1",
+            "lengthM": 180.0,
+            "diameterM": 0.0636,
+            "roughness": 0.01,
+            "minorK": 0.4
+          },
+          {
+            "id": "B2",
+            "from": "T2",
+            "to": "A2",
+            "lengthM": 260.0,
+            "diameterM": 0.0636,
+            "roughness": 0.01,
+            "minorK": 0.4
+          },
+          {
+            "id": "B3",
+            "from": "T1",
+            "to": "A3",
+            "lengthM": 300.0,
+            "diameterM": 0.0508,
+            "roughness": 0.01,
+            "minorK": 0.4
+          }
+        ],
+        "formula": "D-W",
+        "pumps": [
+          {
+            "id": "PU1",
+            "from": "R",
+            "to": "S",
+            "curvePoints": [
+              [
+                0.0,
+                45.0
+              ],
+              [
+                0.0135,
+                40.0
+              ],
+              [
+                0.027,
+                28.0
+              ]
+            ]
+          }
+        ]
+      },
+      "expectedHeads": {
+        "S": 130.0,
+        "T1": 114.67709350585938,
+        "T2": 96.37018585205078,
+        "A1": 90.7778549194336,
+        "A2": 82.7330322265625,
+        "A3": 101.43824005126953,
+        "R": 90.00000762939453
+      },
+      "expectedFlowsM3s": {
+        "T0": 0.013500000350177288,
+        "T1": 0.010500000789761543,
+        "B1": 0.004500000271946192,
+        "B2": 0.006000000052154064,
+        "B3": 0.003000000026077032,
+        "PU1": 0.013500000350177288
+      }
+    },
+    "pumped_single_point_curve": {
+      "model": {
+        "nodes": [
+          {
+            "id": "R",
+            "type": "reservoir",
+            "head": 90.0
+          },
+          {
+            "id": "S",
+            "type": "junction",
+            "elevation": 90.0,
+            "demandM3s": 0.0
+          },
+          {
+            "id": "T1",
+            "type": "junction",
+            "elevation": 100.0,
+            "demandM3s": 0.0
+          },
+          {
+            "id": "T2",
+            "type": "junction",
+            "elevation": 96.0,
+            "demandM3s": 0.0
+          },
+          {
+            "id": "A1",
+            "type": "junction",
+            "elevation": 94.0,
+            "demandM3s": 0.0045
+          },
+          {
+            "id": "A2",
+            "type": "junction",
+            "elevation": 92.0,
+            "demandM3s": 0.006
+          },
+          {
+            "id": "A3",
+            "type": "junction",
+            "elevation": 99.0,
+            "demandM3s": 0.003
+          }
+        ],
+        "pipes": [
+          {
+            "id": "T0",
+            "from": "S",
+            "to": "T1",
+            "lengthM": 650.0,
+            "diameterM": 0.1018,
+            "roughness": 0.01,
+            "minorK": 1.5
+          },
+          {
+            "id": "T1",
+            "from": "T1",
+            "to": "T2",
+            "lengthM": 420.0,
+            "diameterM": 0.0816,
+            "roughness": 0.01,
+            "minorK": 0.9
+          },
+          {
+            "id": "B1",
+            "from": "T2",
+            "to": "A1",
+            "lengthM": 180.0,
+            "diameterM": 0.0636,
+            "roughness": 0.01,
+            "minorK": 0.4
+          },
+          {
+            "id": "B2",
+            "from": "T2",
+            "to": "A2",
+            "lengthM": 260.0,
+            "diameterM": 0.0636,
+            "roughness": 0.01,
+            "minorK": 0.4
+          },
+          {
+            "id": "B3",
+            "from": "T1",
+            "to": "A3",
+            "lengthM": 300.0,
+            "diameterM": 0.0508,
+            "roughness": 0.01,
+            "minorK": 0.4
+          }
+        ],
+        "formula": "D-W",
+        "pumps": [
+          {
+            "id": "PU1",
+            "from": "R",
+            "to": "S",
+            "curvePoints": [
+              [
+                0.0135,
+                38.0
+              ]
+            ]
+          }
+        ]
+      },
+      "expectedHeads": {
+        "S": 128.0,
+        "T1": 112.67708587646484,
+        "T2": 94.37018585205078,
+        "A1": 88.77784729003906,
+        "A2": 80.7330322265625,
+        "A3": 99.43824005126953,
+        "R": 90.00000762939453
+      },
+      "expectedFlowsM3s": {
+        "T0": 0.013500000350177288,
+        "T1": 0.010500000789761543,
+        "B1": 0.004500000271946192,
+        "B2": 0.006000000052154064,
+        "B3": 0.003000000026077032,
+        "PU1": 0.013500000350177288
+      }
+    },
+    "pump_operating_point_three_point": {
+      "model": {
+        "nodes": [
+          {
+            "id": "R1",
+            "type": "reservoir",
+            "head": 90.0
+          },
+          {
+            "id": "S",
+            "type": "junction",
+            "elevation": 90.0,
+            "demandM3s": 0.0
+          },
+          {
+            "id": "R2",
+            "type": "reservoir",
+            "head": 125.0
+          }
+        ],
+        "pipes": [
+          {
+            "id": "L1",
+            "from": "S",
+            "to": "R2",
+            "lengthM": 800.0,
+            "diameterM": 0.1018,
+            "roughness": 0.01,
+            "minorK": 2.0
+          }
+        ],
+        "pumps": [
+          {
+            "id": "PU1",
+            "from": "R1",
+            "to": "S",
+            "curvePoints": [
+              [
+                0.0,
+                48.0
+              ],
+              [
+                0.012,
+                42.0
+              ],
+              [
+                0.024,
+                28.0
+              ]
+            ]
+          }
+        ],
+        "formula": "D-W"
+      },
+      "expectedHeads": {
+        "S": 134.25778198242188,
+        "R1": 90.00000762939453,
+        "R2": 125.0
+      },
+      "expectedFlowsM3s": {
+        "L1": 0.009144207462668419,
+        "PU1": 0.009144207462668419
+      }
+    },
+    "pump_operating_point_single_point": {
+      "model": {
+        "nodes": [
+          {
+            "id": "R1",
+            "type": "reservoir",
+            "head": 90.0
+          },
+          {
+            "id": "S",
+            "type": "junction",
+            "elevation": 90.0,
+            "demandM3s": 0.0
+          },
+          {
+            "id": "R2",
+            "type": "reservoir",
+            "head": 125.0
+          }
+        ],
+        "pipes": [
+          {
+            "id": "L1",
+            "from": "S",
+            "to": "R2",
+            "lengthM": 800.0,
+            "diameterM": 0.1018,
+            "roughness": 0.01,
+            "minorK": 2.0
+          }
+        ],
+        "pumps": [
+          {
+            "id": "PU1",
+            "from": "R1",
+            "to": "S",
+            "curvePoints": [
+              [
+                0.012,
+                42.0
+              ]
+            ]
+          }
+        ],
+        "formula": "D-W"
+      },
+      "expectedHeads": {
+        "S": 136.09007263183594,
+        "R1": 90.00000762939453,
+        "R2": 125.0
+      },
+      "expectedFlowsM3s": {
+        "L1": 0.010096093639731407,
+        "PU1": 0.010096093639731407
+      }
+    }
+  }
+}

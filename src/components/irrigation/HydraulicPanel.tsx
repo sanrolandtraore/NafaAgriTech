@@ -581,6 +581,31 @@ export const HydraulicPanel: React.FC<HydraulicPanelProps> = ({
               </div>
             </div>
           )}
+
+          {/* ── TRAÇABILITÉ SCIENTIFIQUE & PROVENANCE ── */}
+          {result && result.provenance && (
+            <div className="p-3.5 rounded-2xl bg-slate-900 border border-slate-800 text-slate-300 text-xs space-y-2 font-mono">
+              <div className="flex items-center justify-between border-b border-slate-800 pb-2">
+                <span className="font-bold text-slate-100 flex items-center gap-2">
+                  <Activity className="h-3.5 w-3.5 text-primary" />
+                  Moteur d'Ingénierie Hydraulique : {result.provenance.engine} v{result.provenance.engineVersion}
+                </span>
+                {result.reynoldsNumber && (
+                  <Badge variant="outline" className="border-slate-700 text-slate-300 text-[10px]">
+                    Re = {result.reynoldsNumber.toLocaleString()} ({result.flowRegime || "turbulent"})
+                  </Badge>
+                )}
+              </div>
+              <div className="text-[11px] text-slate-400 space-y-1">
+                <div className="font-semibold text-slate-300">Méthodes &amp; Formules appliquées :</div>
+                {result.provenance.methods.map((m, i) => (
+                  <div key={i} className="pl-2 border-l border-slate-700">
+                    • <strong className="text-slate-200">{m.name}</strong> : {m.reference}
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
         </CardContent>
       </Card>
     </div>

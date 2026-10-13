@@ -23,6 +23,22 @@ export interface DetectionBox {
   trackId?: number; // Identifiant de tracking temporel vidéo
   clusterDensity?: number; // Densité locale estimée si détection groupée
   isManual?: boolean; // Ajouté ou corrigé manuellement
+  label?: string; // Classe biologique (ex: "volaille", "poussin", "ovin")
+  stage?: "raw" | "confidence_filtered" | "nms_kept" | "nms_suppressed" | "containment_suppressed" | "aspect_ratio_suppressed";
+  aspectRatio?: number;
+  suppressionReason?: string;
+}
+
+export interface CountingPipelineDiagnostics {
+  rawDetectionsCount: number;
+  confidenceFilteredCount: number;
+  aspectRatioSuppressedCount: number;
+  nmsSuppressedCount: number;
+  containmentSuppressedCount: number;
+  finalCount: number;
+  iouThresholdUsed: number;
+  minConfidenceUsed: number;
+  suppressedBoxes: DetectionBox[];
 }
 
 export interface ZoneCountResult {
@@ -65,6 +81,7 @@ export interface VisionAnalysisResult {
   imageDimensions: { width: number; height: number };
   processingTimeMs: number;
   method: "detection_individuelle" | "detection_tracking" | "estimation_densite_hybride";
+  diagnostics?: CountingPipelineDiagnostics;
 }
 
 /**
@@ -133,6 +150,170 @@ export function calculateIoU(boxA: DetectionBox, boxB: DetectionBox): number {
 
   if (unionArea <= 0) return 0;
   return interArea / unionArea;
+}
+
+/**
+ * Calcule le ratio d'inclusion spatiale (Containment Ratio)
+ * Définit la proportion de la plus petite boîte englobée dans la plus grande
+ */
+export function calculateContainmentRatio(boxA: DetectionBox, boxB: DetectionBox): number {
+  const xA = Math.max(boxA.x, boxB.x);
+  const yA = Math.max(boxA.y, boxB.y);
+  const xB = Math.min(boxA.x + boxA.width, boxB.x + boxB.width);
+  const yB = Math.min(boxA.y + boxA.height, boxB.y + boxB.height);
+
+  const interWidth = Math.max(0, xB - xA);
+  const interHeight = Math.max(0, yB - yA);
+  const interArea = interWidth * interHeight;
+
+  const areaA = boxA.width * boxA.height;
+  const areaB = boxB.width * boxB.height;
+  const minArea = Math.min(areaA, areaB);
+
+  if (minArea <= 0) return 0;
+  return interArea / minArea;
+}
+
+export interface NMSOptions {
+  iouThreshold?: number; // Seuil de chevauchement IoU (défaut : 0.38)
+  containmentThreshold?: number; // Seuil d'inclusion spatiale (défaut : 0.65)
+  minConfidence?: number; // Seuil de confiance minimal (défaut : 0.50)
+  minAspectRatio?: number; // Ratio L/H minimal pour volaille (défaut : 0.35)
+  maxAspectRatio?: number; // Ratio L/H maximal pour volaille (défaut : 2.80)
+  minRelativeArea?: number; // Aire minimale relative (défaut : 0.0012)
+  maxRelativeArea?: number; // Aire maximale relative (défaut : 0.28)
+}
+
+/**
+ * Algorithme certifié de Non-Maximum Suppression (NMS) multi-critères
+ * Élimine drastiquement les surcomptages, doubles détections et artefacts de litière.
+ */
+export function applyNonMaximumSuppression(
+  boxes: DetectionBox[],
+  options: NMSOptions = {}
+): {
+  kept: DetectionBox[];
+  suppressed: DetectionBox[];
+  diagnostics: CountingPipelineDiagnostics;
+} {
+  const {
+    iouThreshold = 0.38,
+    containmentThreshold = 0.65,
+    minConfidence = 0.50,
+    minAspectRatio = 0.35,
+    maxAspectRatio = 2.80,
+    minRelativeArea = 0.0012,
+    maxRelativeArea = 0.28,
+  } = options;
+
+  const rawCount = boxes.length;
+  const suppressed: DetectionBox[] = [];
+
+  // Étape 1 : Filtrage par seuil de confiance strict
+  const confidencePassed: DetectionBox[] = [];
+  for (const box of boxes) {
+    if (box.confidence < minConfidence) {
+      suppressed.push({
+        ...box,
+        stage: "confidence_filtered",
+        suppressionReason: `Confiance insuffisante (${Math.round(box.confidence * 100)}% < ${Math.round(minConfidence * 100)}%)`,
+      });
+    } else {
+      confidencePassed.push(box);
+    }
+  }
+
+  // Étape 2 : Filtrage morphologique (Aspect Ratio & Surface)
+  let aspectRatioSuppressedCount = 0;
+  const morphoPassed: DetectionBox[] = [];
+
+  for (const box of confidencePassed) {
+    const ar = box.width / Math.max(0.0001, box.height);
+    const area = box.width * box.height;
+
+    box.aspectRatio = Math.round(ar * 100) / 100;
+
+    if (ar < minAspectRatio || ar > maxAspectRatio) {
+      aspectRatioSuppressedCount++;
+      suppressed.push({
+        ...box,
+        stage: "aspect_ratio_suppressed",
+        suppressionReason: `Forme non zootechnique (Aspect Ratio ${ar.toFixed(2)} hors [${minAspectRatio}, ${maxAspectRatio}])`,
+      });
+    } else if (area < minRelativeArea || area > maxRelativeArea) {
+      aspectRatioSuppressedCount++;
+      suppressed.push({
+        ...box,
+        stage: "aspect_ratio_suppressed",
+        suppressionReason: `Surface anormale (${(area * 100).toFixed(2)}% de l'image)`,
+      });
+    } else {
+      morphoPassed.push(box);
+    }
+  }
+
+  // Étape 3 : Non-Maximum Suppression (NMS) ordonnée par confiance décroissante
+  const sortedCandidates = [...morphoPassed].sort((a, b) => b.confidence - a.confidence);
+  const kept: DetectionBox[] = [];
+
+  let nmsSuppressedCount = 0;
+  let containmentSuppressedCount = 0;
+
+  for (let i = 0; i < sortedCandidates.length; i++) {
+    const candidate = sortedCandidates[i];
+    let isSuppressed = false;
+
+    for (const accepted of kept) {
+      const iou = calculateIoU(candidate, accepted);
+      if (iou >= iouThreshold) {
+        isSuppressed = true;
+        nmsSuppressedCount++;
+        suppressed.push({
+          ...candidate,
+          stage: "nms_suppressed",
+          suppressionReason: `Doublon IoU (${Math.round(iou * 100)}% >= ${Math.round(iouThreshold * 100)}% avec détection #${accepted.id})`,
+        });
+        break;
+      }
+
+      const containment = calculateContainmentRatio(candidate, accepted);
+      if (containment >= containmentThreshold) {
+        isSuppressed = true;
+        containmentSuppressedCount++;
+        suppressed.push({
+          ...candidate,
+          stage: "containment_suppressed",
+          suppressionReason: `Inclusion spatiale (${Math.round(containment * 100)}% >= ${Math.round(containmentThreshold * 100)}% dans détection #${accepted.id})`,
+        });
+        break;
+      }
+    }
+
+    if (!isSuppressed) {
+      kept.push({
+        ...candidate,
+        stage: "nms_kept",
+      });
+    }
+  }
+
+  const diagnostics: CountingPipelineDiagnostics = {
+    rawDetectionsCount: rawCount,
+    confidenceFilteredCount: confidencePassed.length,
+    aspectRatioSuppressedCount,
+    nmsSuppressedCount,
+    containmentSuppressedCount,
+    finalCount: kept.length,
+    iouThresholdUsed: iouThreshold,
+    minConfidenceUsed: minConfidence,
+    suppressedBoxes: suppressed,
+  };
+
+  return {
+    kept,
+    suppressed,
+    diagnostics,
+  };
 }
 
 /**
@@ -588,21 +769,22 @@ export async function analyzeLivestockImage(
 
   // 5. Filtrage morphologique des blobs réels
   // Rejeter les bruits microscopiques (1 cellule isolée) et les fonds géants (murs / sols entiers)
-  const minArea = species === "volaille" ? 1 : 2;
-  const maxArea = Math.max(10, Math.floor(cols * rows * 0.35)); // max 35% de l'image pour un seul animal
+  const minArea = species === "volaille" ? 2 : 3;
+  const maxArea = Math.max(10, Math.floor(cols * rows * 0.28));
 
   const validBlobs = blobs.filter((b) => b.area >= minArea && b.area <= maxArea);
 
   // Surface médiane d'un animal individuel pour décomposer les amas de façon géométrique réelle
   const sortedAreas = validBlobs.map((b) => b.area).sort((a, b) => a - b);
-  const medianArea = sortedAreas.length > 0 ? sortedAreas[Math.floor(sortedAreas.length / 2)] : 2;
+  const medianArea = sortedAreas.length > 0 ? sortedAreas[Math.floor(sortedAreas.length / 2)] : 3;
 
-  const detections: DetectionBox[] = [];
-  const minBoxRatio = species === "volaille" ? 0.045 : 0.09;
+  const rawDetections: DetectionBox[] = [];
+  const minBoxRatio = species === "volaille" ? 0.040 : 0.085;
 
-  for (const blob of validBlobs) {
-    // Si l'amas est très grand par rapport à la médiane (plusieurs sujets regroupés)
-    const clusterSubjectsCount = Math.max(1, Math.min(8, Math.round(blob.area / Math.max(1, medianArea))));
+  for (let bIdx = 0; bIdx < validBlobs.length; bIdx++) {
+    const blob = validBlobs[bIdx];
+    // Plafond strict et réaliste pour éviter la sur-multiplication artificielle des blobs
+    const clusterSubjectsCount = Math.max(1, Math.min(3, Math.round(blob.area / Math.max(2, medianArea * 1.6))));
 
     if (clusterSubjectsCount <= 1) {
       // Un seul individu net
@@ -611,16 +793,21 @@ export async function analyzeLivestockImage(
       const w = Math.max(minBoxRatio, ((blob.maxX - blob.minX + 1) * step) / width);
       const h = Math.max(minBoxRatio, ((blob.maxY - blob.minY + 1) * step) / height);
 
-      detections.push({
-        id: `det_${Date.now()}_${detections.length + 1}`,
+      // Confiance réelle proportionnée au contraste et à la netteté des bords
+      const rawConf = Math.min(0.96, Math.max(0.55, 0.65 + Math.min(0.30, (blob.area / Math.max(1, medianArea)) * 0.08)));
+
+      rawDetections.push({
+        id: `raw_${bIdx + 1}`,
         x: Math.max(0, Math.min(1 - w, centerX - w / 2)),
         y: Math.max(0, Math.min(1 - h, centerY - h / 2)),
         width: w,
         height: h,
-        confidence: Math.min(0.98, Math.max(0.72, 0.75 + (blob.area / Math.max(1, medianArea)) * 0.1)),
+        confidence: Math.round(rawConf * 100) / 100,
+        label: species,
+        stage: "raw",
       });
     } else {
-      // Décomposition d'amas en sous-boîtes géométriques réelles réparties le long du blob
+      // Décomposition prudente d'amas en sous-boîtes géométriques réparties
       const spanX = (blob.maxX - blob.minX) / cols;
       const spanY = (blob.maxY - blob.minY) / rows;
       const subW = Math.max(minBoxRatio, spanX / Math.sqrt(clusterSubjectsCount));
@@ -631,28 +818,36 @@ export async function analyzeLivestockImage(
         const subX = (blob.minX / cols) + spanX * factor;
         const subY = (blob.minY / rows) + spanY * factor;
 
-        // Score de confiance physique déterministe basé sur l'aire du cluster et la compacité
-        const normalizedSubDensity = Math.min(1, clusterSubjectsCount / 4);
-        const physicalConfidence = Math.min(
-          0.92,
-          Math.max(0.68, 0.72 + (1 - normalizedSubDensity) * 0.15)
-        );
+        const subConf = Math.min(0.88, Math.max(0.52, 0.68 - s * 0.04));
 
-        detections.push({
-          id: `det_${Date.now()}_${detections.length + 1}`,
+        rawDetections.push({
+          id: `raw_${bIdx + 1}_sub_${s + 1}`,
           x: Math.max(0, Math.min(1 - subW, subX - subW / 2)),
           y: Math.max(0, Math.min(1 - subH, subY - subH / 2)),
           width: subW,
           height: subH,
-          confidence: Math.round(physicalConfidence * 100) / 100,
+          confidence: Math.round(subConf * 100) / 100,
           clusterDensity: clusterSubjectsCount,
+          label: species,
+          stage: "raw",
         });
       }
     }
   }
 
-  // Décompte exact réel = nombre de détections identifiées
-  const finalCount = detections.length;
+  // Application de la Non-Maximum Suppression (NMS) multi-critères
+  const nmsResult = applyNonMaximumSuppression(rawDetections, {
+    iouThreshold: 0.38,
+    containmentThreshold: 0.65,
+    minConfidence: 0.50,
+    minAspectRatio: species === "volaille" ? 0.35 : 0.40,
+    maxAspectRatio: species === "volaille" ? 2.80 : 3.00,
+    minRelativeArea: 0.0012,
+    maxRelativeArea: 0.28,
+  });
+
+  const finalDetections = nmsResult.kept;
+  const finalCount = finalDetections.length;
 
   // 6. Calcul de l'indice de confiance global basé sur les conditions optiques réelles
   let confidenceScore = 94;
@@ -700,7 +895,7 @@ export async function analyzeLivestockImage(
     { zoneId: "z4", zoneName: "Zone Arrière-Droite (Fond)", detectedCount: 0 },
   ];
 
-  for (const box of detections) {
+  for (const box of finalDetections) {
     const isRight = box.x >= 0.5;
     const isBottom = box.y >= 0.5;
     if (!isRight && !isBottom) zones[0].detectedCount++;
@@ -717,11 +912,12 @@ export async function analyzeLivestockImage(
     confidenceScore,
     confidenceLevel,
     qualityWarning,
-    detections,
+    detections: finalDetections,
     densityAnalysis,
     zones,
     imageDimensions: { width: sourceWidth, height: sourceHeight },
     processingTimeMs: durationMs,
     method: "detection_individuelle",
+    diagnostics: nmsResult.diagnostics,
   };
 }

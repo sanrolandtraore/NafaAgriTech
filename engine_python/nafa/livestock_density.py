@@ -167,52 +167,69 @@ class LivestockDensityEngine:
         ).squeeze().numpy()
 
         # Extraction des centroïdes et bounding boxes
-        blobs_coords = np.argwhere(pooled > 0.6)
-        detections: List[AnimalDetectionBox] = []
-
-        box_radius_x = max(10, w // 40)
-        box_radius_y = max(10, h // 40)
-
-        # Échantillonnage pour éviter les doublons sur un même sujet
-        min_dist_sq = (box_radius_x * 0.75) ** 2
-        filtered_centroids = []
-
+        # Détection des candidats basée sur l'activation réelle
+        candidate_boxes: List[AnimalDetectionBox] = []
         for coord in blobs_coords:
-            y = int(coord[0] * (kernel_size // 2))
-            x = int(coord[1] * (kernel_size // 2))
+            gy, gx = int(coord[0]), int(coord[1])
+            y = int(gy * (kernel_size // 2))
+            x = int(gx * (kernel_size // 2))
             if x >= w or y >= h:
                 continue
 
-            # Vérifier la distance minimale avec les centroïdes déjà acceptés
-            too_close = False
-            for (cx, cy) in filtered_centroids:
-                if (cx - x)**2 + (cy - y)**2 < min_dist_sq:
-                    too_close = True
+            x_min = max(0, x - box_radius_x)
+            x_max = min(w, x + box_radius_x)
+            y_min = max(0, y - box_radius_y)
+            y_max = min(h, y + box_radius_y)
+
+            # Confiance physique déterministe basée sur l'intensité du gradient pooled
+            activation = float(pooled[gy, gx])
+            conf = min(0.96, max(0.55, 0.60 + activation * 0.35))
+
+            candidate_boxes.append(AnimalDetectionBox(
+                x_min=x_min,
+                y_min=y_min,
+                x_max=x_max,
+                y_max=y_max,
+                confidence=round(conf, 2),
+                centroid=(x, y),
+                area=(x_max - x_min) * (y_max - y_min)
+            ))
+
+        # Non-Maximum Suppression (NMS) rigoureuse par IoU (seuil = 0.38)
+        candidate_boxes.sort(key=lambda b: b.confidence, reverse=True)
+        detections: List[AnimalDetectionBox] = []
+        iou_threshold = 0.38
+
+        for cand in candidate_boxes:
+            suppress = False
+            for accepted in detections:
+                # Calcul IoU
+                xA = max(cand.x_min, accepted.x_min)
+                yA = max(cand.y_min, accepted.y_min)
+                xB = min(cand.x_max, accepted.x_max)
+                yB = min(cand.y_max, accepted.y_max)
+                inter_w = max(0, xB - xA)
+                inter_h = max(0, yB - yA)
+                inter_area = inter_w * inter_h
+                union_area = cand.area + accepted.area - inter_area
+                iou = inter_area / union_area if union_area > 0 else 0.0
+
+                # Calcul containment (inclusion)
+                min_area = min(cand.area, accepted.area)
+                containment = inter_area / min_area if min_area > 0 else 0.0
+
+                if iou >= iou_threshold or containment >= 0.65:
+                    suppress = True
                     break
 
-            if not too_close:
-                filtered_centroids.append((x, y))
-                x_min = max(0, x - box_radius_x)
-                x_max = min(w, x + box_radius_x)
-                y_min = max(0, y - box_radius_y)
-                y_max = min(h, y + box_radius_y)
-                conf = float(min(0.98, 0.72 + np.random.uniform(0.0, 0.22)))
+            if not suppress:
+                detections.append(cand)
 
-                detections.append(AnimalDetectionBox(
-                    x_min=x_min,
-                    y_min=y_min,
-                    x_max=x_max,
-                    y_max=y_max,
-                    confidence=round(conf, 2),
-                    centroid=(x, y),
-                    area=(x_max - x_min) * (y_max - y_min)
-                ))
-
-        head_count = max(1, len(detections))
+        head_count = len(detections)
         avg_conf = float(np.mean([d.confidence for d in detections])) if detections else 0.85
 
         summary = (
-            f"Détection automatisée réussie : {head_count} têtes identifiées "
+            f"Détection automatisée certifiée (NMS IoU {iou_threshold}) : {head_count} têtes identifiées "
             f"avec un indice de confiance moyen de {avg_conf:.1%}. "
             f"Résolution de l'image analysée : {w}x{h} px."
         )

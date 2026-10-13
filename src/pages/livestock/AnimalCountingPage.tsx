@@ -37,6 +37,8 @@ import {
   ZoomIn,
   ZoomOut,
   Scale,
+  Bug,
+  Info,
 } from "lucide-react";
 
 import {
@@ -78,6 +80,8 @@ export default function AnimalCountingPage() {
   const [showDensityMap, setShowDensityMap] = useState<boolean>(false);
   const [zoomLevel, setZoomLevel] = useState<number>(1);
   const [sensitivity, setSensitivity] = useState<number>(6);
+  const [showNmsDebugMode, setShowNmsDebugMode] = useState<boolean>(false);
+  const [isCountCertified, setIsCountCertified] = useState<boolean>(false);
 
   // Points marqués manuellement par clic sur l'image
   const [interactiveMarkers, setInteractiveMarkers] = useState<Array<{ id: string; x: number; y: number }>>([]);
@@ -405,29 +409,38 @@ export default function AnimalCountingPage() {
       const standard = LIVESTOCK_DENSITY_STANDARDS[species] || LIVESTOCK_DENSITY_STANDARDS.autre;
       const isOver = densityVal ? densityVal > standard.alertThresholdPerM2 : false;
 
+      const baseDetected =
+        activeCountingMethod === "photo_tag"
+          ? (analysisResult?.detectedCount || 0)
+          : activeCountingMethod === "quadrats"
+          ? quadratResult.estimatedTotalCount
+          : tallyTotal;
+
       const record = await livestockCountStorage.saveCount({
         species,
         animalGroupId: selectedBatchId || undefined,
         sourceType: isVideoMode ? "video" : activeCountingMethod === "passage" ? "manual" : "photo",
-        detectedCount: currentCountValue,
+        detectedCount: baseDetected,
         correctedCount: currentCountValue,
-        confidenceScore: activeCountingMethod === "photo_tag" && interactiveMarkers.length > 0 ? 98 : 92,
-        confidenceLevel: "haute",
+        confidenceScore: activeCountingMethod === "photo_tag" && analysisResult?.confidenceScore ? analysisResult.confidenceScore : 92,
+        confidenceLevel: analysisResult?.confidenceLevel || "haute",
         surfaceAreaM2,
         densityPerM2: densityVal,
         isOvercrowded: isOver,
         qualityWarning:
-          activeCountingMethod === "quadrats"
+          analysisResult?.qualityWarning ||
+          (activeCountingMethod === "quadrats"
             ? `Estimation par échantillonnage de ${quadratCounts.length} quadrats témoins (marge ±${quadratResult.confidenceMarginPercent}%)`
             : activeCountingMethod === "passage"
             ? "Comptage direct en couloir de contention"
-            : undefined,
+            : undefined),
         technicianNotes,
         imageThumbnailDataUrl: imageSrc || undefined,
         detectionsSnapshot: analysisResult?.detections || [],
       });
 
       setCountsHistory(livestockCountStorage.getAll());
+      setIsCountCertified(true);
       toast.success(`Comptage enregistré avec succès ! Effectif validé : ${record.correctedCount}`);
     } catch {
       toast.error("Erreur lors de la sauvegarde du comptage.");
@@ -436,16 +449,23 @@ export default function AnimalCountingPage() {
 
   // Exportation du rapport PDF officiel
   const handleExportPdf = () => {
+    const baseDetected =
+      activeCountingMethod === "photo_tag"
+        ? (analysisResult?.detectedCount || 0)
+        : activeCountingMethod === "quadrats"
+        ? quadratResult.estimatedTotalCount
+        : tallyTotal;
+
     const dummyRecord: LivestockCountRecord = {
       id: `audit_${Date.now().toString().slice(-6)}`,
       species,
       animalGroupId: selectedBatchId,
       sourceType: isVideoMode ? "video" : activeCountingMethod === "passage" ? "manual" : "photo",
       countedAt: new Date().toISOString(),
-      detectedCount: currentCountValue,
+      detectedCount: baseDetected,
       correctedCount: currentCountValue,
-      confidenceScore: 96,
-      confidenceLevel: "haute",
+      confidenceScore: analysisResult?.confidenceScore || 92,
+      confidenceLevel: analysisResult?.confidenceLevel || "haute",
       surfaceAreaM2,
       densityPerM2:
         surfaceAreaM2 > 0 ? Math.round((currentCountValue / surfaceAreaM2) * 10) / 10 : undefined,
@@ -455,9 +475,10 @@ export default function AnimalCountingPage() {
             (LIVESTOCK_DENSITY_STANDARDS[species]?.alertThresholdPerM2 || 10)
           : false,
       qualityWarning:
-        activeCountingMethod === "quadrats"
+        analysisResult?.qualityWarning ||
+        (activeCountingMethod === "quadrats"
           ? `Méthode officielle d'échantillonnage de surface : ${quadratCounts.length} quadrats de ${quadratSizeM2} m²`
-          : undefined,
+          : undefined),
       technicianNotes,
       syncStatus: "synced",
       imageThumbnailDataUrl: imageSrc || undefined,
@@ -697,7 +718,7 @@ export default function AnimalCountingPage() {
                       className="max-h-[500px] w-full object-contain pointer-events-none"
                     />
 
-                    {/* Détections automatiques */}
+                    {/* Détections automatiques retenues par NMS */}
                     {showBoundingBoxes &&
                       analysisResult?.detections.map((box, idx) => (
                         <div
@@ -709,10 +730,34 @@ export default function AnimalCountingPage() {
                             width: `${box.width * 100}%`,
                             height: `${box.height * 100}%`,
                           }}
-                          className="border-2 border-emerald-400 bg-emerald-500/15 pointer-events-none rounded-sm transition-all"
+                          className="border-2 border-emerald-400 bg-emerald-500/15 pointer-events-none rounded-sm transition-all shadow-xs"
                         >
-                          <span className="absolute -top-4 left-0 bg-emerald-600 text-white font-mono text-[9px] px-1 rounded">
-                            #{idx + 1}
+                          <span className="absolute -top-4 left-0 bg-emerald-600 text-white font-mono text-[9px] px-1 rounded shadow">
+                            #{idx + 1} {showNmsDebugMode ? `(${Math.round(box.confidence * 100)}%)` : ""}
+                          </span>
+                        </div>
+                      ))}
+
+                    {/* Candidats rejetés par NMS / IoU / Morphologie (Mode Débogage NMS) */}
+                    {showBoundingBoxes &&
+                      showNmsDebugMode &&
+                      analysisResult?.diagnostics?.suppressedBoxes?.map((sBox, sIdx) => (
+                        <div
+                          key={`suppressed_${sBox.id || sIdx}`}
+                          style={{
+                            position: "absolute",
+                            left: `${sBox.x * 100}%`,
+                            top: `${sBox.y * 100}%`,
+                            width: `${sBox.width * 100}%`,
+                            height: `${sBox.height * 100}%`,
+                          }}
+                          className="border-2 border-dashed border-rose-500/90 bg-rose-500/10 pointer-events-none rounded-sm transition-all z-10"
+                        >
+                          <span
+                            className="absolute -top-3.5 left-0 bg-rose-700 text-white font-mono text-[8px] px-1 rounded shadow truncate max-w-[130px]"
+                            title={sBox.suppressionReason}
+                          >
+                            REJET : {sBox.stage === "nms_suppressed" ? "Doublon IoU" : sBox.stage === "containment_suppressed" ? "Inclusion" : sBox.stage === "aspect_ratio_suppressed" ? "Format" : "Confiance"}
                           </span>
                         </div>
                       ))}
@@ -819,6 +864,92 @@ export default function AnimalCountingPage() {
                     >
                       {showBoundingBoxes ? "Masquer cadres" : "Afficher cadres"}
                     </Button>
+                    <Button
+                      size="sm"
+                      variant={showNmsDebugMode ? "default" : "outline"}
+                      onClick={() => setShowNmsDebugMode(!showNmsDebugMode)}
+                      className={`h-7 text-xs gap-1.5 ${
+                        showNmsDebugMode
+                          ? "bg-amber-600 hover:bg-amber-700 text-white font-bold"
+                          : "border-amber-600/40 text-amber-700 dark:text-amber-400 hover:bg-amber-500/10"
+                      }`}
+                      title="Afficher les boîtes candidates rejetées par IoU et le diagnostic d'anti-surcomptage"
+                    >
+                      <Bug className="h-3.5 w-3.5" />
+                      {showNmsDebugMode ? "Mode Débogage NMS Actif" : "Audit NMS & Rejets"}
+                    </Button>
+                  </div>
+                </div>
+              )}
+
+              {/* Panneau de Diagnostic d'étapes NMS (Anti-Surcomptage certifié) */}
+              {imageSrc && showNmsDebugMode && analysisResult?.diagnostics && (
+                <div className="p-4 bg-slate-950 border-2 border-amber-500/40 rounded-xl text-slate-100 text-xs space-y-3 font-sans shadow-lg animate-in fade-in-50">
+                  <div className="flex items-center justify-between border-b border-slate-800 pb-2">
+                    <span className="font-bold flex items-center gap-2 text-amber-400 text-sm">
+                      <Bug className="h-4 w-4" />
+                      Pipeline d'Élimination du Surcomptage (Non-Maximum Suppression)
+                    </span>
+                    <Badge variant="outline" className="border-amber-500/40 text-amber-300 font-mono text-[10px]">
+                      {analysisResult.processingTimeMs} ms d'analyse
+                    </Badge>
+                  </div>
+
+                  <p className="text-[11px] text-slate-300 leading-relaxed">
+                    Visualisation complète du filtrage géométrique et statistique : chaque boîte candidate est évaluée par seuil de confiance, morphologie et chevauchement IoU strict (0.38) pour éliminer les doubles comptes et artefacts de litière.
+                  </p>
+
+                  <div className="grid grid-cols-2 sm:grid-cols-5 gap-2 text-center pt-1">
+                    <div className="p-2 rounded-lg bg-slate-900 border border-slate-800">
+                      <span className="text-[10px] text-slate-400 block font-medium">1. Candidats bruts</span>
+                      <span className="text-base font-bold font-mono text-slate-100">
+                        {analysisResult.diagnostics.rawDetectionsCount}
+                      </span>
+                    </div>
+
+                    <div className="p-2 rounded-lg bg-slate-900 border border-slate-800">
+                      <span className="text-[10px] text-slate-400 block font-medium">2. Bruit &lt; 50%</span>
+                      <span className="text-base font-bold font-mono text-rose-400">
+                        -{analysisResult.diagnostics.rawDetectionsCount - analysisResult.diagnostics.confidenceFilteredCount}
+                      </span>
+                    </div>
+
+                    <div className="p-2 rounded-lg bg-slate-900 border border-slate-800">
+                      <span className="text-[10px] text-slate-400 block font-medium">3. Hors format</span>
+                      <span className="text-base font-bold font-mono text-rose-400">
+                        -{analysisResult.diagnostics.aspectRatioSuppressedCount}
+                      </span>
+                    </div>
+
+                    <div className="p-2 rounded-lg bg-slate-900 border border-slate-800">
+                      <span className="text-[10px] text-slate-400 block font-medium">4. Doublons IoU</span>
+                      <span className="text-base font-bold font-mono text-amber-400">
+                        -{analysisResult.diagnostics.nmsSuppressedCount}
+                      </span>
+                    </div>
+
+                    <div className="p-2 rounded-lg bg-slate-900 border border-slate-800">
+                      <span className="text-[10px] text-slate-400 block font-medium">5. Inclusions</span>
+                      <span className="text-base font-bold font-mono text-amber-400">
+                        -{analysisResult.diagnostics.containmentSuppressedCount}
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 pt-2 border-t border-slate-800 text-[11px] text-slate-300">
+                    <div className="flex items-center gap-3">
+                      <span className="flex items-center gap-1.5">
+                        <span className="h-2 w-2 rounded-full bg-emerald-500 inline-block" />
+                        Retenus certifiés : <strong className="text-emerald-400 font-mono">{analysisResult.diagnostics.finalCount}</strong>
+                      </span>
+                      <span className="flex items-center gap-1.5">
+                        <span className="h-2 w-2 rounded-full bg-rose-500 inline-block" />
+                        Rejetés (anti-surcomptage) : <strong className="text-rose-400 font-mono">{analysisResult.diagnostics.suppressedBoxes.length}</strong>
+                      </span>
+                    </div>
+                    <span className="text-[10px] text-slate-400 font-mono">
+                      IoU max : {analysisResult.diagnostics.iouThresholdUsed} • Conf min : {Math.round(analysisResult.diagnostics.minConfidenceUsed * 100)}%
+                    </span>
                   </div>
                 </div>
               )}
@@ -830,32 +961,98 @@ export default function AnimalCountingPage() {
                 <CardHeader className="pb-3">
                   <div className="flex items-center justify-between">
                     <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
-                      Effectif Dénombré Réel
+                      Effectif Validé par l'Éleveur
                     </span>
-                    <Badge className="bg-emerald-600 text-white font-mono">
-                      {interactiveMarkers.length > 0 ? "Pointage validé" : "Détection optique"}
+                    <Badge className={isCountCertified ? "bg-emerald-600 text-white font-mono" : "bg-sky-600 text-white font-mono"}>
+                      {isCountCertified ? "Effectif Certifié" : interactiveMarkers.length > 0 ? "Pointage manuel" : "Détection optique"}
                     </Badge>
                   </div>
                   <CardTitle className="text-4xl font-extrabold text-foreground flex items-baseline gap-2 pt-2">
                     {currentCountValue}
                     <span className="text-lg font-normal text-muted-foreground">{species}s</span>
                   </CardTitle>
-                  <CardDescription className="text-xs space-y-1">
-                    <span className="block">
-                      Silhouettes automatiques : <strong>{analysisResult?.detectedCount || 0}</strong> • Points manuels :{" "}
-                      <strong>{interactiveMarkers.length}</strong>
-                    </span>
+
+                  {/* Décomposition rigoureuse et transparente : IA estimé vs Corrections manuelles */}
+                  <div className="pt-2 border-t mt-2 space-y-1 text-xs">
+                    <div className="flex items-center justify-between text-muted-foreground">
+                      <span>1. Estimé par l'IA (silhouettes retenues) :</span>
+                      <strong className="font-mono text-foreground">{analysisResult?.detectedCount || 0}</strong>
+                    </div>
+                    <div className="flex items-center justify-between text-muted-foreground">
+                      <span>2. Sujets pointés manuellement au clic :</span>
+                      <strong className="font-mono text-emerald-600 dark:text-emerald-400">+{interactiveMarkers.length}</strong>
+                    </div>
+                    <div className="flex items-center justify-between text-muted-foreground">
+                      <span>3. Ajustement pas à pas :</span>
+                      <strong className="font-mono text-primary">
+                        {manualAdjustment > 0 ? `+${manualAdjustment}` : manualAdjustment}
+                      </strong>
+                    </div>
+                    <div className="flex items-center justify-between font-bold text-foreground pt-1 border-t border-border/50">
+                      <span>Total final certifié :</span>
+                      <span className="font-mono text-emerald-600 text-sm">{currentCountValue} {species}s</span>
+                    </div>
+                  </div>
+
+                  <CardDescription className="text-xs pt-1">
                     <span className="block text-[11px] text-primary">
-                      Astuce : Cliquez directement sur les animaux de l'image pour ajouter un sujet omis ou retirer un point.
+                      Astuce terrain : Cliquez directement sur les volailles occultées pour ajouter un marqueur ou supprimer un artefact.
                     </span>
                   </CardDescription>
                 </CardHeader>
 
                 <CardContent className="space-y-4">
+                  {/* Avertissement de qualité optique et de fiabilité */}
+                  {analysisResult?.qualityWarning && (
+                    <div className="p-3 rounded-lg border border-amber-500/40 bg-amber-500/10 text-amber-900 dark:text-amber-200 text-xs flex items-start gap-2.5">
+                      <AlertTriangle className="h-4 w-4 shrink-0 mt-0.5 text-amber-600 dark:text-amber-400" />
+                      <div className="space-y-1">
+                        <span className="font-bold block">Avertissement de fiabilité optique</span>
+                        <p className="text-[11px] leading-relaxed">{analysisResult.qualityWarning}</p>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Évaluation des conditions de prise de vue (sans garantie de certitude absolue) */}
+                  {analysisResult && (
+                    <div className="p-2.5 bg-muted/40 rounded-lg border text-xs space-y-1.5">
+                      <div className="flex items-center justify-between">
+                        <span className="font-semibold text-foreground flex items-center gap-1.5">
+                          <Info className="h-3.5 w-3.5 text-primary" />
+                          Conditions de prise de vue :
+                        </span>
+                        <span className="font-mono font-bold text-foreground">
+                          {analysisResult.confidenceScore} % ({analysisResult.confidenceLevel})
+                        </span>
+                      </div>
+                      <p className="text-[10px] text-muted-foreground italic leading-tight pt-1 border-t border-border/40">
+                        * Cet indice évalue l'éclairage et le contraste de l'image. Il ne garantit pas que le décompte automatique soit infaillible sans vérification humaine en forte densité.
+                      </p>
+                    </div>
+                  )}
+
+                  {/* Bouton de validation explicite de l'effectif */}
+                  <Button
+                    type="button"
+                    variant={isCountCertified ? "outline" : "default"}
+                    onClick={() => {
+                      setIsCountCertified(true);
+                      toast.success(`Effectif de ${currentCountValue} ${species}s validé avec succès.`);
+                    }}
+                    className={`w-full gap-2 text-xs font-bold ${
+                      isCountCertified
+                        ? "border-emerald-600/50 text-emerald-700 dark:text-emerald-400 hover:bg-emerald-500/10"
+                        : "bg-emerald-600 hover:bg-emerald-700 text-white"
+                    }`}
+                  >
+                    <CheckCircle2 className="h-4 w-4" />
+                    {isCountCertified ? "Effectif Validé & Conforme" : "Valider l'Effectif Final"}
+                  </Button>
+
                   {/* Ajustement pas à pas */}
                   <div className="p-3 bg-muted/40 rounded-lg space-y-2 border">
                     <div className="flex items-center justify-between text-xs font-semibold">
-                      <span>Ajustement direct :</span>
+                      <span>Correction manuelle pas à pas :</span>
                       <span className="text-primary font-bold">
                         {manualAdjustment > 0 ? `+${manualAdjustment}` : manualAdjustment} sujet(s)
                       </span>
@@ -864,7 +1061,10 @@ export default function AnimalCountingPage() {
                       <Button
                         variant="outline"
                         size="sm"
-                        onClick={() => setManualAdjustment((v) => v - 1)}
+                        onClick={() => {
+                          setManualAdjustment((v) => v - 1);
+                          setIsCountCertified(false);
+                        }}
                         className="h-8 flex-1"
                       >
                         <Minus className="h-3.5 w-3.5" /> -1
@@ -872,7 +1072,10 @@ export default function AnimalCountingPage() {
                       <Button
                         variant="outline"
                         size="sm"
-                        onClick={() => setManualAdjustment((v) => v - 5)}
+                        onClick={() => {
+                          setManualAdjustment((v) => v - 5);
+                          setIsCountCertified(false);
+                        }}
                         className="h-8 px-2.5"
                       >
                         -5
@@ -880,7 +1083,10 @@ export default function AnimalCountingPage() {
                       <Button
                         variant="outline"
                         size="sm"
-                        onClick={() => setManualAdjustment((v) => v + 5)}
+                        onClick={() => {
+                          setManualAdjustment((v) => v + 5);
+                          setIsCountCertified(false);
+                        }}
                         className="h-8 px-2.5"
                       >
                         +5
@@ -888,7 +1094,10 @@ export default function AnimalCountingPage() {
                       <Button
                         variant="outline"
                         size="sm"
-                        onClick={() => setManualAdjustment((v) => v + 1)}
+                        onClick={() => {
+                          setManualAdjustment((v) => v + 1);
+                          setIsCountCertified(false);
+                        }}
                         className="h-8 flex-1"
                       >
                         <Plus className="h-3.5 w-3.5" /> +1
