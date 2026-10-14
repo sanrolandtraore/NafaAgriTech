@@ -73,6 +73,7 @@ import {
   ChevronRight,
   FileText,
   FileCheck2,
+  Boxes,
 } from "lucide-react";
 import { toast } from "sonner";
 import jsPDF from "jspdf";
@@ -80,6 +81,10 @@ import autoTable from "jspdf-autotable";
 import { pdfExportHistory } from "@/lib/pdfExportHistory";
 import PdfExportHistoryModal from "@/components/export/PdfExportHistoryModal";
 import { MarketplaceMaterialPricePickerModal } from "./MarketplaceMaterialPricePickerModal";
+import { AdebeoBomModal } from "./AdebeoBomModal";
+import { downloadSketchupPackage } from "@/lib/sketchupObjExporter";
+import { downloadSketchupDxf } from "@/lib/sketchupDxfExporter";
+import { generateAdebeoLayOutPdf } from "@/lib/adebeoLayOutPdfGenerator";
 import {
   Farm,
   Field,
@@ -1047,6 +1052,9 @@ export function Studio3DFarmModeler({
   const [isSunAutoPlaying, setIsSunAutoPlaying] = useState<boolean>(false);
   const [novaSeason, setNovaSeason] = useState<NovaSeason>("dry_cool");
   const [growthAgeYears, setGrowthAgeYears] = useState<number>(5); // 1 an (jeune) -> 5 ans (adulte) -> 10 ans
+
+  // ─── SUITE ADEBEO / SKETCHUP : CALEPINAGE & BOM ───
+  const [showAdebeoBomModal, setShowAdebeoBomModal] = useState<boolean>(false);
 
   const growthFactor = useMemo(() => {
     return Math.round((0.4 + ((growthAgeYears - 1) / 9) * 0.9) * 100) / 100;
@@ -2816,6 +2824,56 @@ export function Studio3DFarmModeler({
     toast.success("Plan CAO complet exporté en format JSON vectoriel !");
   };
 
+  // ─── SUITE ADEBEO / SKETCHUP : EXPORTS PROFESSIONNELS ───
+  // Export SketchUp Pro Wavefront OBJ & MTL
+  const handleExportSketchupObj = () => {
+    try {
+      downloadSketchupPackage(elements, customPlanName || activeFarm?.name || "Projet_Agricole");
+      toast.success("Package 3D Wavefront (.OBJ et .MTL) généré pour SketchUp Pro !");
+    } catch (err) {
+      console.error(err);
+      toast.error("Erreur lors de l'export SketchUp 3D.");
+    }
+  };
+
+  // Export DXF CAO (AutoCAD / SketchUp)
+  const handleExportSketchupDxf = () => {
+    try {
+      downloadSketchupDxf(elements, {
+        projectName: customPlanName || activeFarm?.name || "Projet Agricole",
+        clientName: activeFarm?.producerName || "Exploitant Agricole",
+        locality: activeFarm?.locality || "Burkina Faso",
+      });
+      toast.success("Fichier DXF CAO avec calques vectoriels exporté !");
+    } catch (err) {
+      console.error(err);
+      toast.error("Erreur lors de l'export DXF.");
+    }
+  };
+
+  // Export LayOut PDF 4 planches (A4 Paysage)
+  const handleExportLayOutPdf = () => {
+    try {
+      const { doc, filename } = generateAdebeoLayOutPdf(elements, {
+        projectName: customPlanName || activeFarm?.name || "Projet Agricole",
+        clientName: activeFarm?.producerName || "Exploitant Agricole",
+        clientPhone: activeFarm?.producerPhone,
+        locality: activeFarm?.locality || "Kadiogo",
+        region: activeFarm?.region || "Centre",
+        province: activeFarm?.province || "Kadiogo",
+        areaHa: currentField.areaHa || customDomainAreaHa,
+        perimeterM: currentField.perimeterM,
+        soilType,
+        waterFlowM3H,
+      });
+      doc.save(filename);
+      toast.success("Dossier LayOut A4 Paysage (4 planches) généré et archivé !");
+    } catch (err) {
+      console.error(err);
+      toast.error("Erreur lors de la génération du dossier LayOut.");
+    }
+  };
+
   // Importer un plan CAO
   const handleImportCadJson = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -3200,6 +3258,31 @@ export function Studio3DFarmModeler({
           >
             <Save className="h-4 w-4" />
             <span>Sauvegarder Projet</span>
+          </Button>
+          <Button
+            onClick={handleExportLayOutPdf}
+            className="rounded-full bg-amber-600 hover:bg-amber-500 text-white font-bold text-xs px-4 py-2.5 shadow-md flex items-center gap-1.5"
+            title="Générer le carnet de plans d'architecte LayOut complet (4 planches A4 Paysage avec coupes, plan de masse et BOM)"
+          >
+            <Compass className="h-4 w-4" />
+            <span>LayOut 2D (Plans & Coupes)</span>
+          </Button>
+          <Button
+            onClick={() => setShowAdebeoBomModal(true)}
+            className="rounded-full bg-slate-900 hover:bg-slate-800 text-amber-300 border border-amber-500/40 font-bold text-xs px-4 py-2.5 shadow-md flex items-center gap-1.5"
+            title="Consulter le calepinage précis et quantitatif des matériaux (BOM Adebeo / SketchUp)"
+          >
+            <Boxes className="h-4 w-4 text-amber-400" />
+            <span>Calepinage & BOM</span>
+          </Button>
+          <Button
+            onClick={handleExportSketchupObj}
+            variant="outline"
+            className="rounded-full bg-white/10 hover:bg-white/20 text-white border-white/20 font-bold text-xs px-4 py-2.5 flex items-center gap-1.5"
+            title="Exporter la maquette 3D au format Wavefront OBJ & MTL pour Trimble SketchUp Pro"
+          >
+            <Download className="h-4 w-4 text-blue-400" />
+            <span>Export SketchUp (.OBJ)</span>
           </Button>
           <Button
             onClick={handleExportTechnicalPdf}
@@ -3860,6 +3943,33 @@ export function Studio3DFarmModeler({
               </div>
 
               <div className="flex flex-wrap items-center gap-2">
+                <Button
+                  type="button"
+                  onClick={handleExportSketchupObj}
+                  variant="outline"
+                  className="rounded-xl text-xs font-bold h-8 flex items-center gap-1.5 bg-blue-500/10 border-blue-500/30 text-blue-400 hover:bg-blue-500/20"
+                >
+                  <Download className="h-3.5 w-3.5" />
+                  <span>SketchUp (.OBJ)</span>
+                </Button>
+                <Button
+                  type="button"
+                  onClick={handleExportSketchupDxf}
+                  variant="outline"
+                  className="rounded-xl text-xs font-bold h-8 flex items-center gap-1.5 bg-cyan-500/10 border-cyan-500/30 text-cyan-400 hover:bg-cyan-500/20"
+                >
+                  <Compass className="h-3.5 w-3.5" />
+                  <span>DXF CAO</span>
+                </Button>
+                <Button
+                  type="button"
+                  onClick={() => setShowAdebeoBomModal(true)}
+                  variant="outline"
+                  className="rounded-xl text-xs font-bold h-8 flex items-center gap-1.5 bg-amber-500/10 border-amber-500/30 text-amber-400 hover:bg-amber-500/20"
+                >
+                  <Boxes className="h-3.5 w-3.5" />
+                  <span>Métrés BOM</span>
+                </Button>
                 <Button
                   type="button"
                   onClick={handleExportCadJson}
@@ -5073,6 +5183,22 @@ export function Studio3DFarmModeler({
         onOpenChange={setShowPdfHistory}
         defaultModuleFilter="studio_3d"
         title="Historique des Plans & Devis CAO 3D"
+      />
+
+      {/* Modal interactif de calepinage & quantitatifs des matériaux Adebeo / SketchUp */}
+      <AdebeoBomModal
+        open={showAdebeoBomModal}
+        onOpenChange={setShowAdebeoBomModal}
+        elements={elements}
+        projectName={customPlanName || activeFarm?.name || "Projet Agricole Bioclimatique"}
+        clientName={activeFarm?.producerName || "Exploitant Agricole"}
+        locality={activeFarm?.locality || "Kadiogo"}
+        region={activeFarm?.region || "Centre"}
+        province={activeFarm?.province || "Kadiogo"}
+        areaHa={currentField.areaHa || customDomainAreaHa}
+        perimeterM={currentField.perimeterM}
+        soilType={soilType}
+        waterFlowM3H={waterFlowM3H}
       />
     </div>
   );
