@@ -10,6 +10,31 @@ import {
 } from "@/lib/partnerProfiles";
 import { saveProviderSubscription, getStoredProviderSubscription } from "@/lib/providerSubscription";
 import { isValidUuid } from "@/hooks/useOfflineData";
+import nafaEventBus from "@/services/eventBus";
+import userGeolocationService from "@/services/userGeolocationService";
+import businessEngineSyncService from "@/services/businessEngineSyncService";
+
+/**
+ * Déclenche immédiatement la capture de géolocalisation et la synchronisation
+ * événementielle du moteur métier dès la connexion de l'utilisateur (Event-Driven).
+ */
+export const triggerRealtimeEngineSyncOnLogin = (userId?: string, role?: string) => {
+  try {
+    userGeolocationService
+      .detectLocationAtLogin()
+      .then((loc) => {
+        nafaEventBus.emit("auth:login", { userId, role, location: loc });
+        businessEngineSyncService.syncEngineWithLocation(loc).catch((e) => {
+          console.warn("[AuthContext] Synchronisation moteur métier:", e?.message);
+        });
+      })
+      .catch((e) => {
+        console.warn("[AuthContext] Détection géolocalisation:", e?.message);
+      });
+  } catch (err) {
+    console.warn("[AuthContext] triggerRealtimeEngineSyncOnLogin:", err);
+  }
+};
 
 export function phoneToDeterministicUuid(phone: string): string {
   const digits = (phone || "").replace(/[^0-9]/g, "") || "0000000000";
@@ -264,6 +289,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         setRoles(local.roles);
         setIsOfflineSession(true);
         setPartnerTypeState(local.partnerType || getStoredPartnerProfileType(local.userId));
+        triggerRealtimeEngineSyncOnLogin(local.userId, local.roles[0]);
         return true;
       }
       const cached = await getOfflineSession();
@@ -284,6 +310,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         setRoles(fallbackSession.roles);
         setIsOfflineSession(true);
         setPartnerTypeState(getStoredPartnerProfileType(cached.userId));
+        triggerRealtimeEngineSyncOnLogin(cached.userId, cached.roles[0]);
         return true;
       }
     } catch (e) {
@@ -329,6 +356,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         setSession(session);
         setUser(session.user);
         setIsOfflineSession(false);
+        triggerRealtimeEngineSyncOnLogin(session.user.id);
 
         // Synchroniser le profil de partenaire spécifique
         const metaPartnerType = session.user.user_metadata?.partner_type as PartnerProfileType | undefined;
@@ -1004,6 +1032,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
     saveLocalSession(sessionObj);
     await cacheSession(simUser.id, simUser.email, simProfile, simRoles, normalized);
+    triggerRealtimeEngineSyncOnLogin(simUser.id, safeRole);
     return { error: null, isNewUser: false };
   };
 
@@ -1012,6 +1041,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     const currentUserId = user?.id;
     try { await supabase.auth.signOut(); } catch (error) { console.warn("Supabase sign-out failed:", error); }
 
+    nafaEventBus.emit("auth:logout", null);
     clearLocalSession();
     if (currentUserId) await clearUserOfflineData(currentUserId);
     await clearOfflineSession();
@@ -1145,6 +1175,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       savedAt: Date.now(),
     };
     saveLocalSession(sessionObj);
+    triggerRealtimeEngineSyncOnLogin(guestUser.id, safeRole);
   };
 
   const hasRole = (role: string) => roles.includes(role);

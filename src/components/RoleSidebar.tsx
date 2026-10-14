@@ -16,6 +16,7 @@ import { useTranslation } from "react-i18next";
 import { PartnerProfileType, PARTNER_PROFILES } from "@/lib/partnerProfiles";
 import { RealModuleIcon } from "@/components/ui/RealModuleIcon";
 import { prefetchRoute } from "@/lib/routePrefetcher";
+import { RealtimeEngineLocationPill } from "@/components/layout/RealtimeEngineLocationPill";
 
 export type NavItem = {
   to: string;
@@ -352,6 +353,11 @@ export const SidebarNavContent = ({ onNavigate }: SidebarContentProps) => {
             NAFA - AGRITECH
           </span>
         </div>
+      </div>
+
+      {/* Pill Localisation & Moteur Métier Temps Réel (Event-Driven) */}
+      <div className="px-4 pt-3 pb-1 shrink-0">
+        <RealtimeEngineLocationPill className="w-full justify-between" />
       </div>
 
       {/* Navigation épurée avec polices agrandies et libellés français clairs */}
