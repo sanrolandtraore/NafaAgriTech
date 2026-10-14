@@ -44,6 +44,7 @@ import { NafaAiCopilot } from "./NafaAiCopilot";
 import { NewFarmModal } from "./NewFarmModal";
 import { Studio3DFarmModeler } from "./Studio3DFarmModeler";
 import { WcadiIrrigationStudio } from "./WcadiIrrigationStudio";
+import { QgisFieldStudio } from "./qgis/QgisFieldStudio";
 import PdfExportHistoryModal from "@/components/export/PdfExportHistoryModal";
 
 import { Card, CardContent } from "@/components/ui/card";
@@ -135,6 +136,23 @@ export const FieldDesignerStudio: React.FC = () => {
 
   // Onglet actif
   const [activeTab, setActiveTab] = useState<string>("dashboard");
+
+  // Mode d'affichage : Studio QGIS (par défaut, simple & professionnel) vs Vues détaillées classiques
+  const [studioLayout, setStudioLayout] = useState<"qgis" | "classic">(() => {
+    try {
+      const saved = localStorage.getItem("nafa_designer_layout");
+      return saved === "classic" ? "classic" : "qgis";
+    } catch {
+      return "qgis";
+    }
+  });
+
+  const handleSetStudioLayout = (layout: "qgis" | "classic") => {
+    setStudioLayout(layout);
+    try {
+      localStorage.setItem("nafa_designer_layout", layout);
+    } catch {}
+  };
 
   // Données de l'espace de travail
   const [farms, setFarms] = useState<Farm[]>([]);
@@ -235,27 +253,39 @@ export const FieldDesignerStudio: React.FC = () => {
 
   // Support des query params d'URL pour compatibilité et tests
   useEffect(() => {
+    const layoutParam = searchParams.get("layout") || searchParams.get("view");
+    if (layoutParam === "classic") {
+      setStudioLayout("classic");
+    } else if (layoutParam === "qgis") {
+      setStudioLayout("qgis");
+    }
+
     const tabParam = searchParams.get("tab") || searchParams.get("tool");
     if (tabParam) {
       const lower = tabParam.toLowerCase();
-      if (["irris", "irrigation", "eau"].includes(lower)) {
-        setActiveTab("irrigation");
-      } else if (["devis", "validation_devis", "chiffrage"].includes(lower)) {
-        setActiveTab("devis");
-      } else if (["export", "export_pro", "pdf", "dossier"].includes(lower)) {
-        setActiveTab("devis");
-      } else if (["gps", "mesure", "arpentage"].includes(lower)) {
-        setActiveTab("gps");
-      } else if (["crop_designer", "culture"].includes(lower)) {
-        setActiveTab("crop");
-      } else if (["builder", "carte", "plan"].includes(lower)) {
-        setActiveTab("builder");
-      } else if (["batiment", "elevage"].includes(lower)) {
-        setActiveTab("batiment");
-      } else if (["copilot", "ia"].includes(lower)) {
-        setActiveTab("copilot");
-      } else if (["modeler3d", "3d", "amenagement3d", "nafa3d", "modelisation3d"].includes(lower)) {
-        setActiveTab("modeler3d");
+      if (lower === "qgis") {
+        setStudioLayout("qgis");
+      } else {
+        setStudioLayout("classic");
+        if (["irris", "irrigation", "eau"].includes(lower)) {
+          setActiveTab("irrigation");
+        } else if (["devis", "validation_devis", "chiffrage"].includes(lower)) {
+          setActiveTab("devis");
+        } else if (["export", "export_pro", "pdf", "dossier"].includes(lower)) {
+          setActiveTab("devis");
+        } else if (["gps", "mesure", "arpentage"].includes(lower)) {
+          setActiveTab("gps");
+        } else if (["crop_designer", "culture"].includes(lower)) {
+          setActiveTab("crop");
+        } else if (["builder", "carte", "plan"].includes(lower)) {
+          setActiveTab("builder");
+        } else if (["batiment", "elevage"].includes(lower)) {
+          setActiveTab("batiment");
+        } else if (["copilot", "ia"].includes(lower)) {
+          setActiveTab("copilot");
+        } else if (["modeler3d", "3d", "amenagement3d", "nafa3d", "modelisation3d"].includes(lower)) {
+          setActiveTab("modeler3d");
+        }
       }
     }
   }, [searchParams]);
@@ -322,6 +352,45 @@ export const FieldDesignerStudio: React.FC = () => {
     await loadAllData();
   };
 
+  // ── VUE PAR DÉFAUT : NAFA QGIS STUDIO (SIMPLE, INTÉGRÉ & PROFESSIONNEL) ──
+  if (studioLayout === "qgis") {
+    return (
+      <div
+        className={cn(
+          "w-full transition-all duration-200",
+          isFullscreenWorkspace
+            ? "fixed inset-0 z-50 bg-background overflow-y-auto p-2 sm:p-4"
+            : "w-full max-w-none px-1 sm:px-2 py-2 sm:py-3"
+        )}
+      >
+        <QgisFieldStudio
+          farms={farms}
+          activeFarmId={activeFarmId}
+          onSelectFarm={handleSelectFarm}
+          onOpenNewFarmModal={() => setNewFarmModalOpen(true)}
+          onSwitchToLegacyTabs={() => handleSetStudioLayout("classic")}
+          onGenerateOfficialPdf={() => {
+            handleSetStudioLayout("classic");
+            setActiveTab("devis");
+          }}
+        />
+
+        {/* Modale création d'exploitation conservée */}
+        <NewFarmModal
+          open={newFarmModalOpen}
+          onOpenChange={setNewFarmModalOpen}
+          onSave={handleSaveFarm}
+        />
+
+        {/* Modale Historique PDF conservée */}
+        <PdfExportHistoryModal
+          open={showPdfHistory}
+          onOpenChange={setShowPdfHistory}
+        />
+      </div>
+    );
+  }
+
   return (
     <div
       className={cn(
@@ -348,7 +417,7 @@ export const FieldDesignerStudio: React.FC = () => {
               </Badge>
             </div>
             <p className="text-[11px] text-emerald-200/80 leading-none mt-0.5">
-              CAO &amp; SIG Agricole • 100% Espace de travail
+              CAO &amp; SIG Agricole • Vue Détaillée
             </p>
           </div>
         </div>
@@ -380,6 +449,17 @@ export const FieldDesignerStudio: React.FC = () => {
               <Plus className="h-3.5 w-3.5" />
             </Button>
           </div>
+
+          {/* Bouton basculer vers Mode SIG QGIS */}
+          <button
+            type="button"
+            onClick={() => handleSetStudioLayout("qgis")}
+            className="px-3 py-1 rounded-xl text-xs font-bold border bg-emerald-600 text-white border-emerald-400 hover:bg-emerald-700 transition-all flex items-center gap-1.5 shadow-sm"
+            title="Basculer vers le Studio SIG QGIS"
+          >
+            <Compass className="h-3.5 w-3.5 text-white" />
+            <span>Mode SIG QGIS</span>
+          </button>
 
           {/* Bouton 100% Espace de travail Plein Écran */}
           <button
