@@ -38,15 +38,22 @@ describe("NAFA SaaS Full-Stack E2E Engine Integration", () => {
       ["-m", "uvicorn", "nafa.api:app", "--host", "127.0.0.1", "--port", "8000"],
       {
         cwd: engineDir,
-        shell: false,
-        stdio: "ignore",
+        shell: isWin,
+        stdio: ["ignore", "pipe", "pipe"],
       }
     );
-    serverProcess.unref();
 
-    // Attendre que le serveur soit prêt (max 15 secondes)
+    let engineLogs = "";
+    serverProcess.stdout?.on("data", (data) => {
+      engineLogs += data.toString();
+    });
+    serverProcess.stderr?.on("data", (data) => {
+      engineLogs += data.toString();
+    });
+
+    // Attendre que le serveur soit prêt (max 20 secondes)
     let ready = false;
-    for (let i = 0; i < 30; i++) {
+    for (let i = 0; i < 40; i++) {
       await new Promise((r) => setTimeout(r, 500));
       if (await pythonEngineClient.isAvailable()) {
         ready = true;
@@ -55,9 +62,10 @@ describe("NAFA SaaS Full-Stack E2E Engine Integration", () => {
     }
 
     if (!ready) {
-      throw new Error("Impossible de démarrer le moteur Python pour les tests E2E.");
+      console.error("[E2E Test Engine Logs]:\n", engineLogs);
+      throw new Error(`Impossible de démarrer le moteur Python pour les tests E2E. Logs: ${engineLogs}`);
     }
-  }, 25000);
+  }, 30000);
 
   afterAll(() => {
     if (serverProcess) {

@@ -2,7 +2,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import LivestockDashboardPage from "@/pages/livestock/LivestockDashboardPage";
 import PartenaireDashboard from "@/pages/dashboard/partenaire/PartenaireDashboard";
 import InstitutionFinanceDashboard from "@/pages/dashboard/partenaire/InstitutionFinanceDashboard";
-import ServiceMarketplacePage from "@/pages/dashboard/ServiceMarketplacePage";
+import FarmerOperationsDashboard from "@/pages/dashboard/farmer/FarmerOperationsDashboard";
 import ServicesPage from "@/pages/dashboard/ServicesPage";
 import VeterinaireHubPage from "@/pages/dashboard/veterinaire/VeterinaireHubPage";
 
@@ -36,11 +36,11 @@ const RoleDashboardHome = () => {
     return <InstitutionFinanceDashboard />;
   }
 
-  // 3. Module Agriculteur : seul le marketplace des services apparaît
+  // 3. Module Producteur Agricole : Cockpit Opérationnel de Gestion et Décision Agronomique (FAO-56, INERA, CILSS)
   switch (primaryRole) {
     case "agriculteur":
     case "farmer":
-      return <ServiceMarketplacePage />;
+      return <FarmerOperationsDashboard />;
     case "partenaire":
     case "formation":
     default:
