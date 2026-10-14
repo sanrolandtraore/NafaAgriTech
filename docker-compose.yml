@@ -1,0 +1,33 @@
+version: '3.8'
+
+services:
+  engine:
+    build:
+      context: .
+      dockerfile: Dockerfile.engine
+    container_name: nafa_engine
+    restart: always
+    ports:
+      - "8000:8000"
+    environment:
+      - PYTHONUNBUFFERED=1
+      - PORT=8000
+    networks:
+      - nafa_network
+
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile.frontend
+    container_name: nafa_frontend
+    restart: always
+    ports:
+      - "80:80"
+    depends_on:
+      - engine
+    networks:
+      - nafa_network
+
+networks:
+  nafa_network:
+    driver: bridge

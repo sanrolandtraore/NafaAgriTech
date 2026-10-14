@@ -5,13 +5,16 @@
   "version": "1.0.0",
   "type": "module",
   "scripts": {
-    "dev": "vite",
+    "dev": "node scripts/dev-saas.mjs",
+    "dev:frontend": "vite",
+    "dev:engine": "node scripts/dev-saas.mjs",
     "build": "vite build && node scripts/prerender-seo.mjs",
     "build:dev": "vite build --mode development",
     "lint": "eslint .",
     "preview": "vite preview",
     "test": "vitest run",
     "test:watch": "vitest",
+    "test:e2e": "vitest run src/test/e2eEngineIntegration.test.ts",
     "sync:status": "node scripts/sync-status.mjs"
   },
   "dependencies": {
