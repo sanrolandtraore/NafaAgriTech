@@ -66,7 +66,7 @@ describe("Exigence Métier : Séparation des rôles Agriculteur vs Agronome & Co
     expect(paths).not.toContain("/dashboard/expert-cartography");
   });
 
-  it("2. L'accueil du module Agriculteur (RoleDashboardHome) affiche immédiatement le Marketplace des Services", () => {
+  it("2. L'accueil du module Agriculteur (RoleDashboardHome) affiche le Cockpit d'Exploitation Certifié", () => {
     mockAuth.primaryRole = "agriculteur";
     mockAuth.partnerType = null;
 
@@ -76,7 +76,7 @@ describe("Exigence Métier : Séparation des rôles Agriculteur vs Agronome & Co
       </BrowserRouter>
     );
 
-    expect(screen.getByTestId("service-marketplace-page")).toBeInTheDocument();
+    expect(screen.getByText(/Cockpit Exploitation Certifié/i)).toBeInTheDocument();
     expect(screen.queryByTestId("agronomic-services-suite")).not.toBeInTheDocument();
   });
 

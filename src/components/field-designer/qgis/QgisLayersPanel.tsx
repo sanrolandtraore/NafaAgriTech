@@ -22,11 +22,12 @@ import {
   Compass,
   Upload,
   Globe,
-  Sliders,
+  Satellite,
 } from "lucide-react";
 
 export interface QgisLayerVisibility {
   satellite: boolean;
+  ndviSentinel2: boolean;
   parcelles: boolean;
   bornes: boolean;
   irrigation: boolean;
@@ -106,6 +107,24 @@ export const QgisLayersPanel: React.FC<QgisLayersPanelProps> = ({
             </label>
             <Badge variant="outline" className="text-[9px] py-0 px-1 font-mono text-muted-foreground">
               Raster
+            </Badge>
+          </div>
+        </div>
+
+        {/* 1b. Couche Télédétection Sentinel-2 (NDVI / EOSDA) */}
+        <div className="p-2 rounded-xl bg-muted/30 border border-border/60 hover:bg-muted/50 transition-colors">
+          <div className="flex items-center justify-between">
+            <label className="flex items-center gap-2 cursor-pointer font-bold select-none text-xs">
+              <Checkbox
+                checked={layers.ndviSentinel2}
+                onCheckedChange={() => onToggleLayer("ndviSentinel2")}
+                className="h-3.5 w-3.5 data-[state=checked]:bg-emerald-600"
+              />
+              <Satellite className="h-3.5 w-3.5 text-emerald-500" />
+              <span>Sentinel-2 NDVI (EOSDA)</span>
+            </label>
+            <Badge variant="secondary" className="text-[9px] py-0 px-1 font-mono bg-emerald-500/10 text-emerald-600 border-emerald-500/20">
+              Biomasse
             </Badge>
           </div>
         </div>

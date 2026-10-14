@@ -5,7 +5,7 @@
  * pour l'entité géographique sélectionnée.
  */
 
-import React from "react";
+import React, { useState } from "react";
 import { Field, Farm, IrrigationProject, FarmBuilding } from "@/types/fieldDesigner";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -25,8 +25,11 @@ import {
   Trash2,
   ExternalLink,
   ShieldCheck,
+  Satellite,
+  Zap,
 } from "lucide-react";
 import { toast } from "sonner";
+import { QgisEosdaSatelliteModal } from "./QgisEosdaSatelliteModal";
 
 interface QgisAttributeInspectorProps {
   selectedField: Field | null;
@@ -45,6 +48,7 @@ export const QgisAttributeInspector: React.FC<QgisAttributeInspectorProps> = ({
   onOpenHydraulicDetail,
   onGenerateQuote,
 }) => {
+  const [satelliteModalOpen, setSatelliteModalOpen] = useState(false);
   if (!selectedField) {
     return (
       <div className="w-full h-full flex flex-col bg-card/95 backdrop-blur-md rounded-2xl border border-border shadow-md p-4 text-card-foreground">
@@ -206,7 +210,42 @@ export const QgisAttributeInspector: React.FC<QgisAttributeInspectorProps> = ({
 
         <Separator />
 
-        {/* 4. Chiffrage Prévisionnel & Devis Express */}
+        {/* 4. Télédétection Satellitaire & Suivi Végétatif (EOSDA Crop Monitoring) */}
+        <div className="space-y-2 p-2.5 rounded-xl bg-sky-950/10 dark:bg-sky-900/20 border border-sky-500/30">
+          <div className="flex items-center justify-between">
+            <span className="text-[10px] font-black uppercase tracking-wider text-sky-800 dark:text-sky-300">
+              Monitoring Satellitaire (EOSDA)
+            </span>
+            <Satellite className="h-3.5 w-3.5 text-sky-600" />
+          </div>
+          <div className="flex justify-between items-center text-[11px] font-mono">
+            <span className="text-muted-foreground">Constellation :</span>
+            <span className="font-bold text-foreground">Sentinel-2 (ESA)</span>
+          </div>
+          <div className="grid grid-cols-2 gap-1.5 text-[10px] font-mono">
+            <div className="p-1.5 rounded-lg bg-card/60 border text-center">
+              <span className="text-muted-foreground block text-[9px]">NDVI Vigueur</span>
+              <strong className="text-emerald-600 font-bold">0.68</strong> (Saine)
+            </div>
+            <div className="p-1.5 rounded-lg bg-card/60 border text-center">
+              <span className="text-muted-foreground block text-[9px]">Modulation VRA</span>
+              <strong className="text-amber-600 font-bold">-18.5%</strong> d'engrais
+            </div>
+          </div>
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={() => setSatelliteModalOpen(true)}
+            className="w-full text-xs font-bold gap-1.5 border-sky-500/40 text-sky-700 dark:text-sky-300 hover:bg-sky-500/10"
+          >
+            <Satellite className="h-3.5 w-3.5" />
+            <span>Ouvrir Suivi Satellite Sentinel-2</span>
+          </Button>
+        </div>
+
+        <Separator />
+
+        {/* 5. Chiffrage Prévisionnel & Devis Express */}
         <div className="space-y-2 p-2.5 rounded-xl bg-emerald-950/10 dark:bg-emerald-900/20 border border-emerald-500/30">
           <div className="flex items-center justify-between">
             <span className="text-[10px] font-black uppercase tracking-wider text-emerald-800 dark:text-emerald-300">
@@ -232,6 +271,14 @@ export const QgisAttributeInspector: React.FC<QgisAttributeInspectorProps> = ({
           )}
         </div>
       </div>
+
+      {/* Modale d'analyse satellitaire EOSDA Sentinel-2 */}
+      <QgisEosdaSatelliteModal
+        open={satelliteModalOpen}
+        onOpenChange={setSatelliteModalOpen}
+        field={selectedField}
+        farm={farm}
+      />
 
       {/* Actions de suppression ou détail en bas */}
       {onDeleteField && (

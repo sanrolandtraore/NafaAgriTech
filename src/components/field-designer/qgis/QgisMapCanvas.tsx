@@ -11,6 +11,7 @@ import { Field, GeoPoint, Farm } from "@/types/fieldDesigner";
 import { QgisLayerVisibility } from "./QgisLayersPanel";
 import { wgs84ToUtmZone30N } from "@/lib/qgisExportEngine";
 import { calculatePolygonAreaM2, calculatePerimeterM } from "@/lib/fieldGpsSurvey";
+import { analyzeFieldSatelliteData } from "@/lib/eosdaCropMonitoringEngine";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -154,12 +155,46 @@ export const QgisMapCanvas: React.FC<QgisMapCanvasProps> = ({
       const isSelected = field.id === selectedFieldId;
       const latlngs = field.points.map((p) => [p.lat, p.lng] as L.LatLngTuple);
 
+      // Styles dynamiques par défaut
+      let polygonColor = isSelected ? "#10b981" : "#16a34a";
+      let polygonFill = isSelected ? "#34d399" : "#22c55e";
+      let polygonOpacity = isSelected ? 0.35 : 0.2;
+      let ndviBadge = "";
+
+      // Si la couche Sentinel-2 NDVI est active, coloration thématique EOSDA
+      if (layers.ndviSentinel2) {
+        const areaHa = field.areaHa || field.areaM2 / 10000;
+        const satAnalysis = analyzeFieldSatelliteData(field.id, field.name, areaHa, field.points, field.currentCrop || "maraichage");
+        const ndvi = satAnalysis.currentIndices.ndvi;
+
+        if (ndvi >= 0.7) {
+          polygonColor = isSelected ? "#047857" : "#059669";
+          polygonFill = "#10b981";
+          polygonOpacity = isSelected ? 0.6 : 0.45;
+        } else if (ndvi >= 0.5) {
+          polygonColor = isSelected ? "#4d7c0f" : "#65a30d";
+          polygonFill = "#84cc16";
+          polygonOpacity = isSelected ? 0.55 : 0.4;
+        } else {
+          polygonColor = isSelected ? "#b45309" : "#d97706";
+          polygonFill = "#f59e0b";
+          polygonOpacity = isSelected ? 0.55 : 0.4;
+        }
+
+        ndviBadge = `<div class="mt-1 pt-1 border-t border-slate-200 flex items-center justify-between gap-2 text-[10px] font-mono">
+          <span class="text-slate-600 font-medium">NDVI Sentinel-2:</span>
+          <span class="px-1 py-0.2 rounded font-black text-white ${
+            ndvi >= 0.7 ? "bg-emerald-600" : ndvi >= 0.5 ? "bg-lime-600" : "bg-amber-600"
+          }">${ndvi.toFixed(2)}</span>
+        </div>`;
+      }
+
       // Polygone de parcelle
       const polygon = L.polygon(latlngs, {
-        color: isSelected ? "#10b981" : "#16a34a",
-        fillColor: isSelected ? "#34d399" : "#22c55e",
+        color: polygonColor,
+        fillColor: polygonFill,
         weight: isSelected ? 3.5 : 2,
-        fillOpacity: isSelected ? 0.35 : 0.2,
+        fillOpacity: polygonOpacity,
       }).addTo(group);
 
       // Clic pour sélectionner la parcelle
@@ -171,7 +206,7 @@ export const QgisMapCanvas: React.FC<QgisMapCanvasProps> = ({
       polygon.bindTooltip(
         `<div class="text-xs font-bold text-slate-900">${field.name}<br/><span class="text-emerald-700 font-mono">${(
           field.areaHa || field.areaM2 / 10000
-        ).toFixed(2)} ha</span></div>`,
+        ).toFixed(2)} ha</span>${ndviBadge}</div>`,
         {
           permanent: isSelected,
           direction: "center",
@@ -198,7 +233,7 @@ export const QgisMapCanvas: React.FC<QgisMapCanvasProps> = ({
         });
       }
     });
-  }, [fields, selectedFieldId, layers.parcelles, layers.bornes, onSelectField]);
+  }, [fields, selectedFieldId, layers.parcelles, layers.bornes, layers.ndviSentinel2, onSelectField]);
 
   // 4. Gestion des clics de digitalisation (Tracé de polygone)
   useEffect(() => {
