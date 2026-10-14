@@ -5,7 +5,9 @@
  */
 
 export const PYTHON_ENGINE_BASE_URL =
-  import.meta.env.VITE_PYTHON_ENGINE_URL || "http://127.0.0.1:8000";
+  import.meta.env.VITE_PYTHON_ENGINE_URL !== undefined
+    ? import.meta.env.VITE_PYTHON_ENGINE_URL
+    : (typeof window !== "undefined" && window.location?.port === "8080" ? "" : "http://127.0.0.1:8000");
 
 export interface PythonEngineHealth {
   status: string;
@@ -144,10 +146,14 @@ export const pythonEngineClient = {
    */
   async isAvailable(): Promise<boolean> {
     try {
-      const res = await fetch(`${PYTHON_ENGINE_BASE_URL}/health`, {
+      const url = `${PYTHON_ENGINE_BASE_URL}/health`;
+      const controller = typeof AbortController !== "undefined" ? new AbortController() : null;
+      const timeoutId = controller ? setTimeout(() => controller.abort(), 2000) : null;
+      const res = await fetch(url, {
         method: "GET",
-        signal: AbortSignal.timeout(1500),
+        signal: controller ? controller.signal : undefined,
       });
+      if (timeoutId) clearTimeout(timeoutId);
       return res.ok;
     } catch {
       return false;
@@ -159,10 +165,14 @@ export const pythonEngineClient = {
    */
   async getHealth(): Promise<PythonEngineHealth | null> {
     try {
-      const res = await fetch(`${PYTHON_ENGINE_BASE_URL}/health`, {
+      const url = `${PYTHON_ENGINE_BASE_URL}/health`;
+      const controller = typeof AbortController !== "undefined" ? new AbortController() : null;
+      const timeoutId = controller ? setTimeout(() => controller.abort(), 3000) : null;
+      const res = await fetch(url, {
         method: "GET",
-        signal: AbortSignal.timeout(2000),
+        signal: controller ? controller.signal : undefined,
       });
+      if (timeoutId) clearTimeout(timeoutId);
       if (!res.ok) return null;
       return await res.json();
     } catch {

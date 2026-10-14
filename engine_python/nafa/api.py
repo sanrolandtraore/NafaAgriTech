@@ -111,6 +111,7 @@ class LivestockDensityRequest(BaseModel):
 # ENDPOINTS
 # =============================================================================
 @app.get("/health")
+@app.get("/api/health")
 def health_check():
     return {
         "status": "healthy",
@@ -119,7 +120,9 @@ def health_check():
             "crops_vision (PyTorch, TorchVision)",
             "livestock_density (Zootechnie, THI, UBT)",
             "modeling_2d_3d (Shapely, GeoPandas, Wavefront OBJ)",
-            "field_suite (GPS UTM, FAO-56, Hazen-Williams, BPU FCFA)"
+            "field_suite (GPS UTM, FAO-56, Hazen-Williams, BPU FCFA)",
+            "ai_disease_diagnosis (Differential Tree, CSP-CILSS, INERA)",
+            "universal_copilot (Nafa Assistant Multi-profile Engine)"
         ]
     }
 
