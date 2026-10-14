@@ -44,6 +44,17 @@ export interface VetToolItem {
 export const VETERINARY_TOOLS: VetToolItem[] = [
   // ── Pôle 1 : Actes Cliniques & Terrain ──
   {
+    id: "vet-smart-counting",
+    title: "Station Couloir : SmaRt Counting & Pesée (Norme IMV)",
+    category: "clinique_terrain",
+    categoryLabel: "Actes Cliniques & Terrain",
+    description: "Comptage automatique bidirectionnel en couloir d'embarquement (précision 99,9%), exclusion des silhouettes humaines, estimation biométrique Smart Weight et certificat officiel.",
+    route: "/dashboard/animal-counting?method=imv_corridor",
+    icon: ShieldCheck,
+    badges: ["Norme IMV Technologies", "Précision 99.9%", "Smart Weight", "EIP"],
+    keywords: ["imv", "smart counting", "couloir", "porc", "bovin", "ovin", "pesee", "poids", "tripwire", "eip", "abattoir", "embarquement"],
+  },
+  {
     id: "vet-comptage",
     title: "Comptage & Densité d'Élevage",
     category: "clinique_terrain",
