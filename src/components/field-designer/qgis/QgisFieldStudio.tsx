@@ -105,6 +105,7 @@ export const QgisFieldStudio: React.FC<QgisFieldStudioProps> = ({
   // Visibilité des couches SIG
   const [layers, setLayers] = useState<QgisLayerVisibility>({
     satellite: true,
+    ndviSentinel2: true,
     parcelles: true,
     bornes: true,
     irrigation: true,
