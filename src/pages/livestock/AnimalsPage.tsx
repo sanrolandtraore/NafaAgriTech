@@ -281,12 +281,6 @@ const AnimalsPage = () => {
               Mode hors-ligne
             </Badge>
           )}
-          <Link to="/dashboard/animal-counting">
-            <Button variant="outline" className="h-10 font-bold border-primary/40 text-primary hover:bg-primary/5 gap-1.5 shadow-xs">
-              <Camera className="h-4 w-4" />
-              Comptage IA
-            </Button>
-          </Link>
           <Dialog open={openCreate} onOpenChange={setOpenCreate}>
             <DialogTrigger asChild>
               <Button className="h-10 font-bold shadow-xs">

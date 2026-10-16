@@ -75,11 +75,7 @@ const AnimalFeedingPage = lazy(() => import("./pages/livestock/AnimalFeedingPage
 const LivestockFinancePage = lazy(() => import("./pages/livestock/LivestockFinancePage"));
 const LivestockServicesPage = lazy(() => import("./pages/livestock/LivestockServicesPage"));
 const LivestockReportPage = lazy(() => import("./pages/livestock/LivestockReportPage"));
-const AnimalCountingPage = lazy(() => import("./pages/livestock/AnimalCountingPage"));
 const ServiceMarketplacePage = lazy(() => import("./pages/dashboard/ServiceMarketplacePage"));
-const ExpertCartographyPage = lazy(() => import("./pages/dashboard/ExpertCartographyPage"));
-const ScoutingPage = lazy(() => import("./pages/dashboard/ScoutingPage"));
-const SmartInspectionPage = lazy(() => import("./pages/dashboard/SmartInspectionPage"));
 const UserProfilePage = lazy(() => import("./pages/dashboard/UserProfilePage"));
 const PublicExplorerPage = lazy(() => import("./pages/PublicExplorerPage"));
 const ExpertToolboxPage = lazy(() => import("./pages/dashboard/expert/ExpertToolboxPage"));
@@ -88,8 +84,6 @@ const ExpertPrescriptionsPage = lazy(() => import("./pages/dashboard/expert/Expe
 const CropLibraryPage = lazy(() => import("./pages/dashboard/expert/CropLibraryPage"));
 const ExpertClientsPage = lazy(() => import("./pages/dashboard/expert/ExpertClientsPage"));
 const ExpertAnalyticsPage = lazy(() => import("./pages/dashboard/expert/ExpertAnalyticsPage"));
-const NafaGeniusPage = lazy(() => import("./pages/dashboard/NafaGeniusPage"));
-const FieldDesignerPage = lazy(() => import("./pages/dashboard/FieldDesignerPage"));
 const PartnerStorefrontPage = lazy(() => import("./pages/partner/PartnerStorefrontPage"));
 const PartnerDedicatedSpace = lazy(() => import("./pages/partner/PartnerDedicatedSpace"));
 const FournisseursPage = lazy(() => import("./pages/dashboard/partenaire/FournisseursPage"));
@@ -111,9 +105,6 @@ const InstitutionFinanceDashboard = lazy(() => import("./pages/dashboard/partena
 const PartnerMarketingPage = lazy(() => import("./pages/dashboard/partenaire/PartnerMarketingPage"));
 const PartnerDemandesPage = lazy(() => import("./pages/dashboard/partenaire/PartnerDemandesPage"));
 const PartnerInvoicesPage = lazy(() => import("./pages/dashboard/partenaire/PartnerInvoicesPage"));
-const GpsSurveyPage = lazy(() => import("./pages/dashboard/GpsSurveyPage"));
-const FieldSuiteAllInOnePage = lazy(() => import("./pages/dashboard/FieldSuiteAllInOnePage"));
-const ExpertDiagnosisPage = lazy(() => import("./pages/dashboard/expert/ExpertDiagnosisPage"));
 const VeterinaireHubPage = lazy(() => import("./pages/dashboard/veterinaire/VeterinaireHubPage"));
 
 import PageLoader from "@/components/PageLoader";
@@ -168,7 +159,7 @@ const App = () => {
               <Route path="/ressources" element={<Suspense fallback={<PageLoader />}><RessourcesPage /></Suspense>} />
               <Route path="/explorer" element={<AuthProvider><Suspense fallback={<PageLoader />}><PublicExplorerPage /></Suspense></AuthProvider>} />
               <Route path="/fiches-techniques" element={<AuthProvider><Suspense fallback={<PageLoader />}><CropLibraryPage /></Suspense></AuthProvider>} />
-              <Route path="/diagnostic" element={<AuthProvider><Suspense fallback={<PageLoader />}><ExpertDiagnosisPage /></Suspense></AuthProvider>} />
+              <Route path="/diagnostic" element={<Navigate to="/fiches-techniques" replace />} />
               <Route path="/a-propos" element={<Suspense fallback={<PageLoader />}><AboutPage /></Suspense>} />
               <Route path="/contact" element={<Suspense fallback={<PageLoader />}><ContactPage /></Suspense>} />
               <Route path="/mentions-legales" element={<Suspense fallback={<PageLoader />}><MentionsLegales /></Suspense>} />
@@ -219,27 +210,27 @@ const App = () => {
                   <Route path="livestock-services" element={<Suspense fallback={<PageLoader />}><LivestockServicesPage /></Suspense>} />
                   <Route path="veterinary-services" element={<Suspense fallback={<PageLoader />}><LivestockServicesPage /></Suspense>} />
                   <Route path="livestock-report" element={<Suspense fallback={<PageLoader />}><LivestockReportPage /></Suspense>} />
-                  <Route path="animal-counting" element={<Suspense fallback={<PageLoader />}><AnimalCountingPage /></Suspense>} />
-                  <Route path="poultry-counting" element={<Suspense fallback={<PageLoader />}><AnimalCountingPage /></Suspense>} />
+                  <Route path="animal-counting" element={<Navigate to="/dashboard/animals" replace />} />
+                  <Route path="poultry-counting" element={<Navigate to="/dashboard/animals" replace />} />
                 </Route>
                 <Route path="veterinaire-hub" element={<Suspense fallback={<PageLoader />}><VeterinaireHubPage /></Suspense>} />
                 <Route path="marketplace" element={<Suspense fallback={<PageLoader />}><ServiceMarketplacePage /></Suspense>} />
-                <Route path="expert-cartography" element={<Suspense fallback={<PageLoader />}><ExpertCartographyPage /></Suspense>} />
-                <Route path="field-suite" element={<Suspense fallback={<PageLoader />}><FieldSuiteAllInOnePage /></Suspense>} />
-                <Route path="gps-survey" element={<Suspense fallback={<PageLoader />}><GpsSurveyPage /></Suspense>} />
-                <Route path="leve-gps" element={<Suspense fallback={<PageLoader />}><GpsSurveyPage /></Suspense>} />
-                <Route path="scouting" element={<Suspense fallback={<PageLoader />}><ScoutingPage /></Suspense>} />
-                <Route path="inspections" element={<Suspense fallback={<PageLoader />}><SmartInspectionPage /></Suspense>} />
-                <Route path="smart-inspection" element={<Suspense fallback={<PageLoader />}><SmartInspectionPage /></Suspense>} />
+                <Route path="expert-cartography" element={<Navigate to="/dashboard/parcels" replace />} />
+                <Route path="field-suite" element={<Navigate to="/dashboard/services" replace />} />
+                <Route path="gps-survey" element={<Navigate to="/dashboard/parcels" replace />} />
+                <Route path="leve-gps" element={<Navigate to="/dashboard/parcels" replace />} />
+                <Route path="scouting" element={<Navigate to="/dashboard/services" replace />} />
+                <Route path="inspections" element={<Navigate to="/dashboard/services" replace />} />
+                <Route path="smart-inspection" element={<Navigate to="/dashboard/services" replace />} />
                 <Route path="expert-toolbox" element={<Suspense fallback={<PageLoader />}><ExpertToolboxPage /></Suspense>} />
-                <Route path="diagnostic" element={<Suspense fallback={<PageLoader />}><ExpertDiagnosisPage /></Suspense>} />
-                <Route path="crop-diagnosis" element={<Suspense fallback={<PageLoader />}><ExpertDiagnosisPage /></Suspense>} />
-                <Route path="expert-diagnosis" element={<Suspense fallback={<PageLoader />}><ExpertDiagnosisPage /></Suspense>} />
+                <Route path="diagnostic" element={<Navigate to="/dashboard/crop-library" replace />} />
+                <Route path="crop-diagnosis" element={<Navigate to="/dashboard/crop-library" replace />} />
+                <Route path="expert-diagnosis" element={<Navigate to="/dashboard/crop-library" replace />} />
                 <Route path="expert-calculator" element={<Suspense fallback={<PageLoader />}><ExpertCalculatorPage /></Suspense>} />
                 <Route path="expert-prescriptions" element={<Suspense fallback={<PageLoader />}><ExpertPrescriptionsPage /></Suspense>} />
                 <Route path="crop-library" element={<Suspense fallback={<PageLoader />}><CropLibraryPage /></Suspense>} />
-                <Route path="field-designer" element={<Suspense fallback={<PageLoader />}><FieldDesignerPage /></Suspense>} />
-                <Route path="genius" element={<Suspense fallback={<PageLoader />}><NafaGeniusPage /></Suspense>} />
+                <Route path="field-designer" element={<Navigate to="/dashboard/services" replace />} />
+                <Route path="genius" element={<Navigate to="/dashboard/services" replace />} />
                 <Route path="expert-clients" element={<Suspense fallback={<PageLoader />}><ExpertClientsPage /></Suspense>} />
                 <Route path="expert-analytics" element={<Suspense fallback={<PageLoader />}><ExpertAnalyticsPage /></Suspense>} />
                 <Route path="partenaire-abonnement" element={<Suspense fallback={<PageLoader />}><ProviderSubscriptionPage /></Suspense>} />

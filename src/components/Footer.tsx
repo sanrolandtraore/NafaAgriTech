@@ -127,7 +127,7 @@ export const Footer: React.FC = () => {
               </li>
               <li>
                 <Link
-                  to="/dashboard/field-designer"
+                  to="/dashboard/services"
                   className="text-slate-400 hover:text-[#F97316] transition-colors inline-flex items-center gap-1.5"
                 >
                   <ChevronRight className="h-3 w-3 text-[#F97316]" />
@@ -163,11 +163,11 @@ export const Footer: React.FC = () => {
               </li>
               <li>
                 <Link
-                  to="/dashboard/smart-inspection"
+                  to="/services"
                   className="text-slate-400 hover:text-[#F97316] transition-colors inline-flex items-center gap-1.5"
                 >
                   <ChevronRight className="h-3 w-3 text-[#F97316]" />
-                  <span>Missions terrain</span>
+                  <span>Prestations &amp; Services</span>
                 </Link>
               </li>
               <li>
@@ -183,7 +183,7 @@ export const Footer: React.FC = () => {
           </div>
 
           {/* ══════════════════════════════════════════
-              COLONNE 3 — SERVICES & SOLUTIONS TECHNIQUES
+              COLONNE 3 — SERVICES & SOLUTIONS PRATIQUES
           ══════════════════════════════════════════ */}
           <div className="space-y-4">
             <h4 className="font-heading font-bold text-sm sm:text-base text-white tracking-wide uppercase text-xs">
@@ -192,11 +192,20 @@ export const Footer: React.FC = () => {
             <ul className="space-y-2 text-xs sm:text-sm">
               <li>
                 <Link
-                  to="/solutions/cartographie-agricole"
+                  to="/solutions/conseils-agronomiques"
                   className="text-slate-400 hover:text-[#F97316] transition-colors inline-flex items-center gap-1.5"
                 >
                   <ChevronRight className="h-3 w-3 text-[#F97316]" />
-                  <span>Conception 2D &amp; Arpentage GPS</span>
+                  <span>Conseils agronomiques &amp; Suivi</span>
+                </Link>
+              </li>
+              <li>
+                <Link
+                  to="/fiches-techniques"
+                  className="text-slate-400 hover:text-[#F97316] transition-colors inline-flex items-center gap-1.5"
+                >
+                  <ChevronRight className="h-3 w-3 text-[#F97316]" />
+                  <span>Fiches techniques des cultures</span>
                 </Link>
               </li>
               <li>
@@ -205,25 +214,7 @@ export const Footer: React.FC = () => {
                   className="text-slate-400 hover:text-[#F97316] transition-colors inline-flex items-center gap-1.5"
                 >
                   <ChevronRight className="h-3 w-3 text-[#F97316]" />
-                  <span>Inspection intelligente hors-ligne</span>
-                </Link>
-              </li>
-              <li>
-                <Link
-                  to="/solutions/diagnostic-agricole"
-                  className="text-slate-400 hover:text-[#F97316] transition-colors inline-flex items-center gap-1.5"
-                >
-                  <ChevronRight className="h-3 w-3 text-[#F97316]" />
-                  <span>Diagnostic phytosanitaire certifié</span>
-                </Link>
-              </li>
-              <li>
-                <Link
-                  to="/solutions/irrigation"
-                  className="text-slate-400 hover:text-[#F97316] transition-colors inline-flex items-center gap-1.5"
-                >
-                  <ChevronRight className="h-3 w-3 text-[#F97316]" />
-                  <span>Dimensionnement hydraulique &amp; Solaire</span>
+                  <span>Gestion d'exploitation agricole</span>
                 </Link>
               </li>
               <li>
@@ -237,11 +228,20 @@ export const Footer: React.FC = () => {
               </li>
               <li>
                 <Link
+                  to="/marketplace"
+                  className="text-slate-400 hover:text-[#F97316] transition-colors inline-flex items-center gap-1.5"
+                >
+                  <ChevronRight className="h-3 w-3 text-[#F97316]" />
+                  <span>Marché des intrants &amp; équipements</span>
+                </Link>
+              </li>
+              <li>
+                <Link
                   to="/services"
                   className="text-slate-400 hover:text-[#F97316] transition-colors inline-flex items-center gap-1.5"
                 >
                   <ChevronRight className="h-3 w-3 text-[#F97316]" />
-                  <span>Devis d'ingénierie chiffrés en FCFA</span>
+                  <span>Devis &amp; prestations en FCFA</span>
                 </Link>
               </li>
             </ul>

@@ -73,9 +73,7 @@ export default function PublicExplorerPage() {
 
   const normalizedTab = React.useMemo(() => {
     if (!rawTab) return "calculateur";
-    if (rawTab === "gps" || rawTab === "cartographie") return "cartographie";
     if (rawTab === "calculator" || rawTab === "calculateur") return "calculateur";
-    if (rawTab === "irrigation") return "irrigation";
     if (rawTab === "copilot" || rawTab === "ai") return "copilot";
     if (rawTab === "elevage" || rawTab === "zootechnie") return "elevage";
     if (rawTab === "fiches" || rawTab === "crops") return "fiches";
@@ -105,15 +103,6 @@ export default function PublicExplorerPage() {
   const [copilotQuestion, setCopilotQuestion] = useState("");
   const [selectedSampleIdx, setSelectedSampleIdx] = useState(0);
   const [customAnswer, setCustomAnswer] = useState<string | null>(null);
-
-  // État démonstration GPS / Cartographie
-  const [parcelSurfaceHa, setParcelSurfaceHa] = useState(2.4);
-  const [parcelPerimeterM, setParcelPerimeterM] = useState(640);
-  const [parcelBeacons, setParcelBeacons] = useState(4);
-
-  // État démonstration Irrigation
-  const [irriAreaHa, setIrriAreaHa] = useState(1.0);
-  const [irriCrop, setIrriCrop] = useState("tomate");
 
   // Filtre recherche fiches techniques
   const [sheetSearch, setSheetSearch] = useState("");
@@ -240,25 +229,17 @@ export default function PublicExplorerPage() {
                 <Bot className="h-4 w-4 text-emerald-600" />
                 <span>2. Copilote d'Assistance NAFA</span>
               </TabsTrigger>
-              <TabsTrigger value="cartographie" className="rounded-xl text-xs font-bold gap-2 py-2.5 px-4 data-[state=active]:bg-card data-[state=active]:shadow-xs">
-                <MapPin className="h-4 w-4 text-sky-600" />
-                <span>3. Cartographie &amp; GPS</span>
-              </TabsTrigger>
-              <TabsTrigger value="irrigation" className="rounded-xl text-xs font-bold gap-2 py-2.5 px-4 data-[state=active]:bg-card data-[state=active]:shadow-xs">
-                <Droplets className="h-4 w-4 text-blue-600" />
-                <span>4. Concepteur d'Irrigation</span>
-              </TabsTrigger>
               <TabsTrigger value="elevage" className="rounded-xl text-xs font-bold gap-2 py-2.5 px-4 data-[state=active]:bg-card data-[state=active]:shadow-xs">
                 <Beef className="h-4 w-4 text-amber-600" />
-                <span>5. Élevage &amp; Zootechnie</span>
+                <span>3. Élevage &amp; Zootechnie</span>
               </TabsTrigger>
               <TabsTrigger value="fiches" className="rounded-xl text-xs font-bold gap-2 py-2.5 px-4 data-[state=active]:bg-card data-[state=active]:shadow-xs">
                 <BookOpen className="h-4 w-4 text-teal-600" />
-                <span>6. Fiches Techniques (200+)</span>
+                <span>4. Fiches Techniques (200+)</span>
               </TabsTrigger>
               <TabsTrigger value="marketplace" className="rounded-xl text-xs font-bold gap-2 py-2.5 px-4 data-[state=active]:bg-card data-[state=active]:shadow-xs">
                 <Store className="h-4 w-4 text-purple-600" />
-                <span>7. Marché &amp; Services</span>
+                <span>5. Marché &amp; Services</span>
               </TabsTrigger>
             </TabsList>
           </div>
@@ -387,211 +368,7 @@ export default function PublicExplorerPage() {
           </TabsContent>
 
           {/* ══════════════════════════════════════════════════════
-              ONGLET 3 : CARTOGRAPHIE & DÉMO GÉODÉSIQUE
-          ══════════════════════════════════════════════════════ */}
-          <TabsContent value="cartographie" className="space-y-6 m-0">
-            <Card className="rounded-3xl border-border bg-card p-6 sm:p-8 space-y-6 shadow-sm">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                <div>
-                  <Badge className="bg-sky-500/10 text-sky-600 font-bold mb-1 text-xs">
-                    Arpentage Géodésique WGS84 / UTM
-                  </Badge>
-                  <h2 className="text-xl sm:text-2xl font-heading font-black text-foreground">
-                    Démonstration Cartographie &amp; Bornage de Parcelle
-                  </h2>
-                  <p className="text-xs sm:text-sm text-muted-foreground">
-                    Simulez le calcul automatique d'une parcelle à partir de coordonnées GPS ou bornes de terrain.
-                  </p>
-                </div>
-
-                <Button
-                  size="sm"
-                  onClick={() => triggerAuthGate(
-                    "Enregistrez votre parcelle cadastrée",
-                    "Créez votre compte gratuit pour enregistrer vos coordonnées GPS réelles, calculer les déclivités et exporter le plan de bornage officiel.",
-                    "Sauvegarder ma parcelle"
-                  )}
-                  className="bg-sky-600 hover:bg-sky-700 text-white font-bold text-xs rounded-xl shadow-xs shrink-0"
-                >
-                  <MapPin className="h-4 w-4 mr-1.5" />
-                  <span>Sauvegarder cette parcelle</span>
-                </Button>
-              </div>
-
-              {/* Simulateur interactif de bornes */}
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div className="p-4 rounded-2xl bg-muted/30 border border-border/80 space-y-3">
-                  <span className="text-xs font-bold text-foreground block">Paramètres du polygone :</span>
-                  <div className="space-y-2">
-                    <label className="text-[11px] text-muted-foreground block">
-                      Superficie simulée : <strong>{parcelSurfaceHa} ha</strong>
-                    </label>
-                    <input
-                      type="range"
-                      min="0.2"
-                      max="20"
-                      step="0.1"
-                      value={parcelSurfaceHa}
-                      onChange={(e) => {
-                        const val = parseFloat(e.target.value);
-                        setParcelSurfaceHa(val);
-                        setParcelPerimeterM(Math.round(Math.sqrt(val * 10000) * 4));
-                      }}
-                      className="w-full accent-sky-600 cursor-pointer"
-                    />
-                  </div>
-
-                  <div className="space-y-1 text-xs">
-                    <div className="flex justify-between py-1 border-b border-border/40">
-                      <span className="text-muted-foreground">Périmètre calculé :</span>
-                      <span className="font-mono font-bold">{parcelPerimeterM} m</span>
-                    </div>
-                    <div className="flex justify-between py-1 border-b border-border/40">
-                      <span className="text-muted-foreground">Nombre de bornes :</span>
-                      <span className="font-mono font-bold">{parcelBeacons} bornes géodésiques</span>
-                    </div>
-                    <div className="flex justify-between py-1">
-                      <span className="text-muted-foreground">Projection :</span>
-                      <span className="font-mono font-bold text-sky-600">UTM Zone 30N (WGS84)</span>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Canvas de prévisualisation graphique 2D */}
-                <div className="md:col-span-2 h-64 rounded-2xl bg-slate-900 border border-slate-800 p-4 relative flex flex-col justify-between overflow-hidden shadow-inner">
-                  <div className="flex items-center justify-between text-white/80 text-xs">
-                    <span className="font-mono text-emerald-400 font-bold flex items-center gap-1.5">
-                      <Compass className="h-3.5 w-3.5" /> SIG NAFA Studio • Vue Vectorielle
-                    </span>
-                    <Badge variant="outline" className="text-slate-300 border-slate-700 font-mono text-[10px]">
-                      Échelle : 1:1000
-                    </Badge>
-                  </div>
-
-                  {/* SVG interactif d'illustration de parcelle */}
-                  <svg className="w-full h-36" viewBox="0 0 400 150">
-                    <polygon
-                      points="50,120 120,30 330,45 360,130"
-                      fill="rgba(16, 185, 129, 0.2)"
-                      stroke="#10b981"
-                      strokeWidth="2.5"
-                      strokeDasharray="4 2"
-                    />
-                    <circle cx="50" cy="120" r="5" fill="#38bdf8" />
-                    <text x="35" y="140" fill="#ffffff" fontSize="10" fontFamily="monospace">B1 (0,0)</text>
-                    <circle cx="120" cy="30" r="5" fill="#38bdf8" />
-                    <text x="110" y="20" fill="#ffffff" fontSize="10" fontFamily="monospace">B2 (+140m)</text>
-                    <circle cx="330" cy="45" r="5" fill="#38bdf8" />
-                    <text x="325" y="35" fill="#ffffff" fontSize="10" fontFamily="monospace">B3 (+210m)</text>
-                    <circle cx="360" cy="130" r="5" fill="#38bdf8" />
-                    <text x="345" y="145" fill="#ffffff" fontSize="10" fontFamily="monospace">B4 (+130m)</text>
-                  </svg>
-
-                  <div className="flex items-center justify-between text-slate-400 text-[11px] font-mono">
-                    <span>Superficie : {parcelSurfaceHa.toFixed(2)} ha ({(parcelSurfaceHa * 10000).toLocaleString()} m²)</span>
-                    <span className="text-emerald-400">Périmètre clôture : {parcelPerimeterM} m</span>
-                  </div>
-                </div>
-              </div>
-            </Card>
-          </TabsContent>
-
-          {/* ══════════════════════════════════════════════════════
-              ONGLET 4 : IRRIGATION DESIGNER
-          ══════════════════════════════════════════════════════ */}
-          <TabsContent value="irrigation" className="space-y-6 m-0">
-            <Card className="rounded-3xl border-border bg-card p-6 sm:p-8 space-y-6 shadow-sm">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                <div>
-                  <Badge className="bg-blue-500/10 text-blue-600 font-bold mb-1 text-xs">
-                    Hydraulique Solaire &amp; Goutte-à-Goutte
-                  </Badge>
-                  <h2 className="text-xl sm:text-2xl font-heading font-black text-foreground">
-                    Aperçu du Dimensionnement Hydraulique Solaire
-                  </h2>
-                  <p className="text-xs sm:text-sm text-muted-foreground">
-                    Calculez le débit journalier, le diamètre de conduite PEHD et la puissance solaire nécessaire pour votre exploitation.
-                  </p>
-                </div>
-
-                <Button
-                  size="sm"
-                  onClick={() => triggerAuthGate(
-                    "Enregistrez votre réseau hydraulique",
-                    "Créez votre compte gratuitement pour concevoir votre plan 3D complet, exporter la nomenclature de matériel et recevoir des offres de fournisseurs agréés.",
-                    "Enregistrer mon plan hydraulique"
-                  )}
-                  className="bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs rounded-xl shadow-xs shrink-0"
-                >
-                  <Droplets className="h-4 w-4 mr-1.5" />
-                  <span>Enregistrer mon plan hydraulique</span>
-                </Button>
-              </div>
-
-              {/* Paramètres interactifs */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                <div className="p-4 rounded-2xl bg-muted/40 border border-border/80 space-y-1">
-                  <span className="text-xs font-bold text-muted-foreground block">Surface irriguée</span>
-                  <div className="flex items-center gap-2">
-                    <button
-                      type="button"
-                      onClick={() => setIrriAreaHa(0.5)}
-                      className={`px-2.5 py-1 rounded-lg text-xs font-bold ${irriAreaHa === 0.5 ? "bg-primary text-white" : "bg-card border"}`}
-                    >
-                      0.5 ha
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setIrriAreaHa(1.0)}
-                      className={`px-2.5 py-1 rounded-lg text-xs font-bold ${irriAreaHa === 1.0 ? "bg-primary text-white" : "bg-card border"}`}
-                    >
-                      1.0 ha
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setIrriAreaHa(2.5)}
-                      className={`px-2.5 py-1 rounded-lg text-xs font-bold ${irriAreaHa === 2.5 ? "bg-primary text-white" : "bg-card border"}`}
-                    >
-                      2.5 ha
-                    </button>
-                  </div>
-                </div>
-
-                <div className="p-4 rounded-2xl bg-card border border-border/80 shadow-xs space-y-1">
-                  <span className="text-xs font-bold text-muted-foreground block">Débit de pointe requis</span>
-                  <span className="text-2xl font-black text-blue-600 font-mono">
-                    {(irriAreaHa * 6.5).toFixed(1)} m³/h
-                  </span>
-                  <span className="text-[10px] text-muted-foreground block">
-                    Soit {(irriAreaHa * 42).toFixed(0)} m³/jour
-                  </span>
-                </div>
-
-                <div className="p-4 rounded-2xl bg-card border border-border/80 shadow-xs space-y-1">
-                  <span className="text-xs font-bold text-muted-foreground block">Canalisation recommandée</span>
-                  <span className="text-xl font-black text-foreground font-mono">
-                    {irriAreaHa <= 1 ? "PEHD Ø50 PN10" : "PEHD Ø63 PN10"}
-                  </span>
-                  <span className="text-[10px] text-emerald-600 font-bold block">
-                    Vitesse optimale : 1.25 m/s
-                  </span>
-                </div>
-
-                <div className="p-4 rounded-2xl bg-card border border-border/80 shadow-xs space-y-1">
-                  <span className="text-xs font-bold text-muted-foreground block">Champ Photovoltaïque</span>
-                  <span className="text-xl font-black text-amber-600 font-mono">
-                    {(irriAreaHa * 2.2).toFixed(1)} kWc
-                  </span>
-                  <span className="text-[10px] text-muted-foreground block">
-                    Pompe immergée MPPT solaire
-                  </span>
-                </div>
-              </div>
-            </Card>
-          </TabsContent>
-
-          {/* ══════════════════════════════════════════════════════
-              ONGLET 5 : ÉLEVAGE & ZOOTECHNIE
+              ONGLET 3 : ÉLEVAGE & ZOOTECHNIE
           ══════════════════════════════════════════════════════ */}
           <TabsContent value="elevage" className="space-y-6 m-0">
             <Card className="rounded-3xl border-border bg-card p-6 sm:p-8 space-y-6 shadow-sm">

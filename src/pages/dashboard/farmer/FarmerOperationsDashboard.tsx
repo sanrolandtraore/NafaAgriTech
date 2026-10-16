@@ -360,12 +360,12 @@ export default function FarmerOperationsDashboard() {
           </Button>
 
           <Button
-            onClick={() => navigate("/dashboard/diagnostic")}
+            onClick={() => navigate("/dashboard/crop-library")}
             variant="outline"
             className="gap-2 bg-slate-900 border-emerald-500/40 text-emerald-300 hover:bg-slate-800 text-xs rounded-xl"
           >
-            <Camera className="h-4 w-4 text-emerald-400" />
-            <span>Scanner Maladie</span>
+            <FileText className="h-4 w-4 text-emerald-400" />
+            <span>Fiches Cultures</span>
           </Button>
         </div>
       </div>
@@ -541,22 +541,22 @@ export default function FarmerOperationsDashboard() {
                   {/* Actions directes */}
                   <div className="flex items-center gap-2 pt-1">
                     <Button
-                      onClick={() => navigate(`/dashboard/diagnostic`)}
+                      onClick={() => navigate(`/dashboard/crop-library`)}
                       variant="outline"
                       size="sm"
                       className="w-full text-xs gap-1 text-emerald-700 border-emerald-300 hover:bg-emerald-50"
                     >
-                      <Camera className="h-3.5 w-3.5" />
-                      <span>Diagnostiquer</span>
+                      <FileText className="h-3.5 w-3.5" />
+                      <span>Fiche Culture</span>
                     </Button>
                     <Button
-                      onClick={() => navigate(`/dashboard/field-designer`)}
+                      onClick={() => navigate(`/dashboard/parcels`)}
                       variant="ghost"
                       size="sm"
                       className="w-full text-xs gap-1"
                     >
-                      <Compass className="h-3.5 w-3.5 text-slate-600" />
-                      <span>Plan 3D</span>
+                      <Sprout className="h-3.5 w-3.5 text-slate-600" />
+                      <span>Gérer</span>
                     </Button>
                   </div>
                 </CardContent>

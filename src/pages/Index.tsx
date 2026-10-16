@@ -64,11 +64,11 @@ const SPACES_CONFIG = [
   {
     id: "experts",
     title: "Agronomes & Vétérinaires",
-    path: "/dashboard/field-designer",
+    path: "/dashboard/services",
     icon: Compass,
-    realIcon: "field-designer",
+    realIcon: "crops",
     image: galleryDigital,
-    badge: "NAFA FIELD DESIGNER",
+    badge: "Conseil & Suivi",
   },
   {
     id: "partenaires",
@@ -99,14 +99,14 @@ const SPACES_CONFIG = [
   },
 ];
 
-// ── 2. Configuration des 6 Outils Intelligents (Images 100% Uniques) ──
+// ── 2. Configuration des 6 Outils Pratiques (Images 100% Uniques) ──
 const SMART_TOOLS = [
-  { id: "gps", word: "GPS", icon: MapPin, realIcon: "gps", path: "/dashboard/scouting", publicPath: "/solutions/cartographie-agricole", explorerTab: "gps", image: galleryGpsSurveyor },
-  { id: "inspection", word: "Inspection", icon: ClipboardCheck, realIcon: "diagnostic", path: "/dashboard/smart-inspection", publicPath: "/solutions/suivi-exploitation", explorerTab: "calculator", image: galleryFarmField },
-  { id: "diagnostic", word: "Diagnostic", icon: Microscope, realIcon: "diagnostic", path: "/dashboard/crop-library", publicPath: "/solutions/diagnostic-agricole", explorerTab: "fiches", image: galleryPlantDiagnostic },
-  { id: "irrigation", word: "Irrigation", icon: Droplets, realIcon: "irrigation", path: "/dashboard/genius", publicPath: "/solutions/irrigation", explorerTab: "irrigation", image: galleryIrrigation },
-  { id: "devis", word: "Devis", icon: FileText, realIcon: "quote", path: "/dashboard/quote-requests", publicPath: "/services", explorerTab: "calculator", image: galleryEngineeringQuote },
-  { id: "cartographie", word: "Cartographie", icon: Layers, realIcon: "cartography", path: "/dashboard/expert-cartography", publicPath: "/solutions/cartographie-agricole", explorerTab: "gps", image: galleryAerialParcels },
+  { id: "fiches", word: "Fiches Cultures", icon: Sprout, realIcon: "crops", path: "/dashboard/crop-library", publicPath: "/fiches-techniques", explorerTab: "fiches", image: galleryPlantDiagnostic },
+  { id: "calculateur", word: "Calculateur", icon: ClipboardCheck, realIcon: "quote", path: "/dashboard/expert-calculator", publicPath: "/explorer?tab=calculateur", explorerTab: "calculateur", image: galleryFarmField },
+  { id: "planification", word: "Planification", icon: Droplets, realIcon: "crops", path: "/dashboard/crop-planning", publicPath: "/solutions/suivi-exploitation", explorerTab: "calculateur", image: galleryIrrigation },
+  { id: "elevage", word: "Élevage", icon: Beef, realIcon: "livestock", path: "/dashboard/livestock-services", publicPath: "/solutions/elevage", explorerTab: "elevage", image: galleryLivestock },
+  { id: "devis", word: "Devis", icon: FileText, realIcon: "quote", path: "/dashboard/quote-requests", publicPath: "/services", explorerTab: "calculateur", image: galleryEngineeringQuote },
+  { id: "formation", word: "Formations", icon: Award, realIcon: "education", path: "/dashboard/education", publicPath: "/ressources", explorerTab: "fiches", image: galleryFormation },
 ];
 
 // ── 3. Configuration des Catégories Marketplace Rapide (Images 100% Uniques) ──
@@ -114,7 +114,7 @@ const MARKET_CATEGORIES = [
   { id: "machinisme", name: "Machinisme & Travaux", cat: "machinisme", path: "/marketplace?cat=machinisme&role=producteurs", icon: Tractor, realIcon: "tractor", image: galleryTractorPlowing },
   { id: "agricole", name: "Produits Agricoles", cat: "produits_agricoles", path: "/marketplace?cat=produits_agricoles&role=producteurs", icon: Sprout, realIcon: "crops", image: galleryHarvest },
   { id: "elevage", name: "Produits d'Élevage", cat: "produits_elevage", path: "/marketplace?cat=produits_elevage&role=producteurs", icon: Beef, realIcon: "livestock", image: galleryVeterinaryCare },
-  { id: "services-agri", name: "Services Agricoles", cat: "services_agricoles", path: "/marketplace?cat=services_agricoles&role=producteurs", icon: Wrench, realIcon: "field-designer", image: galleryAgriServices },
+  { id: "services-agri", name: "Services Agricoles", cat: "services_agricoles", path: "/marketplace?cat=services_agricoles&role=producteurs", icon: Wrench, realIcon: "crops", image: galleryAgriServices },
   { id: "services-veto", name: "Services Vétérinaires", cat: "services_veterinaires", path: "/marketplace?cat=services_veterinaires&role=producteurs", icon: Stethoscope, realIcon: "veterinary", image: galleryFormation },
   { id: "finance", name: "Finance & Assurance", cat: "finance_assurance", path: "/marketplace?cat=finance_assurance&role=producteurs", icon: Landmark, realIcon: "finance", image: galleryAgriFinance },
 ];
@@ -435,19 +435,6 @@ const Index = () => {
               );
             })}
           </div>
-
-          {/* Bouton d'accès direct à la suite NAFA FIELD DESIGNER */}
-          <div className="flex justify-center pt-2">
-            <Button
-              size="lg"
-              onClick={() => navigate(user ? "/dashboard/field-designer" : "/explorer?tab=calculator")}
-              className="rounded-full bg-[#111827] dark:bg-white text-white dark:text-[#111827] hover:bg-[#F97316] dark:hover:bg-[#F97316] hover:text-white dark:hover:text-white font-bold text-xs sm:text-sm px-6 py-5 shadow-md flex items-center gap-2 transition-all active:scale-95"
-            >
-              <Compass className="h-4 w-4 text-[#F97316]" />
-              <span>Accéder à la suite complète NAFA FIELD DESIGNER (Conception de Parcelles)</span>
-              <ArrowRight className="h-4 w-4 ml-1" />
-            </Button>
-          </div>
         </div>
       </section>
 
@@ -689,17 +676,17 @@ const Index = () => {
             <span className="text-[10px] font-bold">Marché</span>
           </button>
 
-          {/* 3. PROJETS / ACTION PRINCIPALE CENTRALE */}
+          {/* 3. EXPLORER / ACTION PRINCIPALE CENTRALE */}
           <div className="flex flex-col items-center -mt-6">
             <button
               type="button"
-              onClick={() => navigate("/dashboard/smart-inspection")}
-              aria-label="Commencer une mission"
+              onClick={() => navigate("/explorer")}
+              aria-label="Explorer la plateforme"
               className="w-14 h-14 rounded-full bg-[#F97316] hover:bg-[#ea580c] text-white flex items-center justify-center shadow-lg shadow-orange-500/40 active:scale-90 transition-transform"
             >
-              <ClipboardCheck className="h-7 w-7" />
+              <Compass className="h-7 w-7" />
             </button>
-            <span className="text-[10px] font-extrabold text-[#F97316] mt-1">Projets</span>
+            <span className="text-[10px] font-extrabold text-[#F97316] mt-1">Explorer</span>
           </div>
 
           {/* 4. Messages */}

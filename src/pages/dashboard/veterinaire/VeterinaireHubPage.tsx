@@ -27,7 +27,6 @@ import {
   Scale,
 } from "lucide-react";
 import BackNavigationButton from "@/components/BackNavigationButton";
-import { LIVESTOCK_DENSITY_STANDARDS } from "@/lib/livestockVisionCounter";
 
 export interface VetToolItem {
   id: string;
@@ -43,28 +42,6 @@ export interface VetToolItem {
 
 export const VETERINARY_TOOLS: VetToolItem[] = [
   // ── Pôle 1 : Actes Cliniques & Terrain ──
-  {
-    id: "vet-smart-counting",
-    title: "Station Couloir : SmaRt Counting & Pesée (Norme IMV)",
-    category: "clinique_terrain",
-    categoryLabel: "Actes Cliniques & Terrain",
-    description: "Comptage automatique bidirectionnel en couloir d'embarquement (précision 99,9%), exclusion des silhouettes humaines, estimation biométrique Smart Weight et certificat officiel.",
-    route: "/dashboard/animal-counting?method=imv_corridor",
-    icon: ShieldCheck,
-    badges: ["Norme IMV Technologies", "Précision 99.9%", "Smart Weight", "EIP"],
-    keywords: ["imv", "smart counting", "couloir", "porc", "bovin", "ovin", "pesee", "poids", "tripwire", "eip", "abattoir", "embarquement"],
-  },
-  {
-    id: "vet-comptage",
-    title: "Comptage & Densité d'Élevage",
-    category: "clinique_terrain",
-    categoryLabel: "Actes Cliniques & Terrain",
-    description: "Audit d'effectifs in-situ par vision optique, analyse des quadrats (norme FAO), calcul de la charge UBT et détection de surpopulation.",
-    route: "/dashboard/animal-counting",
-    icon: Camera,
-    badges: ["Vision IA", "Norme FAO", "Densité", "Hors ligne"],
-    keywords: ["comptage", "densite", "animaux", "volailles", "bovins", "quadrats", "fao", "ubt", "troupeau"],
-  },
   {
     id: "vet-interventions",
     title: "Interventions & Soins Terrain",
@@ -215,7 +192,7 @@ export default function VeterinaireHubPage() {
             </h1>
 
             <p className="text-xs sm:text-sm text-muted-foreground mt-1 max-w-3xl font-medium">
-              Toutes les fonctionnalités d'interventions zoo-sanitaires, comptage optique de cheptel, audit de densité FAO, gestion des dossiers éleveurs et facturation du cabinet réunies dans un bloc unifié pour simplifier votre pratique quotidienne.
+              Toutes les fonctionnalités d'interventions zoo-sanitaires, soins de terrain, gestion des dossiers éleveurs et facturation du cabinet réunies dans un bloc unifié pour simplifier votre pratique quotidienne.
             </p>
           </div>
         </div>
@@ -240,29 +217,29 @@ export default function VeterinaireHubPage() {
           <div className="space-y-3 max-w-2xl">
             <div className="flex items-center gap-2">
               <Badge className="bg-emerald-600 text-white font-black text-xs px-3 py-1 shadow-xs">
-                OUTILS D'AIDE À LA DÉCISION RÉELS
+                GESTION CLINIQUE & SOINS
               </Badge>
               <Badge variant="outline" className="border-emerald-600/30 text-emerald-700 dark:text-emerald-400 font-bold text-xs">
-                Zéro Simulation • Données Scientifiques
+                Pratique Vétérinaire Simplifiée
               </Badge>
             </div>
 
             <h2 className="text-xl sm:text-2xl lg:text-3xl font-heading font-black text-foreground">
-              Comptage Haute Précision, Soins de Terrain & Suivi Sanitaire
+              Soins de Terrain, Dossiers Éleveurs & Facturation
             </h2>
 
             <p className="text-sm text-muted-foreground leading-relaxed">
-              Dénombrez les animaux sans biais par vision morphologique et quadrats FAO, vérifiez la charge UBT et la conformité de densité au m², et générez des ordonnances et rapports d'intervention horodatés pour les éleveurs.
+              Planifiez vos interventions sanitaires et campagnes de vaccination, suivez vos dossiers d'éleveurs et éditez vos devis et factures proformas en FCFA en quelques clics.
             </p>
 
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 pt-1">
               <div className="flex items-center gap-2 p-2.5 rounded-xl bg-background/80 border border-border/60 text-xs">
-                <Camera className="h-4 w-4 text-emerald-600 shrink-0" />
-                <span className="font-semibold text-foreground">1. Comptage & Densité</span>
+                <Activity className="h-4 w-4 text-emerald-600 shrink-0" />
+                <span className="font-semibold text-foreground">1. Interventions terrain</span>
               </div>
               <div className="flex items-center gap-2 p-2.5 rounded-xl bg-background/80 border border-border/60 text-xs">
-                <Activity className="h-4 w-4 text-sky-600 shrink-0" />
-                <span className="font-semibold text-foreground">2. Interventions terrain</span>
+                <Users className="h-4 w-4 text-sky-600 shrink-0" />
+                <span className="font-semibold text-foreground">2. Dossiers éleveurs</span>
               </div>
               <div className="flex items-center gap-2 p-2.5 rounded-xl bg-background/80 border border-border/60 text-xs">
                 <Receipt className="h-4 w-4 text-amber-500 shrink-0" />
@@ -274,10 +251,10 @@ export default function VeterinaireHubPage() {
           <div className="shrink-0 flex flex-col gap-2.5">
             <Button
               type="button"
-              onClick={() => navigate("/dashboard/animal-counting")}
+              onClick={() => navigate("/dashboard/interventions")}
               className="h-12 px-6 text-sm font-black rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white shadow-lg hover:shadow-emerald-600/25 transition-all flex items-center gap-2"
             >
-              <span>Lancer le Comptage d'Animaux</span>
+              <span>Nouvelle Intervention Terrain</span>
               <ArrowRight className="h-4 w-4" />
             </Button>
 
@@ -285,11 +262,11 @@ export default function VeterinaireHubPage() {
               <Button
                 type="button"
                 variant="outline"
-                onClick={() => navigate("/dashboard/interventions")}
+                onClick={() => navigate("/dashboard/provider-clients")}
                 className="flex-1 h-9 text-xs font-bold rounded-xl border-border hover:bg-muted"
               >
-                <Activity className="h-3.5 w-3.5 mr-1 text-emerald-600" />
-                Interventions
+                <Users className="h-3.5 w-3.5 mr-1 text-emerald-600" />
+                Éleveurs
               </Button>
               <Button
                 type="button"
@@ -320,7 +297,7 @@ export default function VeterinaireHubPage() {
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
             <Input
               id="vet-smart-search"
-              placeholder="Que voulez-vous faire ? (ex: compter des volailles, intervention, devis éleveur, facturer...)"
+              placeholder="Que voulez-vous faire ? (ex: intervention, vaccination, devis éleveur, facturer...)"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="h-12 pl-12 pr-10 text-sm sm:text-base font-medium rounded-[20px] bg-background border-border shadow-xs focus:border-emerald-600"
@@ -334,7 +311,6 @@ export default function VeterinaireHubPage() {
             <Sparkles className="h-3.5 w-3.5 text-emerald-600" /> Suggestions directes :
           </span>
           {[
-            "Comptage et densité",
             "Nouvelle intervention",
             "Dossiers éleveurs",
             "Créer une facture proforma",

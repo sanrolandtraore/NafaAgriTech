@@ -35,7 +35,6 @@ export const agriculteurNav: NavItem[] = [
 export const eleveurNav: NavItem[] = [
   { to: "/dashboard", labelKey: "Tableau de bord", icon: LayoutDashboard },
   { to: "/dashboard/animals", labelKey: "Cheptel & Animaux", icon: Beef },
-  { to: "/dashboard/animal-counting", labelKey: "Comptage Intelligent d'Animaux", icon: Camera },
   { to: "/dashboard/animal-health", labelKey: "Santé & Vaccinations", icon: Heart },
   { to: "/dashboard/animal-reproduction", labelKey: "Reproduction & Vêlage", icon: Baby },
   { to: "/dashboard/animal-feeding", labelKey: "Alimentation & Rations", icon: Utensils },
@@ -64,26 +63,18 @@ export const fournisseurNav: NavItem[] = [
 /** Alias de rétrocompatibilité : le module Machinisme & Travaux est consolidé dans Intrants & Matériel */
 export const machinismeNav: NavItem[] = fournisseurNav;
 
-/** 3. Profil Cabinet d'Agronomie & Conseil Technique (Suite complète des outils techniques regroupée) */
+/** 3. Profil Cabinet d'Agronomie & Conseil Technique (Outils essentiels & pratiques) */
 export const agronomeNav: NavItem[] = [
   { to: "/dashboard", labelKey: "Console Agronome & Conseil", icon: LayoutDashboard },
-  // Bloc 1 : Pôle Terrain & Diagnostic
-  { to: "/dashboard/field-suite", labelKey: "Application Tout-en-un (Arpentage • Satellite • Diagnostic)", icon: Sparkles, section: "Pôle Terrain & Diagnostic" },
-  { to: "/dashboard/diagnostic", labelKey: "Diagnostic & Prescriptions", icon: Microscope, section: "Pôle Terrain & Diagnostic" },
-  { to: "/dashboard/inspections", labelKey: "Inspection Intelligente", icon: Eye, section: "Pôle Terrain & Diagnostic" },
-  { to: "/dashboard/scouting", labelKey: "Suivi des Parcelles", icon: Eye, section: "Pôle Terrain & Diagnostic" },
-  { to: "/dashboard/gps-survey", labelKey: "Levé de coordonnées GPS", icon: Navigation, section: "Pôle Terrain & Diagnostic" },
-  { to: "/dashboard/expert-cartography", labelKey: "Cartographie GPS", icon: MapPin, section: "Pôle Terrain & Diagnostic" },
-  // Bloc 2 : Pôle Conception & Ingénierie
-  { to: "/dashboard/services", labelKey: "Suite d'Outils Agronomiques", icon: Compass, section: "Pôle Conception & Ingénierie" },
-  { to: "/dashboard/field-designer", labelKey: "Conception de Parcelles", icon: Compass, section: "Pôle Conception & Ingénierie" },
-  { to: "/dashboard/expert-calculator", labelKey: "Calculateur agricole", icon: Calculator, section: "Pôle Conception & Ingénierie" },
-  { to: "/dashboard/crop-planning", labelKey: "Planification des cultures", icon: Calculator, section: "Pôle Conception & Ingénierie" },
-  { to: "/dashboard/parcels", labelKey: "Parcelles & Cultures", icon: Sprout, section: "Pôle Conception & Ingénierie" },
-  { to: "/dashboard/crop-library", labelKey: "Fiches techniques", icon: BookOpen, section: "Pôle Conception & Ingénierie" },
-  { to: "/dashboard/expert-prescriptions", labelKey: "Prescriptions", icon: FileText, section: "Pôle Conception & Ingénierie" },
-  { to: "/dashboard/education", labelKey: "Formation professionnelle", icon: GraduationCap, section: "Pôle Conception & Ingénierie" },
-  // Bloc 3 : Pôle Conseil, Clients & Devis
+  // Bloc 1 : Outils Agronomiques & Cultures
+  { to: "/dashboard/services", labelKey: "Suite d'Outils Agronomiques", icon: Compass, section: "Outils Agronomiques & Cultures" },
+  { to: "/dashboard/expert-calculator", labelKey: "Calculateur agricole", icon: Calculator, section: "Outils Agronomiques & Cultures" },
+  { to: "/dashboard/crop-planning", labelKey: "Planification des cultures", icon: Calculator, section: "Outils Agronomiques & Cultures" },
+  { to: "/dashboard/parcels", labelKey: "Parcelles & Cultures", icon: Sprout, section: "Outils Agronomiques & Cultures" },
+  { to: "/dashboard/crop-library", labelKey: "Fiches techniques", icon: BookOpen, section: "Outils Agronomiques & Cultures" },
+  { to: "/dashboard/expert-prescriptions", labelKey: "Prescriptions", icon: FileText, section: "Outils Agronomiques & Cultures" },
+  { to: "/dashboard/education", labelKey: "Formation professionnelle", icon: GraduationCap, section: "Outils Agronomiques & Cultures" },
+  // Bloc 2 : Pôle Conseil, Clients & Devis
   { to: "/dashboard/expert-clients", labelKey: "Portefeuille Clients", icon: Users, section: "Pôle Conseil & Gestion" },
   { to: "/dashboard/partenaire-mes-offres", labelKey: "Proposer mes Prestations & Tarifs", icon: Store, section: "Pôle Conseil & Gestion" },
   { to: "/dashboard/quote-requests", labelKey: "Demandes de devis & Commandes", icon: FileText, section: "Pôle Conseil & Gestion" },
@@ -102,7 +93,6 @@ export const veterinaireNav: NavItem[] = [
   { to: "/dashboard", labelKey: "Console Clinique Vétérinaire", icon: LayoutDashboard },
   { to: "/dashboard/veterinaire-hub", labelKey: "Bloc Clinique Tout-en-un", icon: Sparkles },
   // Pôle 1 : Actes Cliniques & Terrain
-  { to: "/dashboard/animal-counting", labelKey: "Comptage & Densité d'Élevage", icon: Camera, section: "Actes Cliniques & Terrain" },
   { to: "/dashboard/interventions", labelKey: "Interventions & Soins terrain", icon: Activity, section: "Actes Cliniques & Terrain" },
   { to: "/dashboard/partenaire-mes-offres", labelKey: "Proposer mes Services & Soins", icon: Store, section: "Actes Cliniques & Terrain" },
   // Pôle 2 : Dossiers Éleveurs & Facturation
